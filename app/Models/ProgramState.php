@@ -7,7 +7,7 @@ use RuntimeException;
 
 class ProgramState extends Model
 {
-    private $state;
+    private string $state;
     
     public function __construct(string $state)
     {
@@ -16,9 +16,6 @@ class ProgramState extends Model
     
     public static function at($state): ProgramState
     {
-        if ($state === null) {
-            throw new RuntimeException('el estado del programa no debe ser null');
-        }
         if (strlen((string)$state) == 0) {
             throw new RuntimeException('el estado del programa no debe ir vacio');
         }

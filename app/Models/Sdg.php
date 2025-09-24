@@ -7,10 +7,10 @@ use RuntimeException;
 
 class Sdg extends Model
 {
-    private $image;
-    private $number;
+    private string $image;
+    private int $number;
     
-    public function __construct(string $image, int $number = null)
+    public function __construct(string $image, int $number)
     {
         $this->image = $image;
         $this->number = $number;
@@ -18,20 +18,18 @@ class Sdg extends Model
     
     public static function at($image): Sdg
     {
-        if ($image === null) {
-            throw new RuntimeException('la imagen del SDG no debe ser null');
-        }
-        if (strlen((string)$image) == 0) {
+        if (empty(trim($image))) {
             throw new RuntimeException('la imagen del SDG no debe ir vacio');
         }
         
-        // Extraer número del SDG desde el nombre de imagen (ej: "sdg1.png" -> 1)
-        $number = null;
-        if (preg_match('/sdg(\d+)/i', $image, $matches)) {
-            $number = (int)$matches[1];
-            if ($number < 1 || $number > 17) {
-                throw new RuntimeException('el número del SDG debe estar entre 1 y 17');
-            }
+        // Extraer número del SDG es OBLIGATORIO
+        if (!preg_match('/sdg(\d+)/i', $image, $matches)) {
+            throw new RuntimeException('la imagen del SDG debe contener un número válido (ej: sdg1.png)');
+        }
+        
+        $number = (int)$matches[1];
+        if ($number < 1 || $number > 17) {
+            throw new RuntimeException('el número del SDG debe estar entre 1 y 17');
         }
         
         return new Sdg($image, $number);
@@ -47,13 +45,13 @@ class Sdg extends Model
         return $this->image;
     }
     
-    public function getNumber(): ?int
+    public function getNumber(): int
     {
         return $this->number;
     }
     
     public function isValidSdgNumber(): bool
     {
-        return $this->number !== null && $this->number >= 1 && $this->number <= 17;
+        return $this->number >= 1 && $this->number <= 17;
     }
 }

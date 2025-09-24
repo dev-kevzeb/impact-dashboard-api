@@ -7,7 +7,7 @@ use RuntimeException;
 
 class ProgramBeneficiary extends Model
 {
-    private $name;
+    private string $name;
     
     public function __construct(string $name)
     {
@@ -16,9 +16,6 @@ class ProgramBeneficiary extends Model
     
     public static function at($name): ProgramBeneficiary
     {
-        if ($name === null) {
-            throw new RuntimeException('el beneficiario del programa no debe ser null');
-        }
         if (strlen((string)$name) == 0) {
             throw new RuntimeException('el beneficiario del programa no debe ir vacio');
         }

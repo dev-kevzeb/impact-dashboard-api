@@ -7,23 +7,23 @@ use RuntimeException;
 
 class Program extends Model
 {
-    private $name;
-    private $description;
-    private $banner_img;
-    private $start_date;
-    private $end_date;
-    private $program_url;
-    private $contact_first_name;
-    private $contact_last_name;
-    private $contact_title;
-    private $contact_email;
-    private $contact_phone;
-    private $program_beneficiary;
-    private $program_state;
-    private $country;
-    private $agency;
-    private $sdgs;
-    private $program_donors;
+    private string $name;
+    private string $description;
+    private string $banner_img;
+    private string $start_date;
+    private string $end_date;
+    private string $program_url;
+    private string $contact_first_name;
+    private string $contact_last_name;
+    private string $contact_title;
+    private string $contact_email;
+    private string $contact_phone;
+    private ProgramBeneficiary $program_beneficiary;
+    private ProgramState $program_state;
+    private Country $country;
+    private Agency $agency;
+    private array $sdgs;
+    private array $program_donors;
 
     public function __construct(
         string $name,
@@ -36,7 +36,7 @@ class Program extends Model
         string $contact_last_name,
         string $contact_title,
         string $contact_email,
-        int $contact_phone,
+        string $contact_phone,
         ProgramBeneficiary $program_beneficiary,
         ProgramState $program_state,
         Country $country,
@@ -214,15 +214,12 @@ class Program extends Model
             throw new RuntimeException('el dominio del email no es válido o no existe');
         }
 
-        // Validaciones de contact_phone
-        if ($contact_phone === 0) {
-            throw new RuntimeException('el teléfono del contacto es requerido');
-        }
-        if ($contact_phone < 0) {
-            throw new RuntimeException('el teléfono del contacto no debe ser negativo');
+        // Validaciones de contact_phone - Professional string validation
+        if (empty(trim($contact_phone))) {
+            throw new RuntimeException('el teléfono del contacto no debe ir vacio');
         }
         
-        $phoneString = (string)$contact_phone;
+        $phoneString = trim($contact_phone);
         
         // Acepta formatos: +1234567890, +12 345 678 9012, +1-234-567-8901
         if (!preg_match('/^(\+?\d{1,4})?[\s\-]?\(?\d{1,4}\)?[\s\-]?\d{6,14}$/', $phoneString)) {
@@ -393,7 +390,7 @@ class Program extends Model
         return $this->contact_email;
     }
 
-    public function getContactPhone(): int
+    public function getContactPhone(): string
     {
         return $this->contact_phone;
     }
