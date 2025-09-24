@@ -8,6 +8,7 @@ use RuntimeException;
 class Country extends Model
 {
     private $name;
+      static $INVALIDNAME = "el nombre del pais no debe ir vacio o tener menos de 3 caracteres";
     public function __construct(string $name)
     {
         $this->name = $name;
