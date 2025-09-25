@@ -2,10 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use RuntimeException;
 
-class Program extends Model
+class Program
 {
     private string $name;
     private string $description;
@@ -132,20 +131,18 @@ class Program extends Model
             throw new RuntimeException('la duración del programa no puede exceder 20 años');
         }
 
-        // Validaciones de programUrl
-        if (empty(trim($programUrl))) {
-            throw new RuntimeException('la URL del programa no debe ir vacio');
-        }
-        
-        // Validación robusta de URL con filtros múltiples
-        if (!filter_var($programUrl, FILTER_VALIDATE_URL)) {
-            throw new RuntimeException('la URL del programa debe tener un formato válido');
-        }
-        
-        // Validar que use HTTPS o HTTP solamente
-        $parsedUrl = parse_url($programUrl);
-        if (!in_array($parsedUrl['scheme'] ?? '', ['http', 'https'], true)) {
-            throw new RuntimeException('la URL del programa debe usar protocolo HTTP o HTTPS');
+        // Validaciones de programUrl 
+        if (!empty(trim($programUrl))) {
+            
+            if (!filter_var($programUrl, FILTER_VALIDATE_URL)) {
+                throw new RuntimeException('la URL del programa debe tener un formato válido');
+            }
+            
+            // Validar que use HTTPS o HTTP solamente
+            $parsedUrl = parse_url($programUrl);
+            if (!in_array($parsedUrl['scheme'] ?? '', ['http', 'https'], true)) {
+                throw new RuntimeException('la URL del programa debe usar protocolo HTTP o HTTPS');
+            }
         }
 
         // Validaciones de contactFirstName
@@ -215,24 +212,23 @@ class Program extends Model
         }
 
         // Validaciones de contactPhone 
-        if (empty(trim($contactPhone))) {
-            throw new RuntimeException('el teléfono del contacto no debe ir vacio');
-        }
+        if (!empty(trim($contactPhone))) {
+            // Solo validar formato si no está vacío
+            $phoneString = trim($contactPhone);
 
-        $phoneString = trim($contactPhone);
-
-        // Acepta formatos: +1234567890, +12 345 678 9012, +1-234-567-8901
-        if (!preg_match('/^(\+?\d{1,4})?[\s\-]?\(?\d{1,4}\)?[\s\-]?\d{6,14}$/', $phoneString)) {
-            throw new RuntimeException('el formato del teléfono no es válido - use formato internacional');
-        }
-        
-        // Validar longitud total 
-        $digitsOnly = preg_replace('/\D/', '', $phoneString);
-        if (strlen($digitsOnly) < 7) {
-            throw new RuntimeException('el teléfono debe tener al menos 7 dígitos');
-        }
-        if (strlen($digitsOnly) > 15) {
-            throw new RuntimeException('el teléfono no debe exceder 15 dígitos');
+            // Acepta formatos: +1234567890, +12 345 678 9012, +1-234-567-8901
+            if (!preg_match('/^(\+?\d{1,4})?[\s\-]?\(?\d{1,4}\)?[\s\-]?\d{6,14}$/', $phoneString)) {
+                throw new RuntimeException('el formato del teléfono no es válido - use formato internacional');
+            }
+            
+            // Validar longitud total 
+            $digitsOnly = preg_replace('/\D/', '', $phoneString);
+            if (strlen($digitsOnly) < 7) {
+                throw new RuntimeException('el teléfono debe tener al menos 7 dígitos');
+            }
+            if (strlen($digitsOnly) > 15) {
+                throw new RuntimeException('el teléfono no debe exceder 15 dígitos');
+            }
         }
 
         // Validaciones de programBeneficiary
@@ -267,35 +263,54 @@ class Program extends Model
             throw new RuntimeException('la agencia debe ser una instancia de Agency');
         }
 
-        // Validaciones de sdgs
+        // Validaciones de sdgs 
         if ($sdgs === null) {
             throw new RuntimeException('los SDGs del programa no deben ser null');
         }
         if (!is_array($sdgs)) {
             throw new RuntimeException('los SDGs deben ser un array');
         }
-        if (empty($sdgs)) {
-            throw new RuntimeException('debe seleccionar al menos un SDG');
-        }
+        
         foreach ($sdgs as $sdg) {
             if (!($sdg instanceof Sdg)) {
                 throw new RuntimeException('todos los SDGs deben ser instancias de Sdg');
             }
         }
 
-        // Validaciones de programDonors
+        // Validaciones de programDonors 
         if ($programDonors === null) {
             throw new RuntimeException('los donantes del programa no deben ser null');
         }
         if (!is_array($programDonors)) {
             throw new RuntimeException('los donantes deben ser un array');
         }
-        if (empty($programDonors)) {
-            throw new RuntimeException('debe seleccionar al menos un donante');
-        }
         foreach ($programDonors as $donor) {
             if (!($donor instanceof Donor)) {
                 throw new RuntimeException('todos los donantes deben ser instancias de Donor');
+            }
+        }
+
+        
+        if (!empty($sdgs)) {
+            $sdgIdentifiers = [];
+            foreach ($sdgs as $sdg) {
+                $identifier = $sdg->getImage(); 
+                if (in_array($identifier, $sdgIdentifiers, true)) {
+                    throw new RuntimeException('no se permiten SDGs duplicados en el programa');
+                }
+                $sdgIdentifiers[] = $identifier;
+            }
+        }
+
+        
+        if (!empty($programDonors)) {
+            $donorIdentifiers = [];
+            foreach ($programDonors as $donor) {
+                $identifier = $donor->getName(); 
+                if (in_array($identifier, $donorIdentifiers, true)) {
+                    throw new RuntimeException('no se permiten donantes duplicados en el programa');
+                }
+                $donorIdentifiers[] = $identifier;
             }
         }
 

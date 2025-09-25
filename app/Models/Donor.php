@@ -14,7 +14,7 @@ class Donor extends Model
         $this->name = $name;
     }
     
-    public static function at($name): Donor
+    public static function at(string $name): Donor
     {
         if (strlen((string)$name) == 0) {
             throw new RuntimeException('el nombre del donante no debe ir vacio');
