@@ -9,61 +9,61 @@ class Program extends Model
 {
     private string $name;
     private string $description;
-    private string $banner_img;
-    private string $start_date;
-    private string $end_date;
-    private string $program_url;
-    private string $contact_first_name;
-    private string $contact_last_name;
-    private string $contact_title;
-    private string $contact_email;
-    private string $contact_phone;
-    private ProgramBeneficiary $program_beneficiary;
-    private ProgramState $program_state;
+    private string $bannerImg;
+    private string $startDate;
+    private string $endDate;
+    private string $programUrl;
+    private string $contactFirstName;
+    private string $contactLastName;
+    private string $contactTitle;
+    private string $contactEmail;
+    private string $contactPhone;
+    private ProgramBeneficiary $programBeneficiary;
+    private ProgramState $programState;
     private Country $country;
     private Agency $agency;
     private array $sdgs;
-    private array $program_donors;
+    private array $programDonors;
 
     public function __construct(
         string $name,
         string $description,
-        string $banner_img,
-        string $start_date,
-        string $end_date,
-        string $program_url,
-        string $contact_first_name,
-        string $contact_last_name,
-        string $contact_title,
-        string $contact_email,
-        string $contact_phone,
-        ProgramBeneficiary $program_beneficiary,
-        ProgramState $program_state,
+        string $bannerImg,
+        string $startDate,
+        string $endDate,
+        string $programUrl,
+        string $contactFirstName,
+        string $contactLastName,
+        string $contactTitle,
+        string $contactEmail,
+        string $contactPhone,
+        ProgramBeneficiary $programBeneficiary,
+        ProgramState $programState,
         Country $country,
         Agency $agency,
         array $sdgs,
-        array $program_donors
+        array $programDonors
     ) {
         $this->name = $name;
         $this->description = $description;
-        $this->banner_img = $banner_img;
-        $this->start_date = $start_date;
-        $this->end_date = $end_date;
-        $this->program_url = $program_url;
-        $this->contact_first_name = $contact_first_name;
-        $this->contact_last_name = $contact_last_name;
-        $this->contact_title = $contact_title;
-        $this->contact_email = $contact_email;
-        $this->contact_phone = $contact_phone;
-        $this->program_beneficiary = $program_beneficiary;
-        $this->program_state = $program_state;
+        $this->bannerImg = $bannerImg;
+        $this->startDate = $startDate;
+        $this->endDate = $endDate;
+        $this->programUrl = $programUrl;
+        $this->contactFirstName = $contactFirstName;
+        $this->contactLastName = $contactLastName;
+        $this->contactTitle = $contactTitle;
+        $this->contactEmail = $contactEmail;
+        $this->contactPhone = $contactPhone;
+        $this->programBeneficiary = $programBeneficiary;
+        $this->programState = $programState;
         $this->country = $country;
         $this->agency = $agency;
         $this->sdgs = $sdgs;
-        $this->program_donors = $program_donors;
+        $this->programDonors = $programDonors;
     }
 
-    public static function at($name, $description, $banner_img, $start_date, $end_date, $program_url, $contact_first_name, $contact_last_name, $contact_title, $contact_email, $contact_phone, $program_beneficiary, $program_state, $country, $agency, $sdgs, $program_donors): Program
+    public static function at($name, $description, $bannerImg, $startDate, $endDate, $programUrl, $contactFirstName, $contactLastName, $contactTitle, $contactEmail, $contactPhone, $programBeneficiary, $programState, $country, $agency, $sdgs, $programDonors): Program
     {
         // Validaciones del nombre
         if (empty(trim($name))) {
@@ -87,42 +87,42 @@ class Program extends Model
             throw new RuntimeException('la descripción del programa no debe exceder 2000 caracteres');
         }
 
-        // Validaciones del banner_img
-        if (empty(trim($banner_img))) {
+        // Validaciones del bannerImg
+        if (empty(trim($bannerImg))) {
             throw new RuntimeException('la imagen banner del programa no debe ir vacio');
         }
         // Validar que sea una URL válida o path válido
-        if (!filter_var($banner_img, FILTER_VALIDATE_URL) && !preg_match('/^[a-zA-Z0-9\/_\-\.]+\.(jpg|jpeg|png|gif|webp)$/i', $banner_img)) {
+        if (!filter_var($bannerImg, FILTER_VALIDATE_URL) && !preg_match('/^[a-zA-Z0-9\/_\-\.]+\.(jpg|jpeg|png|gif|webp)$/i', $bannerImg)) {
             throw new RuntimeException('la imagen banner debe ser una URL válida o un path de imagen válido');
         }
 
-        // Validaciones de start_date
-        if (empty(trim($start_date))) {
+        // Validaciones de startDate
+        if (empty(trim($startDate))) {
             throw new RuntimeException('la fecha de inicio del programa no debe ir vacio');
         }
-        if (!self::isValidDate($start_date)) {
+        if (!self::isValidDate($startDate)) {
             throw new RuntimeException('la fecha de inicio debe tener formato válido (YYYY-MM-DD)');
         }
         // Validar que no sea una fecha en el pasado muy lejano (más de 10 años)
-        $startDateTime = new \DateTime($start_date);
+        $startDateTime = new \DateTime($startDate);
         $tenYearsAgo = new \DateTime('-10 years');
         if ($startDateTime < $tenYearsAgo) {
             throw new RuntimeException('la fecha de inicio no puede ser anterior a 10 años');
         }
 
-        // Validaciones de end_date
-        if (empty(trim($end_date))) {
+        // Validaciones de endDate
+        if (empty(trim($endDate))) {
             throw new RuntimeException('la fecha de fin del programa no debe ir vacio');
         }
-        if (!self::isValidDate($end_date)) {
+        if (!self::isValidDate($endDate)) {
             throw new RuntimeException('la fecha de fin debe tener formato válido (YYYY-MM-DD)');
         }
-        
-        // DateTime para comparaciones más precisas 
-        $startDateTime = new \DateTime($start_date);
-        $endDateTime = new \DateTime($end_date);
-        
-        if ($endDateTime <= $startDateTime) {
+
+        // DateTime para comparaciones más precisas
+        $startDateTime = new \DateTime($startDate);
+        $endDateTime = new \DateTime($endDate);
+
+        if ($endDateTime < $startDateTime) {
             throw new RuntimeException('la fecha de fin debe ser posterior a la fecha de inicio');
         }
         
@@ -132,74 +132,74 @@ class Program extends Model
             throw new RuntimeException('la duración del programa no puede exceder 20 años');
         }
 
-        // Validaciones de program_url 
-        if (empty(trim($program_url))) {
+        // Validaciones de programUrl
+        if (empty(trim($programUrl))) {
             throw new RuntimeException('la URL del programa no debe ir vacio');
         }
         
         // Validación robusta de URL con filtros múltiples
-        if (!filter_var($program_url, FILTER_VALIDATE_URL)) {
+        if (!filter_var($programUrl, FILTER_VALIDATE_URL)) {
             throw new RuntimeException('la URL del programa debe tener un formato válido');
         }
         
         // Validar que use HTTPS o HTTP solamente
-        $parsedUrl = parse_url($program_url);
+        $parsedUrl = parse_url($programUrl);
         if (!in_array($parsedUrl['scheme'] ?? '', ['http', 'https'], true)) {
             throw new RuntimeException('la URL del programa debe usar protocolo HTTP o HTTPS');
         }
 
-        // Validaciones de contact_first_name 
-        if (empty(trim($contact_first_name))) {
+        // Validaciones de contactFirstName
+        if (empty(trim($contactFirstName))) {
             throw new RuntimeException('el nombre del contacto no debe ir vacio');
         }
-        if (strlen(trim($contact_first_name)) < 2) {
+        if (strlen(trim($contactFirstName)) < 2) {
             throw new RuntimeException('el nombre del contacto debe tener al menos 2 caracteres');
         }
-        if (strlen(trim($contact_first_name)) > 50) {
+        if (strlen(trim($contactFirstName)) > 50) {
             throw new RuntimeException('el nombre del contacto no debe exceder 50 caracteres');
         }
         // Validar que contenga solo letras, espacios y caracteres válidos para nombres
-        if (!preg_match('/^[a-zA-ZÀ-ÿñÑ\s\-\'\.]+$/u', trim($contact_first_name))) {
+        if (!preg_match('/^[a-zA-ZÀ-ÿñÑ\s\-\'\.]+$/u', trim($contactFirstName))) {
             throw new RuntimeException('el nombre del contacto contiene caracteres no válidos');
         }
 
-        // Validaciones de contact_last_name 
-        if (empty(trim($contact_last_name))) {
+        // Validaciones de contactLastName
+        if (empty(trim($contactLastName))) {
             throw new RuntimeException('el apellido del contacto no debe ir vacio');
         }
-        if (strlen(trim($contact_last_name)) < 2) {
+        if (strlen(trim($contactLastName)) < 2) {
             throw new RuntimeException('el apellido del contacto debe tener al menos 2 caracteres');
         }
-        if (strlen(trim($contact_last_name)) > 50) {
+        if (strlen(trim($contactLastName)) > 50) {
             throw new RuntimeException('el apellido del contacto no debe exceder 50 caracteres');
         }
         // Validar que contenga solo letras, espacios y caracteres válidos para apellidos
-        if (!preg_match('/^[a-zA-ZÀ-ÿñÑ\s\-\'\.]+$/u', trim($contact_last_name))) {
+        if (!preg_match('/^[a-zA-ZÀ-ÿñÑ\s\-\'\.]+$/u', trim($contactLastName))) {
             throw new RuntimeException('el apellido del contacto contiene caracteres no válidos');
         }
 
-        // Validaciones de contact_title 
-        if (empty(trim($contact_title))) {
+        // Validaciones de contactTitle
+        if (empty(trim($contactTitle))) {
             throw new RuntimeException('el título del contacto no debe ir vacio');
         }
-        if (strlen(trim($contact_title)) < 2) {
+        if (strlen(trim($contactTitle)) < 2) {
             throw new RuntimeException('el título del contacto debe tener al menos 2 caracteres');
         }
-        if (strlen(trim($contact_title)) > 100) {
+        if (strlen(trim($contactTitle)) > 100) {
             throw new RuntimeException('el título del contacto no debe exceder 100 caracteres');
         }
         // Validar formato de título profesional
-        if (!preg_match('/^[a-zA-ZÀ-ÿñÑ\s\-\.\,\/]+$/u', trim($contact_title))) {
+        if (!preg_match('/^[a-zA-ZÀ-ÿñÑ\s\-\.\,\/]+$/u', trim($contactTitle))) {
             throw new RuntimeException('el título del contacto contiene caracteres no válidos');
         }
 
-        // Validaciones de contact_email 
-        if (empty(trim($contact_email))) {
+        // Validaciones de contactEmail
+        if (empty(trim($contactEmail))) {
             throw new RuntimeException('el email del contacto no debe ir vacio');
         }
-        
-        // validacion robusta con RFC 
-        $email = trim(strtolower($contact_email));
+
+        // validacion robusta con RFC
+        $email = trim(strtolower($contactEmail));
         if (!filter_var($email, FILTER_VALIDATE_EMAIL, FILTER_FLAG_EMAIL_UNICODE)) {
             throw new RuntimeException('el email del contacto debe tener un formato válido');
         }
@@ -214,13 +214,13 @@ class Program extends Model
             throw new RuntimeException('el dominio del email no es válido o no existe');
         }
 
-        // Validaciones de contact_phone - Professional string validation
-        if (empty(trim($contact_phone))) {
+        // Validaciones de contactPhone 
+        if (empty(trim($contactPhone))) {
             throw new RuntimeException('el teléfono del contacto no debe ir vacio');
         }
-        
-        $phoneString = trim($contact_phone);
-        
+
+        $phoneString = trim($contactPhone);
+
         // Acepta formatos: +1234567890, +12 345 678 9012, +1-234-567-8901
         if (!preg_match('/^(\+?\d{1,4})?[\s\-]?\(?\d{1,4}\)?[\s\-]?\d{6,14}$/', $phoneString)) {
             throw new RuntimeException('el formato del teléfono no es válido - use formato internacional');
@@ -235,19 +235,19 @@ class Program extends Model
             throw new RuntimeException('el teléfono no debe exceder 15 dígitos');
         }
 
-        // Validaciones de program_beneficiary
-        if ($program_beneficiary === null) {
+        // Validaciones de programBeneficiary
+        if ($programBeneficiary === null) {
             throw new RuntimeException('el beneficiario del programa no debe ser null');
         }
-        if (!($program_beneficiary instanceof ProgramBeneficiary)) {
+        if (!($programBeneficiary instanceof ProgramBeneficiary)) {
             throw new RuntimeException('el beneficiario debe ser una instancia de ProgramBeneficiary');
         }
 
-        // Validaciones de program_state
-        if ($program_state === null) {
+        // Validaciones de programState
+        if ($programState === null) {
             throw new RuntimeException('el estado del programa no debe ser null');
         }
-        if (!($program_state instanceof ProgramState)) {
+        if (!($programState instanceof ProgramState)) {
             throw new RuntimeException('el estado debe ser una instancia de ProgramState');
         }
 
@@ -283,17 +283,17 @@ class Program extends Model
             }
         }
 
-        // Validaciones de program_donors
-        if ($program_donors === null) {
+        // Validaciones de programDonors
+        if ($programDonors === null) {
             throw new RuntimeException('los donantes del programa no deben ser null');
         }
-        if (!is_array($program_donors)) {
+        if (!is_array($programDonors)) {
             throw new RuntimeException('los donantes deben ser un array');
         }
-        if (empty($program_donors)) {
+        if (empty($programDonors)) {
             throw new RuntimeException('debe seleccionar al menos un donante');
         }
-        foreach ($program_donors as $donor) {
+        foreach ($programDonors as $donor) {
             if (!($donor instanceof Donor)) {
                 throw new RuntimeException('todos los donantes deben ser instancias de Donor');
             }
@@ -302,21 +302,21 @@ class Program extends Model
         return new Program(
             $name,
             $description,
-            $banner_img,
-            $start_date,
-            $end_date,
-            $program_url,
-            $contact_first_name,
-            $contact_last_name,
-            $contact_title,
-            $contact_email,
-            $contact_phone,
-            $program_beneficiary,
-            $program_state,
+            $bannerImg,
+            $startDate,
+            $endDate,
+            $programUrl,
+            $contactFirstName,
+            $contactLastName,
+            $contactTitle,
+            $contactEmail,
+            $contactPhone,
+            $programBeneficiary,
+            $programState,
             $country,
             $agency,
             $sdgs,
-            $program_donors
+            $programDonors
         );
     }
 
@@ -352,57 +352,57 @@ class Program extends Model
 
     public function getBannerImg(): string
     {
-        return $this->banner_img;
+        return $this->bannerImg;
     }
 
     public function getStartDate(): string
     {
-        return $this->start_date;
+        return $this->startDate;
     }
 
     public function getEndDate(): string
     {
-        return $this->end_date;
+        return $this->endDate;
     }
 
     public function getProgramUrl(): string
     {
-        return $this->program_url;
+        return $this->programUrl;
     }
 
     public function getContactFirstName(): string
     {
-        return $this->contact_first_name;
+        return $this->contactFirstName;
     }
 
     public function getContactLastName(): string
     {
-        return $this->contact_last_name;
+        return $this->contactLastName;
     }
 
     public function getContactTitle(): string
     {
-        return $this->contact_title;
+        return $this->contactTitle;
     }
 
     public function getContactEmail(): string
     {
-        return $this->contact_email;
+        return $this->contactEmail;
     }
 
     public function getContactPhone(): string
     {
-        return $this->contact_phone;
+        return $this->contactPhone;
     }
 
     public function getProgramBeneficiary(): ProgramBeneficiary
     {
-        return $this->program_beneficiary;
+        return $this->programBeneficiary;
     }
 
     public function getProgramState(): ProgramState
     {
-        return $this->program_state;
+        return $this->programState;
     }
 
     public function getCountry(): Country
@@ -422,6 +422,6 @@ class Program extends Model
 
     public function getProgramDonors(): array
     {
-        return $this->program_donors;
+        return $this->programDonors;
     }
 }
