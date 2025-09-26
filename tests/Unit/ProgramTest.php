@@ -604,7 +604,7 @@ class ProgramTest extends TestCase
         $agency = Agency::at("UNICEF");
         $programBeneficiary = ProgramBeneficiary::at("GOVERNMENT");
         $programState = ProgramState::at("ACTIVE");
-        $sdg = Sdg::at("sdg1.png");
+        $sdg = Sdg::at("sdg100.png");
         $donor = Donor::at("World Bank");
         
         $this->shouldThrowAndAssert(

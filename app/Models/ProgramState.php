@@ -16,7 +16,7 @@ class ProgramState extends Model
     
     public static function at($state): ProgramState
     {
-        if (strlen((string)$state) == 0) {
+        if (empty(trim($state))) {
             throw new RuntimeException('el estado del programa no debe ir vacio');
         }
         
