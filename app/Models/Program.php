@@ -232,41 +232,26 @@ class Program
         }
 
         // Validaciones de programBeneficiary
-        if ($programBeneficiary === null) {
-            throw new RuntimeException('el beneficiario del programa no debe ser null');
-        }
         if (!($programBeneficiary instanceof ProgramBeneficiary)) {
             throw new RuntimeException('el beneficiario debe ser una instancia de ProgramBeneficiary');
         }
 
         // Validaciones de programState
-        if ($programState === null) {
-            throw new RuntimeException('el estado del programa no debe ser null');
-        }
         if (!($programState instanceof ProgramState)) {
             throw new RuntimeException('el estado debe ser una instancia de ProgramState');
         }
 
         // Validaciones de country
-        if ($country === null) {
-            throw new RuntimeException('el país del programa no debe ser null');
-        }
         if (!($country instanceof Country)) {
             throw new RuntimeException('el país debe ser una instancia de Country');
         }
 
         // Validaciones de agency
-        if ($agency === null) {
-            throw new RuntimeException('la agencia del programa no debe ser null');
-        }
         if (!($agency instanceof Agency)) {
             throw new RuntimeException('la agencia debe ser una instancia de Agency');
         }
 
         // Validaciones de sdgs 
-        if ($sdgs === null) {
-            throw new RuntimeException('los SDGs del programa no deben ser null');
-        }
         if (!is_array($sdgs)) {
             throw new RuntimeException('los SDGs deben ser un array');
         }
@@ -278,9 +263,6 @@ class Program
         }
 
         // Validaciones de programDonors 
-        if ($programDonors === null) {
-            throw new RuntimeException('los donantes del programa no deben ser null');
-        }
         if (!is_array($programDonors)) {
             throw new RuntimeException('los donantes deben ser un array');
         }

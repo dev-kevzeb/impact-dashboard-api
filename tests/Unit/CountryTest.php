@@ -2,54 +2,182 @@
 
 namespace Tests\Unit;
 
-use PHPUnit\Framework\TestCase;
+use Tests\TestCase;
 use App\Models\Country;
+use App\Models\Currency;
 use Exception;
 use RuntimeException;
 
 class CountryTest extends TestCase
 {
-    // bloque de codigo, el manejo de errores, forma en que manejamos el error
-    public function shouldThrowAndAssert($should,$exceptionType,$assertions){
+    private Currency $validCurrency;
+    
+    protected function setUp(): void
+    {
+        parent::setUp();
+        
+        // Preparar Currency válida para todos los tests
+        $this->validCurrency = Currency::at("USD");
+    }
+
+    // Closure para manejo de errores
+    public function shouldThrowAndAssert($should, $exceptionType, $assertions)
+    {
         try {
             $should->__invoke();
             $this->fail();
         } catch (Exception $exception) {
-            $this->assertEquals($exceptionType,  get_class($exception));
+            $this->assertEquals($exceptionType, get_class($exception));
             $assertions->__invoke($exception);
         }
     }
 
-    // public function testCanNotAddACustomerWithEmptyName (){
-    //     $this->shouldThrowAndAssert(
-    //         function () { $this->customerBook->addCustomerNamed(""); },
-    //         RuntimeException::class,
-    //         function ($exception) {
-    //             $this->assertEquals($exception->getMessage(),CustomerBook::CUSTOMER_NAME_EMPTY);
-    //             $this->assertTrue($this->customerBook->isEmpty()); });
-    // }
-
-    public function test_validate_name_returns_true_for_valid_name()
+    public function test_country_can_be_created_with_valid_data()
     {
-        $country = Country::at("Argentina");
-        $this->assertTrue($country->validateName());
+        $country = Country::at("Bolivia", $this->validCurrency);
+
+        $this->assertEquals("Bolivia", $country->getName());
+        $this->assertEquals($this->validCurrency, $country->getCurrency());
+        $this->assertInstanceOf(Country::class, $country);
     }
 
-    public function test_validate_name_returns_false_for_short_name()
-    {
-        $country = Country::at("");
-        $this->assertFalse($country->validateName());
-    }
-    public function test_validate_name_returns_false_for_short_name2()
+
+
+    public function test_country_name_cannot_be_empty()
     {
         $this->shouldThrowAndAssert(
-            function () { $country = Country::at(NULL); },
+            function () {
+                Country::at("", $this->validCurrency);
+            },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals($exception->getMessage(),'el nombre del pais no debe ser null');
-            });
-
+                $this->assertEquals("el nombre del país no debe ir vacio", $exception->getMessage());
+            }
+        );
     }
 
- 
+    public function test_country_name_cannot_be_only_spaces()
+    {
+        $this->shouldThrowAndAssert(
+            function () {
+                Country::at("   ", $this->validCurrency);
+            },
+            RuntimeException::class,
+            function ($exception) {
+                $this->assertEquals("el nombre del país no debe ir vacio", $exception->getMessage());
+            }
+        );
+    }
+
+    public function test_country_name_must_have_minimum_length()
+    {
+        $this->shouldThrowAndAssert(
+            function () {
+                Country::at("A", $this->validCurrency);
+            },
+            RuntimeException::class,
+            function ($exception) {
+                $this->assertEquals("el nombre del país debe tener al menos 2 caracteres", $exception->getMessage());
+            }
+        );
+    }
+
+    public function test_country_name_must_not_exceed_maximum_length()
+    {
+        $longName = str_repeat("A", 101); // 101 caracteres
+        
+        $this->shouldThrowAndAssert(
+            function () use ($longName) {
+                Country::at($longName, $this->validCurrency);
+            },
+            RuntimeException::class,
+            function ($exception) {
+                $this->assertEquals("el nombre del país no debe exceder 100 caracteres", $exception->getMessage());
+            }
+        );
+    }
+
+    public function test_country_name_must_contain_valid_characters()
+    {
+        // Solo letras, espacios, guiones y apostrofes son válidos
+        $this->shouldThrowAndAssert(
+            function () {
+                Country::at("Bolivia123", $this->validCurrency);
+            },
+            RuntimeException::class,
+            function ($exception) {
+                $this->assertEquals("el nombre del país contiene caracteres no válidos", $exception->getMessage());
+            }
+        );
+
+        $this->shouldThrowAndAssert(
+            function () {
+                Country::at("Bolivia@#$", $this->validCurrency);
+            },
+            RuntimeException::class,
+            function ($exception) {
+                $this->assertEquals("el nombre del país contiene caracteres no válidos", $exception->getMessage());
+            }
+        );
+    }
+
+    public function test_country_currency_cannot_be_null()
+    {
+        $this->shouldThrowAndAssert(
+            function () {
+                Country::at("Bolivia", null);
+            },
+            RuntimeException::class,
+            function ($exception) {
+                $this->assertEquals("la moneda debe ser una instancia de Currency", $exception->getMessage());
+            }
+        );
+    }
+
+    public function test_country_currency_must_be_currency_instance()
+    {
+        $this->shouldThrowAndAssert(
+            function () {
+                Country::at("Bolivia", "USD"); // String en lugar de Currency
+            },
+            RuntimeException::class,
+            function ($exception) {
+                $this->assertEquals("la moneda debe ser una instancia de Currency", $exception->getMessage());
+            }
+        );
+    }
+
+    public function test_country_with_valid_names_and_currencies()
+    {
+        $testCases = [
+            ['Bolivia', 'BOB'],
+            ['Estados Unidos', 'USD'],
+            ['Reino Unido', 'GBP'],
+            ['Côte d\'Ivoire', 'XOF'], // Con apostrofe
+            ['Guinea-Bissau', 'XOF'],  // Con guión
+        ];
+
+        foreach ($testCases as [$countryName, $currencyCode]) {
+            $currency = Currency::at($currencyCode);
+            $country = Country::at($countryName, $currency);
+            
+            $this->assertEquals($countryName, $country->getName());
+            $this->assertEquals($currency, $country->getCurrency());
+        }
+    }
+
+    public function test_country_name_gets_trimmed()
+    {
+        $country = Country::at("  Bolivia  ", $this->validCurrency);
+        
+        $this->assertEquals("Bolivia", $country->getName()); // Sin espacios
+    }
+
+    public function test_country_supports_unicode_characters()
+    {
+        $currency = Currency::at("EUR");
+        $country = Country::at("España", $currency);
+        
+        $this->assertEquals("España", $country->getName());
+    }
 }
