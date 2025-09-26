@@ -140,4 +140,5 @@ class SdgTest extends TestCase
             $this->assertTrue($sdg->isValidSdgNumber());
         }
     }
+
 }

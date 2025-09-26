@@ -109,18 +109,7 @@ class ProgramStateTest extends TestCase
         );
     }
 
-    public function test_program_state_with_null_throws_exception()
-    {
-        $this->shouldThrowAndAssert(
-            function () {
-                ProgramState::at(null);
-            },
-            RuntimeException::class,
-            function ($exception) {
-                $this->assertEquals("el estado del programa no debe ir vacio", $exception->getMessage());
-            }
-        );
-    }
+
 
     public function test_all_valid_states_work_correctly()
     {

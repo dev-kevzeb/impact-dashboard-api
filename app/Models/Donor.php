@@ -14,12 +14,12 @@ class Donor extends Model
         $this->name = $name;
     }
     
-    public static function at(string $name): Donor
+    public static function at($name): Donor  
     {
-        if (strlen((string)$name) == 0) {
+        if (empty(trim($name))) {
             throw new RuntimeException('el nombre del donante no debe ir vacio');
         }
-        if (strlen($name) < 2) {
+        if (strlen(trim($name)) < 2) {
             throw new RuntimeException('el nombre del donante debe tener al menos 2 caracteres');
         }
         

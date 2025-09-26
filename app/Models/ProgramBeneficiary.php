@@ -16,7 +16,7 @@ class ProgramBeneficiary extends Model
     
     public static function at($name): ProgramBeneficiary
     {
-        if (strlen((string)$name) == 0) {
+        if (empty(trim($name))) {
             throw new RuntimeException('el beneficiario del programa no debe ir vacio');
         }
         

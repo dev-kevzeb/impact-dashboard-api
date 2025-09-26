@@ -101,4 +101,5 @@ class DonorTest extends TestCase
         $this->assertTrue($donor->validateName());
         $this->assertInstanceOf(Donor::class, $donor);
     }
+
 }

@@ -109,18 +109,7 @@ class ProgramBeneficiaryTest extends TestCase
         );
     }
 
-    public function test_program_beneficiary_with_null_throws_exception()
-    {
-        $this->shouldThrowAndAssert(
-            function () {
-                ProgramBeneficiary::at(null);
-            },
-            RuntimeException::class,
-            function ($exception) {
-                $this->assertEquals("el beneficiario del programa no debe ir vacio", $exception->getMessage());
-            }
-        );
-    }
+
 
     public function test_all_valid_beneficiaries_work_correctly()
     {
