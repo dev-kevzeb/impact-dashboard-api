@@ -20,9 +20,8 @@ class Project extends Model
     private ?DateTimeImmutable $actualEndDate;
     private float $budget;
     private float $budgetSpent;
-    private string $indicators;
+    private Indicator $indicator;
     private float $expectedImpact;
-    private string $documents;
     private string $manager;
     private bool $shared;
     static $INVALIDNAME = 'el nombre del proyecto no debe ser null o menor a 3 caracteres';
@@ -39,9 +38,8 @@ class Project extends Model
         ?DateTimeImmutable $actualEndDate,
         float $budget,
         float $budgetSpent,
-        string $indicators,
+        Indicator $indicators,
         float $expectedImpact,
-        string $documents,
         string $manager,
         bool $shared
     ) {
@@ -55,9 +53,8 @@ class Project extends Model
         $this->actualEndDate = $actualEndDate;
         $this->budget = $budget;
         $this->budgetSpent = $budgetSpent;
-        $this->indicators = $indicators;
+        $this->indicator = $indicators;
         $this->expectedImpact = $expectedImpact;
-        $this->documents = $documents;
         $this->manager = $manager;
         $this->shared = $shared;
     }
@@ -113,19 +110,14 @@ class Project extends Model
         return $this->budgetSpent;
     }
 
-    public function getIndicators(): string
+    public function getIndicator(): Indicator
     {
-        return $this->indicators;
+        return $this->indicator;
     }
 
     public function getExpectedImpact(): float
     {
         return $this->expectedImpact;
-    }
-
-    public function getDocuments(): string
-    {
-        return $this->documents;
     }
 
     public function getManager(): string
@@ -139,42 +131,72 @@ class Project extends Model
     }
   
     // 
-    public static function at($name, $description,$country, $agency, $state,  $startDate, $endDate, $actualEndDate, $budget, $budgetSpent,$indicators, $expectedImpact, $documents, $manager, $shared): Project
+    public static function at($name, $description,$country, $agency, $state,  $startDate, $endDate, $actualEndDate, $budget, $budgetSpent,$indicators, $expectedImpact, $manager, $shared): Project
     {
 
-        if(strlen($name ) < 3){
+        // name validation: tests expect different messages for NULL vs empty string
+        if ($name === null) {
             throw new \RuntimeException('el nombre del proyecto no debe ser null o menor a 3 caracteres');
-        }   
+        }
+        if (strlen((string)$name) === 0) {
+            throw new \RuntimeException('el nombre del proyecto no debe ser null');
+        }
+        if (strlen((string)$name) < 3) {
+            throw new \RuntimeException('el nombre del proyecto no debe ser null o menor a 3 caracteres');
+        }
+
         if($agency== null ) throw new \RuntimeException('la agencia no debe ser null y debe tener un nombre valido');
         if($country == null) throw new \RuntimeException(Country::$INVALIDNAME);
         if( strlen($state) < 3 ) throw new \RuntimeException('el estado no debe ser null y debe tener un nombre valido');
-        if(strlen($indicators) < 10){
-            throw new \RuntimeException('los indicadores del proyecto no deben ser null o menores a 10 caracteres');
-        }
-        if( strlen($manager) < 3 ) {
-            throw new \RuntimeException('el manager no debe ser null y debe tener un nombre valido');
-        }
 
-        if(strlen($description) < 10){
+        // description validation
+        if(strlen((string)$description) < 10){
             throw new \RuntimeException('la descripcion del proyecto no debe ser null o menor a 10 caracteres');
         }
-        if($endDate == NULL){
-            throw new \RuntimeException('las fechas de inicio y fin no deben ser null');
+
+        // date validations
+        if($endDate == null || $startDate == null   ){
+            throw new \RuntimeException('Las fechas no deben ser null');
         }
         if($startDate > $endDate){
             throw new \RuntimeException('la fecha de inicio no puede ser mayor a la fecha de fin');
         }
-        if($actualEndDate == NULL){
-            throw new \RuntimeException('la fecha de fin o conclusion real no debe ser null');
+        if($actualEndDate == null){
+            throw new \RuntimeException('Las fechas no deben ser null');
         }
-        if($budget <= 0){
-            throw new \RuntimeException('el presupuesto debe ser mayor a 0');
+
+        // budget validations
+        if($budget === null || $budget <= 0){
+            throw new \RuntimeException('El presupuesto total no debe ser null o menor a 0');
         }
-        if($budgetSpent < 0){
-            throw new \RuntimeException('el presupuesto gastado no debe ser negativo');
+        if($budgetSpent === null || $budgetSpent < 0){
+            throw new \RuntimeException('el presupuesto gastado no debe ser null o menor a 0');
         }
-        if($expectedImpact < 0 || $expectedImpact > 100){
+
+        // indicators: must be an Indicator instance with a valid name
+        if(!($indicators instanceof Indicator)){
+            throw new \RuntimeException('El indicador no debe ser null o menor a 3 caracteres');
+        }
+        if(strlen($indicators->getName()) < 3){
+            throw new \RuntimeException('El indicador no debe ser null o menor a 3 caracteres');
+        }
+
+        // expected impact
+        if($expectedImpact === null || $expectedImpact < 0){
+            throw new \RuntimeException('el expectedImpact no debe ser null o menor a 0');
+        }
+        if($expectedImpact > 100){
             throw new \RuntimeException('el impacto esperado debe estar entre 0 y 100');
+        }
+
+        // manager
+        if($manager === null || strlen((string)$manager) < 3) {
+            throw new \RuntimeException('El proyecto debe tener un manager asignado');
+        }
+
+        // shared
+        if($shared === null){
+            throw new \RuntimeException('shared no debe ser null o vacio');
         }
         return new Project(
             $name,
@@ -189,7 +211,6 @@ class Project extends Model
             $budgetSpent,
             $indicators,
             $expectedImpact,
-            $documents,
             $manager,
             $shared
         );

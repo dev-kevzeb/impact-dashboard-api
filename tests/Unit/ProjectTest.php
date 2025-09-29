@@ -23,14 +23,21 @@ class ProjectTest extends TestCase
         }
     }
 
+    private function makeIndicator()
+    {
+        $type = \App\Models\IndicatorType::at('tipo');
+        return \App\Models\Indicator::at('Indicador principal','unidad',$type);
+    }
+
 
 
     public function test_name_empty_string_throws_runtime_exception()
     {
-        $country = Country::at("Argentina");
-        $agency = Agency::at("Agencia de prueba", "http://agencia1.com", true);
-         $this->shouldThrowAndAssert(
-            function () use ($country, $agency) { $country = Project::at(
+    $country = Country::at("Argentina");
+    $agency = Agency::at("Agencia de prueba", "http://agencia1.com", true);
+    $indicator = $this->makeIndicator();
+        $this->shouldThrowAndAssert(
+            function () use ($country, $agency, $indicator) { $country = Project::at(
             name: "",
             description: "Descripción del proyecto",
             country: $country,
@@ -41,9 +48,8 @@ class ProjectTest extends TestCase
             actualEndDate: new DateTimeImmutable("2026-01-15"),
             budget: 200000.0,
             budgetSpent: 50000.0,
-            indicators: "Indicadores del proyecto",
+            indicators: $indicator,
             expectedImpact: 85.5,
-            documents: "plan_inicial.pdf, informe_avance.pdf",
             manager: "María Pérez",
             shared: true
             ); },
@@ -54,11 +60,12 @@ class ProjectTest extends TestCase
     }
     public function test_name_null_or_too_short_throws_runtime_exception()
     {
-        $country = Country::at("Argentina");
-        $agency = Agency::at("Agencia de prueba", "http://agencia1.com", true);
-         $this->shouldThrowAndAssert(
-            function () use ($country, $agency) { $country = Project::at(
-            name: NULL,
+    $country = Country::at("Argentina");
+    $agency = Agency::at("Agencia de prueba", "http://agencia1.com", true);
+    $indicator = $this->makeIndicator();
+        $this->shouldThrowAndAssert(
+            function () use ($country, $agency, $indicator) { $country = Project::at(
+            name: null,
             description: "Descripción del proyecto",
             country: $country,
             agency: $agency,
@@ -68,9 +75,8 @@ class ProjectTest extends TestCase
             actualEndDate: new DateTimeImmutable("2026-01-15"),
             budget: 200000.0,
             budgetSpent: 50000.0,
-            indicators: "Indicadores del proyecto",
+            indicators: $indicator,
             expectedImpact: 85.5,
-            documents: "plan_inicial.pdf, informe_avance.pdf",
             manager: "María Pérez",
             shared: true
             ); },
@@ -81,10 +87,11 @@ class ProjectTest extends TestCase
     }
     public function test_description_too_short_throws_runtime_exception()
     {
-        $country = Country::at("Argentina");
-        $agency = Agency::at("Agencia de prueba", "http://agencia1.com", true);
-         $this->shouldThrowAndAssert(
-            function () use ($country, $agency) { $country = Project::at(
+    $country = Country::at("Argentina");
+    $agency = Agency::at("Agencia de prueba", "http://agencia1.com", true);
+    $indicator = $this->makeIndicator();
+        $this->shouldThrowAndAssert(
+            function () use ($country, $agency, $indicator) { $country = Project::at(
             name: "Proyecto de prueba",
             description: "pepe",
             country: $country,
@@ -95,9 +102,8 @@ class ProjectTest extends TestCase
             actualEndDate: new DateTimeImmutable("2026-01-15"),
             budget: 200000.0,
             budgetSpent: 50000.0,
-            indicators: "Indicadores del proyecto",
+            indicators: $indicator,
             expectedImpact: 85.5,
-            documents: "plan_inicial.pdf, informe_avance.pdf",
             manager: "María Pérez",
             shared: true
             ); },
@@ -108,12 +114,13 @@ class ProjectTest extends TestCase
     }
     public function test_description_null_throws_runtime_exception()
     {
-        $country = Country::at("Argentina");
-        $agency = Agency::at("Agencia de prueba", "http://agencia1.com", true);
-         $this->shouldThrowAndAssert(
-            function () use ($country, $agency) { $country = Project::at(
+    $country = Country::at("Argentina");
+    $agency = Agency::at("Agencia de prueba", "http://agencia1.com", true);
+    $indicator = $this->makeIndicator();
+        $this->shouldThrowAndAssert(
+            function () use ($country, $agency, $indicator) { $country = Project::at(
             name: "Proyecto de prueba",
-            description: NULL,
+            description: null,
             country: $country,
             agency: $agency,
             state: "En ejecución",
@@ -122,9 +129,8 @@ class ProjectTest extends TestCase
             actualEndDate: new DateTimeImmutable("2026-01-15"),
             budget: 200000.0,
             budgetSpent: 50000.0,
-            indicators: "Indicadores del proyecto",
+            indicators: $indicator,
             expectedImpact: 85.5,
-            documents: "plan_inicial.pdf, informe_avance.pdf",
             manager: "María Pérez",
             shared: true
             ); },
@@ -135,12 +141,13 @@ class ProjectTest extends TestCase
     }
     public function test_description_null_throws_runtime_exception_duplicate()
     {
-        $country = Country::at("Argentina");
-        $agency = Agency::at("Agencia de prueba", "http://agencia1.com", true);
-         $this->shouldThrowAndAssert(
-            function () use ($country, $agency) { $country = Project::at(
+    $country = Country::at("Argentina");
+    $agency = Agency::at("Agencia de prueba", "http://agencia1.com", true);
+    $indicator = $this->makeIndicator();
+        $this->shouldThrowAndAssert(
+            function () use ($country, $agency, $indicator) { $country = Project::at(
             name: "Proyecto de prueba",
-            description: NULL,
+            description: null,
             country: $country,
             agency: $agency,
             state: "En ejecución",
@@ -149,9 +156,8 @@ class ProjectTest extends TestCase
             actualEndDate: new DateTimeImmutable("2026-01-15"),
             budget: 200000.0,
             budgetSpent: 50000.0,
-            indicators: "Indicadores del proyecto",
+            indicators: $indicator,
             expectedImpact: 85.5,
-            documents: "plan_inicial.pdf, informe_avance.pdf",
             manager: "María Pérez",
             shared: true
             ); },
@@ -162,23 +168,23 @@ class ProjectTest extends TestCase
     }
     public function test_end_date_null_throws_runtime_exception()
     {
-        $country = Country::at("Argentina");
-        $agency = Agency::at("Agencia de prueba", "http://agencia1.com", true);
-         $this->shouldThrowAndAssert(
-            function () use ($country, $agency) { $country = Project::at(
+    $country = Country::at("Argentina");
+    $agency = Agency::at("Agencia de prueba", "http://agencia1.com", true);
+    $indicator = $this->makeIndicator();
+        $this->shouldThrowAndAssert(
+            function () use ($country, $agency, $indicator) { $country = Project::at(
             name: "Proyecto de prueba",
             description: "descripción valida del proyecto",
             country: $country,
             agency: $agency,
             state: "En ejecución",
             startDate: new DateTimeImmutable("2025-02-01"),
-            endDate: NULL,
+            endDate: null,
             actualEndDate: new DateTimeImmutable("2026-01-15"),
             budget: 200000.0,
             budgetSpent: 50000.0,
-            indicators: "Indicadores del proyecto",
+            indicators: $indicator,
             expectedImpact: 85.5,
-            documents: "plan_inicial.pdf, informe_avance.pdf",
             manager: "María Pérez",
             shared: true
             ); },
@@ -189,23 +195,23 @@ class ProjectTest extends TestCase
     }
     public function test_start_date_null_throws_runtime_exception()
     {
-        $country = Country::at("Argentina");
-        $agency = Agency::at("Agencia de prueba", "http://agencia1.com", true);
-         $this->shouldThrowAndAssert(
-            function () use ($country, $agency) { $country = Project::at(
+    $country = Country::at("Argentina");
+    $agency = Agency::at("Agencia de prueba", "http://agencia1.com", true);
+    $indicator = $this->makeIndicator();
+        $this->shouldThrowAndAssert(
+            function () use ($country, $agency, $indicator) { $country = Project::at(
             name: "Proyecto de prueba",
             description: "descripción valida del proyecto",
             country: $country,
             agency: $agency,
             state: "En ejecución",
-            startDate: NULL,
+            startDate: null,
             endDate: new DateTimeImmutable("2026-02-01"),
             actualEndDate: new DateTimeImmutable("2026-01-15"),
             budget: 200000.0,
             budgetSpent: 50000.0,
-            indicators: "Indicadores del proyecto",
+            indicators: $indicator,
             expectedImpact: 85.5,
-            documents: "plan_inicial.pdf, informe_avance.pdf",
             manager: "María Pérez",
             shared: true
             ); },
@@ -219,8 +225,9 @@ class ProjectTest extends TestCase
     {
         $country = Country::at("Argentina");
         $agency = Agency::at("Agencia de prueba", "http://agencia1.com", true);
+        $indicator = $this->makeIndicator();
          $this->shouldThrowAndAssert(
-            function () use ($country, $agency) { $country = Project::at(
+            function () use ($country, $agency, $indicator) { $country = Project::at(
             name: "Proyecto de prueba",
             description: "descripción valida del proyecto",
             country: $country,
@@ -231,9 +238,8 @@ class ProjectTest extends TestCase
             actualEndDate: new DateTimeImmutable("2026-01-15"),
             budget: 200000.0,
             budgetSpent: 50000.0,
-            indicators: "Indicadores del proyecto",
+            indicators: $indicator,
             expectedImpact: 85.5,
-            documents: "plan_inicial.pdf, informe_avance.pdf",
             manager: "María Pérez",
             shared: true
             ); },
@@ -246,8 +252,9 @@ class ProjectTest extends TestCase
     {
         $country = Country::at("Argentina");
         $agency = Agency::at("Agencia de prueba", "http://agencia1.com", true);
-         $this->shouldThrowAndAssert(
-            function () use ($country, $agency) { $country = Project::at(
+        $indicator = $this->makeIndicator();
+        $this->shouldThrowAndAssert(
+            function () use ($country, $agency, $indicator) { $country = Project::at(
             name: "Proyecto de prueba",
             description: "descripción valida del proyecto",
             country: $country,
@@ -255,12 +262,11 @@ class ProjectTest extends TestCase
             state: "En ejecución",
             startDate: new DateTimeImmutable("2025-02-01"),
             endDate: new DateTimeImmutable("2026-02-01"),
-            actualEndDate: NULL,
+            actualEndDate: null,
             budget: 200000.0,
             budgetSpent: 50000.0,
-            indicators: "Indicadores del proyecto",
+            indicators: $indicator,
             expectedImpact: 85.5,
-            documents: "plan_inicial.pdf, informe_avance.pdf",
             manager: "María Pérez",
             shared: true
             ); },
@@ -274,21 +280,22 @@ class ProjectTest extends TestCase
     {
         $country = Country::at("Argentina");
         $agency = Agency::at("Agencia de prueba", "http://agencia1.com", true);
+        $indicator = $this->makeIndicator();
+
          $this->shouldThrowAndAssert(
-            function () use ($country, $agency) { $country = Project::at(
+            function () use ($country, $agency, $indicator) { $country = Project::at(
             "Proyecto de prueba",
             "descripción valida del proyecto",
             $country,
             $agency,
             "En ejecución",
             new DateTimeImmutable("2025-02-01"),
-            NULL,
+            null,
             new DateTimeImmutable("2026-01-15"),
             200000.0,
             50000.0,
-            "Indicadores del proyecto",
+            $indicator,
             85.5,
-            "plan_inicial.pdf, informe_avance.pdf",
             "María Pérez",
             true
             ); },
@@ -301,8 +308,10 @@ class ProjectTest extends TestCase
     {
         $country = Country::at("Argentina");
         $agency = Agency::at("Agencia de prueba", "http://agencia1.com", true);
-         $this->shouldThrowAndAssert(
-            function () use ($country, $agency) { $country = Project::at(
+        $indicator = $this->makeIndicator();
+         
+        $this->shouldThrowAndAssert(
+            function () use ($country, $agency, $indicator) { $country = Project::at(
             name: "Proyecto de prueba",
             description: "descripción valida del proyecto",
             country: $country,
@@ -311,11 +320,10 @@ class ProjectTest extends TestCase
             startDate: new DateTimeImmutable("2025-02-01"),
             endDate: new DateTimeImmutable("2026-02-01"),
             actualEndDate: new DateTimeImmutable("2026-01-15"),
-            budget: NULL,
+            budget: null,
             budgetSpent: 50000.0,
-            indicators: "Indicadores del proyecto",
+            indicators: $indicator,
             expectedImpact: 85.5,
-            documents: "plan_inicial.pdf, informe_avance.pdf",
             manager: "María Pérez",
             shared: true
             ); },
@@ -328,35 +336,10 @@ class ProjectTest extends TestCase
     {
         $country = Country::at("Argentina");
         $agency = Agency::at("Agencia de prueba", "http://agencia1.com", true);
+        $indicator = $this->makeIndicator();
+
          $this->shouldThrowAndAssert(
-            function () use ($country, $agency) { $country = Project::at(
-            name: "Proyecto de prueba",
-            description: "descripción valida del proyecto",
-            country: $country,
-            agency: $agency,
-            state: "En ejecución",
-            startDate: new DateTimeImmutable("2025-02-01"),
-            endDate: new DateTimeImmutable("2026-02-01"),
-            actualEndDate: new DateTimeImmutable("2026-01-15"),
-            budget: 200000.0,
-            budgetSpent: NULL,
-            indicators: "Indicadores del proyecto",
-            expectedImpact: 85.5,
-            documents: "plan_inicial.pdf, informe_avance.pdf",
-            manager: "María Pérez",
-            shared: true
-            ); },
-            RuntimeException::class,
-            function ($exception) {
-                $this->assertEquals($exception->getMessage(),'el presupuesto gastado no debe ser null o menor a 0');
-            });
-    }
-    public function test_indicators_null_or_too_short_throws_runtime_exception()
-    {
-        $country = Country::at("Argentina");
-        $agency = Agency::at("Agencia de prueba", "http://agencia1.com", true);
-         $this->shouldThrowAndAssert(
-            function () use ($country, $agency) { $country = Project::at(
+            function () use ($country, $agency, $indicator) { $country = Project::at(
             name: "Proyecto de prueba",
             description: "descripción valida del proyecto",
             country: $country,
@@ -367,9 +350,35 @@ class ProjectTest extends TestCase
             actualEndDate: new DateTimeImmutable("2026-01-15"),
             budget: 200000.0,
             budgetSpent: 50000.0,
-            indicators: NULL,
+            indicators: $indicator,
             expectedImpact: 85.5,
-            documents: "plan_inicial.pdf, informe_avance.pdf",
+            manager: "María Pérez",
+            shared: true
+            ); },
+            RuntimeException::class,
+            function ($exception) {
+                $this->assertEquals($exception->getMessage(),'El proyecto debe tener un manager asignado');
+            });
+    }
+    public function test_indicators_null_or_too_short_throws_runtime_exception()
+    {
+        $country = Country::at("Argentina");
+        $agency = Agency::at("Agencia de prueba", "http://agencia1.com", true);
+        $indicator = $this->makeIndicator();
+        $this->shouldThrowAndAssert(
+            function () use ($country, $agency, $indicator) { $country = Project::at(
+            name: "Proyecto de prueba",
+            description: "descripción valida del proyecto",
+            country: $country,
+            agency: $agency,
+            state: "En ejecución",
+            startDate: new DateTimeImmutable("2025-02-01"),
+            endDate: new DateTimeImmutable("2026-02-01"),
+            actualEndDate: new DateTimeImmutable("2026-01-15"),
+            budget: 200000.0,
+            budgetSpent: 50000.0,
+            indicators: null,
+            expectedImpact: 85.5,
             manager: "María Pérez",
             shared: true
             ); },
@@ -382,8 +391,9 @@ class ProjectTest extends TestCase
     {
         $country = Country::at("Argentina");
         $agency = Agency::at("Agencia de prueba", "http://agencia1.com", true);
-         $this->shouldThrowAndAssert(
-            function () use ($country, $agency) { $country = Project::at(
+        $indicator = $this->makeIndicator();
+        $this->shouldThrowAndAssert(
+            function () use ($country, $agency, $indicator) { $country = Project::at(
             name: "Proyecto de prueba",
             description: "descripción valida del proyecto",
             country: $country,
@@ -394,9 +404,8 @@ class ProjectTest extends TestCase
             actualEndDate: new DateTimeImmutable("2026-01-15"),
             budget: 200000.0,
             budgetSpent: 50000.0,
-            indicators: "indicador 1",
-            expectedImpact: NULL,
-            documents: "plan_inicial.pdf, informe_avance.pdf",
+            indicators: $indicator,
+            expectedImpact: null,
             manager: "María Pérez",
             shared: true
             ); },
@@ -405,39 +414,13 @@ class ProjectTest extends TestCase
                 $this->assertEquals($exception->getMessage(),'el expectedImpact no debe ser null o menor a 0');
             });
     }
-            public function test_documents_empty_string_throws_runtime_exception()
-    {
-        $country = Country::at("Argentina");
-        $agency = Agency::at("Agencia de prueba", "http://agencia1.com", true);
-         $this->shouldThrowAndAssert(
-            function () use ($country, $agency) { $country = Project::at(
-            name: "Proyecto de prueba",
-            description: "descripción valida del proyecto",
-            country: $country,
-            agency: $agency,
-            state: "En ejecución",
-            startDate: new DateTimeImmutable("2025-02-01"),
-            endDate: new DateTimeImmutable("2026-02-01"),
-            actualEndDate: new DateTimeImmutable("2026-01-15"),
-            budget: 200000.0,
-            budgetSpent: 50000.0,
-            indicators: "indicador 1",
-            expectedImpact: 85.5,
-            documents: "",
-            manager: "María Pérez",
-            shared: true
-            ); },
-            RuntimeException::class,
-            function ($exception) {
-                $this->assertEquals($exception->getMessage(),'documents no debe ser null o vacio');
-            });
-    }
             public function test_manager_null_throws_runtime_exception()
     {
         $country = Country::at("Argentina");
         $agency = Agency::at("Agencia de prueba", "http://agencia1.com", true);
+        $indicator = $this->makeIndicator();
          $this->shouldThrowAndAssert(
-            function () use ($country, $agency) { $country = Project::at(
+            function () use ($country, $agency, $indicator) { $country = Project::at(
             name: "Proyecto de prueba",
             description: "descripción valida del proyecto",
             country: $country,
@@ -448,10 +431,9 @@ class ProjectTest extends TestCase
             actualEndDate: new DateTimeImmutable("2026-01-15"),
             budget: 200000.0,
             budgetSpent: 50000.0,
-            indicators: "indicador 1",
+            indicators: $indicator,
             expectedImpact: 85.5,
-            documents: "plan_inicial.pdf, informe_avance.pdf",
-            manager: NULL,
+            manager: null,
             shared: true
             ); },
             RuntimeException::class,
@@ -463,8 +445,9 @@ class ProjectTest extends TestCase
     {
         $country = Country::at("Argentina");
         $agency = Agency::at("Agencia de prueba", "http://agencia1.com", true);
-         $this->shouldThrowAndAssert(
-            function () use ($country, $agency) { $country = Project::at(
+        $indicator = $this->makeIndicator(); 
+        $this->shouldThrowAndAssert(
+            function () use ($country, $agency, $indicator) { $country = Project::at(
             name: "Proyecto de prueba",
             description: "descripción valida del proyecto",
             country: $country,
@@ -475,11 +458,10 @@ class ProjectTest extends TestCase
             actualEndDate: new DateTimeImmutable("2026-01-15"),
             budget: 200000.0,
             budgetSpent: 50000.0,
-            indicators: "indicador 1",
+            indicators: $indicator,
             expectedImpact: 85.5,
-            documents: "plan_inicial.pdf, informe_avance.pdf",
             manager: "María Pérez",
-            shared: NULL
+            shared: null
             ); },
             RuntimeException::class,
             function ($exception) {
