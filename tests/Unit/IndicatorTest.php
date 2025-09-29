@@ -24,10 +24,9 @@ class IndicatorTest extends TestCase
     public function test_validate_name_returns_true_for_valid_name()
     {
         $indicatorType = IndicatorType::at("TipoValido"); 
-        $indicator = Indicator::at("IndicadorValido", "MedidaValida", $indicatorType);
 
         $this->assertThrows(
-            function() use ($indicatorType){ Indicator::at("In", "MedidaValida", $indicatorType); },
+            function() use ($indicatorType){ Indicator::at("In", "MedidaValida", $indicatorType, 1); },
             RuntimeException::class,
             function($e){
                 $this->assertEquals($e->getMessage(), 'el nombre del indicador no debe ser null o menor a 3 caracteres');

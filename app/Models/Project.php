@@ -7,6 +7,7 @@ use DateTimeImmutable;
 
 use App\Models\Agency;
 use App\Models\Country;
+use DateTime;
 
 class Project extends Model
 {
@@ -129,16 +130,20 @@ class Project extends Model
     {
         return $this->shared;
     }
-  
-    // 
+    public function validateDate($date, $format = 'Y-m-d')
+    {
+        $d = DateTime::createFromFormat($format, $date);
+        return $d && $d->format($format) == $date;
+    }
+    public function isNumeric($value)
+    {
+        return is_numeric($value);
+    }    
     public static function at($name, $description,$country, $agency, $state,  $startDate, $endDate, $actualEndDate, $budget, $budgetSpent,$indicator, $expectedImpact, $manager, $shared): Project
     {
 
-        // name validation: tests expect different messages for NULL vs empty string
-        if ($name === null) {
-            throw new \RuntimeException('el nombre del proyecto no debe ser null o menor a 3 caracteres');
-        }
-        if (strlen((string)$name) === 0) {
+
+        if (strlen((string)$name) == 0) {
             throw new \RuntimeException('el nombre del proyecto no debe ser null');
         }
         if (strlen((string)$name) < 3) {
@@ -153,6 +158,16 @@ class Project extends Model
         if(strlen((string)$description) < 10){
             throw new \RuntimeException('la descripcion del proyecto no debe ser null o menor a 10 caracteres');
         }
+        if(!Project::validateDate($startDate, 'Y-m-d')){
+            throw new \RuntimeException('la fecha de inicio no es valida');
+        }
+
+        if(!Project::validateDate($endDate, 'Y-m-d')){
+            throw new \RuntimeException('la fecha de fin no es valida');
+        }
+        if(!Project::validateDate($actualEndDate, 'Y-m-d')){
+            throw new \RuntimeException('la fecha actual final no es valida');
+        }
 
         // date validations
         if($endDate == null || $startDate == null   ){
@@ -165,6 +180,9 @@ class Project extends Model
             throw new \RuntimeException('Las fechas no deben ser null');
         }
 
+        if(!Project::isNumeric($budget) || !Project::isNumeric($budgetSpent)){
+            throw new \RuntimeException('El presupuesto y el presupuesto gastado deben ser numeros validos');
+        }
         // budget validations
         if($budget === null || $budget <= 0){
             throw new \RuntimeException('El presupuesto total no debe ser null o menor a 0');
@@ -180,7 +198,9 @@ class Project extends Model
         if(strlen($indicator->getName()) < 3){
             throw new \RuntimeException('El indicador no debe ser null o menor a 3 caracteres');
         }
-
+        if(!Project::isNumeric($expectedImpact)){
+            throw new \RuntimeException('El impacto esperado debe ser un numero valido');
+        }
         // expected impact
         if($expectedImpact === null || $expectedImpact < 0){
             throw new \RuntimeException('el expectedImpact no debe ser null o menor a 0');

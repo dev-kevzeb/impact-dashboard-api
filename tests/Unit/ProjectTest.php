@@ -5,6 +5,8 @@ namespace Tests\Unit;
 use App\Models\Agency;
 use PHPUnit\Framework\TestCase;
 use App\Models\Country;
+use App\Models\Indicator;
+use App\Models\IndicatorType;
 use App\Models\Project;
 use DateTimeImmutable;
 use Exception;
@@ -25,8 +27,8 @@ class ProjectTest extends TestCase
 
     private function makeIndicator()
     {
-        $type = \App\Models\IndicatorType::at('tipo');
-        return \App\Models\Indicator::at('Indicador principal','unidad',$type);
+        $type = IndicatorType::at('tipo');
+        return Indicator::at('Indicador principal','unidad',$type, 1);
     }
 
 
