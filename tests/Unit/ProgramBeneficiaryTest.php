@@ -70,6 +70,19 @@ class ProgramBeneficiaryTest extends TestCase
         );
     }
 
+    public function test_program_beneficiary_cannot_be_only_spaces()
+    {
+        $this->shouldThrowAndAssert(
+            function () {
+                ProgramBeneficiary::at("   ");
+            },
+            RuntimeException::class,
+            function ($exception) {
+                $this->assertEquals("el beneficiario del programa no debe ir vacio", $exception->getMessage());
+            }
+        );
+    }
+
     public function test_program_beneficiary_must_be_valid_type()
     {
         $this->shouldThrowAndAssert(

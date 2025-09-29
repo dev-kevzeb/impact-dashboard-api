@@ -37,12 +37,23 @@ class CurrencyTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals("el código de moneda no debe ir vacio", $exception->getMessage());
+                $this->assertEquals(Currency::ERROR_CODE_EMPTY, $exception->getMessage());
             }
         );
     }
 
-
+    public function test_currency_code_cannot_be_only_spaces()
+    {
+        $this->shouldThrowAndAssert(
+            function () {
+                Currency::at("   ");
+            },
+            RuntimeException::class,
+            function ($exception) {
+                $this->assertEquals(Currency::ERROR_CODE_EMPTY, $exception->getMessage());
+            }
+        );
+    }
 
     public function test_currency_code_must_be_exactly_three_characters()
     {
@@ -53,7 +64,7 @@ class CurrencyTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals("el código de moneda debe tener exactamente 3 caracteres", $exception->getMessage());
+                $this->assertEquals(Currency::ERROR_CODE_LENGTH, $exception->getMessage());
             }
         );
 
@@ -64,7 +75,7 @@ class CurrencyTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals("el código de moneda debe tener exactamente 3 caracteres", $exception->getMessage());
+                $this->assertEquals(Currency::ERROR_CODE_LENGTH, $exception->getMessage());
             }
         );
     }
@@ -78,7 +89,7 @@ class CurrencyTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals("el código de moneda debe contener solo letras mayúsculas", $exception->getMessage());
+                $this->assertEquals(Currency::ERROR_CODE_FORMAT, $exception->getMessage());
             }
         );
 
@@ -89,7 +100,7 @@ class CurrencyTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals("el código de moneda debe contener solo letras mayúsculas", $exception->getMessage());
+                $this->assertEquals(Currency::ERROR_CODE_FORMAT, $exception->getMessage());
             }
         );
 
@@ -100,7 +111,7 @@ class CurrencyTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals("el código de moneda debe contener solo letras mayúsculas", $exception->getMessage());
+                $this->assertEquals(Currency::ERROR_CODE_FORMAT, $exception->getMessage());
             }
         );
     }
@@ -114,7 +125,7 @@ class CurrencyTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals("el código de moneda debe ser un código ISO 4217 válido", $exception->getMessage());
+                $this->assertEquals(Currency::ERROR_CODE_INVALID, $exception->getMessage());
             }
         );
 
@@ -124,7 +135,7 @@ class CurrencyTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals("el código de moneda debe ser un código ISO 4217 válido", $exception->getMessage());
+                $this->assertEquals(Currency::ERROR_CODE_INVALID, $exception->getMessage());
             }
         );
     }

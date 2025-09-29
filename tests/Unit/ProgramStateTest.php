@@ -70,6 +70,19 @@ class ProgramStateTest extends TestCase
         );
     }
 
+    public function test_program_state_cannot_be_only_spaces()
+    {
+        $this->shouldThrowAndAssert(
+            function () {
+                ProgramState::at("   ");
+            },
+            RuntimeException::class,
+            function ($exception) {
+                $this->assertEquals("el estado del programa no debe ir vacio", $exception->getMessage());
+            }
+        );
+    }
+
     public function test_program_state_must_be_valid_state()
     {
         $this->shouldThrowAndAssert(

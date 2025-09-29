@@ -7,6 +7,12 @@ use RuntimeException;
 
 class Currency extends Model
 {
+    // Constantes para mensajes de validación
+    public const ERROR_CODE_EMPTY = 'el código de moneda no debe ir vacio';
+    public const ERROR_CODE_LENGTH = 'el código de moneda debe tener exactamente 3 caracteres';
+    public const ERROR_CODE_FORMAT = 'el código de moneda debe contener solo letras mayúsculas';
+    public const ERROR_CODE_INVALID = 'el código de moneda debe ser un código ISO 4217 válido';
+
     private string $code;
     
     // Lista consolidada de códigos ISO 4217 válidos
@@ -60,21 +66,21 @@ class Currency extends Model
     public static function at($code): Currency
     {
         if (empty(trim($code))) {
-            throw new RuntimeException('el código de moneda no debe ir vacio');
+            throw new RuntimeException(self::ERROR_CODE_EMPTY);
         }
         
         $trimmedCode = trim($code);
         
         if (strlen($trimmedCode) !== 3) {
-            throw new RuntimeException('el código de moneda debe tener exactamente 3 caracteres');
+            throw new RuntimeException(self::ERROR_CODE_LENGTH);
         }
         
         if (!preg_match('/^[A-Z]{3}$/', $trimmedCode)) {
-            throw new RuntimeException('el código de moneda debe contener solo letras mayúsculas');
+            throw new RuntimeException(self::ERROR_CODE_FORMAT);
         }
         
         if (!in_array($trimmedCode, self::$validCodes)) {
-            throw new RuntimeException('el código de moneda debe ser un código ISO 4217 válido');
+            throw new RuntimeException(self::ERROR_CODE_INVALID);
         }
         
         return new Currency($trimmedCode);

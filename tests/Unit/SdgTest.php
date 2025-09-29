@@ -45,6 +45,19 @@ class SdgTest extends TestCase
         );
     }
 
+    public function test_sdg_image_cannot_be_only_spaces()
+    {
+        $this->shouldThrowAndAssert(
+            function () {
+                Sdg::at("   ");
+            },
+            RuntimeException::class,
+            function ($exception) {
+                $this->assertEquals("la imagen del SDG no debe ir vacio", $exception->getMessage());
+            }
+        );
+    }
+
     public function test_sdg_image_must_contain_valid_number()
     {
         $this->shouldThrowAndAssert(
