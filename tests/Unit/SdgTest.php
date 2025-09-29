@@ -40,7 +40,7 @@ class SdgTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals("la imagen del SDG no debe ir vacio", $exception->getMessage());
+                $this->assertEquals(Sdg::ERROR_IMAGE_EMPTY, $exception->getMessage());
             }
         );
     }
@@ -53,7 +53,7 @@ class SdgTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals("la imagen del SDG no debe ir vacio", $exception->getMessage());
+                $this->assertEquals(Sdg::ERROR_IMAGE_EMPTY, $exception->getMessage());
             }
         );
     }
@@ -66,7 +66,7 @@ class SdgTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals("la imagen del SDG debe contener un número válido (ej: sdg1.png)", $exception->getMessage());
+                $this->assertEquals(Sdg::ERROR_IMAGE_INVALID_FORMAT, $exception->getMessage());
             }
         );
     }
@@ -79,7 +79,7 @@ class SdgTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals("el número del SDG debe estar entre 1 y 17", $exception->getMessage());
+                $this->assertEquals(Sdg::ERROR_NUMBER_OUT_OF_RANGE, $exception->getMessage());
             }
         );
     }
@@ -92,7 +92,7 @@ class SdgTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals("el número del SDG debe estar entre 1 y 17", $exception->getMessage());
+                $this->assertEquals(Sdg::ERROR_NUMBER_OUT_OF_RANGE, $exception->getMessage());
             }
         );
     }

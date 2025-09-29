@@ -65,7 +65,7 @@ class ProgramBeneficiaryTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals("el beneficiario del programa no debe ir vacio", $exception->getMessage());
+                $this->assertEquals(ProgramBeneficiary::ERROR_NAME_EMPTY, $exception->getMessage());
             }
         );
     }
@@ -78,7 +78,7 @@ class ProgramBeneficiaryTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals("el beneficiario del programa no debe ir vacio", $exception->getMessage());
+                $this->assertEquals(ProgramBeneficiary::ERROR_NAME_EMPTY, $exception->getMessage());
             }
         );
     }
@@ -91,7 +91,7 @@ class ProgramBeneficiaryTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals("el beneficiario del programa debe ser: GOVERNMENT, PRIVATE_SECTOR o GOVERNMENT_AND_PRIVATE_SECTOR", $exception->getMessage());
+                $this->assertEquals(ProgramBeneficiary::ERROR_NAME_INVALID, $exception->getMessage());
             }
         );
     }
@@ -104,7 +104,7 @@ class ProgramBeneficiaryTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals("el beneficiario del programa debe ser: GOVERNMENT, PRIVATE_SECTOR o GOVERNMENT_AND_PRIVATE_SECTOR", $exception->getMessage());
+                $this->assertEquals(ProgramBeneficiary::ERROR_NAME_INVALID, $exception->getMessage());
             }
         );
     }
@@ -117,7 +117,7 @@ class ProgramBeneficiaryTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals("el beneficiario del programa debe ser: GOVERNMENT, PRIVATE_SECTOR o GOVERNMENT_AND_PRIVATE_SECTOR", $exception->getMessage());
+                $this->assertEquals(ProgramBeneficiary::ERROR_NAME_INVALID, $exception->getMessage());
             }
         );
     }
@@ -151,7 +151,7 @@ class ProgramBeneficiaryTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals("el beneficiario del programa debe ser: GOVERNMENT, PRIVATE_SECTOR o GOVERNMENT_AND_PRIVATE_SECTOR", $exception->getMessage());
+                $this->assertEquals(ProgramBeneficiary::ERROR_NAME_INVALID, $exception->getMessage());
             }
         );
     }
