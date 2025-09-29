@@ -48,7 +48,7 @@ class ProjectTest extends TestCase
             actualEndDate: new DateTimeImmutable("2026-01-15"),
             budget: 200000.0,
             budgetSpent: 50000.0,
-            indicators: $indicator,
+            indicator: $indicator,
             expectedImpact: 85.5,
             manager: "María Pérez",
             shared: true
@@ -75,7 +75,7 @@ class ProjectTest extends TestCase
             actualEndDate: new DateTimeImmutable("2026-01-15"),
             budget: 200000.0,
             budgetSpent: 50000.0,
-            indicators: $indicator,
+            indicator: $indicator,
             expectedImpact: 85.5,
             manager: "María Pérez",
             shared: true
@@ -102,7 +102,7 @@ class ProjectTest extends TestCase
             actualEndDate: new DateTimeImmutable("2026-01-15"),
             budget: 200000.0,
             budgetSpent: 50000.0,
-            indicators: $indicator,
+            indicator: $indicator,
             expectedImpact: 85.5,
             manager: "María Pérez",
             shared: true
@@ -129,7 +129,7 @@ class ProjectTest extends TestCase
             actualEndDate: new DateTimeImmutable("2026-01-15"),
             budget: 200000.0,
             budgetSpent: 50000.0,
-            indicators: $indicator,
+            indicator: $indicator,
             expectedImpact: 85.5,
             manager: "María Pérez",
             shared: true
@@ -156,7 +156,7 @@ class ProjectTest extends TestCase
             actualEndDate: new DateTimeImmutable("2026-01-15"),
             budget: 200000.0,
             budgetSpent: 50000.0,
-            indicators: $indicator,
+            indicator: $indicator,
             expectedImpact: 85.5,
             manager: "María Pérez",
             shared: true
@@ -183,7 +183,7 @@ class ProjectTest extends TestCase
             actualEndDate: new DateTimeImmutable("2026-01-15"),
             budget: 200000.0,
             budgetSpent: 50000.0,
-            indicators: $indicator,
+            indicator: $indicator,
             expectedImpact: 85.5,
             manager: "María Pérez",
             shared: true
@@ -210,7 +210,7 @@ class ProjectTest extends TestCase
             actualEndDate: new DateTimeImmutable("2026-01-15"),
             budget: 200000.0,
             budgetSpent: 50000.0,
-            indicators: $indicator,
+            indicator: $indicator,
             expectedImpact: 85.5,
             manager: "María Pérez",
             shared: true
@@ -238,7 +238,7 @@ class ProjectTest extends TestCase
             actualEndDate: new DateTimeImmutable("2026-01-15"),
             budget: 200000.0,
             budgetSpent: 50000.0,
-            indicators: $indicator,
+            indicator: $indicator,
             expectedImpact: 85.5,
             manager: "María Pérez",
             shared: true
@@ -265,7 +265,7 @@ class ProjectTest extends TestCase
             actualEndDate: null,
             budget: 200000.0,
             budgetSpent: 50000.0,
-            indicators: $indicator,
+            indicator: $indicator,
             expectedImpact: 85.5,
             manager: "María Pérez",
             shared: true
@@ -322,7 +322,7 @@ class ProjectTest extends TestCase
             actualEndDate: new DateTimeImmutable("2026-01-15"),
             budget: null,
             budgetSpent: 50000.0,
-            indicators: $indicator,
+            indicator: $indicator,
             expectedImpact: 85.5,
             manager: "María Pérez",
             shared: true
@@ -350,7 +350,7 @@ class ProjectTest extends TestCase
             actualEndDate: new DateTimeImmutable("2026-01-15"),
             budget: 200000.0,
             budgetSpent: 50000.0,
-            indicators: $indicator,
+            indicator: $indicator,
             expectedImpact: 85.5,
             manager: "María Pérez",
             shared: true
@@ -360,7 +360,7 @@ class ProjectTest extends TestCase
                 $this->assertEquals($exception->getMessage(),'El proyecto debe tener un manager asignado');
             });
     }
-    public function test_indicators_null_or_too_short_throws_runtime_exception()
+    public function test_indicator_null_or_too_short_throws_runtime_exception()
     {
         $country = Country::at("Argentina");
         $agency = Agency::at("Agencia de prueba", "http://agencia1.com", true);
@@ -377,7 +377,7 @@ class ProjectTest extends TestCase
             actualEndDate: new DateTimeImmutable("2026-01-15"),
             budget: 200000.0,
             budgetSpent: 50000.0,
-            indicators: null,
+            indicator: null,
             expectedImpact: 85.5,
             manager: "María Pérez",
             shared: true
@@ -404,7 +404,7 @@ class ProjectTest extends TestCase
             actualEndDate: new DateTimeImmutable("2026-01-15"),
             budget: 200000.0,
             budgetSpent: 50000.0,
-            indicators: $indicator,
+            indicator: $indicator,
             expectedImpact: null,
             manager: "María Pérez",
             shared: true
@@ -431,7 +431,7 @@ class ProjectTest extends TestCase
             actualEndDate: new DateTimeImmutable("2026-01-15"),
             budget: 200000.0,
             budgetSpent: 50000.0,
-            indicators: $indicator,
+            indicator: $indicator,
             expectedImpact: 85.5,
             manager: null,
             shared: true
@@ -458,7 +458,7 @@ class ProjectTest extends TestCase
             actualEndDate: new DateTimeImmutable("2026-01-15"),
             budget: 200000.0,
             budgetSpent: 50000.0,
-            indicators: $indicator,
+            indicator: $indicator,
             expectedImpact: 85.5,
             manager: "María Pérez",
             shared: null

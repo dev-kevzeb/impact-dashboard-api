@@ -38,7 +38,7 @@ class Project extends Model
         ?DateTimeImmutable $actualEndDate,
         float $budget,
         float $budgetSpent,
-        Indicator $indicators,
+        Indicator $indicator,
         float $expectedImpact,
         string $manager,
         bool $shared
@@ -53,7 +53,7 @@ class Project extends Model
         $this->actualEndDate = $actualEndDate;
         $this->budget = $budget;
         $this->budgetSpent = $budgetSpent;
-        $this->indicator = $indicators;
+        $this->indicator = $indicator;
         $this->expectedImpact = $expectedImpact;
         $this->manager = $manager;
         $this->shared = $shared;
@@ -131,7 +131,7 @@ class Project extends Model
     }
   
     // 
-    public static function at($name, $description,$country, $agency, $state,  $startDate, $endDate, $actualEndDate, $budget, $budgetSpent,$indicators, $expectedImpact, $manager, $shared): Project
+    public static function at($name, $description,$country, $agency, $state,  $startDate, $endDate, $actualEndDate, $budget, $budgetSpent,$indicator, $expectedImpact, $manager, $shared): Project
     {
 
         // name validation: tests expect different messages for NULL vs empty string
@@ -173,11 +173,11 @@ class Project extends Model
             throw new \RuntimeException('el presupuesto gastado no debe ser null o menor a 0');
         }
 
-        // indicators: must be an Indicator instance with a valid name
-        if(!($indicators instanceof Indicator)){
+        // indicator: must be an Indicator instance with a valid name
+        if(!($indicator instanceof Indicator)){
             throw new \RuntimeException('El indicador no debe ser null o menor a 3 caracteres');
         }
-        if(strlen($indicators->getName()) < 3){
+        if(strlen($indicator->getName()) < 3){
             throw new \RuntimeException('El indicador no debe ser null o menor a 3 caracteres');
         }
 
@@ -209,7 +209,7 @@ class Project extends Model
             $actualEndDate,
             $budget,
             $budgetSpent,
-            $indicators,
+            $indicator,
             $expectedImpact,
             $manager,
             $shared
