@@ -130,7 +130,7 @@ class ProgramTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals("el nombre del programa no debe ir vacio", $exception->getMessage());
+                $this->assertEquals(Program::ERROR_NAME_EMPTY, $exception->getMessage());
             }
         );
     }
@@ -161,7 +161,7 @@ class ProgramTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals("el nombre del programa no debe ir vacio", $exception->getMessage());
+                $this->assertEquals(Program::ERROR_NAME_EMPTY, $exception->getMessage());
             }
         );
     }
@@ -192,7 +192,7 @@ class ProgramTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals("el nombre del programa debe tener al menos 3 caracteres", $exception->getMessage());
+                $this->assertEquals(Program::ERROR_NAME_MIN_LENGTH, $exception->getMessage());
             }
         );
     }
@@ -329,7 +329,7 @@ class ProgramTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals("la descripción del programa no debe ir vacio", $exception->getMessage());
+                $this->assertEquals(Program::ERROR_DESCRIPTION_EMPTY, $exception->getMessage());
             }
         );
     }
@@ -360,7 +360,7 @@ class ProgramTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals("la descripción del programa debe tener al menos 10 caracteres", $exception->getMessage());
+                $this->assertEquals(Program::ERROR_DESCRIPTION_MIN_LENGTH, $exception->getMessage());
             }
         );
     }
@@ -394,7 +394,7 @@ class ProgramTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals("la descripción del programa no debe exceder 2000 caracteres", $exception->getMessage());
+                $this->assertEquals(Program::ERROR_DESCRIPTION_MAX_LENGTH, $exception->getMessage());
             }
         );
     }
@@ -427,7 +427,7 @@ class ProgramTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals("la fecha de inicio del programa no debe ir vacio", $exception->getMessage());
+                $this->assertEquals(Program::ERROR_START_DATE_EMPTY, $exception->getMessage());
             }
         );
     }
@@ -459,7 +459,7 @@ class ProgramTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals("la fecha de inicio debe tener formato válido (YYYY-MM-DD)", $exception->getMessage());
+                $this->assertEquals(Program::ERROR_START_DATE_INVALID_FORMAT, $exception->getMessage());
             }
         );
     }
@@ -491,7 +491,7 @@ class ProgramTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals("la fecha de fin del programa no debe ir vacio", $exception->getMessage());
+                $this->assertEquals(Program::ERROR_END_DATE_EMPTY, $exception->getMessage());
             }
         );
     }
@@ -523,7 +523,7 @@ class ProgramTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals("la fecha de fin debe ser posterior a la fecha de inicio", $exception->getMessage());
+                $this->assertEquals(Program::ERROR_END_DATE_BEFORE_START, $exception->getMessage());
             }
         );
     }
@@ -555,7 +555,7 @@ class ProgramTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals("la duración del programa no puede exceder 20 años", $exception->getMessage());
+                $this->assertEquals(Program::ERROR_DURATION_TOO_LONG, $exception->getMessage());
             }
         );
     }
@@ -588,7 +588,7 @@ class ProgramTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals("el nombre del contacto no debe ir vacio", $exception->getMessage());
+                $this->assertEquals(Program::ERROR_CONTACT_FIRST_NAME_EMPTY, $exception->getMessage());
             }
         );
     }
@@ -620,7 +620,7 @@ class ProgramTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals("el apellido del contacto no debe ir vacio", $exception->getMessage());
+                $this->assertEquals(Program::ERROR_CONTACT_LAST_NAME_EMPTY, $exception->getMessage());
             }
         );
     }
@@ -652,7 +652,7 @@ class ProgramTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals("el título del contacto no debe ir vacio", $exception->getMessage());
+                $this->assertEquals(Program::ERROR_CONTACT_TITLE_EMPTY, $exception->getMessage());
             }
         );
     }
@@ -684,7 +684,7 @@ class ProgramTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals("el email del contacto no debe ir vacio", $exception->getMessage());
+                $this->assertEquals(Program::ERROR_CONTACT_EMAIL_EMPTY, $exception->getMessage());
             }
         );
     }
@@ -716,7 +716,7 @@ class ProgramTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals("el email del contacto debe tener un formato válido", $exception->getMessage());
+                $this->assertEquals(Program::ERROR_CONTACT_EMAIL_INVALID_FORMAT, $exception->getMessage());
             }
         );
     }
@@ -750,7 +750,7 @@ class ProgramTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals("no se permiten SDGs duplicados en el programa", $exception->getMessage());
+                $this->assertEquals(Program::ERROR_SDGS_DUPLICATED, $exception->getMessage());
             }
         );
     }
@@ -784,7 +784,7 @@ class ProgramTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals("no se permiten donantes duplicados en el programa", $exception->getMessage());
+                $this->assertEquals(Program::ERROR_DONORS_DUPLICATED, $exception->getMessage());
             }
         );
     }

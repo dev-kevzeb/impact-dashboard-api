@@ -38,7 +38,20 @@ class DonorTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals("el nombre del donante no debe ir vacio", $exception->getMessage());
+                $this->assertEquals(Donor::ERROR_NAME_EMPTY, $exception->getMessage());
+            }
+        );
+    }
+
+    public function test_donor_name_cannot_be_only_spaces()
+    {
+        $this->shouldThrowAndAssert(
+            function () {
+                Donor::at("   ");
+            },
+            RuntimeException::class,
+            function ($exception) {
+                $this->assertEquals(Donor::ERROR_NAME_EMPTY, $exception->getMessage());
             }
         );
     }
@@ -51,7 +64,7 @@ class DonorTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals("el nombre del donante debe tener al menos 2 caracteres", $exception->getMessage());
+                $this->assertEquals(Donor::ERROR_NAME_MIN_LENGTH, $exception->getMessage());
             }
         );
     }

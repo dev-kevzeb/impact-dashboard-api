@@ -51,7 +51,7 @@ class CountryTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals("el nombre del país no debe ir vacio", $exception->getMessage());
+                $this->assertEquals(Country::ERROR_NAME_EMPTY, $exception->getMessage());
             }
         );
     }
@@ -64,7 +64,7 @@ class CountryTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals("el nombre del país no debe ir vacio", $exception->getMessage());
+                $this->assertEquals(Country::ERROR_NAME_EMPTY, $exception->getMessage());
             }
         );
     }
@@ -77,7 +77,7 @@ class CountryTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals("el nombre del país debe tener al menos 2 caracteres", $exception->getMessage());
+                $this->assertEquals(Country::ERROR_NAME_TOO_SHORT, $exception->getMessage());
             }
         );
     }
@@ -92,7 +92,7 @@ class CountryTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals("el nombre del país no debe exceder 100 caracteres", $exception->getMessage());
+                $this->assertEquals(Country::ERROR_NAME_TOO_LONG, $exception->getMessage());
             }
         );
     }
@@ -106,7 +106,7 @@ class CountryTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals("el nombre del país contiene caracteres no válidos", $exception->getMessage());
+                $this->assertEquals(Country::ERROR_NAME_INVALID_CHARACTERS, $exception->getMessage());
             }
         );
 
@@ -116,7 +116,7 @@ class CountryTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals("el nombre del país contiene caracteres no válidos", $exception->getMessage());
+                $this->assertEquals(Country::ERROR_NAME_INVALID_CHARACTERS, $exception->getMessage());
             }
         );
     }
@@ -129,7 +129,7 @@ class CountryTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals("la moneda debe ser una instancia de Currency", $exception->getMessage());
+                $this->assertEquals(Country::ERROR_CURRENCY_INVALID, $exception->getMessage());
             }
         );
     }
@@ -142,7 +142,7 @@ class CountryTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals("la moneda debe ser una instancia de Currency", $exception->getMessage());
+                $this->assertEquals(Country::ERROR_CURRENCY_INVALID, $exception->getMessage());
             }
         );
     }
