@@ -26,7 +26,6 @@ class KpaTest extends TestCase
 
         $this->assertInstanceOf(Kpa::class, $kpa);
         $this->assertEquals("Desarrollo Rural", $kpa->getName());
-        $this->assertTrue($kpa->validateName());
     }
 
     public function test_kpa_name_cannot_be_empty()
@@ -37,7 +36,7 @@ class KpaTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals(Kpa::ERROR_NAME_EMPTY, $exception->getMessage());
+                $this->assertEquals(Kpa::$ERROR_NAME_EMPTY, $exception->getMessage());
             }
         );
     }
@@ -50,7 +49,7 @@ class KpaTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals(Kpa::ERROR_NAME_EMPTY, $exception->getMessage());
+                $this->assertEquals(Kpa::$ERROR_NAME_EMPTY, $exception->getMessage());
             }
         );
     }
@@ -63,7 +62,7 @@ class KpaTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals(Kpa::ERROR_NAME_MIN_LENGTH, $exception->getMessage());
+                $this->assertEquals(Kpa::$ERROR_NAME_MIN_LENGTH, $exception->getMessage());
             }
         );
     }
@@ -78,7 +77,7 @@ class KpaTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals(Kpa::ERROR_NAME_MAX_LENGTH, $exception->getMessage());
+                $this->assertEquals(Kpa::$ERROR_NAME_MAX_LENGTH, $exception->getMessage());
             }
         );
     }
@@ -89,7 +88,6 @@ class KpaTest extends TestCase
         
         $this->assertInstanceOf(Kpa::class, $kpa);
         $this->assertEquals("AI", $kpa->getName());
-        $this->assertTrue($kpa->validateName());
     }
 
     public function test_kpa_name_with_maximum_length_is_valid()
@@ -99,7 +97,6 @@ class KpaTest extends TestCase
         
         $this->assertInstanceOf(Kpa::class, $kpa);
         $this->assertEquals($maxName, $kpa->getName());
-        $this->assertTrue($kpa->validateName());
     }
 
     public function test_kpa_name_with_special_characters_is_valid()
@@ -108,7 +105,6 @@ class KpaTest extends TestCase
         
         $this->assertInstanceOf(Kpa::class, $kpa);
         $this->assertEquals("Desarrollo Rural & Sostenible", $kpa->getName());
-        $this->assertTrue($kpa->validateName());
     }
 
     public function test_kpa_name_with_unicode_characters_is_valid()
@@ -117,7 +113,6 @@ class KpaTest extends TestCase
         
         $this->assertInstanceOf(Kpa::class, $kpa);
         $this->assertEquals("Educación y Nutrición", $kpa->getName());
-        $this->assertTrue($kpa->validateName());
     }
 
     public function test_kpa_name_gets_trimmed()

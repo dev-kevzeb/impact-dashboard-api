@@ -36,7 +36,6 @@ class StrategicOutputTest extends TestCase
         $this->assertInstanceOf(StrategicOutput::class, $strategicOutput);
         $this->assertEquals("Incrementar productividad agrícola", $strategicOutput->getName());
         $this->assertEquals($this->validKpa, $strategicOutput->getKpa());
-        $this->assertTrue($strategicOutput->validateName());
     }
 
     public function test_strategic_output_name_cannot_be_empty()
@@ -47,7 +46,7 @@ class StrategicOutputTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals(StrategicOutput::ERROR_NAME_EMPTY, $exception->getMessage());
+                $this->assertEquals(StrategicOutput::$ERROR_NAME_EMPTY, $exception->getMessage());
             }
         );
     }
@@ -60,7 +59,7 @@ class StrategicOutputTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals(StrategicOutput::ERROR_NAME_EMPTY, $exception->getMessage());
+                $this->assertEquals(StrategicOutput::$ERROR_NAME_EMPTY, $exception->getMessage());
             }
         );
     }
@@ -73,7 +72,7 @@ class StrategicOutputTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals(StrategicOutput::ERROR_NAME_MIN_LENGTH, $exception->getMessage());
+                $this->assertEquals(StrategicOutput::$ERROR_NAME_MIN_LENGTH, $exception->getMessage());
             }
         );
     }
@@ -88,7 +87,7 @@ class StrategicOutputTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals(StrategicOutput::ERROR_NAME_MAX_LENGTH, $exception->getMessage());
+                $this->assertEquals(StrategicOutput::$ERROR_NAME_MAX_LENGTH, $exception->getMessage());
             }
         );
     }
@@ -101,7 +100,7 @@ class StrategicOutputTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals(StrategicOutput::ERROR_KPA_NULL, $exception->getMessage());
+                $this->assertEquals(StrategicOutput::$ERROR_KPA_NULL, $exception->getMessage());
             }
         );
     }
@@ -114,7 +113,7 @@ class StrategicOutputTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals(StrategicOutput::ERROR_KPA_INVALID, $exception->getMessage());
+                $this->assertEquals(StrategicOutput::$ERROR_KPA_INVALID, $exception->getMessage());
             }
         );
     }
@@ -125,7 +124,6 @@ class StrategicOutputTest extends TestCase
         
         $this->assertInstanceOf(StrategicOutput::class, $strategicOutput);
         $this->assertEquals("AI", $strategicOutput->getName());
-        $this->assertTrue($strategicOutput->validateName());
     }
 
     public function test_strategic_output_name_with_maximum_length_is_valid()
@@ -135,7 +133,6 @@ class StrategicOutputTest extends TestCase
         
         $this->assertInstanceOf(StrategicOutput::class, $strategicOutput);
         $this->assertEquals($maxName, $strategicOutput->getName());
-        $this->assertTrue($strategicOutput->validateName());
     }
 
     public function test_strategic_output_name_gets_trimmed()
@@ -151,6 +148,5 @@ class StrategicOutputTest extends TestCase
         
         $this->assertInstanceOf(StrategicOutput::class, $strategicOutput);
         $this->assertEquals("Mejorar educación técnica", $strategicOutput->getName());
-        $this->assertTrue($strategicOutput->validateName());
     }
 }

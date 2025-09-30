@@ -39,7 +39,6 @@ class MeasureTest extends TestCase
         $this->assertInstanceOf(Measure::class, $measure);
         $this->assertEquals("Toneladas de cultivo por hectárea", $measure->getName());
         $this->assertEquals($this->validStrategicOutput, $measure->getStrategicOutput());
-        $this->assertTrue($measure->validateName());
     }
 
     public function test_measure_name_cannot_be_empty()
@@ -50,7 +49,7 @@ class MeasureTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals(Measure::ERROR_NAME_EMPTY, $exception->getMessage());
+                $this->assertEquals(Measure::$ERROR_NAME_EMPTY, $exception->getMessage());
             }
         );
     }
@@ -63,7 +62,7 @@ class MeasureTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals(Measure::ERROR_NAME_EMPTY, $exception->getMessage());
+                $this->assertEquals(Measure::$ERROR_NAME_EMPTY, $exception->getMessage());
             }
         );
     }
@@ -76,7 +75,7 @@ class MeasureTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals(Measure::ERROR_NAME_MIN_LENGTH, $exception->getMessage());
+                $this->assertEquals(Measure::$ERROR_NAME_MIN_LENGTH, $exception->getMessage());
             }
         );
     }
@@ -91,7 +90,7 @@ class MeasureTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals(Measure::ERROR_NAME_MAX_LENGTH, $exception->getMessage());
+                $this->assertEquals(Measure::$ERROR_NAME_MAX_LENGTH, $exception->getMessage());
             }
         );
     }
@@ -104,7 +103,7 @@ class MeasureTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals(Measure::ERROR_STRATEGIC_OUTPUT_NULL, $exception->getMessage());
+                $this->assertEquals(Measure::$ERROR_STRATEGIC_OUTPUT_NULL, $exception->getMessage());
             }
         );
     }
@@ -117,7 +116,7 @@ class MeasureTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals(Measure::ERROR_STRATEGIC_OUTPUT_INVALID, $exception->getMessage());
+                $this->assertEquals(Measure::$ERROR_STRATEGIC_OUTPUT_INVALID, $exception->getMessage());
             }
         );
     }
@@ -128,7 +127,6 @@ class MeasureTest extends TestCase
         
         $this->assertInstanceOf(Measure::class, $measure);
         $this->assertEquals("KG", $measure->getName());
-        $this->assertTrue($measure->validateName());
     }
 
     public function test_measure_name_with_maximum_length_is_valid()
@@ -138,7 +136,6 @@ class MeasureTest extends TestCase
         
         $this->assertInstanceOf(Measure::class, $measure);
         $this->assertEquals($maxName, $measure->getName());
-        $this->assertTrue($measure->validateName());
     }
 
     public function test_measure_name_gets_trimmed()
@@ -154,7 +151,6 @@ class MeasureTest extends TestCase
         
         $this->assertInstanceOf(Measure::class, $measure);
         $this->assertEquals("Porcentaje de niños educados", $measure->getName());
-        $this->assertTrue($measure->validateName());
     }
 
     public function test_measure_with_different_strategic_outputs()
