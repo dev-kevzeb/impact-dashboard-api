@@ -37,7 +37,7 @@ class CurrencyTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals(Currency::ERROR_CODE_EMPTY, $exception->getMessage());
+                $this->assertEquals(Currency::$ERROR_CODE_EMPTY, $exception->getMessage());
             }
         );
     }
@@ -50,7 +50,7 @@ class CurrencyTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals(Currency::ERROR_CODE_EMPTY, $exception->getMessage());
+                $this->assertEquals(Currency::$ERROR_CODE_EMPTY, $exception->getMessage());
             }
         );
     }
@@ -64,7 +64,7 @@ class CurrencyTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals(Currency::ERROR_CODE_LENGTH, $exception->getMessage());
+                $this->assertEquals(Currency::$ERROR_CODE_LENGTH, $exception->getMessage());
             }
         );
 
@@ -75,7 +75,7 @@ class CurrencyTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals(Currency::ERROR_CODE_LENGTH, $exception->getMessage());
+                $this->assertEquals(Currency::$ERROR_CODE_LENGTH, $exception->getMessage());
             }
         );
     }
@@ -89,7 +89,7 @@ class CurrencyTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals(Currency::ERROR_CODE_FORMAT, $exception->getMessage());
+                $this->assertEquals(Currency::$ERROR_CODE_FORMAT, $exception->getMessage());
             }
         );
 
@@ -100,7 +100,7 @@ class CurrencyTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals(Currency::ERROR_CODE_FORMAT, $exception->getMessage());
+                $this->assertEquals(Currency::$ERROR_CODE_FORMAT, $exception->getMessage());
             }
         );
 
@@ -111,7 +111,7 @@ class CurrencyTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals(Currency::ERROR_CODE_FORMAT, $exception->getMessage());
+                $this->assertEquals(Currency::$ERROR_CODE_FORMAT, $exception->getMessage());
             }
         );
     }
@@ -125,7 +125,7 @@ class CurrencyTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals(Currency::ERROR_CODE_INVALID, $exception->getMessage());
+                $this->assertEquals(Currency::$ERROR_CODE_INVALID, $exception->getMessage());
             }
         );
 
@@ -135,7 +135,7 @@ class CurrencyTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals(Currency::ERROR_CODE_INVALID, $exception->getMessage());
+                $this->assertEquals(Currency::$ERROR_CODE_INVALID, $exception->getMessage());
             }
         );
     }

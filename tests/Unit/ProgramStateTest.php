@@ -62,7 +62,7 @@ class ProgramStateTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals(ProgramState::ERROR_STATE_EMPTY, $exception->getMessage());
+                $this->assertEquals(ProgramState::$ERROR_STATE_EMPTY, $exception->getMessage());
             }
         );
     }
@@ -75,7 +75,7 @@ class ProgramStateTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals(ProgramState::ERROR_STATE_EMPTY, $exception->getMessage());
+                $this->assertEquals(ProgramState::$ERROR_STATE_EMPTY, $exception->getMessage());
             }
         );
     }
@@ -88,7 +88,7 @@ class ProgramStateTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals(ProgramState::ERROR_STATE_INVALID, $exception->getMessage());
+                $this->assertEquals(ProgramState::$ERROR_STATE_INVALID, $exception->getMessage());
             }
         );
     }
@@ -101,7 +101,7 @@ class ProgramStateTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals(ProgramState::ERROR_STATE_INVALID, $exception->getMessage());
+                $this->assertEquals(ProgramState::$ERROR_STATE_INVALID, $exception->getMessage());
             }
         );
     }
@@ -114,7 +114,7 @@ class ProgramStateTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals(ProgramState::ERROR_STATE_INVALID, $exception->getMessage());
+                $this->assertEquals(ProgramState::$ERROR_STATE_INVALID, $exception->getMessage());
             }
         );
     }

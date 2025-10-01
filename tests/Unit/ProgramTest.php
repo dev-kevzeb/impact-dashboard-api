@@ -130,7 +130,7 @@ class ProgramTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals(Program::ERROR_NAME_EMPTY, $exception->getMessage());
+                $this->assertEquals(Program::$ERROR_NAME_EMPTY, $exception->getMessage());
             }
         );
     }
@@ -161,7 +161,7 @@ class ProgramTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals(Program::ERROR_NAME_EMPTY, $exception->getMessage());
+                $this->assertEquals(Program::$ERROR_NAME_EMPTY, $exception->getMessage());
             }
         );
     }
@@ -192,7 +192,7 @@ class ProgramTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals(Program::ERROR_NAME_MIN_LENGTH, $exception->getMessage());
+                $this->assertEquals(Program::$ERROR_NAME_MIN_LENGTH, $exception->getMessage());
             }
         );
     }
@@ -329,7 +329,7 @@ class ProgramTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals(Program::ERROR_DESCRIPTION_EMPTY, $exception->getMessage());
+                $this->assertEquals(Program::$ERROR_DESCRIPTION_EMPTY, $exception->getMessage());
             }
         );
     }
@@ -360,7 +360,7 @@ class ProgramTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals(Program::ERROR_DESCRIPTION_MIN_LENGTH, $exception->getMessage());
+                $this->assertEquals(Program::$ERROR_DESCRIPTION_MIN_LENGTH, $exception->getMessage());
             }
         );
     }
@@ -394,7 +394,7 @@ class ProgramTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals(Program::ERROR_DESCRIPTION_MAX_LENGTH, $exception->getMessage());
+                $this->assertEquals(Program::$ERROR_DESCRIPTION_MAX_LENGTH, $exception->getMessage());
             }
         );
     }
@@ -427,7 +427,7 @@ class ProgramTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals(Program::ERROR_START_DATE_EMPTY, $exception->getMessage());
+                $this->assertEquals(Program::$ERROR_START_DATE_EMPTY, $exception->getMessage());
             }
         );
     }
@@ -459,7 +459,7 @@ class ProgramTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals(Program::ERROR_START_DATE_INVALID_FORMAT, $exception->getMessage());
+                $this->assertEquals(Program::$ERROR_START_DATE_INVALID_FORMAT, $exception->getMessage());
             }
         );
     }
@@ -491,7 +491,7 @@ class ProgramTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals(Program::ERROR_END_DATE_EMPTY, $exception->getMessage());
+                $this->assertEquals(Program::$ERROR_END_DATE_EMPTY, $exception->getMessage());
             }
         );
     }
@@ -523,7 +523,7 @@ class ProgramTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals(Program::ERROR_END_DATE_BEFORE_START, $exception->getMessage());
+                $this->assertEquals(Program::$ERROR_END_DATE_BEFORE_START, $exception->getMessage());
             }
         );
     }
@@ -555,7 +555,7 @@ class ProgramTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals(Program::ERROR_DURATION_TOO_LONG, $exception->getMessage());
+                $this->assertEquals(Program::$ERROR_DURATION_TOO_LONG, $exception->getMessage());
             }
         );
     }
@@ -588,7 +588,7 @@ class ProgramTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals(Program::ERROR_CONTACT_FIRST_NAME_EMPTY, $exception->getMessage());
+                $this->assertEquals(Program::$ERROR_CONTACT_FIRST_NAME_EMPTY, $exception->getMessage());
             }
         );
     }
@@ -620,7 +620,7 @@ class ProgramTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals(Program::ERROR_CONTACT_LAST_NAME_EMPTY, $exception->getMessage());
+                $this->assertEquals(Program::$ERROR_CONTACT_LAST_NAME_EMPTY, $exception->getMessage());
             }
         );
     }
@@ -652,7 +652,7 @@ class ProgramTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals(Program::ERROR_CONTACT_TITLE_EMPTY, $exception->getMessage());
+                $this->assertEquals(Program::$ERROR_CONTACT_TITLE_EMPTY, $exception->getMessage());
             }
         );
     }
@@ -684,7 +684,7 @@ class ProgramTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals(Program::ERROR_CONTACT_EMAIL_EMPTY, $exception->getMessage());
+                $this->assertEquals(Program::$ERROR_CONTACT_EMAIL_EMPTY, $exception->getMessage());
             }
         );
     }
@@ -716,7 +716,7 @@ class ProgramTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals(Program::ERROR_CONTACT_EMAIL_INVALID_FORMAT, $exception->getMessage());
+                $this->assertEquals(Program::$ERROR_CONTACT_EMAIL_INVALID_FORMAT, $exception->getMessage());
             }
         );
     }
@@ -750,7 +750,7 @@ class ProgramTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals(Program::ERROR_SDGS_DUPLICATED, $exception->getMessage());
+                $this->assertEquals(Program::$ERROR_SDGS_DUPLICATED, $exception->getMessage());
             }
         );
     }
@@ -784,7 +784,7 @@ class ProgramTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals(Program::ERROR_DONORS_DUPLICATED, $exception->getMessage());
+                $this->assertEquals(Program::$ERROR_DONORS_DUPLICATED, $exception->getMessage());
             }
         );
     }

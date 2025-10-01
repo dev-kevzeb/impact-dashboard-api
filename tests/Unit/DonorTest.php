@@ -38,7 +38,7 @@ class DonorTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals(Donor::ERROR_NAME_EMPTY, $exception->getMessage());
+                $this->assertEquals(Donor::$ERROR_NAME_EMPTY, $exception->getMessage());
             }
         );
     }
@@ -51,7 +51,7 @@ class DonorTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals(Donor::ERROR_NAME_EMPTY, $exception->getMessage());
+                $this->assertEquals(Donor::$ERROR_NAME_EMPTY, $exception->getMessage());
             }
         );
     }
@@ -64,7 +64,7 @@ class DonorTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals(Donor::ERROR_NAME_MIN_LENGTH, $exception->getMessage());
+                $this->assertEquals(Donor::$ERROR_NAME_MIN_LENGTH, $exception->getMessage());
             }
         );
     }

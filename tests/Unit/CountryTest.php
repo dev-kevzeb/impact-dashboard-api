@@ -51,7 +51,7 @@ class CountryTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals(Country::ERROR_NAME_EMPTY, $exception->getMessage());
+                $this->assertEquals(Country::$ERROR_NAME_EMPTY, $exception->getMessage());
             }
         );
     }
@@ -64,7 +64,7 @@ class CountryTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals(Country::ERROR_NAME_EMPTY, $exception->getMessage());
+                $this->assertEquals(Country::$ERROR_NAME_EMPTY, $exception->getMessage());
             }
         );
     }
@@ -77,7 +77,7 @@ class CountryTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals(Country::ERROR_NAME_TOO_SHORT, $exception->getMessage());
+                $this->assertEquals(Country::$ERROR_NAME_TOO_SHORT, $exception->getMessage());
             }
         );
     }
@@ -92,7 +92,7 @@ class CountryTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals(Country::ERROR_NAME_TOO_LONG, $exception->getMessage());
+                $this->assertEquals(Country::$ERROR_NAME_TOO_LONG, $exception->getMessage());
             }
         );
     }
@@ -106,7 +106,7 @@ class CountryTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals(Country::ERROR_NAME_INVALID_CHARACTERS, $exception->getMessage());
+                $this->assertEquals(Country::$ERROR_NAME_INVALID_CHARACTERS, $exception->getMessage());
             }
         );
 
@@ -116,7 +116,7 @@ class CountryTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals(Country::ERROR_NAME_INVALID_CHARACTERS, $exception->getMessage());
+                $this->assertEquals(Country::$ERROR_NAME_INVALID_CHARACTERS, $exception->getMessage());
             }
         );
     }
@@ -129,7 +129,7 @@ class CountryTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals(Country::ERROR_CURRENCY_INVALID, $exception->getMessage());
+                $this->assertEquals(Country::$ERROR_CURRENCY_INVALID, $exception->getMessage());
             }
         );
     }
@@ -142,7 +142,7 @@ class CountryTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals(Country::ERROR_CURRENCY_INVALID, $exception->getMessage());
+                $this->assertEquals(Country::$ERROR_CURRENCY_INVALID, $exception->getMessage());
             }
         );
     }

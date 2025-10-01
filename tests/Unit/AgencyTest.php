@@ -41,7 +41,7 @@ class AgencyTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals(Agency::ERROR_NAME_EMPTY, $exception->getMessage());
+                $this->assertEquals(Agency::$ERROR_NAME_EMPTY, $exception->getMessage());
             }
         );
     }
@@ -54,7 +54,7 @@ class AgencyTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals(Agency::ERROR_NAME_EMPTY, $exception->getMessage());
+                $this->assertEquals(Agency::$ERROR_NAME_EMPTY, $exception->getMessage());
             }
         );
     }
@@ -67,7 +67,7 @@ class AgencyTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals(Agency::ERROR_NAME_TOO_SHORT, $exception->getMessage());
+                $this->assertEquals(Agency::$ERROR_NAME_TOO_SHORT, $exception->getMessage());
             }
         );
     }
@@ -82,7 +82,7 @@ class AgencyTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals(Agency::ERROR_NAME_TOO_LONG, $exception->getMessage());
+                $this->assertEquals(Agency::$ERROR_NAME_TOO_LONG, $exception->getMessage());
             }
         );
     }
@@ -96,7 +96,7 @@ class AgencyTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals(Agency::ERROR_URL_EMPTY, $exception->getMessage());
+                $this->assertEquals(Agency::$ERROR_URL_EMPTY, $exception->getMessage());
             }
         );
     }
@@ -110,7 +110,7 @@ class AgencyTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals(Agency::ERROR_URL_INVALID_FORMAT, $exception->getMessage());
+                $this->assertEquals(Agency::$ERROR_URL_INVALID_FORMAT, $exception->getMessage());
             }
         );
 
@@ -121,7 +121,7 @@ class AgencyTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals(Agency::ERROR_URL_INVALID_FORMAT, $exception->getMessage());
+                $this->assertEquals(Agency::$ERROR_URL_INVALID_FORMAT, $exception->getMessage());
             }
         );
     }
@@ -135,7 +135,7 @@ class AgencyTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals(Agency::ERROR_URL_INVALID_PROTOCOL, $exception->getMessage());
+                $this->assertEquals(Agency::$ERROR_URL_INVALID_PROTOCOL, $exception->getMessage());
             }
         );
     }
@@ -149,7 +149,7 @@ class AgencyTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals(Agency::ERROR_APPROVED_NOT_BOOLEAN, $exception->getMessage());
+                $this->assertEquals(Agency::$ERROR_APPROVED_NOT_BOOLEAN, $exception->getMessage());
             }
         );
 
@@ -160,7 +160,7 @@ class AgencyTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals(Agency::ERROR_APPROVED_NOT_BOOLEAN, $exception->getMessage());
+                $this->assertEquals(Agency::$ERROR_APPROVED_NOT_BOOLEAN, $exception->getMessage());
             }
         );
     }

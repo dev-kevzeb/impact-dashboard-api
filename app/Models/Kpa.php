@@ -5,12 +5,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use RuntimeException;
 
-class Donor extends Model
+class Kpa extends Model
 {
     // Constantes de mensajes de error
-    public static $ERROR_NAME_EMPTY = 'el nombre del donante no debe ir vacio';
-    public static $ERROR_NAME_MIN_LENGTH = 'el nombre del donante debe tener al menos 2 caracteres';
-    
+    public static $ERROR_NAME_EMPTY = 'el nombre del KPA no debe ir vacio';
+    public static $ERROR_NAME_MIN_LENGTH = 'el nombre del KPA debe tener al menos 2 caracteres';
+    public static $ERROR_NAME_MAX_LENGTH = 'el nombre del KPA no debe exceder 100 caracteres';
+
     private string $name;
     
     public function __construct(string $name)
@@ -18,7 +19,7 @@ class Donor extends Model
         $this->name = $name;
     }
     
-    public static function at($name): Donor  
+    public static function at($name): Kpa  
     {
         if (empty(trim($name))) {
             throw new RuntimeException(self::$ERROR_NAME_EMPTY);
@@ -26,13 +27,11 @@ class Donor extends Model
         if (strlen(trim($name)) < 2) {
             throw new RuntimeException(self::$ERROR_NAME_MIN_LENGTH);
         }
+        if (strlen(trim($name)) > 100) {
+            throw new RuntimeException(self::$ERROR_NAME_MAX_LENGTH);
+        }
         
-        return new Donor($name);
-    }
-    
-    public function validateName(): bool
-    {
-        return strlen($this->name) >= 2;
+        return new Kpa(trim($name));
     }
     
     public function getName(): string
