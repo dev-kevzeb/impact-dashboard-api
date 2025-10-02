@@ -63,7 +63,7 @@ class SdgTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals(Sdg::$ERROR_INVALID_IMAGE_FILE, $exception->getMessage());
+                $this->assertEquals(Sdg::$ERROR_INVALID_EXTENSION, $exception->getMessage());
             }
         );
     }
@@ -123,7 +123,7 @@ class SdgTest extends TestCase
                 },
                 RuntimeException::class,
                 function ($exception) {
-                    $this->assertEquals(Sdg::$ERROR_INVALID_IMAGE_FILE, $exception->getMessage());
+                    $this->assertEquals(Sdg::$ERROR_INVALID_EXTENSION, $exception->getMessage());
                 }
             );
         }
@@ -184,6 +184,64 @@ class SdgTest extends TestCase
             $sdg = Sdg::at($name);
             $this->assertEquals($name, $sdg->getImage());
             $this->assertInstanceOf(Sdg::class, $sdg);
+        }
+    }
+
+    public function test_image_without_extension_throws_specific_error()
+    {
+        $namesWithoutExtension = ["imagen", "sdg1", "no-poverty", "sustainability"];
+
+        foreach ($namesWithoutExtension as $name) {
+            $this->shouldThrowAndAssert(
+                function () use ($name) {
+                    Sdg::at($name);
+                },
+                RuntimeException::class,
+                function ($exception) {
+                    $this->assertEquals(Sdg::$ERROR_MISSING_EXTENSION, $exception->getMessage());
+                }
+            );
+        }
+    }
+
+    public function test_image_with_only_extension_throws_specific_error()
+    {
+        $onlyExtensions = [".jpg", ".png", ".gif", "  .svg  ", "\t.webp"];
+
+        foreach ($onlyExtensions as $name) {
+            $this->shouldThrowAndAssert(
+                function () use ($name) {
+                    Sdg::at($name);
+                },
+                RuntimeException::class,
+                function ($exception) {
+                    $this->assertEquals(Sdg::$ERROR_MISSING_FILENAME, $exception->getMessage());
+                }
+            );
+        }
+    }
+
+    public function test_error_messages_are_specific_and_clear()
+    {
+        $testCases = [
+            [".jpg", Sdg::$ERROR_MISSING_FILENAME, "solo extensión"],
+            ["imagen", Sdg::$ERROR_MISSING_EXTENSION, "sin extensión"],
+            ["imagen.txt", Sdg::$ERROR_INVALID_EXTENSION, "extensión inválida"],
+            ["", Sdg::$ERROR_IMAGE_EMPTY, "completamente vacío"],
+            ["   ", Sdg::$ERROR_IMAGE_EMPTY, "solo espacios"]
+        ];
+
+        foreach ($testCases as [$input, $expectedError, $description]) {
+            $this->shouldThrowAndAssert(
+                function () use ($input) {
+                    Sdg::at($input);
+                },
+                RuntimeException::class,
+                function ($exception) use ($expectedError, $description, $input) {
+                    $this->assertEquals($expectedError, $exception->getMessage(),
+                        "Error incorrecto para {$description} ('{$input}')");
+                }
+            );
         }
     }
 
