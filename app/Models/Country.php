@@ -7,6 +7,13 @@ use RuntimeException;
 
 class Country extends Model
 {
+    // Constantes para mensajes de validación
+    public static $ERROR_NAME_EMPTY = 'el nombre del país no debe ir vacio';
+    public static $ERROR_NAME_TOO_SHORT = 'el nombre del país debe tener al menos 2 caracteres';
+    public static $ERROR_NAME_TOO_LONG = 'el nombre del país no debe exceder 100 caracteres';
+    public static $ERROR_NAME_INVALID_CHARACTERS = 'el nombre del país contiene caracteres no válidos';
+    public static $ERROR_CURRENCY_INVALID = 'la moneda debe ser una instancia de Currency';
+
     private string $name;
     private Currency $currency;
     static $INVALIDNAME = 'el nombre del país no debe ir vacio';
@@ -20,27 +27,28 @@ class Country extends Model
     {
         
         if (empty(trim($name))) {
-            throw new RuntimeException('el nombre del país no debe ir vacio');
+            throw new RuntimeException(self::$ERROR_NAME_EMPTY);
         }
         
         $trimmedName = trim($name);
         
         if (strlen($trimmedName) < 2) {
-            throw new RuntimeException('el nombre del país debe tener al menos 2 caracteres');
+            throw new RuntimeException(self::$ERROR_NAME_TOO_SHORT);
         }
         
         if (strlen($trimmedName) > 100) {
-            throw new RuntimeException('el nombre del país no debe exceder 100 caracteres');
+            throw new RuntimeException(self::$ERROR_NAME_TOO_LONG);
         }
         
         // Validar que contenga solo letras, espacios, guiones, apostrofes y caracteres unicode válidos
         if (!preg_match('/^[a-zA-ZÀ-ÿñÑ\s\-\'\.]+$/u', $trimmedName)) {
-            throw new RuntimeException('el nombre del país contiene caracteres no válidos');
+            throw new RuntimeException(self::$ERROR_NAME_INVALID_CHARACTERS);
         }
         
         if (!($currency instanceof Currency)) {
-            throw new RuntimeException('la moneda debe ser una instancia de Currency');
-        }        return new Country($trimmedName, $currency);
+            throw new RuntimeException(self::$ERROR_CURRENCY_INVALID);
+        }
+        return new Country($trimmedName, $currency);
     }
 
     

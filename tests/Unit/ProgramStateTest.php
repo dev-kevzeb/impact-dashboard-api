@@ -26,7 +26,6 @@ class ProgramStateTest extends TestCase
         $programState = ProgramState::at("ACTIVE");
 
         $this->assertEquals("ACTIVE", $programState->getState());
-        $this->assertTrue($programState->validateState());
         $this->assertTrue($programState->isActive());
         $this->assertFalse($programState->isInactive());
         $this->assertFalse($programState->isComplete());
@@ -38,7 +37,6 @@ class ProgramStateTest extends TestCase
         $programState = ProgramState::at("INACTIVE");
 
         $this->assertEquals("INACTIVE", $programState->getState());
-        $this->assertTrue($programState->validateState());
         $this->assertFalse($programState->isActive());
         $this->assertTrue($programState->isInactive());
         $this->assertFalse($programState->isComplete());
@@ -50,7 +48,6 @@ class ProgramStateTest extends TestCase
         $programState = ProgramState::at("COMPLETE");
 
         $this->assertEquals("COMPLETE", $programState->getState());
-        $this->assertTrue($programState->validateState());
         $this->assertFalse($programState->isActive());
         $this->assertFalse($programState->isInactive());
         $this->assertTrue($programState->isComplete());
@@ -65,7 +62,20 @@ class ProgramStateTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals("el estado del programa no debe ir vacio", $exception->getMessage());
+                $this->assertEquals(ProgramState::$ERROR_STATE_EMPTY, $exception->getMessage());
+            }
+        );
+    }
+
+    public function test_program_state_cannot_be_only_spaces()
+    {
+        $this->shouldThrowAndAssert(
+            function () {
+                ProgramState::at("   ");
+            },
+            RuntimeException::class,
+            function ($exception) {
+                $this->assertEquals(ProgramState::$ERROR_STATE_EMPTY, $exception->getMessage());
             }
         );
     }
@@ -78,7 +88,7 @@ class ProgramStateTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals("el estado del programa debe ser: ACTIVE, INACTIVE o COMPLETE", $exception->getMessage());
+                $this->assertEquals(ProgramState::$ERROR_STATE_INVALID, $exception->getMessage());
             }
         );
     }
@@ -91,7 +101,7 @@ class ProgramStateTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals("el estado del programa debe ser: ACTIVE, INACTIVE o COMPLETE", $exception->getMessage());
+                $this->assertEquals(ProgramState::$ERROR_STATE_INVALID, $exception->getMessage());
             }
         );
     }
@@ -104,7 +114,7 @@ class ProgramStateTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals("el estado del programa debe ser: ACTIVE, INACTIVE o COMPLETE", $exception->getMessage());
+                $this->assertEquals(ProgramState::$ERROR_STATE_INVALID, $exception->getMessage());
             }
         );
     }
@@ -123,7 +133,6 @@ class ProgramStateTest extends TestCase
             $programState = ProgramState::at($stateName);
             
             $this->assertEquals($stateName, $programState->getState());
-            $this->assertTrue($programState->validateState());
             $this->assertEquals($expectedBooleans['isActive'], $programState->isActive());
             $this->assertEquals($expectedBooleans['isInactive'], $programState->isInactive());
             $this->assertEquals($expectedBooleans['isComplete'], $programState->isComplete());
