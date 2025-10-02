@@ -17,7 +17,7 @@ class ProjectState extends Model
     {
         return $this->name;
     }
-    public function isString($value):bool
+    public static function isString($value):bool
     {
         return is_string($value);
     }

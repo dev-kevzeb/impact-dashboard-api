@@ -29,7 +29,7 @@ class IndicatorTest extends TestCase
             function() use ($indicatorType){ Indicator::at("In", "MedidaValida", $indicatorType, 1); },
             RuntimeException::class,
             function($e){
-                $this->assertEquals($e->getMessage(), 'el nombre del indicador no debe ser null o menor a 3 caracteres');
+                $this->assertEquals($e->getMessage(), Indicator::$NAME_MIN_LENGTH);
             }   
         );
             
@@ -39,10 +39,10 @@ class IndicatorTest extends TestCase
         $indicatorType = IndicatorType::at("TipoValido"); 
 
         $this->assertThrows(
-            function() use ($indicatorType){ Indicator::at("", "MedidaValida", $indicatorType); },
+            function() use ($indicatorType){ Indicator::at("", "MedidaValida", $indicatorType, 1); },
             RuntimeException::class,
             function($e){
-                $this->assertEquals($e->getMessage(), 'el nombre del indicador no debe ser null o menor a 3 caracteres');
+                $this->assertEquals($e->getMessage(), Indicator::$NAME_MIN_LENGTH);
             }   
         );
             
@@ -51,10 +51,10 @@ class IndicatorTest extends TestCase
     {
         $indicatorType = IndicatorType::at("TipoValido"); 
         $this->assertThrows(
-            function() use ($indicatorType){ Indicator::at(null, "MedidaValida", $indicatorType); },
+            function() use ($indicatorType){ Indicator::at(null, "MedidaValida", $indicatorType, 1) ; },
             RuntimeException::class,
             function($e){
-                $this->assertEquals($e->getMessage(), 'el nombre del indicador no debe ser null o menor a 3 caracteres');
+                $this->assertEquals($e->getMessage(), Indicator::$NAME_MIN_LENGTH);
             }
         );
     }
@@ -63,7 +63,7 @@ class IndicatorTest extends TestCase
         $indicatorType = IndicatorType::at("TipoValido"); 
 
         $this->assertThrows(
-            function() use ($indicatorType){ Indicator::at("IndicadorValido", "", $indicatorType); },
+            function() use ($indicatorType){ Indicator::at("IndicadorValido", "", $indicatorType, 1); },
             RuntimeException::class,
             function($e){
                 $this->assertEquals($e->getMessage(), 'la medida del indicador no debe ser null o menor a 3 caracteres');
@@ -76,7 +76,7 @@ class IndicatorTest extends TestCase
         $indicatorType = IndicatorType::at("TipoValido"); 
 
         $this->assertThrows(
-            function() use ($indicatorType){ Indicator::at("IndicadorValido", null, $indicatorType); },
+            function() use ($indicatorType){ Indicator::at("IndicadorValido", null, $indicatorType, 1); },
             RuntimeException::class,
             function($e){
                 $this->assertEquals($e->getMessage(), 'la medida del indicador no debe ser null o menor a 3 caracteres');
@@ -87,10 +87,10 @@ class IndicatorTest extends TestCase
     public function test_validate_indicator_type_not_null()
     {
         $this->assertThrows(
-            function(){ Indicator::at("IndicadorValido", "MedidaValida", null); },
+            function(){ Indicator::at("IndicadorValido", "MedidaValida", null, 1); },
             RuntimeException::class,
             function($e){
-                $this->assertEquals($e->getMessage(), 'el tipo de indicador no debe ser null');
+                $this->assertEquals($e->getMessage(), Indicator::$INSTANCE_OF_INDICATORTYPE);
             }   
         );
             
@@ -98,10 +98,10 @@ class IndicatorTest extends TestCase
     public function test_validate_indicator_type_are_instance_of_indicator_type()
     {
         $this->assertThrows(
-            function(){ Indicator::at("IndicadorValido", "MedidaValida", "NotAnIndicatorType"); },
+            function(){ Indicator::at("IndicadorValido", "MedidaValida", "NotAnIndicatorType", 1); },
             RuntimeException::class,
             function($e){
-                $this->assertEquals($e->getMessage(), 'el tipo de indicador debe ser una instancia de IndicatorType');
+                $this->assertEquals($e->getMessage(), Indicator::$INSTANCE_OF_INDICATORTYPE);
             }   
         );
     }

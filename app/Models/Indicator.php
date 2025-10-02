@@ -11,7 +11,8 @@ class Indicator extends Model
     private string $measure;
     private IndicatorType $type;
     private int $target;
-
+    static $NAME_MIN_LENGTH = "el nombre del tipo de indicador no debe ser null o menor a 3 caracteres";
+    static $INSTANCE_OF_INDICATORTYPE = "el tipo de indicador debe ser una instancia de IndicatorType";
     // constructor
     public function __construct(string $name, string $measure, IndicatorType $type, int $target)
     {   
@@ -40,7 +41,7 @@ class Indicator extends Model
 
     public static function at($name, $measure, $type, $target): Indicator 
     {
-        if(strlen($name) == 0 || strlen($name) < 3)throw new \InvalidArgumentException('el nombre del indicador no debe ser null o menor a 3 caracteres');
+        if(strlen($name) == 0 || strlen($name) < 3)throw new \InvalidArgumentException(self::$NAME_MIN_LENGTH);
         if(strlen($measure) == 0 || strlen($measure) < 1)throw new \InvalidArgumentException('la medida del indicador no debe ser null o menor a 1 caracter');
         if(!$type instanceof IndicatorType) throw new \InvalidArgumentException('el tipo de indicador debe ser una instancia de IndicatorType');
         return new Indicator($name, $measure, $type, $target);

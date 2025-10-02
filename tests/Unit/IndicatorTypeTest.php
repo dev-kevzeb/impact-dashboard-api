@@ -3,6 +3,7 @@ namespace Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
 use App\Models\Country;
+use App\Models\IndicatorType;
 use Exception;
 use PHPUnit\Event\Runtime\Runtime;
 use RuntimeException;
@@ -20,7 +21,7 @@ class IndicatorTypeTest extends TestCase
     }
     public function test_CanNotCreateIndicatorTypeWithEmptyName(){
         $this->assertThrows(
-            function(){ $country = Country::at(""); },
+            function(){ $country = IndicatorType::at(""); },
             RuntimeException::class,
             function($e){
                 $this->assertEquals($e->getMessage(), 'el nombre del tipo de indicador no debe ser null o menor a 3 caracteres');
@@ -29,7 +30,7 @@ class IndicatorTypeTest extends TestCase
     }
     public function test_CanNotCreateIndicatorTypeWithShortName(){
         $this->assertThrows(
-            function(){ $country = Country::at("ab"); },
+            function(){ $country = IndicatorType::at("ab"); },
             RuntimeException::class,
             function($e){
                 $this->assertEquals($e->getMessage(), 'el nombre del tipo de indicador no debe ser null o menor a 3 caracteres');   

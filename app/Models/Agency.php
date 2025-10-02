@@ -7,41 +7,81 @@ use RuntimeException;
 
 class Agency extends Model
 {
-    private $name;
-    private $url;
-    private $isApproved;
-    // constructor 
-    public function __construct($name, $url, $isApproved)
+    private string $name;
+    private string $url;
+    private bool $isApproved;
+
+    public function __construct(string $name, string $url, bool $isApproved)
     {
         $this->name = $name;
         $this->url = $url;
         $this->isApproved = $isApproved;
     }
-    public static function at($name): Agency
+
+    public static function at(string $name, string $url, mixed $isApproved): Agency
     {
-        if(strlen($name)==0){
+        if (empty(trim($name))) {
             throw new RuntimeException('el nombre de la agencia no debe ir vacio');
         }
-        return new Agency($name, '', false);
+
+        $trimmedName = trim($name);
+
+        if (strlen($trimmedName) < 2) {
+            throw new RuntimeException('el nombre de la agencia debe tener al menos 2 caracteres');
+        }
+
+        if (strlen($trimmedName) > 100) {
+            throw new RuntimeException('el nombre de la agencia no debe exceder 100 caracteres');
+        }
+
+        // Validar URL (obligatoria)
+        if (empty(trim($url))) {
+            throw new RuntimeException('la URL de la agencia no debe ir vacia');
+        }
+
+        $trimmedUrl = trim($url);
+
+        if (!filter_var($trimmedUrl, FILTER_VALIDATE_URL)) {
+            throw new RuntimeException('la URL de la agencia debe tener un formato válido');
+        }
+
+        $parsedUrl = parse_url($trimmedUrl);
+        if (!isset($parsedUrl['scheme']) || !in_array($parsedUrl['scheme'], ['http', 'https'])) {
+            throw new RuntimeException('la URL de la agencia debe usar protocolo HTTP o HTTPS');
+        }
+
+        // Validar isApproved
+        if (!is_bool($isApproved)) {
+            throw new RuntimeException('el estado de aprobación debe ser un valor booleano');
+        }
+
+        return new Agency($trimmedName, $trimmedUrl, $isApproved);
     }
 
-
-    // getters
     public function getName(): string
     {
         return $this->name;
     }
+
     public function getUrl(): string
     {
         return $this->url;
     }
+
     public function getIsApproved(): bool
     {
         return $this->isApproved;
     }
-    public function compareIsApproved($isApproved):bool{
 
-    // ("false" => false) , ("falso" => false) , (true => true) , (false => false)
-        return $this->getIsApproved() === $isApproved;
+    public function isApproved(): bool
+    {
+        return $this->isApproved;
     }
+
+    public function compareIsApproved(bool $isApproved): bool
+    {
+        return $this->isApproved === $isApproved;
+    }
+
+
 }

@@ -15,7 +15,7 @@ class Project extends Model
     private string $description;
     private Country $country;
     private Agency $agency;
-    private string $state;
+    private ProjectState $projectState;
     private ?DateTimeImmutable $startDate;
     private ?DateTimeImmutable $endDate;
     private ?DateTimeImmutable $actualEndDate;
@@ -27,13 +27,12 @@ class Project extends Model
     private bool $shared;
     static $INVALIDNAME = 'el nombre del proyecto no debe ser null o menor a 3 caracteres';
 
-
     public function __construct(
         string $name,
         string $description,
         Country $country,
         Agency $agency,
-        string $state,
+        ProjectState $projectState,
         ?DateTimeImmutable $startDate,
         ?DateTimeImmutable $endDate,
         ?DateTimeImmutable $actualEndDate,
@@ -48,7 +47,7 @@ class Project extends Model
         $this->description = $description;
         $this->country = $country;
         $this->agency = $agency;
-        $this->state = $state;
+        $this->projectState = $projectState;
         $this->startDate = $startDate;
         $this->endDate = $endDate;
         $this->actualEndDate = $actualEndDate;
@@ -81,9 +80,9 @@ class Project extends Model
         return $this->agency;
     }
 
-    public function getState(): string
+    public function getState(): ProjectState
     {
-        return $this->state;
+        return $this->projectState;
     }
 
     public function getStartDate(): ?DateTimeImmutable
@@ -130,108 +129,154 @@ class Project extends Model
     {
         return $this->shared;
     }
-    public function validateDate($date, $format = 'Y-m-d')
+
+    public static function validateDateString(?string $date, string $format = 'Y-m-d'): bool
     {
+        if ($date === null) {
+            return false;
+        }
         $d = DateTime::createFromFormat($format, $date);
-        return $d && $d->format($format) == $date;
+        return $d && $d->format($format) === $date;
     }
-    public function isNumeric($value)
+
+    public static function isNumeric($value): bool
     {
         return is_numeric($value);
-    }    
-    public static function at($name, $description,$country, $agency, $state,  $startDate, $endDate, $actualEndDate, $budget, $budgetSpent,$indicator, $expectedImpact, $manager, $shared): Project
+    }
+
+    public static function isString($value): bool
     {
+        return is_string($value);
+    }
 
-
-        if (strlen((string)$name) == 0) {
-            throw new \RuntimeException('el nombre del proyecto no debe ser null');
+    public static function at(
+        $name,
+        $description,
+        $country,
+        $agency,
+        $projectState,
+        $startDate,
+        $endDate,
+        $actualEndDate,
+        $budget,
+        $budgetSpent,
+        $indicator,
+        $expectedImpact,
+        $manager,
+        $shared
+    ): Project {
+        if (!self::isString($name)) {
+            throw new \RuntimeException('el nombre del proyecto debe ser una cadena de texto valida');
         }
-        if (strlen((string)$name) < 3) {
-            throw new \RuntimeException('el nombre del proyecto no debe ser null o menor a 3 caracteres');
+
+        if (!self::isString($description)) {
+            throw new \RuntimeException('la descripcion del proyecto debe ser una cadena de texto valida');
+        }
+        
+        if (!($projectState instanceof ProjectState)) {
+            throw new \RuntimeException('El estado del proyecto debe ser una instancia del modelo ProjectState');
         }
 
-        if($agency== null ) throw new \RuntimeException('la agencia no debe ser null y debe tener un nombre valido');
-        if($country == null) throw new \RuntimeException(Country::$INVALIDNAME);
-        if( strlen($state) < 3 ) throw new \RuntimeException('el estado no debe ser null y debe tener un nombre valido');
-
-        // description validation
-        if(strlen((string)$description) < 10){
-            throw new \RuntimeException('la descripcion del proyecto no debe ser null o menor a 10 caracteres');
+        if (!($agency instanceof Agency)) {
+            throw new \RuntimeException('La agencia debe ser una instancia del modelo Agencia');
         }
-        if(!Project::validateDate($startDate, 'Y-m-d')){
+
+        if (!($country instanceof Country)) {
+            throw new \RuntimeException('El pais debe ser una instancia del modelo Pais');
+        }
+
+        if (!($indicator instanceof Indicator)) {
+            throw new \RuntimeException('El indicador debe ser una instancia valida de Indicator');
+        }
+
+        if (strlen(trim($name)) === 0) {
+            throw new \RuntimeException('el nombre del proyecto no debe estar vacio');
+        }
+
+        if (strlen(trim($name)) < 3) {
+            throw new \RuntimeException('el nombre del proyecto debe tener al menos 3 caracteres');
+        }
+
+        if (strlen(trim($description)) < 10) {
+            throw new \RuntimeException('la descripcion del proyecto debe tener al menos 10 caracteres');
+        }
+        if (!self::validateDateString($startDate)) {
             throw new \RuntimeException('la fecha de inicio no es valida');
         }
 
-        if(!Project::validateDate($endDate, 'Y-m-d')){
+        if (!self::validateDateString($endDate)) {
             throw new \RuntimeException('la fecha de fin no es valida');
         }
-        if(!Project::validateDate($actualEndDate, 'Y-m-d')){
+
+        if (!self::validateDateString($actualEndDate)) {
             throw new \RuntimeException('la fecha actual final no es valida');
         }
 
-        // date validations
-        if($endDate == null || $startDate == null   ){
-            throw new \RuntimeException('Las fechas no deben ser null');
-        }
-        if($startDate > $endDate){
+        $startDateObj = DateTimeImmutable::createFromFormat('Y-m-d', $startDate);
+        $endDateObj = DateTimeImmutable::createFromFormat('Y-m-d', $endDate);
+        $actualEndDateObj = DateTimeImmutable::createFromFormat('Y-m-d', $actualEndDate);
+
+        if ($startDateObj > $endDateObj) {
             throw new \RuntimeException('la fecha de inicio no puede ser mayor a la fecha de fin');
         }
-        if($actualEndDate == null){
-            throw new \RuntimeException('Las fechas no deben ser null');
+
+        if ($actualEndDateObj < $startDateObj) {
+            throw new \RuntimeException('la fecha actual final no puede ser anterior a la fecha de inicio');
         }
 
-        if(!Project::isNumeric($budget) || !Project::isNumeric($budgetSpent)){
+        if (!self::isNumeric($budget) || !self::isNumeric($budgetSpent)) {
             throw new \RuntimeException('El presupuesto y el presupuesto gastado deben ser numeros validos');
         }
-        // budget validations
-        if($budget === null || $budget <= 0){
-            throw new \RuntimeException('El presupuesto total no debe ser null o menor a 0');
-        }
-        if($budgetSpent === null || $budgetSpent < 0){
-            throw new \RuntimeException('el presupuesto gastado no debe ser null o menor a 0');
+
+        $budgetFloat = (float) $budget;
+        $budgetSpentFloat = (float) $budgetSpent;
+
+        if ($budgetFloat <= 0) {
+            throw new \RuntimeException('El presupuesto total debe ser mayor a 0');
         }
 
-        // indicator: must be an Indicator instance with a valid name
-        if(!($indicator instanceof Indicator)){
-            throw new \RuntimeException('El indicador no debe ser null o menor a 3 caracteres');
+        if ($budgetSpentFloat < 0) {
+            throw new \RuntimeException('el presupuesto gastado no puede ser negativo');
         }
-        if(strlen($indicator->getName()) < 3){
-            throw new \RuntimeException('El indicador no debe ser null o menor a 3 caracteres');
+
+        if ($budgetSpentFloat > $budgetFloat) {
+            throw new \RuntimeException('el presupuesto gastado no puede ser mayor al presupuesto total');
         }
-        if(!Project::isNumeric($expectedImpact)){
+
+        if (strlen(trim($indicator->getName())) < 3) {
+            throw new \RuntimeException('El nombre del indicador debe tener al menos 3 caracteres');
+        }
+
+        if (!self::isNumeric($expectedImpact)) {
             throw new \RuntimeException('El impacto esperado debe ser un numero valido');
         }
-        // expected impact
-        if($expectedImpact === null || $expectedImpact < 0){
-            throw new \RuntimeException('el expectedImpact no debe ser null o menor a 0');
-        }
-        if($expectedImpact > 100){
+
+        $expectedImpactFloat = (float) $expectedImpact;
+
+        if ($expectedImpactFloat < 0 || $expectedImpactFloat > 100) {
             throw new \RuntimeException('el impacto esperado debe estar entre 0 y 100');
         }
-
-        // manager
-        if($manager === null || strlen((string)$manager) < 3) {
-            throw new \RuntimeException('El proyecto debe tener un manager asignado');
+        if (!self::isString($manager) || strlen(trim($manager)) < 3) {
+            throw new \RuntimeException('El proyecto debe tener un manager asignado con al menos 3 caracteres');
+        }
+        if (!is_bool($shared)) {
+            throw new \RuntimeException('shared debe ser un valor booleano (true o false)');
         }
 
-        // shared
-        if($shared === null){
-            throw new \RuntimeException('shared no debe ser null o vacio');
-        }
         return new Project(
-            $name,
-            $description,
+            trim($name),
+            trim($description),
             $country,
             $agency,
-            $state,
-            $startDate,
-            $endDate,
-            $actualEndDate,
-            $budget,
-            $budgetSpent,
+            $projectState,
+            $startDateObj,
+            $endDateObj,
+            $actualEndDateObj,
+            $budgetFloat,
+            $budgetSpentFloat,
             $indicator,
-            $expectedImpact,
-            $manager,
+            $expectedImpactFloat,
+            trim($manager),
             $shared
         );
     }
