@@ -16,7 +16,7 @@ class Country extends Model
 
     private string $name;
     private Currency $currency;
-    
+    static $INVALIDNAME = 'el nombre del país no debe ir vacio';
     public function __construct(string $name, Currency $currency)
     {
         $this->name = $name;
