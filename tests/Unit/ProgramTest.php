@@ -11,6 +11,7 @@ use App\Models\ProgramState;
 use App\Models\ProgramBeneficiary;
 use App\Models\Donor;
 use App\Models\Sdg;
+use App\Models\Contact;
 use Exception;
 use RuntimeException;
 
@@ -24,6 +25,7 @@ class ProgramTest extends TestCase
     private Sdg $validSdg2;
     private Donor $validDonor1;
     private Donor $validDonor2;
+    private Contact $validContact;
     private array $validSdgs;
     private array $validDonors;
 
@@ -41,6 +43,7 @@ class ProgramTest extends TestCase
         $this->validSdg2 = Sdg::at("sdg2.png");
         $this->validDonor1 = Donor::at("World Bank");
         $this->validDonor2 = Donor::at("USAID");
+        $this->validContact = Contact::at("Juan", "Pérez", "Director", "juan@email.com", "1234567890");
         
         // Arrays para usar en tests
         $this->validSdgs = [$this->validSdg1, $this->validSdg2];
@@ -70,11 +73,7 @@ class ProgramTest extends TestCase
             startDate: "2025-01-01",
             endDate: "2025-12-31",
             programUrl: "https://programa.com",
-            contactFirstName: "Juan",
-            contactLastName: "Pérez",
-            contactTitle: "Director",
-            contactEmail: "juan@email.com",
-            contactPhone: "1234567890",
+            contact: $this->validContact,
             programBeneficiary: $this->validProgramBeneficiary,
             programState: $this->validProgramState,
             country: $this->validCountry,
@@ -89,11 +88,7 @@ class ProgramTest extends TestCase
         $this->assertEquals("2025-01-01", $program->getStartDate());
         $this->assertEquals("2025-12-31", $program->getEndDate());
         $this->assertEquals("https://programa.com", $program->getProgramUrl());
-        $this->assertEquals("Juan", $program->getContactFirstName());
-        $this->assertEquals("Pérez", $program->getContactLastName());
-        $this->assertEquals("Director", $program->getContactTitle());
-        $this->assertEquals("juan@email.com", $program->getContactEmail());
-        $this->assertEquals("1234567890", $program->getContactPhone());
+        $this->assertEquals($this->validContact, $program->getContact());
         $this->assertEquals($this->validProgramBeneficiary, $program->getProgramBeneficiary());
         $this->assertEquals($this->validProgramState, $program->getProgramState());
         $this->assertEquals($this->validCountry, $program->getCountry());
@@ -115,11 +110,7 @@ class ProgramTest extends TestCase
                     startDate: "2025-01-01",
                     endDate: "2025-12-31",
                     programUrl: "https://programa.com",
-                    contactFirstName: "Juan",
-                    contactLastName: "Pérez",
-                    contactTitle: "Director",
-                    contactEmail: "juan@email.com",
-                    contactPhone: "1234567890",
+                    contact: $this->validContact,
                     programBeneficiary: $this->validProgramBeneficiary,
                     programState: $this->validProgramState,
                     country: $this->validCountry,
@@ -146,11 +137,7 @@ class ProgramTest extends TestCase
                     startDate: "2025-01-01",
                     endDate: "2025-12-31",
                     programUrl: "https://programa.com",
-                    contactFirstName: "Juan",
-                    contactLastName: "Pérez",
-                    contactTitle: "Director",
-                    contactEmail: "juan@email.com",
-                    contactPhone: "1234567890",
+                    contact: $this->validContact,
                     programBeneficiary: $this->validProgramBeneficiary,
                     programState: $this->validProgramState,
                     country: $this->validCountry,
@@ -177,11 +164,7 @@ class ProgramTest extends TestCase
                     startDate: "2025-01-01",
                     endDate: "2025-12-31",
                     programUrl: "https://programa.com",
-                    contactFirstName: "Juan",
-                    contactLastName: "Pérez",
-                    contactTitle: "Director",
-                    contactEmail: "juan@email.com",
-                    contactPhone: "1234567890",
+                    contact: $this->validContact,
                     programBeneficiary: $this->validProgramBeneficiary,
                     programState: $this->validProgramState,
                     country: $this->validCountry,
@@ -206,11 +189,7 @@ class ProgramTest extends TestCase
             startDate: "2025-01-01",
             endDate: "2025-12-31",
             programUrl: "https://programa.com",
-            contactFirstName: "Juan",
-            contactLastName: "Pérez",
-            contactTitle: "Director",
-            contactEmail: "juan@email.com",
-            contactPhone: "1234567890",
+            contact: $this->validContact,
             programBeneficiary: $this->validProgramBeneficiary,
             programState: $this->validProgramState,
             country: $this->validCountry,
@@ -232,11 +211,7 @@ class ProgramTest extends TestCase
             startDate: "2025-01-01",
             endDate: "2025-12-31",
             programUrl: "https://programa.com",
-            contactFirstName: "Juan",
-            contactLastName: "Pérez",
-            contactTitle: "Director",
-            contactEmail: "juan@email.com",
-            contactPhone: "1234567890",
+            contact: $this->validContact,
             programBeneficiary: $this->validProgramBeneficiary,
             programState: $this->validProgramState,
             country: $this->validCountry,
@@ -259,11 +234,7 @@ class ProgramTest extends TestCase
             startDate: "2025-01-01",
             endDate: "2025-12-31",
             programUrl: "", 
-            contactFirstName: "Juan",
-            contactLastName: "Pérez",
-            contactTitle: "Director",
-            contactEmail: "juan@email.com",
-            contactPhone: "1234567890",
+            contact: $this->validContact,
             programBeneficiary: $this->validProgramBeneficiary,
             programState: $this->validProgramState,
             country: $this->validCountry,
@@ -273,32 +244,6 @@ class ProgramTest extends TestCase
         );
 
         $this->assertEquals("", $program->getProgramUrl());
-        $this->assertInstanceOf(Program::class, $program);
-    }
-
-    public function test_contact_phone_can_be_empty_string()
-    {
-        $program = Program::at(
-            name: "Programa Test",
-            description: "Descripción del programa",
-            bannerImg: "banner.jpg",
-            startDate: "2025-01-01",
-            endDate: "2025-12-31",
-            programUrl: "https://programa.com",
-            contactFirstName: "Juan",
-            contactLastName: "Pérez",
-            contactTitle: "Director",
-            contactEmail: "juan@email.com",
-            contactPhone: "", 
-            programBeneficiary: $this->validProgramBeneficiary,
-            programState: $this->validProgramState,
-            country: $this->validCountry,
-            agency: $this->validAgency,
-            sdgs: [$this->validSdg1],
-            programDonors: [$this->validDonor1]
-        );
-
-        $this->assertEquals("", $program->getContactPhone());
         $this->assertInstanceOf(Program::class, $program);
     }
 
@@ -314,11 +259,7 @@ class ProgramTest extends TestCase
                     startDate: "2025-01-01",
                     endDate: "2025-12-31",
                     programUrl: "https://programa.com",
-                    contactFirstName: "Juan",
-                    contactLastName: "Pérez",
-                    contactTitle: "Director",
-                    contactEmail: "juan@email.com",
-                    contactPhone: "1234567890",
+                    contact: $this->validContact,
                     programBeneficiary: $this->validProgramBeneficiary,
                     programState: $this->validProgramState,
                     country: $this->validCountry,
@@ -345,11 +286,7 @@ class ProgramTest extends TestCase
                     startDate: "2025-01-01",
                     endDate: "2025-12-31",
                     programUrl: "https://programa.com",
-                    contactFirstName: "Juan",
-                    contactLastName: "Pérez",
-                    contactTitle: "Director",
-                    contactEmail: "juan@email.com",
-                    contactPhone: "1234567890",
+                    contact: $this->validContact,
                     programBeneficiary: $this->validProgramBeneficiary,
                     programState: $this->validProgramState,
                     country: $this->validCountry,
@@ -379,11 +316,7 @@ class ProgramTest extends TestCase
                     startDate: "2025-01-01",
                     endDate: "2025-12-31",
                     programUrl: "https://programa.com",
-                    contactFirstName: "Juan",
-                    contactLastName: "Pérez",
-                    contactTitle: "Director",
-                    contactEmail: "juan@email.com",
-                    contactPhone: "1234567890",
+                    contact: $this->validContact,
                     programBeneficiary: $this->validProgramBeneficiary,
                     programState: $this->validProgramState,
                     country: $this->validCountry,
@@ -412,11 +345,7 @@ class ProgramTest extends TestCase
                     startDate: "",
                     endDate: "2025-12-31",
                     programUrl: "https://programa.com",
-                    contactFirstName: "Juan",
-                    contactLastName: "Pérez",
-                    contactTitle: "Director",
-                    contactEmail: "juan@email.com",
-                    contactPhone: "1234567890",
+                    contact: $this->validContact,
                     programBeneficiary: $this->validProgramBeneficiary,
                     programState: $this->validProgramState,
                     country: $this->validCountry,
@@ -444,11 +373,7 @@ class ProgramTest extends TestCase
                     startDate: "01/01/2025",
                     endDate: "2025-12-31",
                     programUrl: "https://programa.com",
-                    contactFirstName: "Juan",
-                    contactLastName: "Pérez",
-                    contactTitle: "Director",
-                    contactEmail: "juan@email.com",
-                    contactPhone: "1234567890",
+                    contact: $this->validContact,
                     programBeneficiary: $this->validProgramBeneficiary,
                     programState: $this->validProgramState,
                     country: $this->validCountry,
@@ -476,11 +401,7 @@ class ProgramTest extends TestCase
                     startDate: "2025-01-01",
                     endDate: "",
                     programUrl: "https://programa.com",
-                    contactFirstName: "Juan",
-                    contactLastName: "Pérez",
-                    contactTitle: "Director",
-                    contactEmail: "juan@email.com",
-                    contactPhone: "1234567890",
+                    contact: $this->validContact,
                     programBeneficiary: $this->validProgramBeneficiary,
                     programState: $this->validProgramState,
                     country: $this->validCountry,
@@ -508,11 +429,7 @@ class ProgramTest extends TestCase
                     startDate: "2025-12-31",
                     endDate: "2025-01-01",
                     programUrl: "https://programa.com",
-                    contactFirstName: "Juan",
-                    contactLastName: "Pérez",
-                    contactTitle: "Director",
-                    contactEmail: "juan@email.com",
-                    contactPhone: "1234567890",
+                    contact: $this->validContact,
                     programBeneficiary: $this->validProgramBeneficiary,
                     programState: $this->validProgramState,
                     country: $this->validCountry,
@@ -540,11 +457,7 @@ class ProgramTest extends TestCase
                     startDate: "2025-01-01",
                     endDate: "2050-01-01", // 25 años de duración
                     programUrl: "https://programa.com",
-                    contactFirstName: "Juan",
-                    contactLastName: "Pérez",
-                    contactTitle: "Director",
-                    contactEmail: "juan@email.com",
-                    contactPhone: "1234567890",
+                    contact: $this->validContact,
                     programBeneficiary: $this->validProgramBeneficiary,
                     programState: $this->validProgramState,
                     country: $this->validCountry,
@@ -556,167 +469,6 @@ class ProgramTest extends TestCase
             RuntimeException::class,
             function ($exception) {
                 $this->assertEquals(Program::$ERROR_DURATION_TOO_LONG, $exception->getMessage());
-            }
-        );
-    }
-
-    // Tests de validación de contacto
-    public function test_contact_first_name_cannot_be_empty()
-    {
-        
-        $this->shouldThrowAndAssert(
-            function () {
-                Program::at(
-                    name: "Programa Test",
-                    description: "Descripción del programa",
-                    bannerImg: "banner.jpg",
-                    startDate: "2025-01-01",
-                    endDate: "2025-12-31",
-                    programUrl: "https://programa.com",
-                    contactFirstName: "", 
-                    contactLastName: "Pérez",
-                    contactTitle: "Director",
-                    contactEmail: "juan@email.com",
-                    contactPhone: "1234567890",
-                    programBeneficiary: $this->validProgramBeneficiary,
-                    programState: $this->validProgramState,
-                    country: $this->validCountry,
-                    agency: $this->validAgency,
-                    sdgs: [$this->validSdg1], 
-                    programDonors: [$this->validDonor1]
-                );
-            },
-            RuntimeException::class,
-            function ($exception) {
-                $this->assertEquals(Program::$ERROR_CONTACT_FIRST_NAME_EMPTY, $exception->getMessage());
-            }
-        );
-    }
-
-    public function test_contact_last_name_cannot_be_empty()
-    {
-        
-        $this->shouldThrowAndAssert(
-            function () {
-                Program::at(
-                    name: "Programa Test",
-                    description: "Descripción del programa",
-                    bannerImg: "banner.jpg",
-                    startDate: "2025-01-01",
-                    endDate: "2025-12-31",
-                    programUrl: "https://programa.com",
-                    contactFirstName: "Juan",
-                    contactLastName: "",
-                    contactTitle: "Director",
-                    contactEmail: "juan@email.com",
-                    contactPhone: "1234567890",
-                    programBeneficiary: $this->validProgramBeneficiary,
-                    programState: $this->validProgramState,
-                    country: $this->validCountry,
-                    agency: $this->validAgency,
-                    sdgs: [$this->validSdg1],
-                    programDonors: [$this->validDonor1]
-                );
-            },
-            RuntimeException::class,
-            function ($exception) {
-                $this->assertEquals(Program::$ERROR_CONTACT_LAST_NAME_EMPTY, $exception->getMessage());
-            }
-        );
-    }
-
-    public function test_contact_title_cannot_be_empty()
-    {
-        
-        $this->shouldThrowAndAssert(
-            function () {
-                Program::at(
-                    name: "Programa Test",
-                    description: "Descripción del programa",
-                    bannerImg: "banner.jpg",
-                    startDate: "2025-01-01",
-                    endDate: "2025-12-31",
-                    programUrl: "https://programa.com",
-                    contactFirstName: "Juan",
-                    contactLastName: "Pérez",
-                    contactTitle: "",
-                    contactEmail: "juan@email.com",
-                    contactPhone: "1234567890",
-                    programBeneficiary: $this->validProgramBeneficiary,
-                    programState: $this->validProgramState,
-                    country: $this->validCountry,
-                    agency: $this->validAgency,
-                    sdgs: [$this->validSdg1],
-                    programDonors: [$this->validDonor1]
-                );
-            },
-            RuntimeException::class,
-            function ($exception) {
-                $this->assertEquals(Program::$ERROR_CONTACT_TITLE_EMPTY, $exception->getMessage());
-            }
-        );
-    }
-
-    public function test_contact_email_cannot_be_empty()
-    {
-        
-        $this->shouldThrowAndAssert(
-            function () {
-                Program::at(
-                    name: "Programa Test",
-                    description: "Descripción del programa",
-                    bannerImg: "banner.jpg",
-                    startDate: "2025-01-01",
-                    endDate: "2025-12-31",
-                    programUrl: "https://programa.com",
-                    contactFirstName: "Juan",
-                    contactLastName: "Pérez",
-                    contactTitle: "Director",
-                    contactEmail: "",
-                    contactPhone: "1234567890",
-                    programBeneficiary: $this->validProgramBeneficiary,
-                    programState: $this->validProgramState,
-                    country: $this->validCountry,
-                    agency: $this->validAgency,
-                    sdgs: [$this->validSdg1],
-                    programDonors: [$this->validDonor1]
-                );
-            },
-            RuntimeException::class,
-            function ($exception) {
-                $this->assertEquals(Program::$ERROR_CONTACT_EMAIL_EMPTY, $exception->getMessage());
-            }
-        );
-    }
-
-    public function test_contact_email_invalid_format_throws_runtime_exception()
-    {
-        
-        $this->shouldThrowAndAssert(
-            function () {
-                Program::at(
-                    name: "Programa Test",
-                    description: "Descripción del programa",
-                    bannerImg: "banner.jpg",
-                    startDate: "2025-01-01",
-                    endDate: "2025-12-31",
-                    programUrl: "https://programa.com",
-                    contactFirstName: "Juan",
-                    contactLastName: "Pérez",
-                    contactTitle: "Director",
-                    contactEmail: "email-invalido",
-                    contactPhone: "1234567890",
-                    programBeneficiary: $this->validProgramBeneficiary,
-                    programState: $this->validProgramState,
-                    country: $this->validCountry,
-                    agency: $this->validAgency,
-                    sdgs: [$this->validSdg1],
-                    programDonors: [$this->validDonor1]
-                );
-            },
-            RuntimeException::class,
-            function ($exception) {
-                $this->assertEquals(Program::$ERROR_CONTACT_EMAIL_INVALID_FORMAT, $exception->getMessage());
             }
         );
     }
@@ -735,11 +487,7 @@ class ProgramTest extends TestCase
                     startDate: "2025-01-01",
                     endDate: "2025-12-31",
                     programUrl: "https://programa.com",
-                    contactFirstName: "Juan",
-                    contactLastName: "Pérez",
-                    contactTitle: "Director",
-                    contactEmail: "juan@email.com",
-                    contactPhone: "1234567890",
+                    contact: $this->validContact,
                     programBeneficiary: $this->validProgramBeneficiary,
                     programState: $this->validProgramState,
                     country: $this->validCountry,
@@ -769,11 +517,7 @@ class ProgramTest extends TestCase
                     startDate: "2025-01-01",
                     endDate: "2025-12-31",
                     programUrl: "https://programa.com",
-                    contactFirstName: "Juan",
-                    contactLastName: "Pérez",
-                    contactTitle: "Director",
-                    contactEmail: "juan@email.com",
-                    contactPhone: "1234567890",
+                    contact: $this->validContact,
                     programBeneficiary: $this->validProgramBeneficiary,
                     programState: $this->validProgramState,
                     country: $this->validCountry,
