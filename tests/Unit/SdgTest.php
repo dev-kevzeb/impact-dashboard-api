@@ -26,9 +26,6 @@ class SdgTest extends TestCase
         $sdg = Sdg::at("sdg1.png");
 
         $this->assertEquals("sdg1.png", $sdg->getImage());
-        $this->assertEquals(1, $sdg->getNumber());
-        $this->assertTrue($sdg->validateImage());
-        $this->assertTrue($sdg->isValidSdgNumber());
         $this->assertInstanceOf(Sdg::class, $sdg);
     }
 
@@ -58,99 +55,193 @@ class SdgTest extends TestCase
         );
     }
 
-    public function test_sdg_image_must_contain_valid_number()
+    public function test_sdg_image_must_have_valid_extension()
     {
         $this->shouldThrowAndAssert(
             function () {
-                Sdg::at("imagen.png");
+                Sdg::at("imagen.txt");
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals(Sdg::$ERROR_IMAGE_INVALID_FORMAT, $exception->getMessage());
+                $this->assertEquals(Sdg::$ERROR_INVALID_EXTENSION, $exception->getMessage());
             }
         );
     }
 
-    public function test_sdg_number_must_be_between_1_and_17()
+    public function test_sdg_accepts_flexible_naming()
     {
-        $this->shouldThrowAndAssert(
-            function () {
-                Sdg::at("sdg0.png");
-            },
-            RuntimeException::class,
-            function ($exception) {
-                $this->assertEquals(Sdg::$ERROR_NUMBER_OUT_OF_RANGE, $exception->getMessage());
-            }
-        );
-    }
-
-    public function test_sdg_number_cannot_exceed_17()
-    {
-        $this->shouldThrowAndAssert(
-            function () {
-                Sdg::at("sdg18.png");
-            },
-            RuntimeException::class,
-            function ($exception) {
-                $this->assertEquals(Sdg::$ERROR_NUMBER_OUT_OF_RANGE, $exception->getMessage());
-            }
-        );
-    }
-
-    public function test_sdg_with_all_valid_numbers()
-    {
-        for ($i = 1; $i <= 17; $i++) {
-            $sdg = Sdg::at("sdg{$i}.png");
-            
-            $this->assertEquals("sdg{$i}.png", $sdg->getImage());
-            $this->assertEquals($i, $sdg->getNumber());
-            $this->assertTrue($sdg->isValidSdgNumber());
+        $flexibleNames = [
+            "no-poverty.jpg",
+            "objetivo_desarrollo_sostenible_1.png",
+            "custom-sustainability-goal.svg",
+            "sdg18.png",
+            "clean-water-sanitation.webp"
+        ];
+        
+        foreach ($flexibleNames as $name) {
+            $sdg = Sdg::at($name);
+            $this->assertEquals($name, $sdg->getImage());
+            $this->assertInstanceOf(Sdg::class, $sdg);
         }
     }
 
-    public function test_sdg_with_uppercase_format_is_valid()
+    public function test_sdg_with_various_valid_extensions()
     {
-        $sdg = Sdg::at("SDG5.png");
-
-        $this->assertEquals("SDG5.png", $sdg->getImage());
-        $this->assertEquals(5, $sdg->getNumber());
-        $this->assertTrue($sdg->isValidSdgNumber());
-        $this->assertInstanceOf(Sdg::class, $sdg);
-    }
-
-    public function test_sdg_with_different_extensions_is_valid()
-    {
-        $extensions = ["jpg", "jpeg", "png", "gif", "webp"];
+        $extensions = ["jpg", "jpeg", "png", "gif", "webp", "svg"];
         
         foreach ($extensions as $ext) {
-            $sdg = Sdg::at("sdg3.{$ext}");
-            
-            $this->assertEquals("sdg3.{$ext}", $sdg->getImage());
-            $this->assertEquals(3, $sdg->getNumber());
-            $this->assertTrue($sdg->isValidSdgNumber());
+            $sdg = Sdg::at("any-name.{$ext}");
+            $this->assertEquals("any-name.{$ext}", $sdg->getImage());
+            $this->assertInstanceOf(Sdg::class, $sdg);
         }
     }
 
     public function test_sdg_with_path_is_valid()
     {
-        $sdg = Sdg::at("images/sdgs/sdg7.png");
+        $sdg = Sdg::at("images/sdgs/sustainability-goal.png");
 
-        $this->assertEquals("images/sdgs/sdg7.png", $sdg->getImage());
-        $this->assertEquals(7, $sdg->getNumber());
-        $this->assertTrue($sdg->isValidSdgNumber());
+        $this->assertEquals("images/sdgs/sustainability-goal.png", $sdg->getImage());
         $this->assertInstanceOf(Sdg::class, $sdg);
     }
 
-    public function test_sdg_with_double_digit_numbers()
+    public function test_sdg_trims_whitespace()
     {
-        $doubleDigits = [10, 11, 12, 13, 14, 15, 16, 17];
+        $sdg = Sdg::at("  clean-energy.jpg  ");
         
-        foreach ($doubleDigits as $number) {
-            $sdg = Sdg::at("sdg{$number}.png");
-            
-            $this->assertEquals("sdg{$number}.png", $sdg->getImage());
-            $this->assertEquals($number, $sdg->getNumber());
-            $this->assertTrue($sdg->isValidSdgNumber());
+        $this->assertEquals("clean-energy.jpg", $sdg->getImage());
+        $this->assertInstanceOf(Sdg::class, $sdg);
+    }
+
+    public function test_invalid_file_extensions_throw_error()
+    {
+        $invalidExtensions = ["txt", "doc", "pdf", "mp4", "exe"];
+        
+        foreach ($invalidExtensions as $ext) {
+            $this->shouldThrowAndAssert(
+                function () use ($ext) {
+                    Sdg::at("file.{$ext}");
+                },
+                RuntimeException::class,
+                function ($exception) {
+                    $this->assertEquals(Sdg::$ERROR_INVALID_EXTENSION, $exception->getMessage());
+                }
+            );
+        }
+    }
+
+    public function test_image_name_too_long_throws_error()
+    {
+        $longName = str_repeat("a", 300) . ".jpg";
+        
+        $this->shouldThrowAndAssert(
+            function () use ($longName) {
+                Sdg::at($longName);
+            },
+            RuntimeException::class,
+            function ($exception) {
+                $this->assertEquals(Sdg::$ERROR_IMAGE_NAME_TOO_LONG, $exception->getMessage());
+            }
+        );
+    }
+
+    public function test_image_name_with_dangerous_characters_throws_error()
+    {
+        $dangerousNames = [
+            "image<script>.jpg",
+            "file>danger.png",
+            "bad:name.gif",
+            "quote\"file.jpg",
+            "pipe|name.png",
+            "question?mark.jpg",
+            "asterisk*file.png",
+            "back\\slash.jpg"
+        ];
+        
+        foreach ($dangerousNames as $name) {
+            $this->shouldThrowAndAssert(
+                function () use ($name) {
+                    Sdg::at($name);
+                },
+                RuntimeException::class,
+                function ($exception) {
+                    $this->assertEquals(Sdg::$ERROR_INVALID_CHARACTERS, $exception->getMessage());
+                }
+            );
+        }
+    }
+
+    public function test_image_name_with_valid_special_characters()
+    {
+        $validNames = [
+            "goal-1-no-poverty.jpg",
+            "sustainable_development.png",
+            "clean.water.sanitation.gif",
+            "goal (1) - no poverty.jpg",
+            "sdg #1 poverty.png"
+        ];
+        
+        foreach ($validNames as $name) {
+            $sdg = Sdg::at($name);
+            $this->assertEquals($name, $sdg->getImage());
+            $this->assertInstanceOf(Sdg::class, $sdg);
+        }
+    }
+
+    public function test_image_without_extension_throws_specific_error()
+    {
+        $namesWithoutExtension = ["imagen", "sdg1", "no-poverty", "sustainability"];
+
+        foreach ($namesWithoutExtension as $name) {
+            $this->shouldThrowAndAssert(
+                function () use ($name) {
+                    Sdg::at($name);
+                },
+                RuntimeException::class,
+                function ($exception) {
+                    $this->assertEquals(Sdg::$ERROR_MISSING_EXTENSION, $exception->getMessage());
+                }
+            );
+        }
+    }
+
+    public function test_image_with_only_extension_throws_specific_error()
+    {
+        $onlyExtensions = [".jpg", ".png", ".gif", "  .svg  ", "\t.webp"];
+
+        foreach ($onlyExtensions as $name) {
+            $this->shouldThrowAndAssert(
+                function () use ($name) {
+                    Sdg::at($name);
+                },
+                RuntimeException::class,
+                function ($exception) {
+                    $this->assertEquals(Sdg::$ERROR_MISSING_FILENAME, $exception->getMessage());
+                }
+            );
+        }
+    }
+
+    public function test_error_messages_are_specific_and_clear()
+    {
+        $testCases = [
+            [".jpg", Sdg::$ERROR_MISSING_FILENAME, "solo extensión"],
+            ["imagen", Sdg::$ERROR_MISSING_EXTENSION, "sin extensión"],
+            ["imagen.txt", Sdg::$ERROR_INVALID_EXTENSION, "extensión inválida"],
+            ["", Sdg::$ERROR_IMAGE_EMPTY, "completamente vacío"],
+            ["   ", Sdg::$ERROR_IMAGE_EMPTY, "solo espacios"]
+        ];
+
+        foreach ($testCases as [$input, $expectedError, $description]) {
+            $this->shouldThrowAndAssert(
+                function () use ($input) {
+                    Sdg::at($input);
+                },
+                RuntimeException::class,
+                function ($exception) use ($expectedError, $description, $input) {
+                    $this->assertEquals($expectedError, $exception->getMessage(),
+                        "Error incorrecto para {$description} ('{$input}')");
+                }
+            );
         }
     }
 

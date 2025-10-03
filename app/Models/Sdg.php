@@ -8,17 +8,18 @@ use RuntimeException;
 class Sdg extends Model
 {
     // Constantes de mensajes de error
-    public static $ERROR_IMAGE_EMPTY = 'la imagen del SDG no debe ir vacio';
-    public static $ERROR_IMAGE_INVALID_FORMAT = 'la imagen del SDG debe contener un número válido (ej: sdg1.png)';
-    public static $ERROR_NUMBER_OUT_OF_RANGE = 'el número del SDG debe estar entre 1 y 17';
+    public static $ERROR_IMAGE_EMPTY = 'el nombre de la imagen del SDG no debe ir vacío';
+    public static $ERROR_MISSING_EXTENSION = 'el archivo debe tener una extensión (ejemplos: .jpg, .png, .gif, .webp, .svg)';
+    public static $ERROR_MISSING_FILENAME = 'el archivo debe tener un nombre, no solo la extensión';
+    public static $ERROR_INVALID_EXTENSION = 'la extensión del archivo no es válida. Extensiones permitidas: jpg, png, gif, webp, svg';
+    public static $ERROR_IMAGE_NAME_TOO_LONG = 'el nombre de la imagen no puede exceder 255 caracteres';
+    public static $ERROR_INVALID_CHARACTERS = 'el nombre de la imagen contiene caracteres no permitidos: < > : " | ? * \\ null';
 
     private string $image;
-    private int $number;
     
-    public function __construct(string $image, int $number)
+    public function __construct(string $image)
     {
         $this->image = $image;
-        $this->number = $number;
     }
     
     public static function at($image): Sdg
@@ -27,36 +28,58 @@ class Sdg extends Model
             throw new RuntimeException(self::$ERROR_IMAGE_EMPTY);
         }
         
-        // Extraer número del SDG es OBLIGATORIO
-        if (!preg_match('/sdg(\d+)/i', $image, $matches)) {
-            throw new RuntimeException(self::$ERROR_IMAGE_INVALID_FORMAT);
+        $trimmedImage = trim($image);
+
+        if (strlen($trimmedImage) > 255) {
+            throw new RuntimeException(self::$ERROR_IMAGE_NAME_TOO_LONG);
+        }
+
+        if (!self::hasValidCharacters($trimmedImage)) {
+            throw new RuntimeException(self::$ERROR_INVALID_CHARACTERS);
+        }
+
+        $extension = pathinfo($trimmedImage, PATHINFO_EXTENSION);
+        if (empty($extension)) {
+            throw new RuntimeException(self::$ERROR_MISSING_EXTENSION);
+        }
+
+        $filename = pathinfo($trimmedImage, PATHINFO_FILENAME);
+        if (empty(trim($filename))) {
+            throw new RuntimeException(self::$ERROR_MISSING_FILENAME);
+        }
+
+        if (!self::isValidImageFile($trimmedImage)) {
+            throw new RuntimeException(self::$ERROR_INVALID_EXTENSION);
         }
         
-        $number = (int)$matches[1];
-        if ($number < 1 || $number > 17) {
-            throw new RuntimeException(self::$ERROR_NUMBER_OUT_OF_RANGE);
-        }
-        
-        return new Sdg($image, $number);
+        return new Sdg($trimmedImage);
     }
     
-    public function validateImage(): bool
+    private static function isValidImageFile(string $filename): bool
     {
-        return strlen($this->image) > 0;
+        // Solo valida que la extensión sea de imagen válida
+        $extension = pathinfo($filename, PATHINFO_EXTENSION);
+        $validExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'];
+        $extension = strtolower($extension);
+        return in_array($extension, $validExtensions);
+    }
+    
+    private static function hasValidCharacters(string $filename): bool
+    {
+        // Caracteres problemáticos en nombres de archivo
+        $dangerousChars = ['<', '>', ':', '"', '|', '?', '*', '\\', "\0"];
+        
+        foreach ($dangerousChars as $char) {
+            if (str_contains($filename, $char)) {
+                return false;
+            }
+        }
+        
+        return true;
     }
     
     public function getImage(): string
     {
         return $this->image;
-    }
-    
-    public function getNumber(): int
-    {
-        return $this->number;
-    }
-    
-    public function isValidSdgNumber(): bool
-    {
-        return $this->number >= 1 && $this->number <= 17;
     }
 }
