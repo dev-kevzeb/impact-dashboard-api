@@ -109,14 +109,40 @@ class Contact extends Model
         
         $trimmedEmail = trim($email);
         
-        if (!self::isValidEmail($trimmedEmail)) {
+        // Validar formato básico
+        if (!filter_var(strtolower($trimmedEmail), FILTER_VALIDATE_EMAIL, FILTER_FLAG_EMAIL_UNICODE)) {
+            throw new RuntimeException(self::$ERROR_EMAIL_INVALID_FORMAT);
+        }
+        
+        // Validar longitud máxima RFC 5321
+        if (strlen($trimmedEmail) > 254) {
+            throw new RuntimeException(self::$ERROR_EMAIL_TOO_LONG);
+        }
+        
+        // Validar dominio DNS
+        $domain = substr(strrchr($trimmedEmail, '@'), 1);
+        if (empty($domain) || (!checkdnsrr($domain, 'MX') && !checkdnsrr($domain, 'A'))) {
+            throw new RuntimeException(self::$ERROR_EMAIL_INVALID_DOMAIN);
         }
 
         // Validar phone (opcional)
         $trimmedPhone = trim($phone);
         if (!empty($trimmedPhone)) {
-            if (!self::isValidPhoneFormat($trimmedPhone)) {
+            // Validar formato básico
+            if (!preg_match('/^(\+?\d{1,4})?[\s\-]?\(?\d{1,4}\)?[\s\-]?\d+(\s?\-?\d+)*$/', $trimmedPhone)) {
                 throw new RuntimeException(self::$ERROR_PHONE_INVALID_FORMAT);
+            }
+            
+            // Validar longitud de dígitos
+            $digitsOnly = preg_replace('/\D/', '', $trimmedPhone);
+            $length = strlen($digitsOnly);
+            
+            if ($length < 7) {
+                throw new RuntimeException(self::$ERROR_PHONE_TOO_SHORT);
+            }
+            
+            if ($length > 15) {
+                throw new RuntimeException(self::$ERROR_PHONE_TOO_LONG);
             }
         }
 
@@ -127,50 +153,6 @@ class Contact extends Model
     {
         // Letras, espacios, acentos, guiones, apostrofes, ñÑ y puntuación profesional
         return preg_match('/^[a-zA-ZÀ-ÿñÑ\s\'-\.,\/]+$/u', $text);
-    }
-
-    private static function isValidPhoneFormat(string $phone): bool
-    {
-        // Acepta formatos: +591 70123456, 591-70123456, (591) 70123456, 70123456, +1 555 123 4567
-        if (!preg_match('/^(\+?\d{1,4})?[\s\-]?\(?\d{1,4}\)?[\s\-]?\d+(\s?\-?\d+)*$/', $phone)) {
-            return false;
-        }
-        
-        // Validar longitud total de dígitos
-        $digitsOnly = preg_replace('/\D/', '', $phone);
-        $length = strlen($digitsOnly);
-        
-        if ($length < 7) {
-            throw new RuntimeException(self::$ERROR_PHONE_TOO_SHORT);
-        }
-        
-        if ($length > 15) {
-            throw new RuntimeException(self::$ERROR_PHONE_TOO_LONG);
-        }
-        
-        return true;
-    }
-
-    private static function isValidEmail(string $email): bool
-    {
-        // Normalizar email a minúsculas
-        $email = strtolower($email);
-
-        if (!filter_var($email, FILTER_VALIDATE_EMAIL, FILTER_FLAG_EMAIL_UNICODE)) {
-            throw new RuntimeException(self::$ERROR_EMAIL_INVALID_FORMAT);
-        }
-        
-        // RFC 5321 limit
-        if (strlen($email) > 254) {
-            throw new RuntimeException(self::$ERROR_EMAIL_TOO_LONG);
-        }
-        
-        $domain = substr(strrchr($email, '@'), 1);
-        if (empty($domain) || (!checkdnsrr($domain, 'MX') && !checkdnsrr($domain, 'A'))) {
-            throw new RuntimeException(self::$ERROR_EMAIL_INVALID_DOMAIN);
-        }
-        
-        return true;
     }
 
     // Getters

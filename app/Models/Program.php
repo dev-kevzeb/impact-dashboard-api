@@ -35,6 +35,8 @@ class Program
     public static $ERROR_DONORS_INVALID_INSTANCE = 'todos los donantes deben ser instancias de Donor';
     public static $ERROR_SDGS_DUPLICATED = 'no se permiten SDGs duplicados en el programa';
     public static $ERROR_DONORS_DUPLICATED = 'no se permiten donantes duplicados en el programa';
+    public static $ERROR_PROJECTS_DUPLICATED = 'no se permiten proyectos duplicados en el programa';
+    public static $ERROR_PROJECT_INVALID_INSTANCE = 'el proyecto debe ser una instancia de Project';
     private string $name;
     private string $description;
     private string $bannerImg;
@@ -339,6 +341,16 @@ class Program
     // Métodos de gestión de proyectos
     public function addProject($project): void
     {
+        // Validar que sea instancia de Project
+        if (!($project instanceof Project)) {
+            throw new RuntimeException(self::$ERROR_PROJECT_INVALID_INSTANCE);
+        }
+        
+        // Verificar duplicados por nombre
+        if ($this->hasProjectWithName($project->getName())) {
+            throw new RuntimeException(self::$ERROR_PROJECTS_DUPLICATED);
+        }
+        
         $this->projects[] = $project;
     }
 
@@ -355,5 +367,15 @@ class Program
     public function hasProjects(): bool
     {
         return !empty($this->projects);
+    }
+
+    private function hasProjectWithName(string $projectName): bool
+    {
+        foreach ($this->projects as $existingProject) {
+            if ($existingProject->getName() === $projectName) {
+                return true;
+            }
+        }
+        return false;
     }
 }
