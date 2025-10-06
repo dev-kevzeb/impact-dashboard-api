@@ -24,25 +24,7 @@ class Program
     public static $ERROR_DURATION_TOO_LONG = 'la duración del programa no puede exceder 20 años';
     public static $ERROR_URL_INVALID_FORMAT = 'la URL del programa debe tener un formato válido';
     public static $ERROR_URL_INVALID_PROTOCOL = 'la URL del programa debe usar protocolo HTTP o HTTPS';
-    public static $ERROR_CONTACT_FIRST_NAME_EMPTY = 'el nombre del contacto no debe ir vacio';
-    public static $ERROR_CONTACT_FIRST_NAME_MIN_LENGTH = 'el nombre del contacto debe tener al menos 2 caracteres';
-    public static $ERROR_CONTACT_FIRST_NAME_MAX_LENGTH = 'el nombre del contacto no debe exceder 50 caracteres';
-    public static $ERROR_CONTACT_FIRST_NAME_INVALID_CHARS = 'el nombre del contacto contiene caracteres no válidos';
-    public static $ERROR_CONTACT_LAST_NAME_EMPTY = 'el apellido del contacto no debe ir vacio';
-    public static $ERROR_CONTACT_LAST_NAME_MIN_LENGTH = 'el apellido del contacto debe tener al menos 2 caracteres';
-    public static $ERROR_CONTACT_LAST_NAME_MAX_LENGTH = 'el apellido del contacto no debe exceder 50 caracteres';
-    public static $ERROR_CONTACT_LAST_NAME_INVALID_CHARS = 'el apellido del contacto contiene caracteres no válidos';
-    public static $ERROR_CONTACT_TITLE_EMPTY = 'el título del contacto no debe ir vacio';
-    public static $ERROR_CONTACT_TITLE_MIN_LENGTH = 'el título del contacto debe tener al menos 2 caracteres';
-    public static $ERROR_CONTACT_TITLE_MAX_LENGTH = 'el título del contacto no debe exceder 100 caracteres';
-    public static $ERROR_CONTACT_TITLE_INVALID_CHARS = 'el título del contacto contiene caracteres no válidos';
-    public static $ERROR_CONTACT_EMAIL_EMPTY = 'el email del contacto no debe ir vacio';
-    public static $ERROR_CONTACT_EMAIL_INVALID_FORMAT = 'el email del contacto debe tener un formato válido';
-    public static $ERROR_CONTACT_EMAIL_TOO_LONG = 'el email del contacto excede la longitud máxima permitida';
-    public static $ERROR_CONTACT_EMAIL_INVALID_DOMAIN = 'el dominio del email no es válido o no existe';
-    public static $ERROR_CONTACT_PHONE_INVALID_FORMAT = 'el formato del teléfono no es válido - use formato internacional';
-    public static $ERROR_CONTACT_PHONE_TOO_SHORT = 'el teléfono debe tener al menos 7 dígitos';
-    public static $ERROR_CONTACT_PHONE_TOO_LONG = 'el teléfono no debe exceder 15 dígitos';
+    public static $ERROR_CONTACT_INVALID = 'el contacto debe ser una instancia de Contact';
     public static $ERROR_PROGRAM_BENEFICIARY_INVALID = 'el beneficiario debe ser una instancia de ProgramBeneficiary';
     public static $ERROR_PROGRAM_STATE_INVALID = 'el estado debe ser una instancia de ProgramState';
     public static $ERROR_COUNTRY_INVALID = 'el país debe ser una instancia de Country';
@@ -53,23 +35,22 @@ class Program
     public static $ERROR_DONORS_INVALID_INSTANCE = 'todos los donantes deben ser instancias de Donor';
     public static $ERROR_SDGS_DUPLICATED = 'no se permiten SDGs duplicados en el programa';
     public static $ERROR_DONORS_DUPLICATED = 'no se permiten donantes duplicados en el programa';
+    public static $ERROR_PROJECTS_DUPLICATED = 'no se permiten proyectos duplicados en el programa';
+    public static $ERROR_PROJECT_INVALID_INSTANCE = 'el proyecto debe ser una instancia de Project';
     private string $name;
     private string $description;
     private string $bannerImg;
     private string $startDate;
     private string $endDate;
     private string $programUrl;
-    private string $contactFirstName;
-    private string $contactLastName;
-    private string $contactTitle;
-    private string $contactEmail;
-    private string $contactPhone;
+    private Contact $contact;
     private ProgramBeneficiary $programBeneficiary;
     private ProgramState $programState;
     private Country $country;
     private Agency $agency;
     private array $sdgs;
     private array $programDonors;
+    private array $projects;
 
     public function __construct(
         string $name,
@@ -78,11 +59,7 @@ class Program
         string $startDate,
         string $endDate,
         string $programUrl,
-        string $contactFirstName,
-        string $contactLastName,
-        string $contactTitle,
-        string $contactEmail,
-        string $contactPhone,
+        Contact $contact,
         ProgramBeneficiary $programBeneficiary,
         ProgramState $programState,
         Country $country,
@@ -96,20 +73,17 @@ class Program
         $this->startDate = $startDate;
         $this->endDate = $endDate;
         $this->programUrl = $programUrl;
-        $this->contactFirstName = $contactFirstName;
-        $this->contactLastName = $contactLastName;
-        $this->contactTitle = $contactTitle;
-        $this->contactEmail = $contactEmail;
-        $this->contactPhone = $contactPhone;
+        $this->contact = $contact;
         $this->programBeneficiary = $programBeneficiary;
         $this->programState = $programState;
         $this->country = $country;
         $this->agency = $agency;
         $this->sdgs = $sdgs;
         $this->programDonors = $programDonors;
+        $this->projects = []; // Inicializar como array vacío
     }
 
-    public static function at($name, $description, $bannerImg, $startDate, $endDate, $programUrl, $contactFirstName, $contactLastName, $contactTitle, $contactEmail, $contactPhone, $programBeneficiary, $programState, $country, $agency, $sdgs, $programDonors): Program
+    public static function at($name, $description, $bannerImg, $startDate, $endDate, $programUrl, $contact, $programBeneficiary, $programState, $country, $agency, $sdgs, $programDonors): Program
     {
         // Validaciones del nombre
         if (empty(trim($name))) {
@@ -192,90 +166,9 @@ class Program
             }
         }
 
-        // Validaciones de contactFirstName
-        if (empty(trim($contactFirstName))) {
-            throw new RuntimeException(self::$ERROR_CONTACT_FIRST_NAME_EMPTY);
-        }
-        if (strlen(trim($contactFirstName)) < 2) {
-            throw new RuntimeException(self::$ERROR_CONTACT_FIRST_NAME_MIN_LENGTH);
-        }
-        if (strlen(trim($contactFirstName)) > 50) {
-            throw new RuntimeException(self::$ERROR_CONTACT_FIRST_NAME_MAX_LENGTH);
-        }
-        // Validar que contenga solo letras, espacios y caracteres válidos para nombres
-        if (!preg_match('/^[a-zA-ZÀ-ÿñÑ\s\-\'\.]+$/u', trim($contactFirstName))) {
-            throw new RuntimeException(self::$ERROR_CONTACT_FIRST_NAME_INVALID_CHARS);
-        }
-
-        // Validaciones de contactLastName
-        if (empty(trim($contactLastName))) {
-            throw new RuntimeException(self::$ERROR_CONTACT_LAST_NAME_EMPTY);
-        }
-        if (strlen(trim($contactLastName)) < 2) {
-            throw new RuntimeException(self::$ERROR_CONTACT_LAST_NAME_MIN_LENGTH);
-        }
-        if (strlen(trim($contactLastName)) > 50) {
-            throw new RuntimeException(self::$ERROR_CONTACT_LAST_NAME_MAX_LENGTH);
-        }
-        // Validar que contenga solo letras, espacios y caracteres válidos para apellidos
-        if (!preg_match('/^[a-zA-ZÀ-ÿñÑ\s\-\'\.]+$/u', trim($contactLastName))) {
-            throw new RuntimeException(self::$ERROR_CONTACT_LAST_NAME_INVALID_CHARS);
-        }
-
-        // Validaciones de contactTitle
-        if (empty(trim($contactTitle))) {
-            throw new RuntimeException(self::$ERROR_CONTACT_TITLE_EMPTY);
-        }
-        if (strlen(trim($contactTitle)) < 2) {
-            throw new RuntimeException(self::$ERROR_CONTACT_TITLE_MIN_LENGTH);
-        }
-        if (strlen(trim($contactTitle)) > 100) {
-            throw new RuntimeException(self::$ERROR_CONTACT_TITLE_MAX_LENGTH);
-        }
-        // Validar formato de título profesional
-        if (!preg_match('/^[a-zA-ZÀ-ÿñÑ\s\-\.\,\/]+$/u', trim($contactTitle))) {
-            throw new RuntimeException(self::$ERROR_CONTACT_TITLE_INVALID_CHARS);
-        }
-
-        // Validaciones de contactEmail
-        if (empty(trim($contactEmail))) {
-            throw new RuntimeException(self::$ERROR_CONTACT_EMAIL_EMPTY);
-        }
-
-        // validacion robusta con RFC
-        $email = trim(strtolower($contactEmail));
-        if (!filter_var($email, FILTER_VALIDATE_EMAIL, FILTER_FLAG_EMAIL_UNICODE)) {
-            throw new RuntimeException(self::$ERROR_CONTACT_EMAIL_INVALID_FORMAT);
-        }
-        
-        if (strlen($email) > 254) { // RFC 5321 limit
-            throw new RuntimeException(self::$ERROR_CONTACT_EMAIL_TOO_LONG);
-        }
-        
-        // Validar dominio 
-        $domain = substr(strrchr($email, '@'), 1);
-        if (empty($domain) || !checkdnsrr($domain, 'MX') && !checkdnsrr($domain, 'A')) {
-            throw new RuntimeException(self::$ERROR_CONTACT_EMAIL_INVALID_DOMAIN);
-        }
-
-        // Validaciones de contactPhone 
-        if (!empty(trim($contactPhone))) {
-            // Solo validar formato si no está vacío
-            $phoneString = trim($contactPhone);
-
-            // Acepta formatos: +1234567890, +12 345 678 9012, +1-234-567-8901
-            if (!preg_match('/^(\+?\d{1,4})?[\s\-]?\(?\d{1,4}\)?[\s\-]?\d{6,14}$/', $phoneString)) {
-                throw new RuntimeException(self::$ERROR_CONTACT_PHONE_INVALID_FORMAT);
-            }
-            
-            // Validar longitud total 
-            $digitsOnly = preg_replace('/\D/', '', $phoneString);
-            if (strlen($digitsOnly) < 7) {
-                throw new RuntimeException(self::$ERROR_CONTACT_PHONE_TOO_SHORT);
-            }
-            if (strlen($digitsOnly) > 15) {
-                throw new RuntimeException(self::$ERROR_CONTACT_PHONE_TOO_LONG);
-            }
+        // Validaciones de contact
+        if (!($contact instanceof Contact)) {
+            throw new RuntimeException(self::$ERROR_CONTACT_INVALID);
         }
 
         // Validaciones de programBeneficiary
@@ -350,11 +243,7 @@ class Program
             $startDate,
             $endDate,
             $programUrl,
-            $contactFirstName,
-            $contactLastName,
-            $contactTitle,
-            $contactEmail,
-            $contactPhone,
+            $contact,
             $programBeneficiary,
             $programState,
             $country,
@@ -414,29 +303,9 @@ class Program
         return $this->programUrl;
     }
 
-    public function getContactFirstName(): string
+    public function getContact(): Contact
     {
-        return $this->contactFirstName;
-    }
-
-    public function getContactLastName(): string
-    {
-        return $this->contactLastName;
-    }
-
-    public function getContactTitle(): string
-    {
-        return $this->contactTitle;
-    }
-
-    public function getContactEmail(): string
-    {
-        return $this->contactEmail;
-    }
-
-    public function getContactPhone(): string
-    {
-        return $this->contactPhone;
+        return $this->contact;
     }
 
     public function getProgramBeneficiary(): ProgramBeneficiary
@@ -468,4 +337,46 @@ class Program
     {
         return $this->programDonors;
     }
+
+    // Métodos de gestión de proyectos
+    public function addProject($project): void
+    {
+        if (!($project instanceof Project)) {
+            throw new RuntimeException(self::$ERROR_PROJECT_INVALID_INSTANCE);
+        }
+        
+        // Verificar duplicados por nombre
+        if ($this->hasProjectWithName($project->getName())) {
+            throw new RuntimeException(self::$ERROR_PROJECTS_DUPLICATED);
+        }
+        
+        $this->projects[] = $project;
+    }
+
+    private function hasProjectWithName(string $projectName): bool
+    {
+        foreach ($this->projects as $existingProject) {
+            if ($existingProject->getName() === $projectName) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public function getProjects(): array
+    {
+        return $this->projects;
+    }
+
+    public function getProjectCount(): int
+    {
+        return count($this->projects);
+    }
+
+    public function hasProjects(): bool
+    {
+        return !empty($this->projects);
+    }
+
+    
 }
