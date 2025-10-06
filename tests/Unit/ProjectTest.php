@@ -8,14 +8,41 @@ use App\Models\Country;
 use App\Models\Currency;
 use App\Models\Indicator;
 use App\Models\IndicatorType;
+use App\Models\Kpa;
+use App\Models\Measure;
 use App\Models\Project;
 use App\Models\ProjectState;
+use App\Models\StrategicOutput;
 use DateTimeImmutable;
 use Exception;
 use RuntimeException;
 
 class ProjectTest extends TestCase
 {
+    private Project $validProject;
+    private Country $validCountry;
+    private Measure $validMeasure;
+    private StrategicOutput $validStrategicOutput;
+    private Kpa $validKpa;
+    private Agency $validAgency;
+    private Indicator $validIndicator;
+    private ProjectState $validProjectState;
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->validKpa = Kpa::at("KPA Valido");
+        $this->validStrategicOutput = StrategicOutput::at("Output Valido", $this->validKpa);
+        $this->validMeasure = new Measure("Medida Valida", $this->validStrategicOutput);
+
+        $this->validIndicator = Indicator::at(
+            name: "Indicador Valido",
+            measure: "Medida Valida",
+            type: IndicatorType::at("Tipo Valido"),
+            target: 100
+        );
+
+
+    }
     // bloque de codigo, el manejo de errores, forma en que manejamos el error, "CLOUSURE"
     public function shouldThrowAndAssert($should,$exceptionType,$assertions){
         try {
