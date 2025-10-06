@@ -341,7 +341,6 @@ class Program
     // Métodos de gestión de proyectos
     public function addProject($project): void
     {
-        // Validar que sea instancia de Project
         if (!($project instanceof Project)) {
             throw new RuntimeException(self::$ERROR_PROJECT_INVALID_INSTANCE);
         }
@@ -352,6 +351,16 @@ class Program
         }
         
         $this->projects[] = $project;
+    }
+
+    private function hasProjectWithName(string $projectName): bool
+    {
+        foreach ($this->projects as $existingProject) {
+            if ($existingProject->getName() === $projectName) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public function getProjects(): array
@@ -369,13 +378,5 @@ class Program
         return !empty($this->projects);
     }
 
-    private function hasProjectWithName(string $projectName): bool
-    {
-        foreach ($this->projects as $existingProject) {
-            if ($existingProject->getName() === $projectName) {
-                return true;
-            }
-        }
-        return false;
-    }
+    
 }
