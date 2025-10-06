@@ -21,19 +21,46 @@ class IndicatorTypeTest extends TestCase
     }
     public function test_CanNotCreateIndicatorTypeWithEmptyName(){
         $this->assertThrows(
-            function(){ $country = IndicatorType::at(""); },
+            function(){ $indicator = IndicatorType::at(""); },
             RuntimeException::class,
             function($e){
-                $this->assertEquals($e->getMessage(), 'el nombre del tipo de indicador no debe ser null o menor a 3 caracteres');
+                $this->assertEquals($e->getMessage(), IndicatorType::$NAME_MIN_LENGTH);
             }
         );
     }
     public function test_CanNotCreateIndicatorTypeWithShortName(){
         $this->assertThrows(
-            function(){ $country = IndicatorType::at("ab"); },
+            function(){ $indicator = IndicatorType::at("ab"); },
             RuntimeException::class,
             function($e){
-                $this->assertEquals($e->getMessage(), 'el nombre del tipo de indicador no debe ser null o menor a 3 caracteres');   
+                $this->assertEquals($e->getMessage(), IndicatorType::$NAME_MIN_LENGTH);   
+            }
+        );
+    }
+    public function test_canNotCreateIndicatorWithSpacesName(){
+        $this->assertThrows(
+            function(){ $indicator = IndicatorType::at("   "); },
+            RuntimeException::class,
+            function($e){
+                $this->assertEquals($e->getMessage(), IndicatorType::$NAME_MIN_LENGTH);
+            }
+        );
+    }
+    public function test_CanNotCreateIndicatorNameWithNull(){
+        $this->assertThrows(
+            function() { $indicator = IndicatorType::at(null); },
+            RuntimeException::class,
+            function($e){
+                $this->assertEquals($e->getMessage(), IndicatorType::$NAME_MIN_LENGTH);
+            }   
+        );
+    }
+    public function test_CanNotCreateIndicatorNameWithNumber(){
+        $this->assertThrows(
+            function() { $indicator = IndicatorType::at(123);},
+            RuntimeException::class,
+            function($e){
+                $this->assertEquals($e->getMessage(), IndicatorType::$NAME_MUST_BE_STRING);
             }
         );
     }

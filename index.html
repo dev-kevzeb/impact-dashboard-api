@@ -1,11 +1,475 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>EDT - Proyecto e-Learning</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+        padding: 40px 20px;
+        min-height: 100vh;
+    }
+    
+    .container {
+        max-width: 1400px;
+        margin: 0 auto;
+        background: white;
+        padding: 40px;
+        border-radius: 12px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+    
+    h1 {
+        text-align: center;
+        color: #1e3a8a;
+        margin-bottom: 15px;
+        font-size: 32px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    
+    .subtitle {
+        text-align: center;
+        color: #64748b;
+        margin-bottom: 40px;
+        font-size: 16px;
+    }
+    
+    .nivel0 {
+        background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+        color: white;
+        padding: 30px;
+        text-align: center;
+        border-radius: 10px;
+        margin-bottom: 40px;
+        box-shadow: 0 10px 30px rgba(30, 64, 175, 0.3);
+    }
+    
+    .nivel0 h2 {
+        font-size: 28px;
+        margin-bottom: 8px;
+    }
+    
+    .nivel0 .label {
+        font-size: 14px;
+        opacity: 0.9;
+    }
+    
+    .tree {
+        position: relative;
+    }
+    
+    .nivel2-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 30px;
+        margin-bottom: 20px;
+    }
+    
+    .componente {
+        background: #eff6ff;
+        border: 3px solid #3b82f6;
+        border-radius: 10px;
+        padding: 25px;
+        position: relative;
+    }
+    
+    .componente::before {
+        content: '';
+        position: absolute;
+        top: -20px;
+        left: 50%;
+        width: 2px;
+        height: 20px;
+        background: #3b82f6;
+    }
+    
+    .componente-header {
+        background: #2563eb;
+        color: white;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+    
+    .componente-header h3 {
+        font-size: 18px;
+        margin-bottom: 5px;
+    }
+    
+    .componente-header .id {
+        font-size: 13px;
+        opacity: 0.9;
+    }
+    
+    .nivel3-container {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .entregable {
+        background: white;
+        border-left: 5px solid #60a5fa;
+        border-radius: 6px;
+        padding: 18px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        position: relative;
+    }
+    
+    .entregable::before {
+        content: '';
+        position: absolute;
+        left: -28px;
+        top: 50%;
+        width: 23px;
+        height: 2px;
+        background: #3b82f6;
+    }
+    
+    .entregable-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: start;
+        margin-bottom: 12px;
+        gap: 10px;
+    }
+    
+    .entregable-title {
+        color: #1e40af;
+        font-weight: 600;
+        font-size: 15px;
+        flex: 1;
+    }
+    
+    .badge {
+        background: #dbeafe;
+        color: #1e40af;
+        padding: 4px 10px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+    
+    .nivel4-container {
+        margin-top: 12px;
+        padding-left: 20px;
+        border-left: 2px solid #93c5fd;
+    }
+    
+    .paquete {
+        background: #f1f5f9;
+        padding: 12px;
+        border-radius: 5px;
+        margin-bottom: 8px;
+        border-left: 3px solid #60a5fa;
+    }
+    
+    .paquete:last-child {
+        margin-bottom: 0;
+    }
+    
+    .paquete-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .paquete-title {
+        color: #334155;
+        font-size: 14px;
+        font-weight: 600;
+        flex: 1;
+    }
+    
+    .paquete-badge {
+        background: #bfdbfe;
+        color: #1e40af;
+        padding: 3px 8px;
+        border-radius: 3px;
+        font-size: 11px;
+        font-weight: 600;
+    }
+    
+    .resumen {
+        background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+        color: white;
+        padding: 30px;
+        border-radius: 10px;
+        margin-top: 40px;
+        text-align: center;
+    }
+    
+    .resumen h3 {
+        margin-bottom: 25px;
+        font-size: 22px;
+    }
+    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 20px;
+    }
+    
+    .stat-card {
+        background: rgba(255,255,255,0.15);
+        padding: 20px;
+        border-radius: 8px;
+        backdrop-filter: blur(10px);
+    }
+    
+    .stat-number {
+        font-size: 36px;
+        font-weight: bold;
+        margin-bottom: 8px;
+    }
+    
+    .stat-label {
+        font-size: 14px;
+        opacity: 0.95;
+    }
+    
+    @media (max-width: 1024px) {
+        .nivel2-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+    
+    @media print {
+        body {
+            background: white;
+            padding: 0;
+        }
+    }
+</style>
 </head>
 <body>
-    <div class="sketchfab-embed-wrapper"> <iframe title="Male Scan - Mick 002 Holding a Stick Low Poly" frameborder="0" allowfullscreen mozallowfullscreen="true" webkitallowfullscreen="true" allow="autoplay; fullscreen; xr-spatial-tracking" xr-spatial-tracking execution-while-out-of-viewport execution-while-not-rendered web-share src="https://sketchfab.com/models/00ab4678b0d04902ac817a4581649bf7/embed"> </iframe> <p style="font-size: 13px; font-weight: normal; margin: 5px; color: #4A4A4A;"> <a href="https://sketchfab.com/3d-models/male-scan-mick-002-holding-a-stick-low-poly-00ab4678b0d04902ac817a4581649bf7?utm_medium=embed&utm_campaign=share-popup&utm_content=00ab4678b0d04902ac817a4581649bf7" target="_blank" rel="nofollow" style="font-weight: bold; color: #1CAAD9;"> Male Scan - Mick 002 Holding a Stick Low Poly </a> by <a href="https://sketchfab.com/human-engine?utm_medium=embed&utm_campaign=share-popup&utm_content=00ab4678b0d04902ac817a4581649bf7" target="_blank" rel="nofollow" style="font-weight: bold; color: #1CAAD9;"> human-engine </a> on <a href="https://sketchfab.com?utm_medium=embed&utm_campaign=share-popup&utm_content=00ab4678b0d04902ac817a4581649bf7" target="_blank" rel="nofollow" style="font-weight: bold; color: #1CAAD9;">Sketchfab</a></p></div>
+    <div class="container">
+        <h1>Estructura de Desglose del Trabajo (EDT/WBS)</h1>
+        <div class="subtitle">Proyecto e-Learning - Administración de Proyectos</div>
+    <div class="nivel0">
+        <h2>PROYECTO E-LEARNING</h2>
+        <div class="label">Nivel 0 - Raíz del Proyecto</div>
+    </div>
+    
+    <div class="tree">
+        <div class="nivel2-grid">
+            
+            <!-- COMPONENTE 1: Planificación -->
+            <div class="componente">
+                <div class="componente-header">
+                    <h3>PLANIFICACIÓN Y DEFINICIÓN DEL PROYECTO</h3>
+                    <div class="id">Nivel 2 - Componente | ID: 7</div>
+                </div>
+                
+                <div class="nivel3-container">
+                    <div class="entregable">
+                        <div class="entregable-header">
+                            <div class="entregable-title">Documento de Requisitos de Usuario Final Aprobado</div>
+                            <span class="badge">ID: 17</span>
+                        </div>
+                        <div class="nivel4-container">
+                            <div class="paquete">
+                                <div class="paquete-header">
+                                    <div class="paquete-title">Recolección de Requisitos Legales (GDPR, ISO)</div>
+                                    <span class="paquete-badge">ID: 5</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="entregable">
+                        <div class="entregable-header">
+                            <div class="entregable-title">Informe de Análisis de Riesgos Aprobado</div>
+                            <span class="badge">ID: 9</span>
+                        </div>
+                    </div>
+                    
+                    <div class="entregable">
+                        <div class="entregable-header">
+                            <div class="entregable-title">Cierre Administrativo del Proyecto</div>
+                            <span class="badge">ID: 19</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- COMPONENTE 2: Frontend -->
+            <div class="componente">
+                <div class="componente-header">
+                    <h3>DESARROLLO DEL FRONT-END</h3>
+                    <div class="id">Nivel 2 - Componente | ID: 6</div>
+                </div>
+                
+                <div class="nivel3-container">
+                    <div class="entregable">
+                        <div class="entregable-header">
+                            <div class="entregable-title">Diseño de la Interfaz de Usuario (UI) Completo</div>
+                            <span class="badge">ID: 15</span>
+                        </div>
+                    </div>
+                    
+                    <div class="entregable">
+                        <div class="entregable-header">
+                            <div class="entregable-title">Módulo de Registro y Autenticación de Usuarios Terminado</div>
+                            <span class="badge">ID: 1</span>
+                        </div>
+                        <div class="nivel4-container">
+                            <div class="paquete">
+                                <div class="paquete-header">
+                                    <div class="paquete-title">Codificación del Módulo Central de Procesamiento</div>
+                                    <span class="paquete-badge">ID: 8</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- COMPONENTE 3: Backend -->
+            <div class="componente">
+                <div class="componente-header">
+                    <h3>DESARROLLO BACKEND Y ARQUITECTURA</h3>
+                    <div class="id">Nivel 2 - Componente (Implícito)</div>
+                </div>
+                
+                <div class="nivel3-container">
+                    <div class="entregable">
+                        <div class="entregable-header">
+                            <div class="entregable-title">Arquitectura de Software Definida y Documentada</div>
+                            <span class="badge">ID: 4</span>
+                        </div>
+                        <div class="nivel4-container">
+                            <div class="paquete">
+                                <div class="paquete-header">
+                                    <div class="paquete-title">Diseño del Esquema de la Base de Datos</div>
+                                    <span class="paquete-badge">ID: 3</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="entregable">
+                        <div class="entregable-header">
+                            <div class="entregable-title">Módulos de Software Backend Desarrollados y Probados</div>
+                            <span class="badge">ID: 13</span>
+                        </div>
+                        <div class="nivel4-container">
+                            <div class="paquete">
+                                <div class="paquete-header">
+                                    <div class="paquete-title">Desarrollo del Motor de Inteligencia Artificial (IA)</div>
+                                    <span class="paquete-badge">ID: 16</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- COMPONENTE 4: QA -->
+            <div class="componente">
+                <div class="componente-header">
+                    <h3>PRUEBAS Y ASEGURAMIENTO DE LA CALIDAD (QA)</h3>
+                    <div class="id">Nivel 2 - Componente | ID: 2</div>
+                </div>
+                
+                <div class="nivel3-container">
+                    <div class="entregable">
+                        <div class="entregable-header">
+                            <div class="entregable-title">Ambiente de Desarrollo y Pruebas Configurado</div>
+                            <span class="badge">ID: 20</span>
+                        </div>
+                        <div class="nivel4-container">
+                            <div class="paquete">
+                                <div class="paquete-header">
+                                    <div class="paquete-title">Realizar Pruebas de Estrés en la Base de Datos</div>
+                                    <span class="paquete-badge">ID: 11</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="entregable">
+                        <div class="entregable-header">
+                            <div class="entregable-title">Plataforma Operacional en Entorno de Producción</div>
+                            <span class="badge">ID: 10</span>
+                        </div>
+                        <div class="nivel4-container">
+                            <div class="paquete">
+                                <div class="paquete-header">
+                                    <div class="paquete-title">Configuración de Servicios en la Nube (AWS/Azure)</div>
+                                    <span class="paquete-badge">ID: 12</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- COMPONENTE 5: Soporte -->
+            <div class="componente">
+                <div class="componente-header">
+                    <h3>LANZAMIENTO Y SOPORTE POST-IMPLEMENTACIÓN</h3>
+                    <div class="id">Nivel 2 - Componente | ID: 14</div>
+                </div>
+                
+                <div class="nivel3-container">
+                    <div class="entregable">
+                        <div class="entregable-header">
+                            <div class="entregable-title">Plan de Capacitación Implementado</div>
+                            <span class="badge">Entregable</span>
+                        </div>
+                        <div class="nivel4-container">
+                            <div class="paquete">
+                                <div class="paquete-header">
+                                    <div class="paquete-title">Ejecución del Plan de Capacitación al Usuario</div>
+                                    <span class="paquete-badge">ID: 18</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+    
+    <div class="resumen">
+        <h3>RESUMEN DEL PROYECTO</h3>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number">5</div>
+                <div class="stat-label">Componentes (Nivel 2)</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">10</div>
+                <div class="stat-label">Entregables (Nivel 3)</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">7</div>
+                <div class="stat-label">Paquetes de Trabajo (Nivel 4)</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">100%</div>
+                <div class="stat-label">Cobertura EDT</div>
+            </div>
+        </div>
+    </div>
+    
+</div>
 </body>
 </html>
