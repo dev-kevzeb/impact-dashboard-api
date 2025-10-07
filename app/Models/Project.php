@@ -25,6 +25,7 @@ class Project extends Model
     private float $expectedImpact;
     private string $manager;
     private bool $shared;
+    private Contact $contact;
     static $INVALIDNAME = 'el nombre del proyecto no debe ser null o menor a 3 caracteres';
 
     public function __construct(
@@ -41,7 +42,8 @@ class Project extends Model
         Indicator $indicator,
         float $expectedImpact,
         string $manager,
-        bool $shared
+        bool $shared,
+        Contact $contact
     ) {
         $this->name = $name;
         $this->description = $description;
@@ -57,6 +59,7 @@ class Project extends Model
         $this->expectedImpact = $expectedImpact;
         $this->manager = $manager;
         $this->shared = $shared;
+        $this->contact = $contact;
     }
 
     // Getters
@@ -129,7 +132,10 @@ class Project extends Model
     {
         return $this->shared;
     }
-
+    public function getContact(): Contact
+    {
+        return $this->contact;
+    }
     public static function validateDateString(?string $date, string $format = 'Y-m-d'): bool
     {
         if ($date === null) {
@@ -163,7 +169,8 @@ class Project extends Model
         $indicator,
         $expectedImpact,
         $manager,
-        $shared
+        $shared,
+        $contact
     ): Project {
         if (!self::isString($name)) {
             throw new \RuntimeException('el nombre del proyecto debe ser una cadena de texto valida');
@@ -188,7 +195,9 @@ class Project extends Model
         if (!($indicator instanceof Indicator)) {
             throw new \RuntimeException('El indicador debe ser una instancia valida de Indicator');
         }
-
+        if (!($contact instanceof Contact)) {
+            throw new \RuntimeException('El contacto debe ser una instancia valida de Contact');
+        }
         if (strlen(trim($name)) === 0) {
             throw new \RuntimeException('el nombre del proyecto no debe estar vacio');
         }
@@ -277,7 +286,8 @@ class Project extends Model
             $indicator,
             $expectedImpactFloat,
             trim($manager),
-            $shared
+            $shared,
+            $contact
         );
     }
 }
