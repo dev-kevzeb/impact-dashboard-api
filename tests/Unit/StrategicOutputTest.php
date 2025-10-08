@@ -15,7 +15,7 @@ class StrategicOutputTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->validKpa = Kpa::at("Desarrollo Rural");
+        $this->validKpa = Kpa::at("Desarrollo Rural" );
     }
 
     public function shouldThrowAndAssert($should, $exceptionType, $assertions)
