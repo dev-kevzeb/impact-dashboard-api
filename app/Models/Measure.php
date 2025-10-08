@@ -14,6 +14,7 @@ class Measure extends Model
     public static $ERROR_STRATEGIC_OUTPUT_INVALID = 'el StrategicOutput debe ser una instancia de StrategicOutput';
     public static $ERROR_INDICATORS_DUPLICATED = 'no se permiten indicadores duplicados en la medida';
     public static $ERROR_INDICATOR_INVALID_INSTANCE = 'el indicador debe ser una instancia de Indicator';
+    public static $ERROR_INDICATOR_NOT_FOUND = 'el indicador especificado no existe en esta medida';
 
     private string $name;
     private StrategicOutput $strategicOutput;
@@ -69,10 +70,10 @@ class Measure extends Model
         $this->indicators[] = $indicator;
     }
 
-    private function hasIndicatorWithName(string $indicatorName): bool
+    public function hasIndicatorWithName(string $indicatorName): bool
     {
-        foreach ($this->indicators as $existingIndicator) {
-            if ($existingIndicator->getName() === $indicatorName) {
+        foreach ($this->indicators as $indicator) {
+            if ($indicator->getName() === $indicatorName) {
                 return true;
             }
         }
@@ -111,13 +112,13 @@ class Measure extends Model
         $this->indicators = [];
     }
     
-    public function findIndicatorByName(string $indicatorName): ?Indicator
+    public function findIndicatorByName(string $indicatorName): Indicator
     {
         foreach ($this->indicators as $indicator) {
             if ($indicator->getName() === $indicatorName) {
                 return $indicator;
             }
         }
-        return null;
+        throw new RuntimeException(self::$ERROR_INDICATOR_NOT_FOUND . ': ' . $indicatorName);
     }
 }

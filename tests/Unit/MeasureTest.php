@@ -239,9 +239,16 @@ class MeasureTest extends TestCase
     {
         $this->validMeasure->addIndicator($this->validIndicator1);
         
-        $found = $this->validMeasure->findIndicatorByName("No Existe");
-        
-        $this->assertNull($found);
+        $this->shouldThrowAndAssert(
+            function () {
+                $this->validMeasure->findIndicatorByName("No Existe");
+            },
+            RuntimeException::class,
+            function ($exception) {
+                $this->assertStringContainsString(Measure::$ERROR_INDICATOR_NOT_FOUND, $exception->getMessage());
+                $this->assertStringContainsString("No Existe", $exception->getMessage());
+            }
+        );
     }
 
     public function test_measure_remove_indicator_existing_returns_true()

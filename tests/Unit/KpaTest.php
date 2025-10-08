@@ -227,9 +227,16 @@ class KpaTest extends TestCase
     {
         $this->validKpa->addStrategicOutput($this->validStrategicOutput1);
         
-        $found = $this->validKpa->findStrategicOutputByName("No Existe");
-        
-        $this->assertNull($found);
+        $this->shouldThrowAndAssert(
+            function () {
+                $this->validKpa->findStrategicOutputByName("No Existe");
+            },
+            RuntimeException::class,
+            function ($exception) {
+                $this->assertStringContainsString(Kpa::$ERROR_STRATEGIC_OUTPUT_NOT_FOUND, $exception->getMessage());
+                $this->assertStringContainsString("No Existe", $exception->getMessage());
+            }
+        );
     }
 
     public function test_kpa_remove_strategic_output_existing_returns_true()

@@ -15,10 +15,11 @@ class Kpa extends Model
     public static $ERROR_IMPLEMENTATION_OUT_OF_RANGE = 'la implementación del KPA debe estar entre 0 y 100';
     public static $ERROR_STRATEGIC_OUTPUTS_DUPLICATED = 'no se permiten resultados estratégicos duplicados en el KPA';
     public static $ERROR_STRATEGIC_OUTPUT_INVALID_INSTANCE = 'el resultado estratégico debe ser una instancia de StrategicOutput';
+    public static $ERROR_STRATEGIC_OUTPUT_NOT_FOUND = 'el resultado estratégico no fue encontrado';
     private string $name;
     private float $implementation;
     private array $strategicOutputs = [];
-    public function __construct(string $name, float $implementation = 0)
+    public function __construct(string $name, float $implementation)
     {
         $this->name = $name;
         $this->implementation = $implementation;
@@ -69,15 +70,7 @@ class Kpa extends Model
         $this->strategicOutputs[] = $strategicOutput;
     }
 
-    private function hasStrategicOutputWithName(string $outputName): bool
-    {
-        foreach ($this->strategicOutputs as $existingOutput) {
-            if ($existingOutput->getName() === $outputName) {
-                return true;
-            }
-        }
-        return false;
-    }
+
     
     public function getStrategicOutputs(): array
     {
@@ -111,13 +104,23 @@ class Kpa extends Model
         $this->strategicOutputs = [];
     }
     
-    public function findStrategicOutputByName(string $outputName): ?StrategicOutput
+    public function findStrategicOutputByName(string $outputName): StrategicOutput
     {
         foreach ($this->strategicOutputs as $output) {
             if ($output->getName() === $outputName) {
                 return $output;
             }
         }
-        return null;
+        throw new RuntimeException(self::$ERROR_STRATEGIC_OUTPUT_NOT_FOUND . ': ' . $outputName);
+    }
+
+    public function hasStrategicOutputWithName(string $outputName): bool
+    {
+        foreach ($this->strategicOutputs as $output) {
+            if ($output->getName() === $outputName) {
+                return true;
+            }
+        }
+        return false;
     }
 }
