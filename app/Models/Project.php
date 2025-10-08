@@ -23,10 +23,22 @@ class Project extends Model
     private float $budgetSpent;
     private Indicator $indicator;
     private float $expectedImpact;
-    private string $manager;
     private bool $shared;
     private Contact $contact;
-    static $INVALIDNAME = 'el nombre del proyecto no debe ser null o menor a 3 caracteres';
+    public static $INVALID_NAME = 'El nombre del proyecto debe ser una cadena de al menos 3 caracteres';
+    public static $INVALID_DESCRIPTION = 'La descripción del proyecto debe ser una cadena de al menos 10 caracteres';
+    public static $INVALID_BUDGET = 'El presupuesto total debe ser un número mayor que 0';
+    public static $INVALID_BUDGET_SPENT = 'El presupuesto gastado debe ser >= 0 y no puede exceder el presupuesto total';
+    public static $INVALID_EXPECTED_IMPACT = 'El impacto esperado debe ser un número entre 0 y 100';
+    public static $INVALID_DATES = 'Las fechas deben tener el formato YYYY-MM-DD y ser válidas';
+    public static $INVALID_INDICATOR = 'El indicador debe ser una instancia válida de Indicator con nombre de al menos 3 caracteres';
+    public static $INVALID_COUNTRY = 'El país debe ser una instancia válida de Country';
+    public static $INVALID_AGENCY = 'La agencia debe ser una instancia válida de Agency';
+    public static $INVALID_PROJECT_STATE = 'El estado del proyecto debe ser una instancia válida de ProjectState';
+    public static $INVALID_CONTACT = 'El contacto debe ser una instancia válida de Contact';
+    public static $INVALID_SHARED = 'El campo shared debe ser booleano (true o false)';
+    public static $MAJOR_DATE = 'La fecha de inicio no puede ser posterior a la fecha de fin';
+    public static $ACTUAL_END_DATE = 'La fecha de fin real no puede ser anterior a la fecha de inicio';
 
     public function __construct(
         string $name,
@@ -41,7 +53,6 @@ class Project extends Model
         float $budgetSpent,
         Indicator $indicator,
         float $expectedImpact,
-        string $manager,
         bool $shared,
         Contact $contact
     ) {
@@ -57,7 +68,6 @@ class Project extends Model
         $this->budgetSpent = $budgetSpent;
         $this->indicator = $indicator;
         $this->expectedImpact = $expectedImpact;
-        $this->manager = $manager;
         $this->shared = $shared;
         $this->contact = $contact;
     }
@@ -123,10 +133,7 @@ class Project extends Model
         return $this->expectedImpact;
     }
 
-    public function getManager(): string
-    {
-        return $this->manager;
-    }
+  
 
     public function isShared(): bool
     {
@@ -168,57 +175,56 @@ class Project extends Model
         $budgetSpent,
         $indicator,
         $expectedImpact,
-        $manager,
         $shared,
         $contact
     ): Project {
         if (!self::isString($name)) {
-            throw new \RuntimeException('el nombre del proyecto debe ser una cadena de texto valida');
+            throw new \RuntimeException(self::$INVALID_NAME);
         }
 
         if (!self::isString($description)) {
-            throw new \RuntimeException('la descripcion del proyecto debe ser una cadena de texto valida');
+            throw new \RuntimeException(self::$INVALID_DESCRIPTION);
         }
         
         if (!($projectState instanceof ProjectState)) {
-            throw new \RuntimeException('El estado del proyecto debe ser una instancia del modelo ProjectState');
+            throw new \RuntimeException(self::$INVALID_PROJECT_STATE);
         }
 
         if (!($agency instanceof Agency)) {
-            throw new \RuntimeException('La agencia debe ser una instancia del modelo Agencia');
+            throw new \RuntimeException(self::$INVALID_AGENCY);
         }
 
         if (!($country instanceof Country)) {
-            throw new \RuntimeException('El pais debe ser una instancia del modelo Pais');
+            throw new \RuntimeException(self::$INVALID_COUNTRY);
         }
 
         if (!($indicator instanceof Indicator)) {
-            throw new \RuntimeException('El indicador debe ser una instancia valida de Indicator');
+            throw new \RuntimeException(self::$INVALID_INDICATOR);
         }
         if (!($contact instanceof Contact)) {
-            throw new \RuntimeException('El contacto debe ser una instancia valida de Contact');
+            throw new \RuntimeException(self::$INVALID_CONTACT);
         }
         if (strlen(trim($name)) === 0) {
-            throw new \RuntimeException('el nombre del proyecto no debe estar vacio');
+            throw new \RuntimeException(self::$INVALID_NAME);
         }
 
         if (strlen(trim($name)) < 3) {
-            throw new \RuntimeException('el nombre del proyecto debe tener al menos 3 caracteres');
+            throw new \RuntimeException(self::$INVALID_NAME);
         }
 
         if (strlen(trim($description)) < 10) {
-            throw new \RuntimeException('la descripcion del proyecto debe tener al menos 10 caracteres');
+            throw new \RuntimeException(self::$INVALID_DESCRIPTION);
         }
         if (!self::validateDateString($startDate)) {
-            throw new \RuntimeException('la fecha de inicio no es valida');
+            throw new \RuntimeException(self::$INVALID_DATES);
         }
 
         if (!self::validateDateString($endDate)) {
-            throw new \RuntimeException('la fecha de fin no es valida');
+            throw new \RuntimeException(self::$INVALID_DATES);
         }
 
         if (!self::validateDateString($actualEndDate)) {
-            throw new \RuntimeException('la fecha actual final no es valida');
+            throw new \RuntimeException(self::$INVALID_DATES);
         }
 
         $startDateObj = DateTimeImmutable::createFromFormat('Y-m-d', $startDate);
@@ -226,50 +232,53 @@ class Project extends Model
         $actualEndDateObj = DateTimeImmutable::createFromFormat('Y-m-d', $actualEndDate);
 
         if ($startDateObj > $endDateObj) {
-            throw new \RuntimeException('la fecha de inicio no puede ser mayor a la fecha de fin');
+            throw new \RuntimeException();
         }
 
         if ($actualEndDateObj < $startDateObj) {
-            throw new \RuntimeException('la fecha actual final no puede ser anterior a la fecha de inicio');
+            throw new \RuntimeException(self::$ACTUAL_END_DATE);
         }
 
-        if (!self::isNumeric($budget) || !self::isNumeric($budgetSpent)) {
-            throw new \RuntimeException('El presupuesto y el presupuesto gastado deben ser numeros validos');
+        if (!self::isNumeric($budget)) {
+            throw new \RuntimeException(self::$INVALID_BUDGET);
         }
 
         $budgetFloat = (float) $budget;
-        $budgetSpentFloat = (float) $budgetSpent;
 
         if ($budgetFloat <= 0) {
-            throw new \RuntimeException('El presupuesto total debe ser mayor a 0');
+            throw new \RuntimeException(self::$INVALID_BUDGET);
         }
 
+        if (!self::isNumeric($budgetSpent)) {
+            throw new \RuntimeException(self::$INVALID_BUDGET_SPENT);
+        }
+
+        $budgetSpentFloat = (float) $budgetSpent;
+
         if ($budgetSpentFloat < 0) {
-            throw new \RuntimeException('el presupuesto gastado no puede ser negativo');
+            throw new \RuntimeException(self::$INVALID_BUDGET_SPENT);
         }
 
         if ($budgetSpentFloat > $budgetFloat) {
-            throw new \RuntimeException('el presupuesto gastado no puede ser mayor al presupuesto total');
+            throw new \RuntimeException(self::$INVALID_BUDGET_SPENT);
         }
 
         if (strlen(trim($indicator->getName())) < 3) {
-            throw new \RuntimeException('El nombre del indicador debe tener al menos 3 caracteres');
+            throw new \RuntimeException(self::$INVALID_INDICATOR);
         }
 
         if (!self::isNumeric($expectedImpact)) {
-            throw new \RuntimeException('El impacto esperado debe ser un numero valido');
+            throw new \RuntimeException(self::$INVALID_EXPECTED_IMPACT);
         }
 
         $expectedImpactFloat = (float) $expectedImpact;
 
         if ($expectedImpactFloat < 0 || $expectedImpactFloat > 100) {
-            throw new \RuntimeException('el impacto esperado debe estar entre 0 y 100');
+            throw new \RuntimeException(self::$INVALID_EXPECTED_IMPACT);
         }
-        if (!self::isString($manager) || strlen(trim($manager)) < 3) {
-            throw new \RuntimeException('El proyecto debe tener un manager asignado con al menos 3 caracteres');
-        }
+       
         if (!is_bool($shared)) {
-            throw new \RuntimeException('shared debe ser un valor booleano (true o false)');
+            throw new \RuntimeException(self::$INVALID_SHARED);
         }
 
         return new Project(
@@ -285,7 +294,6 @@ class Project extends Model
             $budgetSpentFloat,
             $indicator,
             $expectedImpactFloat,
-            trim($manager),
             $shared,
             $contact
         );

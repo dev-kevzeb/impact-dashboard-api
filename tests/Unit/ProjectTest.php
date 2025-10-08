@@ -96,13 +96,12 @@ class ProjectTest extends TestCase
             budgetSpent: 50000.0,
             indicator: $indicator,
             expectedImpact: 85.5,
-            manager: "María Pérez",
             shared: true,
             contact: $contact
             ); },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals($exception->getMessage(),'el nombre del proyecto no debe ser null');
+                $this->assertEquals(Project::$INVALID_NAME, $exception->getMessage());
             });
     }
     public function test_name_is_string(){
@@ -125,17 +124,13 @@ class ProjectTest extends TestCase
             budgetSpent: 50000.0,
             indicator: $indicator,
             expectedImpact: 85.5,
-            manager: "María Pérez",
             shared: true,
             contact: $contact
             ); },
             RuntimeException::class,
             function ($exception) {
-                 $this->assertIsString($exception->getMessage());
-                $this->assertEquals(
-                    'el nombre del proyecto no debe tener unicamente numeros',
-                    $exception->getMessage()
-                );
+                $this->assertIsString($exception->getMessage());
+                $this->assertEquals(Project::$INVALID_NAME, $exception->getMessage());
             }
         );
     }
@@ -162,14 +157,13 @@ public function test_name_only_whitespace_throws_runtime_exception()
                 budgetSpent: 50000.0,
                 indicator: $indicator,
                 expectedImpact: 85.5,
-                manager: "María Pérez",
                 shared: true,
                 contact: $contact
             );
         },
         RuntimeException::class,
         function ($exception) {
-            $this->assertEquals('el nombre del proyecto no debe ser null o menor a 3 caracteres', $exception->getMessage());
+            $this->assertEquals(Project::$INVALID_NAME, $exception->getMessage());
         }
     );
 }
@@ -195,13 +189,12 @@ public function test_name_only_whitespace_throws_runtime_exception()
             budgetSpent: 50000.0,
             indicator: $indicator,
             expectedImpact: 85.5,
-            manager: "María Pérez",
             shared: true,
             contact: $contact
             ); },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals($exception->getMessage(),'el nombre del proyecto no debe ser null o menor a 3 caracteres');
+                $this->assertEquals(Project::$INVALID_NAME, $exception->getMessage());
             });
     }
     public function test_description_too_short_throws_runtime_exception()
@@ -225,13 +218,12 @@ public function test_name_only_whitespace_throws_runtime_exception()
             budgetSpent: 50000.0,
             indicator: $indicator,
             expectedImpact: 85.5,
-            manager: "María Pérez",
             shared: true,
             contact: $contact
             ); },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals($exception->getMessage(),'la descripcion del proyecto no debe ser null o menor a 10 caracteres');
+                $this->assertEquals(Project::$INVALID_DESCRIPTION, $exception->getMessage());
             });
     }
     public function test_description_null_throws_runtime_exception()
@@ -256,13 +248,12 @@ public function test_name_only_whitespace_throws_runtime_exception()
             budgetSpent: 50000.0,
             indicator: $indicator,
             expectedImpact: 85.5,
-            manager: "María Pérez",
             shared: true,
             contact: $contact
             ); },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals($exception->getMessage(),'la descripcion del proyecto no debe ser null o menor a 10 caracteres');
+                $this->assertEquals(Project::$INVALID_DESCRIPTION, $exception->getMessage());
             });
     }
 
@@ -288,13 +279,12 @@ public function test_name_only_whitespace_throws_runtime_exception()
             budgetSpent: 50000.0,
             indicator: $indicator,
             expectedImpact: 85.5,
-            manager: "María Pérez",
             shared: true,
             contact: $contact
             ); },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals($exception->getMessage(),'Las fechas no deben ser null');
+                $this->assertEquals(Project::$INVALID_DATES, $exception->getMessage());
             });
     }
     public function test_start_date_null_throws_runtime_exception()
@@ -319,13 +309,12 @@ public function test_name_only_whitespace_throws_runtime_exception()
             budgetSpent: 50000.0,
             indicator: $indicator,
             expectedImpact: 85.5,
-            manager: "María Pérez",
             shared: true,
             contact: $contact
             ); },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals($exception->getMessage(),'Las fechas no deben ser null');
+                $this->assertEquals(Project::$INVALID_DATES, $exception->getMessage());
             });
     }
 
@@ -346,18 +335,17 @@ public function test_name_only_whitespace_throws_runtime_exception()
             projectState: $projectState,
             startDate:"2025-02-01",
             endDate:"2026-02-01",
-            actualEndDate: "2026-01-15",
+            actualEndDate: null,
             budget: 200000.0,
             budgetSpent: 50000.0,
             indicator: $indicator,
             expectedImpact: 85.5,
-            manager: "María Pérez",
             shared: true,
             contact: $contact
             ); },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals($exception->getMessage(),'Las fechas no deben ser null');
+                $this->assertEquals(Project::$INVALID_DATES, $exception->getMessage());
             });
     }
         public function test_actual_end_date_null_throws_runtime_exception()
@@ -382,13 +370,12 @@ public function test_name_only_whitespace_throws_runtime_exception()
             budgetSpent: 50000.0,
             indicator: $indicator,
             expectedImpact: 85.5,
-            manager: "María Pérez",
             shared: true,
             contact: $contact
             ); },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals($exception->getMessage(),'Las fechas no deben ser null');
+                $this->assertEquals(Project::$INVALID_DATES, $exception->getMessage());
             });
     }
     
@@ -414,13 +401,12 @@ public function test_name_only_whitespace_throws_runtime_exception()
             50000.0,
             $indicator,
             85.5,
-            "María Pérez",
             true,
             $contact
         ); },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals($exception->getMessage(),'Las fechas no deben ser null');
+                $this->assertEquals(Project::$INVALID_DATES, $exception->getMessage());
             });
     }
          public function test_budget_null_or_negative_throws_runtime_exception()
@@ -445,13 +431,12 @@ public function test_name_only_whitespace_throws_runtime_exception()
             budgetSpent: 50000.0,
             indicator: $indicator,
             expectedImpact: 85.5,
-            manager: "María Pérez",
             shared: true,
             contact: $contact
             ); },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals($exception->getMessage(),'El presupuesto total no debe ser null o menor a 0');
+                $this->assertEquals(Project::$INVALID_BUDGET, $exception->getMessage());
             });
     }
     public function test_budget_spent_null_or_negative_throws_runtime_exception()
@@ -473,16 +458,15 @@ public function test_name_only_whitespace_throws_runtime_exception()
             endDate:"2026-02-01",
             actualEndDate: "2026-01-15",
             budget: 200000.0,
-            budgetSpent: 50000.0,
+            budgetSpent: null,
             indicator: $indicator,
             expectedImpact: 85.5,
-            manager: "María Pérez",
             shared: true,
             contact: $contact
             ); },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals($exception->getMessage(),'El proyecto debe tener un manager asignado');
+                $this->assertEquals(Project::$INVALID_BUDGET_SPENT, $exception->getMessage());
             });
     }
     public function test_indicator_null_or_too_short_throws_runtime_exception()
@@ -507,13 +491,12 @@ public function test_name_only_whitespace_throws_runtime_exception()
             budgetSpent: 50000.0,
             indicator: null,
             expectedImpact: 85.5,
-            manager: "María Pérez",
             shared: true,
             contact: $contact
             ); },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals($exception->getMessage(),'El indicador no debe ser null o menor a 3 caracteres');
+                $this->assertEquals(Project::$INVALID_INDICATOR, $exception->getMessage());
             });
     }
     public function test_expected_impact_null_or_negative_throws_runtime_exception()
@@ -538,13 +521,12 @@ public function test_name_only_whitespace_throws_runtime_exception()
             budgetSpent: 50000.0,
             indicator: $indicator,
             expectedImpact: null,
-            manager: "María Pérez",
             shared: true,
             contact: $contact
             ); },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals($exception->getMessage(),'el expectedImpact no debe ser null o menor a 0');
+                $this->assertEquals(Project::$INVALID_EXPECTED_IMPACT, $exception->getMessage());
             });
     }
     public function test_manager_null_throws_runtime_exception()
@@ -569,13 +551,12 @@ public function test_name_only_whitespace_throws_runtime_exception()
             budgetSpent: 50000.0,
             indicator: $indicator,
             expectedImpact: 85.5,
-            manager: null,
             shared: true,
-            contact: $contact
+            contact: null
             ); },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals($exception->getMessage(),'El proyecto debe tener un manager asignado');
+                $this->assertEquals(Project::$INVALID_CONTACT, $exception->getMessage());
             });
     }
     public function test_shared_null_throws_runtime_exception()
@@ -600,13 +581,12 @@ public function test_name_only_whitespace_throws_runtime_exception()
             budgetSpent: 50000.0,
             indicator: $indicator,
             expectedImpact: 85.5,
-            manager: "María Pérez",
             shared: null,
             contact: $contact
         ); },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals($exception->getMessage(),'shared no debe ser null o vacio');
+                $this->assertEquals(Project::$INVALID_SHARED, $exception->getMessage());
             });
     }
 
