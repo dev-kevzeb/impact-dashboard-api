@@ -13,17 +13,19 @@ class Country extends Model
     public static $ERROR_NAME_TOO_LONG = 'el nombre del país no debe exceder 100 caracteres';
     public static $ERROR_NAME_INVALID_CHARACTERS = 'el nombre del país contiene caracteres no válidos';
     public static $ERROR_CURRENCY_INVALID = 'la moneda debe ser una instancia de Currency';
-
+    public static $ERROR_KPA_MUST_BE_ARRAY = 'los KPAs deben estar en un array';
     private string $name;
     private Currency $currency;
+    private array $kpa = [];
     static $INVALIDNAME = 'el nombre del país no debe ir vacio';
-    public function __construct(string $name, Currency $currency)
+    public function __construct(string $name, Currency $currency, array $kpa)
     {
         $this->name = $name;
         $this->currency = $currency;
+        $this->kpa = $kpa;
     }
-    
-    public static function at($name, $currency): Country
+
+    public static function at($name, $currency, $kpa): Country
     {
         
         if (empty(trim($name))) {
@@ -48,7 +50,20 @@ class Country extends Model
         if (!($currency instanceof Currency)) {
             throw new RuntimeException(self::$ERROR_CURRENCY_INVALID);
         }
-        return new Country($trimmedName, $currency);
+        if (!is_array($kpa)) {
+            throw new RuntimeException(self::$ERROR_KPA_MUST_BE_ARRAY);
+        }
+
+        if (count($kpa) === 0) {
+            throw new RuntimeException('debe haber al menos un KPA en el array de KPAs');
+        }
+        foreach ($kpa as $item) {
+            if (!($item instanceof Kpa)) {
+                throw new RuntimeException('cada KPA debe ser una instancia de Kpa');
+            }
+        }
+   
+        return new Country($trimmedName, $currency, $kpa);
     }
 
     
@@ -67,5 +82,8 @@ class Country extends Model
         return $this->currency->getCode();
     }
     
-
+    public function getKpas(): array
+    {
+        return $this->kpa;
+    }
 }

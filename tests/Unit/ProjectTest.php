@@ -30,10 +30,15 @@ class ProjectTest extends TestCase
     private IndicatorType $validIndicatorType;
     private ProjectState $validProjectState;
     private Contact $validContact;
+    private array $validKpas;
     protected function setUp(): void
     {
         parent::setUp();
-        $this->validCountry = Country::at("Pais Valido", Currency::at("ARS", "Peso Argentino"));
+        $kpa = new Kpa("Nombre KPA", 50, ["Output1", "Output2"]);
+        $kpa2 = new Kpa("Nombre KPA 2", 50, ["Output1", "Output2"]);
+        $kpa3 = new Kpa("Nombre KPA 3", 50, ["Output1", "Output2"]);
+        $this->validKpas = [$kpa, $kpa2, $kpa3];
+        $this->validCountry = Country::at("Pais Valido", Currency::at("ARS", "Peso Argentino"), $this->validKpas);
         $this->validAgency = Agency::at("Agencia Valida", "https://www.agencia.com", true);
         $this->validProjectState = ProjectState::at("Estado Valido");
         $this->validContact = Contact::at("NOmbre Valido",  "Apellido valido", "titulo valido", "contacto@ejemplo.com", "123456789");  
@@ -52,26 +57,6 @@ class ProjectTest extends TestCase
             $this->assertEquals($exceptionType,  get_class($exception));
             $assertions->__invoke($exception);
         }
-    }
-
-    private function makeIndicator()
-    {
-        $type = IndicatorType::at('tipo');
-        return Indicator::at('Indicador principal','unidad',$type, 1);
-    }
-    
-    private function makeCountry()
-    {
-        $currency = Currency::at("ARS", "Peso Argentino");
-        return Country::at("Argentina", $currency);
-    }
-    private function makeAgency()
-    {
-        return Agency::at("Agencia de prueba", "https://www.anh.gob.bo", true); 
-    }
-    private function makeProjectState()
-    {
-        return ProjectState::at("En ejecucion");
     }
 
 
