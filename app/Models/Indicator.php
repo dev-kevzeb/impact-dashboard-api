@@ -3,35 +3,56 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use RuntimeException;
 
 class Indicator extends Model
 {
+    // Constantes de mensajes de error
+    public static $ERROR_NAME_EMPTY = 'el nombre del indicador no debe ir vacio';
+    public static $ERROR_NAME_MIN_LENGTH = 'el nombre del indicador debe tener al menos 2 caracteres';
+    public static $ERROR_NAME_MAX_LENGTH = 'el nombre del indicador no debe exceder 200 caracteres';
+    public static $ERROR_TYPE_REQUIRED = 'el tipo de indicador debe ser una instancia de IndicatorType';
+    public static $ERROR_TARGET_INVALID = 'el target del indicador debe ser un número positivo';
+
     // attributes
     private string $name;
-    private Measure $measure;
     private IndicatorType $type;
     private int $target;
 
-    static $NAME_MIN_LENGTH = "el nombre del tipo de indicador no debe ser null o menor a 3 caracteres";
-    static $INSTANCE_OF_MEASURE = "la medida del indicador debe ser una instancia de Measure o no debe ser null";
-    static $INSTANCE_OF_INDICATORTYPE = "el tipo de indicador debe ser una instancia de IndicatorType o no debe ser null";
     // constructor
-    public function __construct(string $name, Measure $measure, IndicatorType $type, int $target)
+    public function __construct(string $name, IndicatorType $type, int $target)
     {   
         $this->name = $name;
-        $this->measure = $measure;
         $this->type = $type;
         $this->target = $target;
     }
+
+    public static function at($name, $type, $target): Indicator 
+    {
+        if (empty(trim($name))) {
+            throw new RuntimeException(self::$ERROR_NAME_EMPTY);
+        }
+        if (strlen(trim($name)) < 2) {
+            throw new RuntimeException(self::$ERROR_NAME_MIN_LENGTH);
+        }
+        if (strlen(trim($name)) > 200) {
+            throw new RuntimeException(self::$ERROR_NAME_MAX_LENGTH);
+        }
+        if (!$type instanceof IndicatorType) {
+            throw new RuntimeException(self::$ERROR_TYPE_REQUIRED);
+        }
+        if (!is_numeric($target) || $target <= 0) {
+            throw new RuntimeException(self::$ERROR_TARGET_INVALID);
+        }
+        return new Indicator(trim($name), $type, $target);
+    }
+
     // getters
     public function getName(): string
     {
         return $this->name;
     }
-    public function getMeasure(): Measure
-    {
-        return $this->measure;
-    }
+    
     public function getTarget(): int
     {
         return $this->target;
@@ -39,13 +60,5 @@ class Indicator extends Model
     public function getType(): IndicatorType
     {
         return $this->type;
-    }
-
-    public static function at($name, $measure, $type, $target): Indicator 
-    {
-        if(strlen($name) == 0 || strlen($name) < 3)throw new \InvalidArgumentException(self::$NAME_MIN_LENGTH);
-        if(!$measure instanceof Measure) throw new \InvalidArgumentException(self::$INSTANCE_OF_MEASURE);
-        if(!$type instanceof IndicatorType) throw new \InvalidArgumentException(self::$INSTANCE_OF_INDICATORTYPE);
-        return new Indicator($name, $measure, $type, $target);
     }
 }

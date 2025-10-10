@@ -34,20 +34,15 @@ class ProjectTest extends TestCase
     {
         parent::setUp();
         
-        $this->validCountry = Country::at("Pais Valido", Currency::at("ARS", "Peso Argentino"));
+        $this->validCountry = Country::at("Pais Valido", Currency::at("ARS"));
         $this->validAgency = Agency::at("Agencia Valida", "https://www.agencia.com", true);
         $this->validProjectState = ProjectState::at("Estado Valido");
         $this->validContact = Contact::at("Nombre Valido", "Apellido valido", "titulo valido", "contacto@ejemplo.com", "123456789");  
         $this->validProjectBeneficiary = Beneficiary::at("GOVERNMENT");
         
-        // Crear KPA hierarchy para Indicator
-        $validKpa = Kpa::at("KPA Valido", 50, ["Output1", "Output2"]);
-        $validStrategicOutput = StrategicOutput::at("Output Valido", $validKpa);
-        $validMeasure = Measure::at("Medida Valida", $validStrategicOutput);
         $validIndicatorType = IndicatorType::at("Tipo Valido");
-        $this->validIndicator = Indicator::at("Indicador Valido", $validMeasure, $validIndicatorType, 100);
+        $this->validIndicator = Indicator::at("Indicador Valido", $validIndicatorType, 100);
         
-        // Crear ProjectDonors válidos
         $donor1 = Donor::at("USAID");
         $donor2 = Donor::at("World Bank");
         $this->validProjectDonors = [
@@ -55,8 +50,18 @@ class ProjectTest extends TestCase
             ProjectDonor::at($donor2, 40)
         ];
     }
-    
-    // Método para crear Project válido con overrides opcionales
+
+    public function shouldThrowAndAssert($should, $exceptionType, $assertions)
+    {
+        try {
+            $should->__invoke();
+            $this->fail();
+        } catch (Exception $exception) {
+            $this->assertEquals($exceptionType, get_class($exception));
+            $assertions->__invoke($exception);
+        }
+    }
+    // Método para crear Project válido 
     private function createValidProject(array $overrides = []): Project
     {
         $defaults = [
@@ -82,19 +87,6 @@ class ProjectTest extends TestCase
         return Project::at(...array_values($params));
     }
     
-    // bloque de código, el manejo de errores, forma en que manejamos el error, "CLOSURE"
-    public function shouldThrowAndAssert($should, $exceptionType, $assertions)
-    {
-        try {
-            $should->__invoke();
-            $this->fail();
-        } catch (Exception $exception) {
-            $this->assertEquals($exceptionType, get_class($exception));
-            $assertions->__invoke($exception);
-        }
-    }
-
-    // Tests básicos de creación exitosa
     public function test_project_can_be_created_with_valid_data()
     {
         $project = $this->createValidProject();
