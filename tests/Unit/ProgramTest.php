@@ -8,7 +8,7 @@ use App\Models\Country;
 use App\Models\Currency;
 use App\Models\Agency;
 use App\Models\ProgramState;
-use App\Models\ProgramBeneficiary;
+use App\Models\Beneficiary;
 use App\Models\Donor;
 use App\Models\Sdg;
 use App\Models\Contact;
@@ -19,7 +19,7 @@ class ProgramTest extends TestCase
 {
     private Country $validCountry;
     private Agency $validAgency;
-    private ProgramBeneficiary $validProgramBeneficiary;
+    private Beneficiary $validProgramBeneficiary;
     private ProgramState $validProgramState;
     private Sdg $validSdg1;
     private Sdg $validSdg2;
@@ -37,7 +37,7 @@ class ProgramTest extends TestCase
         $validCurrency = Currency::at("USD");
         $this->validCountry = Country::at("Bolivia", $validCurrency);
         $this->validAgency = Agency::at("UNICEF", "https://www.unicef.org", true);
-        $this->validProgramBeneficiary = ProgramBeneficiary::at("GOVERNMENT");
+        $this->validProgramBeneficiary = Beneficiary::at("GOVERNMENT");
         $this->validProgramState = ProgramState::at("ACTIVE");
         $this->validSdg1 = Sdg::at("sdg1.png");
         $this->validSdg2 = Sdg::at("sdg2.png");
