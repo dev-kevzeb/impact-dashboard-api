@@ -35,15 +35,20 @@ class ProjectTest extends TestCase
         parent::setUp();
         
 <<<<<<< HEAD
+<<<<<<< HEAD
         $this->validCountry = Country::at("Pais Valido", Currency::at("ARS"), ['KPA1', 'KPA2']);
 =======
         $this->validCountry = Country::at("Pais Valido", Currency::at("ARS", "Peso Argentino"));
 >>>>>>> caf30a5 (project-fix)
+=======
+        $this->validCountry = Country::at("Pais Valido", Currency::at("ARS"));
+>>>>>>> 7efe099 (correcciones-realizadas)
         $this->validAgency = Agency::at("Agencia Valida", "https://www.agencia.com", true);
         $this->validProjectState = ProjectState::at("Estado Valido");
         $this->validContact = Contact::at("Nombre Valido", "Apellido valido", "titulo valido", "contacto@ejemplo.com", "123456789");  
         $this->validProjectBeneficiary = Beneficiary::at("GOVERNMENT");
         
+<<<<<<< HEAD
 <<<<<<< HEAD
         $validIndicatorType = IndicatorType::at("Tipo Valido");
         $this->validIndicator = Indicator::at("Indicador Valido", $validIndicatorType, 100);
@@ -53,11 +58,16 @@ class ProjectTest extends TestCase
         $validKpa = Kpa::at("KPA Valido", 50, ["Output1", "Output2"]);
         $validStrategicOutput = StrategicOutput::at("Output Valido", $validKpa);
         $validMeasure = Measure::at("Medida Valida", $validStrategicOutput);
+=======
+>>>>>>> 7efe099 (correcciones-realizadas)
         $validIndicatorType = IndicatorType::at("Tipo Valido");
-        $this->validIndicator = Indicator::at("Indicador Valido", $validMeasure, $validIndicatorType, 100);
+        $this->validIndicator = Indicator::at("Indicador Valido", $validIndicatorType, 100);
         
+<<<<<<< HEAD
         // Crear ProjectDonors válidos
 >>>>>>> caf30a5 (project-fix)
+=======
+>>>>>>> 7efe099 (correcciones-realizadas)
         $donor1 = Donor::at("USAID");
         $donor2 = Donor::at("World Bank");
         $this->validProjectDonors = [
@@ -66,10 +76,25 @@ class ProjectTest extends TestCase
         ];
     }
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 =======
     
     // Método para crear Project válido con overrides opcionales
+=======
+
+    public function shouldThrowAndAssert($should, $exceptionType, $assertions)
+    {
+        try {
+            $should->__invoke();
+            $this->fail();
+        } catch (Exception $exception) {
+            $this->assertEquals($exceptionType, get_class($exception));
+            $assertions->__invoke($exception);
+        }
+    }
+    // Método para crear Project válido 
+>>>>>>> 7efe099 (correcciones-realizadas)
     private function createValidProject(array $overrides = []): Project
     {
         $defaults = [
@@ -95,6 +120,7 @@ class ProjectTest extends TestCase
         return Project::at(...array_values($params));
     }
     
+<<<<<<< HEAD
     // bloque de código, el manejo de errores, forma en que manejamos el error, "CLOSURE"
 >>>>>>> caf30a5 (project-fix)
     public function shouldThrowAndAssert($should, $exceptionType, $assertions)
@@ -139,6 +165,8 @@ class ProjectTest extends TestCase
 =======
 
     // Tests básicos de creación exitosa
+=======
+>>>>>>> 7efe099 (correcciones-realizadas)
     public function test_project_can_be_created_with_valid_data()
     {
 >>>>>>> caf30a5 (project-fix)
