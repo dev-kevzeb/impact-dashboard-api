@@ -62,7 +62,18 @@ class Country extends Model
                 throw new RuntimeException('cada KPA debe ser una instancia de Kpa');
             }
         }
-   
+      $seen = [];
+        foreach ($kpa as $kp) {
+            $name = mb_strtolower(trim($kp->getName()));
+            if ($name === "") {
+                throw new RuntimeException("El KPA tiene un nombre vacío");
+            }
+            if (isset($seen[$name])) {
+                throw new RuntimeException("no puede haber KPAs con el mismo nombre en un país");
+            }
+            $seen[$name] = true;
+        }
+        
         return new Country($trimmedName, $currency, $kpa);
     }
 
