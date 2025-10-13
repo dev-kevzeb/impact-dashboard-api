@@ -7,33 +7,35 @@ use RuntimeException;
 
 class IndicatorType extends Model
 {
+    // Constantes de mensajes de error
+    public static $ERROR_NAME_EMPTY = 'el nombre del tipo de indicador no debe ir vacio';
+    public static $ERROR_NAME_MIN_LENGTH = 'el nombre del tipo de indicador debe tener al menos 2 caracteres';
+    public static $ERROR_NAME_MAX_LENGTH = 'el nombre del tipo de indicador no debe exceder 100 caracteres';
+    
     // attributes
     private string $name;
-    static $NAME_MIN_LENGTH = "el nombre del tipo de indicador no debe ser null o menor a 3 caracteres";
-    static $NAME_MUST_BE_STRING = "el nombre del tipo de indicador debe ser una cadena de caracteres";
     public function __construct(string $name)
     {
         $this->name = $name;
     }
+    
+    public static function at($name) : IndicatorType
+    {   
+        if (empty(trim($name))) {
+            throw new RuntimeException(self::$ERROR_NAME_EMPTY);
+        }
+        if (strlen(trim($name)) < 2) {
+            throw new RuntimeException(self::$ERROR_NAME_MIN_LENGTH);
+        }
+        if (strlen(trim($name)) > 100) {
+            throw new RuntimeException(self::$ERROR_NAME_MAX_LENGTH);
+        }
+        return new IndicatorType(trim($name));
+    }
+
     // getters
     public function getName(): string
     {
         return $this->name;
-    }
-    // validators
-    public function isString():bool{
-        return is_string($this->name);
-    }
-    public static function at($name) : IndicatorType
-    {   
-        if (!is_string($name)) {
-            throw new RuntimeException(self::$NAME_MUST_BE_STRING);
-        }
-        $name = trim($name);
-
-        if (strlen($name) < 3) {
-            throw new RuntimeException(self::$NAME_MIN_LENGTH);
-        }
-        return new IndicatorType($name);
     }
 }

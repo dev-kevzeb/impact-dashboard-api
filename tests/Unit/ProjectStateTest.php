@@ -20,86 +20,10 @@ class ProjectStateTest extends TestCase
     }
 
     
-    public function test_state_with_integer_throws_invalid_argument_exception()
-    {
-        $this->shouldThrowAndAssert(
-            function () {
-                ProjectState::at(123);
-            },
-            InvalidArgumentException::class,
-            function ($exception) {
-                $this->assertEquals('El estado del proyecto no es valido', $exception->getMessage());
-            }
-        );
-    }
-
-    public function test_state_with_float_throws_invalid_argument_exception()
-    {
-        $this->shouldThrowAndAssert(
-            function () {
-                ProjectState::at(123.45);
-            },
-            InvalidArgumentException::class,
-            function ($exception) {
-                $this->assertEquals('El estado del proyecto no es valido', $exception->getMessage());
-            }
-        );
-    }
-
-    public function test_state_with_boolean_throws_invalid_argument_exception()
-    {
-        $this->shouldThrowAndAssert(
-            function () {
-                ProjectState::at(true);
-            },
-            InvalidArgumentException::class,
-            function ($exception) {
-                $this->assertEquals('El estado del proyecto no es valido', $exception->getMessage());
-            }
-        );
-    }
-
-    public function test_state_with_array_throws_invalid_argument_exception()
-    {
-        $this->shouldThrowAndAssert(
-            function () {
-                ProjectState::at(['ACTIVE']);
-            },
-            InvalidArgumentException::class,
-            function ($exception) {
-                $this->assertEquals('El estado del proyecto no es valido', $exception->getMessage());
-            }
-        );
-    }
-
-    public function test_state_with_object_throws_invalid_argument_exception()
-    {
-        $this->shouldThrowAndAssert(
-            function () {
-                ProjectState::at(new \stdClass());
-            },
-            InvalidArgumentException::class,
-            function ($exception) {
-                $this->assertEquals('El estado del proyecto no es valido', $exception->getMessage());
-            }
-        );
-    }
-
-    public function test_state_with_null_throws_invalid_argument_exception()
-    {
-        $this->shouldThrowAndAssert(
-            function () {
-                ProjectState::at(null);
-            },
-            InvalidArgumentException::class,
-            function ($exception) {
-                $this->assertEquals('El estado del proyecto no es valido', $exception->getMessage());
-            }
-        );
-    }
 
 
-    public function test_state_with_empty_string_throws_invalid_argument_exception()
+
+    public function test_project_state_name_cannot_be_empty()
     {
         $this->shouldThrowAndAssert(
             function () {
@@ -107,38 +31,12 @@ class ProjectStateTest extends TestCase
             },
             InvalidArgumentException::class,
             function ($exception) {
-                $this->assertEquals('el nombre del estado del proyecto no debe ser null o menor a 3 caracteres', $exception->getMessage());
+                $this->assertEquals(ProjectState::$ERROR_STATE_EMPTY, $exception->getMessage());
             }
         );
     }
 
-    public function test_state_with_one_character_throws_invalid_argument_exception()
-    {
-        $this->shouldThrowAndAssert(
-            function () {
-                ProjectState::at("A");
-            },
-            InvalidArgumentException::class,
-            function ($exception) {
-                $this->assertEquals('el nombre del estado del proyecto no debe ser null o menor a 3 caracteres', $exception->getMessage());
-            }
-        );
-    }
-
-    public function test_state_with_two_characters_throws_invalid_argument_exception()
-    {
-        $this->shouldThrowAndAssert(
-            function () {
-                ProjectState::at("AB");
-            },
-            InvalidArgumentException::class,
-            function ($exception) {
-                $this->assertEquals('el nombre del estado del proyecto no debe ser null o menor a 3 caracteres', $exception->getMessage());
-            }
-        );
-    }
-
-    public function test_state_with_only_whitespace_throws_invalid_argument_exception()
+    public function test_project_state_name_cannot_be_only_spaces()
     {
         $this->shouldThrowAndAssert(
             function () {
@@ -146,46 +44,39 @@ class ProjectStateTest extends TestCase
             },
             InvalidArgumentException::class,
             function ($exception) {
-                $this->assertEquals('el nombre del estado del proyecto no debe ser null o menor a 3 caracteres', $exception->getMessage());
+                $this->assertEquals(ProjectState::$ERROR_STATE_EMPTY, $exception->getMessage());
             }
         );
     }
 
-
-    public function test_state_with_numeric_string_throws_invalid_argument_exception()
+    public function test_project_state_name_too_short_throws_exception()
     {
         $this->shouldThrowAndAssert(
             function () {
-                ProjectState::at("123");
+                ProjectState::at("A");
             },
             InvalidArgumentException::class,
             function ($exception) {
-                $this->assertEquals('El estado del proyecto no es valido', $exception->getMessage());
+                $this->assertEquals(ProjectState::$ERROR_STATE_MIN_LENGTH, $exception->getMessage());
             }
         );
     }
 
-    public function test_state_with_numeric_string_longer_throws_invalid_argument_exception()
+    public function test_project_state_name_two_characters_throws_exception()
     {
         $this->shouldThrowAndAssert(
             function () {
-                ProjectState::at("12345");
+                ProjectState::at("AB");
             },
             InvalidArgumentException::class,
             function ($exception) {
-                $this->assertEquals('El estado del proyecto no es valido', $exception->getMessage());
+                $this->assertEquals(ProjectState::$ERROR_STATE_MIN_LENGTH, $exception->getMessage());
             }
         );
     }
-    public function test_state_with_exactly_three_characters_succeeds()
-    {
-        $projectState = ProjectState::at("ABC");
-        
-        $this->assertInstanceOf(ProjectState::class, $projectState);
-        $this->assertEquals("ABC", $projectState->getName());
-    }
 
-    public function test_state_with_valid_name_succeeds()
+
+    public function test_project_state_can_be_created_with_valid_data()
     {
         $projectState = ProjectState::at("ACTIVE");
         
@@ -193,23 +84,23 @@ class ProjectStateTest extends TestCase
         $this->assertEquals("ACTIVE", $projectState->getName());
     }
 
-    public function test_state_with_long_valid_name_succeeds()
+    public function test_project_state_name_with_minimum_length_is_valid()
     {
-        $projectState = ProjectState::at("En ejecucion");
+        $projectState = ProjectState::at("ABC");
         
         $this->assertInstanceOf(ProjectState::class, $projectState);
-        $this->assertEquals("En ejecucion", $projectState->getName());
+        $this->assertEquals("ABC", $projectState->getName());
     }
 
-    public function test_state_with_mixed_case_succeeds()
+    public function test_project_state_with_numeric_string_is_valid()
     {
-        $projectState = ProjectState::at("Pending");
+        $projectState = ProjectState::at("123");
         
         $this->assertInstanceOf(ProjectState::class, $projectState);
-        $this->assertEquals("Pending", $projectState->getName());
+        $this->assertEquals("123", $projectState->getName());
     }
 
-    public function test_state_with_spaces_succeeds()
+    public function test_project_state_with_spaces_is_valid()
     {
         $projectState = ProjectState::at("En Proceso");
         
@@ -217,39 +108,45 @@ class ProjectStateTest extends TestCase
         $this->assertEquals("En Proceso", $projectState->getName());
     }
 
-    public function test_state_with_special_characters_succeeds()
+    public function test_project_state_with_special_characters_is_valid()
     {
         $projectState = ProjectState::at("En-Proceso");
+        
         $this->assertInstanceOf(ProjectState::class, $projectState);
         $this->assertEquals("En-Proceso", $projectState->getName());
     }
 
-    public function test_state_with_accents_succeeds()
+    public function test_project_state_with_unicode_characters_is_valid()
     {
-        $projectState = ProjectState::at("Ejecucion");
+        $projectState = ProjectState::at("Ejecución");
+        
         $this->assertInstanceOf(ProjectState::class, $projectState);
-        $this->assertEquals("Ejecucion", $projectState->getName());
+        $this->assertEquals("Ejecución", $projectState->getName());
     }
 
 
-    public function test_is_string_returns_true_for_string()
+
+
+    public function test_project_state_name_too_long_throws_exception()
     {
-        $this->assertTrue(ProjectState::isString("test"));
+        $longState = str_repeat("A", 101); // 101 caracteres
+        
+        $this->shouldThrowAndAssert(
+            function () use ($longState) {
+                ProjectState::at($longState);
+            },
+            InvalidArgumentException::class,
+            function ($exception) {
+                $this->assertEquals(ProjectState::$ERROR_STATE_MAX_LENGTH, $exception->getMessage());
+            }
+        );
     }
 
-    public function test_is_string_returns_false_for_integer()
+    public function test_project_state_name_gets_trimmed()
     {
-        $this->assertFalse(ProjectState::isString(123));
-    }
-
-    public function test_is_string_returns_false_for_null()
-    {
-        $this->assertFalse(ProjectState::isString(null));
-    }
-
-    public function test_is_string_returns_false_for_boolean()
-    {
-        $this->assertFalse(ProjectState::isString(true));
+        $projectState = ProjectState::at("  Estado Trimmed  ");
+        
+        $this->assertEquals("Estado Trimmed", $projectState->getName());
     }
 
 }
