@@ -25,7 +25,7 @@ class Program
     public static $ERROR_URL_INVALID_FORMAT = 'la URL del programa debe tener un formato válido';
     public static $ERROR_URL_INVALID_PROTOCOL = 'la URL del programa debe usar protocolo HTTP o HTTPS';
     public static $ERROR_CONTACT_INVALID = 'el contacto debe ser una instancia de Contact';
-    public static $ERROR_PROGRAM_BENEFICIARY_INVALID = 'el beneficiario debe ser una instancia de ProgramBeneficiary';
+    public static $ERROR_PROGRAM_BENEFICIARY_INVALID = 'el beneficiario debe ser una instancia de Beneficiary';
     public static $ERROR_PROGRAM_STATE_INVALID = 'el estado debe ser una instancia de ProgramState';
     public static $ERROR_COUNTRY_INVALID = 'el país debe ser una instancia de Country';
     public static $ERROR_AGENCY_INVALID = 'la agencia debe ser una instancia de Agency';
@@ -37,6 +37,7 @@ class Program
     public static $ERROR_DONORS_DUPLICATED = 'no se permiten donantes duplicados en el programa';
     public static $ERROR_PROJECTS_DUPLICATED = 'no se permiten proyectos duplicados en el programa';
     public static $ERROR_PROJECT_INVALID_INSTANCE = 'el proyecto debe ser una instancia de Project';
+    public static $ERROR_PROJECT_NOT_FOUND = 'el proyecto especificado no existe en este programa';
     private string $name;
     private string $description;
     private string $bannerImg;
@@ -44,7 +45,7 @@ class Program
     private string $endDate;
     private string $programUrl;
     private Contact $contact;
-    private ProgramBeneficiary $programBeneficiary;
+    private Beneficiary $programBeneficiary;
     private ProgramState $programState;
     private Country $country;
     private Agency $agency;
@@ -60,7 +61,7 @@ class Program
         string $endDate,
         string $programUrl,
         Contact $contact,
-        ProgramBeneficiary $programBeneficiary,
+        Beneficiary $programBeneficiary,
         ProgramState $programState,
         Country $country,
         Agency $agency,
@@ -172,7 +173,7 @@ class Program
         }
 
         // Validaciones de programBeneficiary
-        if (!($programBeneficiary instanceof ProgramBeneficiary)) {
+        if (!($programBeneficiary instanceof Beneficiary)) {
             throw new RuntimeException(self::$ERROR_PROGRAM_BENEFICIARY_INVALID);
         }
 
@@ -308,7 +309,7 @@ class Program
         return $this->contact;
     }
 
-    public function getProgramBeneficiary(): ProgramBeneficiary
+    public function getProgramBeneficiary(): Beneficiary
     {
         return $this->programBeneficiary;
     }
@@ -353,10 +354,10 @@ class Program
         $this->projects[] = $project;
     }
 
-    private function hasProjectWithName(string $projectName): bool
+    public function hasProjectWithName(string $projectName): bool
     {
-        foreach ($this->projects as $existingProject) {
-            if ($existingProject->getName() === $projectName) {
+        foreach ($this->projects as $project) {
+            if ($project->getName() === $projectName) {
                 return true;
             }
         }
@@ -378,5 +379,30 @@ class Program
         return !empty($this->projects);
     }
 
+    public function removeProject(string $projectName): bool
+    {
+        foreach ($this->projects as $index => $project) {
+            if ($project->getName() === $projectName) {
+                unset($this->projects[$index]);
+                $this->projects = array_values($this->projects); // Re-indexar array
+                return true; // Eliminado exitosamente
+            }
+        }
+        return false; // No encontrado
+    }
     
+    public function clearProjects(): void
+    {
+        $this->projects = [];
+    }
+    
+    public function findProjectByName(string $projectName): Project
+    {
+        foreach ($this->projects as $project) {
+            if ($project->getName() === $projectName) {
+                return $project;
+            }
+        }
+        throw new RuntimeException(self::$ERROR_PROJECT_NOT_FOUND . ': ' . $projectName);
+    }
 }

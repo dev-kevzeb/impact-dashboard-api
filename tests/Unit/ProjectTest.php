@@ -3,594 +3,300 @@
 namespace Tests\Unit;
 
 use App\Models\Agency;
+use App\Models\Beneficiary;
 use App\Models\Contact;
 use PHPUnit\Framework\TestCase;
 use App\Models\Country;
 use App\Models\Currency;
+use App\Models\Donor;
 use App\Models\Indicator;
 use App\Models\IndicatorType;
 use App\Models\Kpa;
 use App\Models\Measure;
 use App\Models\Project;
+use App\Models\ProjectDonor;
 use App\Models\ProjectState;
 use App\Models\StrategicOutput;
-use DateTimeImmutable;
 use Exception;
 use RuntimeException;
 
 class ProjectTest extends TestCase
 {
-    private Project $validProject;
     private Country $validCountry;
-    private Measure $validMeasure;
-    private StrategicOutput $validStrategicOutput;
-    private Kpa $validKpa;
     private Agency $validAgency;
     private Indicator $validIndicator;
-    private IndicatorType $validIndicatorType;
     private ProjectState $validProjectState;
     private Contact $validContact;
+    private Beneficiary $validProjectBeneficiary;
+    private array $validProjectDonors;
+    
     protected function setUp(): void
     {
         parent::setUp();
-        $this->validCountry = Country::at("Pais Valido", Currency::at("ARS", "Peso Argentino"));
+        
+        $this->validCountry = Country::at("Pais Valido", Currency::at("ARS"));
         $this->validAgency = Agency::at("Agencia Valida", "https://www.agencia.com", true);
         $this->validProjectState = ProjectState::at("Estado Valido");
-        $this->validContact = Contact::at("NOmbre Valido",  "Apellido valido", "titulo valido", "contacto@ejemplo.com", "123456789");  
-        $this->validKpa = Kpa::at("KPA Valido", 50, ["Output1", "Output2"]);
-        $this->validStrategicOutput = StrategicOutput::at("Output Valido", $this->validKpa);
-        $this->validMeasure = Measure::at("Medida Valida", $this->validStrategicOutput);
-        $this->validIndicatorType = IndicatorType::at("Tipo Valido");
-        $this->validIndicator = Indicator::at("Indicador Valido", $this->validMeasure, $this->validIndicatorType, 100);
+        $this->validContact = Contact::at("Nombre Valido", "Apellido valido", "titulo valido", "contacto@ejemplo.com", "123456789");  
+        $this->validProjectBeneficiary = Beneficiary::at("GOVERNMENT");
+        
+        $validIndicatorType = IndicatorType::at("Tipo Valido");
+        $this->validIndicator = Indicator::at("Indicador Valido", $validIndicatorType, 100);
+        
+        $donor1 = Donor::at("USAID");
+        $donor2 = Donor::at("World Bank");
+        $this->validProjectDonors = [
+            ProjectDonor::at($donor1, 60),
+            ProjectDonor::at($donor2, 40)
+        ];
     }
-    // bloque de codigo, el manejo de errores, forma en que manejamos el error, "CLOUSURE"
-    public function shouldThrowAndAssert($should,$exceptionType,$assertions){
+
+    public function shouldThrowAndAssert($should, $exceptionType, $assertions)
+    {
         try {
             $should->__invoke();
             $this->fail();
         } catch (Exception $exception) {
-            $this->assertEquals($exceptionType,  get_class($exception));
+            $this->assertEquals($exceptionType, get_class($exception));
             $assertions->__invoke($exception);
         }
     }
-
-    private function makeIndicator()
+    // Método para crear Project válido 
+    private function createValidProject(array $overrides = []): Project
     {
-        $type = IndicatorType::at('tipo');
-        return Indicator::at('Indicador principal','unidad',$type, 1);
+        $defaults = [
+            'name' => 'Proyecto de Desarrollo Rural',
+            'description' => 'Descripción válida del proyecto de desarrollo rural con más de 10 caracteres',
+            'projectUrl' => 'https://proyecto.example.com',
+            'startDate' => '2025-01-01',
+            'endDate' => '2026-12-31',
+            'progress' => 75.5,
+            'comments' => 'Comentarios del proyecto en progreso',
+            'projectBudget' => 500000.0,
+            'shared' => true,
+            'contact' => $this->validContact,
+            'projectBeneficiary' => $this->validProjectBeneficiary,
+            'projectState' => $this->validProjectState,
+            'country' => $this->validCountry,
+            'agency' => $this->validAgency,
+            'indicator' => $this->validIndicator,
+            'projectDonors' => $this->validProjectDonors
+        ];
+
+        $params = array_merge($defaults, $overrides);
+        return Project::at(...array_values($params));
     }
     
-    private function makeCountry()
+    public function test_project_can_be_created_with_valid_data()
     {
-        $currency = Currency::at("ARS", "Peso Argentino");
-        return Country::at("Argentina", $currency);
-    }
-    private function makeAgency()
-    {
-        return Agency::at("Agencia de prueba", "https://www.anh.gob.bo", true); 
-    }
-    private function makeProjectState()
-    {
-        return ProjectState::at("En ejecucion");
+        $project = $this->createValidProject();
+
+        $this->assertEquals("Proyecto de Desarrollo Rural", $project->getName());
+        $this->assertInstanceOf(Project::class, $project);
+        $this->assertEquals("https://proyecto.example.com", $project->getProjectUrl());
+        $this->assertEquals(75.5, $project->getProgress());
+        $this->assertInstanceOf(Beneficiary::class, $project->getProjectBeneficiary());
+        $this->assertIsArray($project->getProjectDonors());
+        $this->assertCount(2, $project->getProjectDonors());
+        $this->assertEquals("GOVERNMENT", $project->getProjectBeneficiary()->getName());
     }
 
-
-    public function test_name_empty_string_throws_runtime_exception()
+    // Tests de validación de nombre
+    public function test_name_empty_throws_runtime_exception()
     {
-    $country = $this->validCountry;
-    $agency = $this->validAgency;
-    $indicator = $this->validIndicator;
-    $projectState = $this->validProjectState;
-    $contact = $this->validContact;
         $this->shouldThrowAndAssert(
-            function () use ($country, $agency, $indicator, $projectState, $contact) { $country = Project::at(
-            name: "",
-            description: "Descripción del proyecto",
-            country: $country,
-            agency: $agency,
-            projectState: $projectState,
-            startDate:"2025-02-01",
-            endDate:"2026-02-01",
-            actualEndDate: "2026-01-15",
-            budget: 200000.0,
-            budgetSpent: 50000.0,
-            indicator: $indicator,
-            expectedImpact: 85.5,
-            shared: true,
-            contact: $contact
-            ); },
+            function () {
+                $this->createValidProject(['name' => '']);
+            },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals(Project::$INVALID_NAME, $exception->getMessage());
-            });
-    }
-    public function test_name_is_string(){
-        $country = $this->validCountry;
-        $agency = $this->validAgency;
-        $indicator = $this->validIndicator;
-        $projectState = $this->validProjectState;
-        $contact = $this->validContact;
-        $this->shouldThrowAndAssert(
-            function () use ($country, $agency, $indicator, $projectState, $contact) { $country = Project::at(
-            name: 123,
-            description: "Descripción del proyecto",
-            country: $country,
-            agency: $agency,
-            projectState: $projectState,
-            startDate:"2025-02-01",
-            endDate:"2026-02-01",
-            actualEndDate: "2026-01-15",
-            budget: 200000.0,
-            budgetSpent: 50000.0,
-            indicator: $indicator,
-            expectedImpact: 85.5,
-            shared: true,
-            contact: $contact
-            ); },
-            RuntimeException::class,
-            function ($exception) {
-                $this->assertIsString($exception->getMessage());
-                $this->assertEquals(Project::$INVALID_NAME, $exception->getMessage());
+                $this->assertEquals(Project::$ERROR_NAME_EMPTY, $exception->getMessage());
             }
         );
     }
-public function test_name_only_whitespace_throws_runtime_exception()
-{
-    $country = $this->validCountry;
-    $agency = $this->validAgency;
-    $indicator = $this->validIndicator;
-    $projectState = $this->validProjectState;
-    $contact = $this->validContact;
-    
-    $this->shouldThrowAndAssert(
-        function () use ($country, $agency, $indicator, $projectState, $contact) {
-            Project::at(
-                name: "   ",
-                description: "Descripción del proyecto",
-                country: $country,
-                agency: $agency,
-                projectState: $projectState,
-                startDate: "2025-02-01",
-                endDate: "2026-02-01",
-                actualEndDate: "2026-01-15",
-                budget: 200000.0,
-                budgetSpent: 50000.0,
-                indicator: $indicator,
-                expectedImpact: 85.5,
-                shared: true,
-                contact: $contact
-            );
-        },
-        RuntimeException::class,
-        function ($exception) {
-            $this->assertEquals(Project::$INVALID_NAME, $exception->getMessage());
-        }
-    );
-}
-    public function test_name_null_or_too_short_throws_runtime_exception()
-    {
-    $country = $this->validCountry;
-    $agency = $this->validAgency;
-    $indicator = $this->validIndicator;
-    $contact = $this->validContact;
 
-      $projectState = $this->validProjectState;
+    public function test_name_only_spaces_throws_runtime_exception()
+    {
         $this->shouldThrowAndAssert(
-            function () use ($country, $agency, $indicator, $projectState, $contact) { $country = Project::at(
-            name: null,
-            description: "Descripción del proyecto",
-            country: $country,
-            agency: $agency,
-            projectState: $projectState,
-            startDate:"2025-02-01",
-            endDate:"2026-02-01",
-            actualEndDate: "2026-01-15",
-            budget: 200000.0,
-            budgetSpent: 50000.0,
-            indicator: $indicator,
-            expectedImpact: 85.5,
-            shared: true,
-            contact: $contact
-            ); },
+            function () {
+                $this->createValidProject(['name' => '   ']);
+            },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals(Project::$INVALID_NAME, $exception->getMessage());
-            });
+                $this->assertEquals(Project::$ERROR_NAME_EMPTY, $exception->getMessage());
+            }
+        );
     }
+
+    public function test_name_too_short_throws_runtime_exception()
+    {
+        $this->shouldThrowAndAssert(
+            function () {
+                $this->createValidProject(['name' => 'ab']);
+            },
+            RuntimeException::class,
+            function ($exception) {
+                $this->assertEquals(Project::$ERROR_NAME_MIN_LENGTH, $exception->getMessage());
+            }
+        );
+    }
+
+    // Tests de validación de descripción
+    public function test_description_empty_throws_runtime_exception()
+    {
+        $this->shouldThrowAndAssert(
+            function () {
+                $this->createValidProject(['description' => '']);
+            },
+            RuntimeException::class,
+            function ($exception) {
+                $this->assertEquals(Project::$ERROR_DESCRIPTION_EMPTY, $exception->getMessage());
+            }
+        );
+    }
+
     public function test_description_too_short_throws_runtime_exception()
     {
-    $country = $this->validCountry;
-    $agency = $this->validAgency;
-    $indicator = $this->validIndicator;
-    $projectState = $this->validProjectState;
-    $contact = $this->validContact;
-    $this->shouldThrowAndAssert(
-            function () use ($country, $agency, $indicator, $projectState, $contact) { $country = Project::at(
-            name: "Proyecto de prueba",
-            description: "pepe",
-            country: $country,
-            agency: $agency,
-            projectState: $projectState,
-            startDate:"2025-02-01",
-            endDate:"2026-02-01",
-            actualEndDate: "2026-01-15",
-            budget: 200000.0,
-            budgetSpent: 50000.0,
-            indicator: $indicator,
-            expectedImpact: 85.5,
-            shared: true,
-            contact: $contact
-            ); },
-            RuntimeException::class,
-            function ($exception) {
-                $this->assertEquals(Project::$INVALID_DESCRIPTION, $exception->getMessage());
-            });
-    }
-    public function test_description_null_throws_runtime_exception()
-    {
-    $country = $this->validCountry;
-    $agency = $this->validAgency;
-    $indicator = $this->validIndicator;
-    $contact = $this->validContact;
-
-      $projectState = $this->validProjectState;
         $this->shouldThrowAndAssert(
-            function () use ($country, $agency, $indicator, $projectState, $contact) { $country = Project::at(
-            name: "Proyecto de prueba",
-            description: null,
-            country: $country,
-            agency: $agency,
-            projectState: $projectState,
-            startDate:"2025-02-01",
-            endDate:"2026-02-01",
-            actualEndDate: "2026-01-15",
-            budget: 200000.0,
-            budgetSpent: 50000.0,
-            indicator: $indicator,
-            expectedImpact: 85.5,
-            shared: true,
-            contact: $contact
-            ); },
+            function () {
+                $this->createValidProject(['description' => 'abc']);
+            },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals(Project::$INVALID_DESCRIPTION, $exception->getMessage());
-            });
+                $this->assertEquals(Project::$ERROR_DESCRIPTION_MIN_LENGTH, $exception->getMessage());
+            }
+        );
     }
 
-    public function test_end_date_null_throws_runtime_exception()
+    // Tests de validación de URL
+    public function test_project_url_invalid_format_throws_runtime_exception()
     {
-    $country = $this->validCountry;
-    $agency = $this->validAgency;
-    $indicator = $this->validIndicator;
-      $projectState = $this->validProjectState;
-    $contact = $this->validContact;
-
         $this->shouldThrowAndAssert(
-            function () use ($country, $agency, $indicator, $projectState, $contact) { $country = Project::at(
-            name: "Proyecto de prueba",
-            description: "descripción valida del proyecto",
-            country: $country,
-            agency: $agency,
-            projectState: $projectState,
-            startDate:"2025-02-01",
-            endDate: null,
-            actualEndDate: "2026-01-15",
-            budget: 200000.0,
-            budgetSpent: 50000.0,
-            indicator: $indicator,
-            expectedImpact: 85.5,
-            shared: true,
-            contact: $contact
-            ); },
+            function () {
+                $this->createValidProject(['projectUrl' => 'invalid-url']);
+            },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals(Project::$INVALID_DATES, $exception->getMessage());
-            });
+                $this->assertEquals(Project::$ERROR_PROJECT_URL_INVALID_FORMAT, $exception->getMessage());
+            }
+        );
     }
-    public function test_start_date_null_throws_runtime_exception()
-    {
-    $country = $this->validCountry;
-    $agency = $this->validAgency;
-    $indicator = $this->validIndicator;
-      $projectState = $this->validProjectState;
-    $contact = $this->validContact;
 
+    // Tests de validación de fechas
+    public function test_start_date_empty_throws_runtime_exception()
+    {
         $this->shouldThrowAndAssert(
-            function () use ($country, $agency, $indicator, $projectState, $contact) { $country = Project::at(
-            name: "Proyecto de prueba",
-            description: "descripción valida del proyecto",
-            country: $country,
-            agency: $agency,
-            projectState: $projectState,
-            startDate: null,
-            endDate:"2026-02-01",
-            actualEndDate: "2026-01-15",
-            budget: 200000.0,
-            budgetSpent: 50000.0,
-            indicator: $indicator,
-            expectedImpact: 85.5,
-            shared: true,
-            contact: $contact
-            ); },
+            function () {
+                $this->createValidProject(['startDate' => '']);
+            },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals(Project::$INVALID_DATES, $exception->getMessage());
-            });
+                $this->assertEquals(Project::$ERROR_START_DATE_EMPTY, $exception->getMessage());
+            }
+        );
     }
 
-    public function test_dates_null_validation_throws_runtime_exception()
+    public function test_end_date_before_start_throws_runtime_exception()
     {
-        $country = $this->validCountry;
-        $agency = $this->validAgency;
-        $indicator = $this->validIndicator;
-        $projectState = $this->validProjectState;
-    $contact = $this->validContact;
-
-         $this->shouldThrowAndAssert(
-            function () use ($country, $agency, $indicator, $projectState, $contact) { $country = Project::at(
-            name: "Proyecto de prueba",
-            description: "descripción valida del proyecto",
-            country: $country,
-            agency: $agency,
-            projectState: $projectState,
-            startDate:"2025-02-01",
-            endDate:"2026-02-01",
-            actualEndDate: null,
-            budget: 200000.0,
-            budgetSpent: 50000.0,
-            indicator: $indicator,
-            expectedImpact: 85.5,
-            shared: true,
-            contact: $contact
-            ); },
-            RuntimeException::class,
-            function ($exception) {
-                $this->assertEquals(Project::$INVALID_DATES, $exception->getMessage());
-            });
-    }
-        public function test_actual_end_date_null_throws_runtime_exception()
-    {
-        $country = $this->validCountry;
-        $agency = $this->validAgency;
-        $indicator = $this->validIndicator;
-        $projectState = $this->validProjectState;
-    $contact = $this->validContact;
-        
         $this->shouldThrowAndAssert(
-            function () use ($country, $agency, $indicator, $projectState, $contact) { $country = Project::at(
-            name: "Proyecto de prueba",
-            description: "descripción valida del proyecto",
-            country: $country,
-            agency: $agency,
-            projectState: $projectState,
-            startDate:"2025-02-01",
-            endDate:"2026-02-01",
-            actualEndDate: null,
-            budget: 200000.0,
-            budgetSpent: 50000.0,
-            indicator: $indicator,
-            expectedImpact: 85.5,
-            shared: true,
-            contact: $contact
-            ); },
+            function () {
+                $this->createValidProject([
+                    'startDate' => '2026-01-01',
+                    'endDate' => '2025-01-01'
+                ]);
+            },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals(Project::$INVALID_DATES, $exception->getMessage());
-            });
+                $this->assertEquals(Project::$ERROR_END_DATE_BEFORE_START, $exception->getMessage());
+            }
+        );
     }
-    
-            public function test_positional_args_end_date_null_throws_runtime_exception()
-    {
-        $country = $this->validCountry;
-        $agency = $this->validAgency;
-        $indicator = $this->validIndicator;
-  $projectState = $this->validProjectState;
-    $contact = $this->validContact;
 
-         $this->shouldThrowAndAssert(
-            function () use ($country, $agency, $indicator, $projectState, $contact) { $country = Project::at(
-            "Proyecto de prueba",
-            "descripción valida del proyecto",
-            $country,
-            $agency,
-            $projectState,
-           "2025-02-01",
-            null,
-            "2026-01-15",
-            200000.0,
-            50000.0,
-            $indicator,
-            85.5,
-            true,
-            $contact
-        ); },
+    // Tests de validación de progress
+    public function test_progress_out_of_range_throws_runtime_exception()
+    {
+        $this->shouldThrowAndAssert(
+            function () {
+                $this->createValidProject(['progress' => 150]);
+            },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals(Project::$INVALID_DATES, $exception->getMessage());
-            });
+                $this->assertEquals(Project::$ERROR_PROGRESS_INVALID, $exception->getMessage());
+            }
+        );
     }
-         public function test_budget_null_or_negative_throws_runtime_exception()
-    {
-        $country = $this->validCountry;
-        $agency = $this->validAgency;
-        $indicator = $this->validIndicator;
-           $projectState = $this->validProjectState;
-    $contact = $this->validContact;
-        
-           $this->shouldThrowAndAssert(
-               function () use ($country, $agency, $indicator, $projectState, $contact) { $country = Project::at(
-            name: "Proyecto de prueba",
-            description: "descripción valida del proyecto",
-            country: $country,
-            agency: $agency,
-            projectState: $projectState,
-            startDate:"2025-02-01",
-            endDate:"2026-02-01",
-            actualEndDate: "2026-01-15",
-            budget: null,
-            budgetSpent: 50000.0,
-            indicator: $indicator,
-            expectedImpact: 85.5,
-            shared: true,
-            contact: $contact
-            ); },
-            RuntimeException::class,
-            function ($exception) {
-                $this->assertEquals(Project::$INVALID_BUDGET, $exception->getMessage());
-            });
-    }
-    public function test_budget_spent_null_or_negative_throws_runtime_exception()
-    {
-        $country = $this->validCountry;
-        $agency = $this->validAgency;
-        $indicator = $this->validIndicator;
-  $projectState = $this->validProjectState;
-    $contact = $this->validContact;
 
-         $this->shouldThrowAndAssert(
-            function () use ($country, $agency, $indicator, $projectState, $contact) { $country = Project::at(
-            name: "Proyecto de prueba",
-            description: "descripción valida del proyecto",
-            country: $country,
-            agency: $agency,
-            projectState: $projectState,
-            startDate:"2025-02-01",
-            endDate:"2026-02-01",
-            actualEndDate: "2026-01-15",
-            budget: 200000.0,
-            budgetSpent: null,
-            indicator: $indicator,
-            expectedImpact: 85.5,
-            shared: true,
-            contact: $contact
-            ); },
+    // Tests de validación de presupuesto
+    public function test_project_budget_negative_throws_runtime_exception()
+    {
+        $this->shouldThrowAndAssert(
+            function () {
+                $this->createValidProject(['projectBudget' => -1000]);
+            },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals(Project::$INVALID_BUDGET_SPENT, $exception->getMessage());
-            });
+                $this->assertEquals(Project::$ERROR_PROJECT_BUDGET_INVALID, $exception->getMessage());
+            }
+        );
     }
-    public function test_indicator_null_or_too_short_throws_runtime_exception()
+
+    // Tests de validación de ProjectDonors
+    public function test_project_donors_not_array_throws_runtime_exception()
     {
-        $country = $this->validCountry;
-        $agency = $this->validAgency;
-        $indicator = $this->validIndicator;
-          $projectState = $this->validProjectState;
-    $contact = $this->validContact;
+        $this->shouldThrowAndAssert(
+            function () {
+                $this->createValidProject(['projectDonors' => 'not an array']);
+            },
+            RuntimeException::class,
+            function ($exception) {
+                $this->assertEquals(Project::$ERROR_PROJECT_DONORS_NOT_ARRAY, $exception->getMessage());
+            }
+        );
+    }
+
+    public function test_project_donors_duplicated_throws_runtime_exception()
+    {
+        $donor = Donor::at("USAID");
+        $duplicatedDonors = [
+            ProjectDonor::at($donor, 50),
+            ProjectDonor::at($donor, 30) // Mismo donor
+        ];
 
         $this->shouldThrowAndAssert(
-            function () use ($country, $agency, $indicator, $projectState, $contact) { $country = Project::at(
-            name: "Proyecto de prueba",
-            description: "descripción valida del proyecto",
-            country: $country,
-            agency: $agency,
-            projectState: $projectState,
-            startDate:"2025-02-01",
-            endDate:"2026-02-01",
-            actualEndDate: "2026-01-15",
-            budget: 200000.0,
-            budgetSpent: 50000.0,
-            indicator: null,
-            expectedImpact: 85.5,
-            shared: true,
-            contact: $contact
-            ); },
+            function () use ($duplicatedDonors) {
+                $this->createValidProject(['projectDonors' => $duplicatedDonors]);
+            },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals(Project::$INVALID_INDICATOR, $exception->getMessage());
-            });
+                $this->assertEquals(Project::$ERROR_PROJECT_DONORS_DUPLICATED, $exception->getMessage());
+            }
+        );
     }
-    public function test_expected_impact_null_or_negative_throws_runtime_exception()
+
+    // Tests de validación de entidades
+    public function test_invalid_project_beneficiary_throws_runtime_exception()
     {
-        $country = $this->validCountry;
-        $agency = $this->validAgency;
-        $indicator = $this->validIndicator;
-          $projectState = $this->validProjectState;
-    $contact = $this->validContact;
-
         $this->shouldThrowAndAssert(
-            function () use ($country, $agency, $indicator, $projectState, $contact) { $country = Project::at(
-            name: "Proyecto de prueba",
-            description: "descripción valida del proyecto",
-            country: $country,
-            agency: $agency,
-            projectState: $projectState,
-            startDate:"2025-02-01",
-            endDate:"2026-02-01",
-            actualEndDate: "2026-01-15",
-            budget: 200000.0,
-            budgetSpent: 50000.0,
-            indicator: $indicator,
-            expectedImpact: null,
-            shared: true,
-            contact: $contact
-            ); },
+            function () {
+                $this->createValidProject(['projectBeneficiary' => 'not a beneficiary']);
+            },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals(Project::$INVALID_EXPECTED_IMPACT, $exception->getMessage());
-            });
+                $this->assertEquals(Project::$ERROR_PROJECT_BENEFICIARY_INVALID, $exception->getMessage());
+            }
+        );
     }
-    public function test_manager_null_throws_runtime_exception()
+
+    public function test_invalid_contact_throws_runtime_exception()
     {
-        $country = $this->validCountry;
-        $agency = $this->validAgency;
-        $indicator = $this->validIndicator;
-        $projectState = $this->validProjectState;
-    $contact = $this->validContact;
-         
         $this->shouldThrowAndAssert(
-            function () use ($country, $agency, $indicator, $projectState, $contact) { $country = Project::at(
-            name: "Proyecto de prueba",
-            description: "descripción valida del proyecto",
-            country: $country,
-            agency: $agency,
-            projectState: $projectState,
-            startDate:"2025-02-01",
-            endDate:"2026-02-01",
-            actualEndDate: "2026-01-15",
-            budget: 200000.0,
-            budgetSpent: 50000.0,
-            indicator: $indicator,
-            expectedImpact: 85.5,
-            shared: true,
-            contact: null
-            ); },
+            function () {
+                $this->createValidProject(['contact' => 'not a contact']);
+            },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals(Project::$INVALID_CONTACT, $exception->getMessage());
-            });
+                $this->assertEquals(Project::$ERROR_CONTACT_INVALID, $exception->getMessage());
+            }
+        );
     }
-    public function test_shared_null_throws_runtime_exception()
-    {
-        $country = $this->validCountry;
-        $agency = $this->validAgency;
-        $indicator = $this->validIndicator;
-        $projectState = $this->validProjectState;
-        $contact = $this->validContact;
-
-        $this->shouldThrowAndAssert(
-            function () use ($country, $agency, $indicator, $projectState, $contact) { $country = Project::at(
-            name: "Proyecto de prueba",
-            description: "descripción valida del proyecto",
-            country: $country,
-            agency: $agency,
-            projectState: $projectState,
-            startDate:"2025-02-01",
-            endDate:"2026-02-01",
-            actualEndDate: "2026-01-15",
-            budget: 200000.0,
-            budgetSpent: 50000.0,
-            indicator: $indicator,
-            expectedImpact: 85.5,
-            shared: null,
-            contact: $contact
-        ); },
-            RuntimeException::class,
-            function ($exception) {
-                $this->assertEquals(Project::$INVALID_SHARED, $exception->getMessage());
-            });
-    }
-
-
-    
-
 }

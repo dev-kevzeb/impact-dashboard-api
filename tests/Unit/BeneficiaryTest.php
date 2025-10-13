@@ -3,11 +3,11 @@
 namespace Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
-use App\Models\ProgramBeneficiary;
+use App\Models\Beneficiary;
 use Exception;
 use RuntimeException;
 
-class ProgramBeneficiaryTest extends TestCase
+class BeneficiaryTest extends TestCase
 {
     // Closure para manejo de errores
     public function shouldThrowAndAssert($should, $exceptionType, $assertions)
@@ -23,49 +23,49 @@ class ProgramBeneficiaryTest extends TestCase
 
     public function test_program_beneficiary_can_be_created_with_government()
     {
-        $beneficiary = ProgramBeneficiary::at("GOVERNMENT");
+        $beneficiary = Beneficiary::at("GOVERNMENT");
 
         $this->assertEquals("GOVERNMENT", $beneficiary->getName());
         $this->assertTrue($beneficiary->validateName());
         $this->assertTrue($beneficiary->isGovernment());
         $this->assertFalse($beneficiary->isPrivateSector());
         $this->assertFalse($beneficiary->isGovernmentAndPrivateSector());
-        $this->assertInstanceOf(ProgramBeneficiary::class, $beneficiary);
+        $this->assertInstanceOf(Beneficiary::class, $beneficiary);
     }
 
     public function test_program_beneficiary_can_be_created_with_private_sector()
     {
-        $beneficiary = ProgramBeneficiary::at("PRIVATE_SECTOR");
+        $beneficiary = Beneficiary::at("PRIVATE_SECTOR");
 
         $this->assertEquals("PRIVATE_SECTOR", $beneficiary->getName());
         $this->assertTrue($beneficiary->validateName());
         $this->assertFalse($beneficiary->isGovernment());
         $this->assertTrue($beneficiary->isPrivateSector());
         $this->assertFalse($beneficiary->isGovernmentAndPrivateSector());
-        $this->assertInstanceOf(ProgramBeneficiary::class, $beneficiary);
+        $this->assertInstanceOf(Beneficiary::class, $beneficiary);
     }
 
     public function test_program_beneficiary_can_be_created_with_government_and_private_sector()
     {
-        $beneficiary = ProgramBeneficiary::at("GOVERNMENT_AND_PRIVATE_SECTOR");
+        $beneficiary = Beneficiary::at("GOVERNMENT_AND_PRIVATE_SECTOR");
 
         $this->assertEquals("GOVERNMENT_AND_PRIVATE_SECTOR", $beneficiary->getName());
         $this->assertTrue($beneficiary->validateName());
         $this->assertFalse($beneficiary->isGovernment());
         $this->assertFalse($beneficiary->isPrivateSector());
         $this->assertTrue($beneficiary->isGovernmentAndPrivateSector());
-        $this->assertInstanceOf(ProgramBeneficiary::class, $beneficiary);
+        $this->assertInstanceOf(Beneficiary::class, $beneficiary);
     }
 
     public function test_program_beneficiary_cannot_be_empty()
     {
         $this->shouldThrowAndAssert(
             function () {
-                ProgramBeneficiary::at("");
+                Beneficiary::at("");
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals(ProgramBeneficiary::$ERROR_NAME_EMPTY, $exception->getMessage());
+                $this->assertEquals(Beneficiary::$ERROR_NAME_EMPTY, $exception->getMessage());
             }
         );
     }
@@ -74,11 +74,11 @@ class ProgramBeneficiaryTest extends TestCase
     {
         $this->shouldThrowAndAssert(
             function () {
-                ProgramBeneficiary::at("   ");
+                Beneficiary::at("   ");
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals(ProgramBeneficiary::$ERROR_NAME_EMPTY, $exception->getMessage());
+                $this->assertEquals(Beneficiary::$ERROR_NAME_EMPTY, $exception->getMessage());
             }
         );
     }
@@ -87,11 +87,11 @@ class ProgramBeneficiaryTest extends TestCase
     {
         $this->shouldThrowAndAssert(
             function () {
-                ProgramBeneficiary::at("INVALID");
+                Beneficiary::at("INVALID");
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals(ProgramBeneficiary::$ERROR_NAME_INVALID, $exception->getMessage());
+                $this->assertEquals(Beneficiary::$ERROR_NAME_INVALID, $exception->getMessage());
             }
         );
     }
@@ -100,11 +100,11 @@ class ProgramBeneficiaryTest extends TestCase
     {
         $this->shouldThrowAndAssert(
             function () {
-                ProgramBeneficiary::at("government");
+                Beneficiary::at("government");
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals(ProgramBeneficiary::$ERROR_NAME_INVALID, $exception->getMessage());
+                $this->assertEquals(Beneficiary::$ERROR_NAME_INVALID, $exception->getMessage());
             }
         );
     }
@@ -113,11 +113,11 @@ class ProgramBeneficiaryTest extends TestCase
     {
         $this->shouldThrowAndAssert(
             function () {
-                ProgramBeneficiary::at("Government");
+                Beneficiary::at("Government");
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals(ProgramBeneficiary::$ERROR_NAME_INVALID, $exception->getMessage());
+                $this->assertEquals(Beneficiary::$ERROR_NAME_INVALID, $exception->getMessage());
             }
         );
     }
@@ -133,7 +133,7 @@ class ProgramBeneficiaryTest extends TestCase
         ];
 
         foreach ($validBeneficiaries as $beneficiaryName => $expectedBooleans) {
-            $beneficiary = ProgramBeneficiary::at($beneficiaryName);
+            $beneficiary = Beneficiary::at($beneficiaryName);
             
             $this->assertEquals($beneficiaryName, $beneficiary->getName());
             $this->assertTrue($beneficiary->validateName());
@@ -147,11 +147,11 @@ class ProgramBeneficiaryTest extends TestCase
     {
         $this->shouldThrowAndAssert(
             function () {
-                ProgramBeneficiary::at("GOVERNMENT AND PRIVATE SECTOR");
+                Beneficiary::at("GOVERNMENT AND PRIVATE SECTOR");
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals(ProgramBeneficiary::$ERROR_NAME_INVALID, $exception->getMessage());
+                $this->assertEquals(Beneficiary::$ERROR_NAME_INVALID, $exception->getMessage());
             }
         );
     }

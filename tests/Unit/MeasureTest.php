@@ -3,22 +3,26 @@
 namespace Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
-use App\Models\Kpa;
-use App\Models\StrategicOutput;
 use App\Models\Measure;
+use App\Models\Indicator;
+use App\Models\IndicatorType;
 use Exception;
 use RuntimeException;
 
 class MeasureTest extends TestCase
 {
-    private Kpa $validKpa;
-    private StrategicOutput $validStrategicOutput;
+    private Measure $validMeasure;
+    private IndicatorType $validIndicatorType;
+    private Indicator $validIndicator1;
+    private Indicator $validIndicator2;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->validKpa = Kpa::at("Desarrollo Rural");
-        $this->validStrategicOutput = StrategicOutput::at("Incrementar productividad agrícola", $this->validKpa);
+        $this->validMeasure = Measure::at("Toneladas por hectárea");
+        $this->validIndicatorType = IndicatorType::at("Porcentual");
+        $this->validIndicator1 = Indicator::at("Aumento productividad", $this->validIndicatorType, 25);
+        $this->validIndicator2 = Indicator::at("Reducción costos", $this->validIndicatorType, 15);
     }
 
     public function shouldThrowAndAssert($should, $exceptionType, $assertions)
@@ -34,18 +38,17 @@ class MeasureTest extends TestCase
 
     public function test_measure_can_be_created_with_valid_data()
     {
-        $measure = Measure::at("Toneladas de cultivo por hectárea", $this->validStrategicOutput);
+        $measure = Measure::at("Toneladas de cultivo por hectárea");
 
         $this->assertInstanceOf(Measure::class, $measure);
         $this->assertEquals("Toneladas de cultivo por hectárea", $measure->getName());
-        $this->assertEquals($this->validStrategicOutput, $measure->getStrategicOutput());
     }
 
     public function test_measure_name_cannot_be_empty()
     {
         $this->shouldThrowAndAssert(
             function () {
-                Measure::at("", $this->validStrategicOutput);
+                Measure::at("");
             },
             RuntimeException::class,
             function ($exception) {
@@ -58,7 +61,7 @@ class MeasureTest extends TestCase
     {
         $this->shouldThrowAndAssert(
             function () {
-                Measure::at("   ", $this->validStrategicOutput);
+                Measure::at("   ");
             },
             RuntimeException::class,
             function ($exception) {
@@ -71,7 +74,7 @@ class MeasureTest extends TestCase
     {
         $this->shouldThrowAndAssert(
             function () {
-                Measure::at("A", $this->validStrategicOutput);
+                Measure::at("A");
             },
             RuntimeException::class,
             function ($exception) {
@@ -86,7 +89,7 @@ class MeasureTest extends TestCase
 
         $this->shouldThrowAndAssert(
             function () use ($longName) {
-                Measure::at($longName, $this->validStrategicOutput);
+                Measure::at($longName);
             },
             RuntimeException::class,
             function ($exception) {
@@ -95,73 +98,150 @@ class MeasureTest extends TestCase
         );
     }
 
-    public function test_measure_strategic_output_cannot_be_null()
-    {
-        $this->shouldThrowAndAssert(
-            function () {
-                Measure::at("Valid Name", null);
-            },
-            RuntimeException::class,
-            function ($exception) {
-                $this->assertEquals(Measure::$ERROR_STRATEGIC_OUTPUT_NULL, $exception->getMessage());
-            }
-        );
-    }
-
-    public function test_measure_strategic_output_must_be_strategic_output_instance()
-    {
-        $this->shouldThrowAndAssert(
-            function () {
-                Measure::at("Valid Name", "Not a StrategicOutput");
-            },
-            RuntimeException::class,
-            function ($exception) {
-                $this->assertEquals(Measure::$ERROR_STRATEGIC_OUTPUT_INVALID, $exception->getMessage());
-            }
-        );
-    }
-
     public function test_measure_name_with_minimum_length_is_valid()
     {
-        $measure = Measure::at("KG", $this->validStrategicOutput);
+        $measure = Measure::at("KG");
         
-        $this->assertInstanceOf(Measure::class, $measure);
         $this->assertEquals("KG", $measure->getName());
     }
 
     public function test_measure_name_with_maximum_length_is_valid()
     {
         $maxName = str_repeat("A", 150); // 150 caracteres exactos
-        $measure = Measure::at($maxName, $this->validStrategicOutput);
+        $measure = Measure::at($maxName);
         
-        $this->assertInstanceOf(Measure::class, $measure);
         $this->assertEquals($maxName, $measure->getName());
     }
 
     public function test_measure_name_gets_trimmed()
     {
-        $measure = Measure::at("  Toneladas producidas  ", $this->validStrategicOutput);
+        $measure = Measure::at("  Toneladas producidas  ");
         
         $this->assertEquals("Toneladas producidas", $measure->getName());
     }
 
     public function test_measure_name_with_unicode_characters_is_valid()
     {
-        $measure = Measure::at("Porcentaje de niños educados", $this->validStrategicOutput);
+        $measure = Measure::at("Porcentaje de niños educados");
         
-        $this->assertInstanceOf(Measure::class, $measure);
         $this->assertEquals("Porcentaje de niños educados", $measure->getName());
     }
 
-    public function test_measure_with_different_strategic_outputs()
+    public function test_measure_can_be_created_without_indicators()
     {
-        $anotherKpa = Kpa::at("Educación");
-        $anotherStrategicOutput = StrategicOutput::at("Mejorar alfabetización", $anotherKpa);
+        $this->assertEquals([], $this->validMeasure->getIndicators());
+    }
+
+    public function test_measure_can_add_indicator_with_valid_instance()
+    {
+        $this->validMeasure->addIndicator($this->validIndicator1);
         
-        $measure = Measure::at("Porcentaje de alfabetización", $anotherStrategicOutput);
+        $this->assertEquals([$this->validIndicator1], $this->validMeasure->getIndicators());
+    }
+
+    public function test_measure_add_indicator_with_invalid_instance_throws_exception()
+    {
+        $this->shouldThrowAndAssert(
+            function () {
+                $this->validMeasure->addIndicator("not an indicator");
+            },
+            RuntimeException::class,
+            function ($exception) {
+                $this->assertEquals(Measure::$ERROR_INDICATOR_INVALID_INSTANCE, $exception->getMessage());
+            }
+        );
+    }
+
+    public function test_measure_add_indicator_with_duplicate_name_throws_exception()
+    {
+        $duplicateIndicator = Indicator::at("Aumento productividad", $this->validIndicatorType, 30);
         
-        $this->assertInstanceOf(Measure::class, $measure);
-        $this->assertEquals($anotherStrategicOutput, $measure->getStrategicOutput());
-        $this->assertEquals($anotherKpa, $measure->getStrategicOutput()->getKpa());
+        $this->validMeasure->addIndicator($this->validIndicator1);
+        
+        $this->shouldThrowAndAssert(
+            function () use ($duplicateIndicator) {
+                $this->validMeasure->addIndicator($duplicateIndicator);
+            },
+            RuntimeException::class,
+            function ($exception) {
+                $this->assertEquals(Measure::$ERROR_INDICATORS_DUPLICATED, $exception->getMessage());
+            }
+        );
+    }
+
+    public function test_measure_can_add_multiple_indicators()
+    {
+        $indicator3 = Indicator::at("Mejora calidad", $this->validIndicatorType, 20);
+        
+        $this->validMeasure->addIndicator($this->validIndicator1);
+        $this->validMeasure->addIndicator($this->validIndicator2);
+        $this->validMeasure->addIndicator($indicator3);
+        
+        $this->assertEquals([$this->validIndicator1, $this->validIndicator2, $indicator3], $this->validMeasure->getIndicators());
+    }
+
+    public function test_measure_find_indicator_by_name_found()
+    {
+        $this->validMeasure->addIndicator($this->validIndicator1);
+        
+        $found = $this->validMeasure->findIndicatorByName("Aumento productividad");
+        
+        $this->assertInstanceOf(Indicator::class, $found);
+        $this->assertEquals($this->validIndicator1, $found);
+        $this->assertEquals("Aumento productividad", $found->getName());
+    }
+
+    public function test_measure_find_indicator_by_name_not_found()
+    {
+        $this->validMeasure->addIndicator($this->validIndicator1);
+        
+        $this->shouldThrowAndAssert(
+            function () {
+                $this->validMeasure->findIndicatorByName("No Existe");
+            },
+            RuntimeException::class,
+            function ($exception) {
+                $this->assertStringContainsString(Measure::$ERROR_INDICATOR_NOT_FOUND, $exception->getMessage());
+                $this->assertStringContainsString("No Existe", $exception->getMessage());
+            }
+        );
+    }
+
+    public function test_measure_remove_indicator_existing_returns_true()
+    {
+        $this->validMeasure->addIndicator($this->validIndicator1);
+        $this->validMeasure->addIndicator($this->validIndicator2);
+        
+        $result = $this->validMeasure->removeIndicator("Aumento productividad");
+        
+        $this->assertTrue($result);
+        $this->assertEquals([$this->validIndicator2], $this->validMeasure->getIndicators());
+    }
+
+    public function test_measure_remove_indicator_non_existing_returns_false()
+    {
+        $this->validMeasure->addIndicator($this->validIndicator1);
+        
+        $result = $this->validMeasure->removeIndicator("No Existe");
+        
+        $this->assertFalse($result);
+        $this->assertEquals([$this->validIndicator1], $this->validMeasure->getIndicators());
+    }
+
+    public function test_measure_clear_indicators_with_elements()
+    {
+        $this->validMeasure->addIndicator($this->validIndicator1);
+        $this->validMeasure->addIndicator($this->validIndicator2);
+        
+        $this->validMeasure->clearIndicators();
+        
+        $this->assertEquals([], $this->validMeasure->getIndicators());
+    }
+
+    public function test_measure_clear_indicators_with_empty_array()
+    {
+        $this->validMeasure->clearIndicators(); 
+        
+        $this->assertEquals([], $this->validMeasure->getIndicators());
     }
 }
