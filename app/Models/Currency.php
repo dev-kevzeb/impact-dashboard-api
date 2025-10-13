@@ -7,13 +7,21 @@ use RuntimeException;
 
 class Currency extends Model
 {
+    protected $table = 'currencies';
+    protected $fillable = ['id', 'code', 'created_at', 'updated_at'];
+    
+    public function countries(){
+        return $this->hasmany(Country::class);
+    }
+
     // Constantes para mensajes de validación
     public static $ERROR_CODE_EMPTY = 'el código de moneda no debe ir vacio';
     public static $ERROR_CODE_LENGTH = 'el código de moneda debe tener exactamente 3 caracteres';
     public static $ERROR_CODE_FORMAT = 'el código de moneda debe contener solo letras mayúsculas';
     public static $ERROR_CODE_INVALID = 'el código de moneda debe ser un código ISO 4217 válido';
 
-    private string $code;
+
+    private string $code;   
     
     // Lista consolidada de códigos ISO 4217 válidos
     private static array $validCodes = [

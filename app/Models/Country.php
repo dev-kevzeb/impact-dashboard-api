@@ -7,6 +7,21 @@ use RuntimeException;
 
 class Country extends Model
 {
+    protected $table = 'countries';
+    protected $fillable = ['id', 'name', 'currency_id', 'created_at', 'updated_at'];
+
+    public function currency(){
+        // define la relacion con el modelo Currency
+        // 1 pais pertenece a 1 moneda
+        return $this->belongsTo(Currency::class);
+    }
+    public function kpas(){
+        // define la relacion con el modelo Kpa
+        // 1 pais tiene muchos KPAs
+        return $this->hasMany(Kpa::class);
+    }
+
+
     // Constantes para mensajes de validación
     public static $ERROR_NAME_EMPTY = 'el nombre del país no debe ir vacio';
     public static $ERROR_NAME_TOO_SHORT = 'el nombre del país debe tener al menos 2 caracteres';
