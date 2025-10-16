@@ -1,5 +1,6 @@
 
-CREATE SEQUENCE donors_seq;
+
+CREATE SEQUENCE donor_seq;
 
 /*==============================================================*/
 /* Table: Donors                                                */
