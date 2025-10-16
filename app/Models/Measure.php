@@ -11,16 +11,19 @@ class Measure extends Model
     public static $ERROR_NAME_EMPTY = 'el nombre del Measure no debe ir vacio';
     public static $ERROR_NAME_MIN_LENGTH = 'el nombre del Measure debe tener al menos 2 caracteres';
     public static $ERROR_NAME_MAX_LENGTH = 'el nombre del Measure no debe exceder 150 caracteres';
-    public static $ERROR_STRATEGIC_OUTPUT_NULL = 'el StrategicOutput no debe ser null';
     public static $ERROR_STRATEGIC_OUTPUT_INVALID = 'el StrategicOutput debe ser una instancia de StrategicOutput';
+    public static $ERROR_INDICATORS_DUPLICATED = 'no se permiten indicadores duplicados en la medida';
+    public static $ERROR_INDICATOR_INVALID_INSTANCE = 'el indicador debe ser una instancia de Indicator';
 
     private string $name;
     private StrategicOutput $strategicOutput;
+    private array $indicators;
     
     public function __construct(string $name, StrategicOutput $strategicOutput)
     {
         $this->name = $name;
         $this->strategicOutput = $strategicOutput;
+        $this->indicators = []; 
     }
     
     public static function at($name, $strategicOutput): Measure  
@@ -35,9 +38,6 @@ class Measure extends Model
             throw new RuntimeException(self::$ERROR_NAME_MAX_LENGTH);
         }
         
-        if ($strategicOutput === null) {
-            throw new RuntimeException(self::$ERROR_STRATEGIC_OUTPUT_NULL);
-        }
         if (!($strategicOutput instanceof StrategicOutput)) {
             throw new RuntimeException(self::$ERROR_STRATEGIC_OUTPUT_INVALID);
         }
@@ -53,5 +53,71 @@ class Measure extends Model
     public function getStrategicOutput(): StrategicOutput
     {
         return $this->strategicOutput;
+    }
+
+    public function addIndicator($indicator): void
+    {
+        if (!($indicator instanceof Indicator)) {
+            throw new RuntimeException(self::$ERROR_INDICATOR_INVALID_INSTANCE);
+        }
+        
+        // Verificar duplicados por nombre
+        if ($this->hasIndicatorWithName($indicator->getName())) {
+            throw new RuntimeException(self::$ERROR_INDICATORS_DUPLICATED);
+        }
+        
+        $this->indicators[] = $indicator;
+    }
+
+    private function hasIndicatorWithName(string $indicatorName): bool
+    {
+        foreach ($this->indicators as $existingIndicator) {
+            if ($existingIndicator->getName() === $indicatorName) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    public function getIndicators(): array
+    {
+        return $this->indicators;
+    }
+    
+    public function getIndicatorCount(): int
+    {
+        return count($this->indicators);
+    }
+    
+    public function hasIndicators(): bool
+    {
+        return !empty($this->indicators);
+    }
+    
+    public function removeIndicator(string $indicatorName): bool
+    {
+        foreach ($this->indicators as $index => $indicator) {
+            if ($indicator->getName() === $indicatorName) {
+                unset($this->indicators[$index]);
+                $this->indicators = array_values($this->indicators); // Re-indexar array
+                return true; // Eliminado exitosamente
+            }
+        }
+        return false; // No encontrado
+    }
+    
+    public function clearIndicators(): void
+    {
+        $this->indicators = [];
+    }
+    
+    public function findIndicatorByName(string $indicatorName): ?Indicator
+    {
+        foreach ($this->indicators as $indicator) {
+            if ($indicator->getName() === $indicatorName) {
+                return $indicator;
+            }
+        }
+        return null;
     }
 }
