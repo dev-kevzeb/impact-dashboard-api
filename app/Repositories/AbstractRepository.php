@@ -36,12 +36,23 @@ abstract class AbstractRepository implements RepositoryInterface
     }
 
     /**
-     * @return T|null
+     * @return T
+     * @throws \RuntimeException Si la entidad no existe
      */
-    public function findById(int $id): ?object
+    public function findById(int $id): object
     {
         try {
-            return $this->model->find($id);
+            $entity = $this->model->find($id);
+            
+            if (!$entity) {
+                throw new RuntimeException(
+                    class_basename($this->model) . " no encontrado con ID: {$id}"
+                );
+            }
+            
+            return $entity;
+        } catch (RuntimeException $e) {
+            throw $e;
         } catch (\Exception $e) {
             throw new RuntimeException(
                 "Error al buscar entidad por ID {$id}: " . $e->getMessage()
@@ -52,12 +63,23 @@ abstract class AbstractRepository implements RepositoryInterface
     /**
      * @param string $field
      * @param mixed $value
-     * @return T|null
+     * @return T
+     * @throws \RuntimeException Si la entidad no existe
      */
-    public function findBy(string $field, mixed $value): ?object
+    public function findBy(string $field, mixed $value): object
     {
         try {
-            return $this->model->where($field, $value)->first();
+            $entity = $this->model->where($field, $value)->first();
+            
+            if (!$entity) {
+                throw new RuntimeException(
+                    class_basename($this->model) . " no encontrado con {$field}={$value}"
+                );
+            }
+            
+            return $entity;
+        } catch (RuntimeException $e) {
+            throw $e;
         } catch (\Exception $e) {
             throw new RuntimeException(
                 "Error al buscar entidad por {$field}={$value}: " . $e->getMessage()

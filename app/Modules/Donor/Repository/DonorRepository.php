@@ -13,11 +13,5 @@ class DonorRepository extends AbstractRepository implements RepositoryInterface
     {
         parent::__construct($model);
     }
-
-    public function createDonor(string $name): Donor
-    {
-        $donor = Donor::at($name);
-        $this->save($donor);
-        return $donor;
-    }
+    
 }

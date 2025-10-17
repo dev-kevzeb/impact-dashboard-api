@@ -13,14 +13,16 @@ interface RepositoryInterface
     public function save(object $entity): void;
 
     /**
-     * @return T|null
+     * @return T
+     * @throws \RuntimeException Si la entidad no existe
      */
-    public function findById(int $id): ?object;
+    public function findById(int $id): object;
 
     /**
-     * @return T|null
+     * @return T
+     * @throws \RuntimeException Si la entidad no existe
      */
-    public function findBy(string $field, mixed $value): ?object;
+    public function findBy(string $field, mixed $value): object;
 
     /**
      * @return array<T>
