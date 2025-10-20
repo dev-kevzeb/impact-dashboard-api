@@ -3,101 +3,75 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use RuntimeException;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 
 class Currency extends Model
 {
     protected $table = 'currencies';
-    protected $fillable = ['id', 'code', 'created_at', 'updated_at'];
+    protected $fillable = ['code'];
     
-    public function countries(){
-        return $this->hasmany(Country::class);
+    // Validación en el boot del modelo
+    protected static function boot()
+    {
+        parent::boot();
+        
+        static::saving(function ($currency) {
+            $currency->validateCode($currency->code);
+        });
     }
-
-    // Constantes para mensajes de validación
-    public static $ERROR_CODE_EMPTY = 'el código de moneda no debe ir vacio';
-    public static $ERROR_CODE_LENGTH = 'el código de moneda debe tener exactamente 3 caracteres';
-    public static $ERROR_CODE_FORMAT = 'el código de moneda debe contener solo letras mayúsculas';
-    public static $ERROR_CODE_INVALID = 'el código de moneda debe ser un código ISO 4217 válido';
-
-
-    private string $code;   
     
-    // Lista consolidada de códigos ISO 4217 válidos
+ 
+    
+    // Lista de códigos ISO 4217 válidos
     private static array $validCodes = [
-        // Monedas principales
-        'USD', // Dólar estadounidense
-        'EUR', // Euro
-        'GBP', // Libra esterlina
-        'JPY', // Yen japonés
-        'CHF', // Franco suizo
-        'CAD', // Dólar canadiense
-        'AUD', // Dólar australiano
-        'CNY', // Yuan chino
-        'BOB', // Boliviano
-        'BRL', // Real brasileño
-        'ARS', // Peso argentino
-        'PEN', // Sol peruano
-        'CLP', // Peso chileno
-        'COP', // Peso colombiano
-        'UYU', // Peso uruguayo
-        'PYG', // Guaraní paraguayo
-        'VES', // Bolívar venezolano
-        'CRC', // Colón costarricense
-        'GTQ', // Quetzal guatemalteco
-        'HNL', // Lempira hondureña
-        'NIO', // Córdoba nicaragüense
-        'PAB', // Balboa panameña
-        'DOP', // Peso dominicano
-        'CUP', // Peso cubano
-        'HTG', // Gourde haitiana
-        'JMD', // Dólar jamaiquino
-        'TTD', // Dólar trinitense
-        'BBD', // Dólar barbadense
-        'MXN', // Peso mexicano
-        // Otras monedas importantes
-        'KRW', 'SGD', 'HKD', 'THB', 'MYR', 'IDR', 'PHP', 'VND',
-        'INR', 'PKR', 'BDT', 'LKR', 'NPR', 'BTN',
-        'RUB', 'UAH', 'PLN', 'CZK', 'HUF', 'RON', 'BGN', 'HRK',
-        'SEK', 'NOK', 'DKK', 'ISK',
-        'ZAR', 'EGP', 'NGN', 'KES', 'GHS', 'MAD', 'TND', 'DZD',
-        'XOF', 'XAF', 'ETB', 'UGX', 'TZS', 'RWF', 'ZMW', 'BWP',
-        'NAD', 'SZL', 'LSL', 'MWK', 'MZN', 'AOA', 'CVE', 'GMD',
-        'GNF', 'LRD', 'SLL', 'STN'
+        'USD', 'EUR', 'GBP', 'JPY', 'CHF', 'CAD', 'AUD', 'CNY', 'BOB', 
+        'BRL', 'ARS', 'PEN', 'CLP', 'COP', 'UYU', 'PYG', 'VES', 'CRC', 
+        'GTQ', 'HNL', 'NIO', 'PAB', 'DOP', 'CUP', 'HTG', 'JMD', 'TTD', 
+        'BBD', 'MXN', 'KRW', 'SGD', 'HKD', 'THB', 'MYR', 'IDR', 'PHP', 
+        'VND', 'INR', 'PKR', 'BDT', 'LKR', 'NPR', 'BTN', 'RUB', 'UAH', 
+        'PLN', 'CZK', 'HUF', 'RON', 'BGN', 'HRK', 'SEK', 'NOK', 'DKK', 
+        'ISK', 'ZAR', 'EGP', 'NGN', 'KES', 'GHS', 'MAD', 'TND', 'DZD',
+        'XOF', 'XAF', 'ETB', 'UGX', 'TZS', 'RWF', 'ZMW', 'BWP', 'NAD', 
+        'SZL', 'LSL', 'MWK', 'MZN', 'AOA', 'CVE', 'GMD', 'GNF', 'LRD', 
+        'SLL', 'STN', 'SOL'
     ];
     
-    public function __construct(string $code)
+    public function validateCode(?string $code): void
     {
-        $this->code = $code;
-    }
-    
-    public static function at($code): Currency
-    {
-        if (empty(trim($code))) {
-            throw new RuntimeException(self::$ERROR_CODE_EMPTY);
+        if (empty(trim($code ?? ''))) {
+            throw new \InvalidArgumentException('El código de moneda no debe ir vacío');
         }
         
         $trimmedCode = trim($code);
         
         if (strlen($trimmedCode) !== 3) {
-            throw new RuntimeException(self::$ERROR_CODE_LENGTH);
+            throw new \InvalidArgumentException('El código de moneda debe tener exactamente 3 caracteres');
         }
         
         if (!preg_match('/^[A-Z]{3}$/', $trimmedCode)) {
-            throw new RuntimeException(self::$ERROR_CODE_FORMAT);
+            throw new \InvalidArgumentException('El código de moneda debe contener solo letras mayúsculas');
         }
         
-        if (!in_array($trimmedCode, self::$validCodes)) {
-            throw new RuntimeException(self::$ERROR_CODE_INVALID);
+        if (!in_array($trimmedCode, self::$validCodes, true)) {
+            throw new \InvalidArgumentException('El código de moneda debe ser un código ISO 4217 válido');
         }
-        
-        return new Currency($trimmedCode);
     }
     
-    public function getCode(): string
+    // Accessor para asegurar que siempre esté en mayúsculas
+    protected function code(): Attribute
     {
-        return $this->code;
+        return Attribute::make(
+            get: fn ($value) => strtoupper($value),
+            set: fn ($value) => strtoupper(trim($value))
+        );
     }
     
-
+    public static function isValidCode(string $code): bool
+    {
+        return in_array(strtoupper(trim($code)), self::$validCodes, true);
+    }
+       public function countries()
+    {
+        return $this->hasMany(Country::class);
+    }
 }

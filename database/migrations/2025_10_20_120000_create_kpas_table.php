@@ -11,14 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('countries', function (Blueprint $table) {
+        Schema::create('kpas', function (Blueprint $table) {
             $table->id();
             $table->string('name', 100);
-            $table->string('iso2', 2)->nullable()->index();
-            $table->string('iso3', 3)->nullable()->index();
-            $table->foreignId('currency_id')->constrained('currencies');
-            $table->timestamp('created_at')->useCurrent();
-            $table->timestamp('updated_at')->nullable();
+            $table->decimal('implementation', 5, 2)->default(0);
         });
     }
 
@@ -27,6 +23,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('countries');
+        Schema::dropIfExists('kpas');
     }
 };

@@ -23,4 +23,12 @@ class KpaRepository {
         }
         return null;
     }
+    public function delete($id)
+    {
+        $kpa = Kpa::find($id);
+        if ($kpa) {
+            $kpa->delete();
+        }
+        return $kpa;
+    }
 }

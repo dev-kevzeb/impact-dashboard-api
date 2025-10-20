@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Exception;
 use Illuminate\Database\Eloquent\Model;
 use RuntimeException;
 
@@ -118,6 +119,6 @@ class Measure extends Model
                 return $indicator;
             }
         }
-        return null;
+        throw new Exception('Indicador no encontrado');
     }
 }

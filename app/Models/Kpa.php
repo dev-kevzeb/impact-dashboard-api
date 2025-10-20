@@ -7,6 +7,10 @@ use RuntimeException;
 
 class Kpa extends Model
 {
+
+    protected $table = 'kpas';
+    protected $fillable = ['name', 'implementation'];
+
     // Constantes de mensajes de error
     public static $ERROR_NAME_EMPTY = 'el nombre del KPA no debe ir vacio';
     public static $ERROR_NAME_MIN_LENGTH = 'el nombre del KPA debe tener al menos 2 caracteres';
@@ -18,11 +22,16 @@ class Kpa extends Model
     private string $name;
     private float $implementation;
     private array $strategicOutputs = [];
-    public function __construct(string $name, float $implementation = 0)
+    public function __construct(string $name = "", float $implementation = 0.0)
     {
-        $this->name = $name;
-        $this->implementation = $implementation;
-        $this->strategicOutputs = []; 
+        if($name !== "" && $implementation !== 0.0 ){
+            $this->name = $name;
+            $this->implementation = $implementation;
+            $this->strategicOutputs = []; 
+        }
+      
+        
+        parent::__construct();
     }
 
     public static function at($name, $implementation): Kpa

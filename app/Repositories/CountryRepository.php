@@ -25,6 +25,14 @@ class CountryRepository {
             $country->update($data);
             return $country;
         }
-        return null;
+        throw new \Exception('Country not found');
+    }
+    public function delete($id)
+    {
+        $country = Country::find($id);
+        if ($country) {
+            $country->delete();
+        }
+        return $country;
     }
 }

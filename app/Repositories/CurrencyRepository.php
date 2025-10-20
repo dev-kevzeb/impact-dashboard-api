@@ -16,6 +16,14 @@ class CurrencyRepository {
     public function create(array $data){
         return $this->model->create($data);
     }
+     public function delete($id)
+    {
+        $currency = Currency::find($id);
+        if ($currency) {
+            $currency->delete();
+        }
+        return $currency;
+    }
     public function update(int $id, array $data){
         $currency = $this->model->find($id);
         if($currency){
