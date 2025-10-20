@@ -28,8 +28,8 @@ class DonorController extends Controller
                 'Lista de donantes obtenida exitosamente',
                 200,
                 [
-                    'donors' => $donors,
-                    'total' => count($donors)
+                    'donors' => DonorResource::collection($donors),
+                    'total' => $donors->count()
                 ]
             );
         } catch (RuntimeException $e) {
@@ -143,19 +143,15 @@ class DonorController extends Controller
     public function stats(): JsonResponse
     {
         try {
-            $total = $this->donorService->getTotalDonors();
+            $stats = $this->donorService->getStats();
 
             return ApiResponse::success(
                 'Estadísticas de donantes obtenidas',
                 200,
-                [
-                    'total_donors' => $total
-                ]
+                $stats
             );
-        } catch (RuntimeException $e) {
-            return ApiResponse::error($e->getMessage(), 500);
         } catch (\Exception $e) {
-            return ApiResponse::error('Error interno del servidor', 500);
+            return ApiResponse::error('Error al obtener estadísticas', 500);
         }
     }
 }

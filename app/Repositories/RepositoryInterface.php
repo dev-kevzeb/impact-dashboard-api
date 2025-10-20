@@ -2,6 +2,8 @@
 
 namespace App\Repositories;
 
+use Illuminate\Database\Eloquent\Collection;
+
 /**
  * @template T of object
  */
@@ -25,11 +27,13 @@ interface RepositoryInterface
     public function findBy(string $field, mixed $value): object;
 
     /**
-     * @return array<T>
+     * @return Collection<int, T>
      */
-    public function getAll(): array;
-
+    public function getAll();    
+    
     public function exists(string $field, mixed $value): bool;
 
     public function count(): int;
+
+    public function countByDateRange(\DateTime $startDate, \DateTime $endDate): int;
 }
