@@ -15,6 +15,7 @@ class StrategicOutput extends Model
     public static $ERROR_KPA_INVALID = 'el KPA debe ser una instancia de Kpa';
     public static $ERROR_MEASURES_DUPLICATED = 'no se permiten medidas duplicadas en el resultado estratégico';
     public static $ERROR_MEASURE_INVALID_INSTANCE = 'la medida debe ser una instancia de Measure';
+    public static $ERROR_MEASURE_NOT_FOUND = 'la medida especificada no existe en este resultado estratégico';
 
     private string $name;
     private Kpa $kpa;
@@ -70,10 +71,10 @@ class StrategicOutput extends Model
         $this->measures[] = $measure;
     }
 
-    private function hasMeasureWithName(string $measureName): bool
+    public function hasMeasureWithName(string $measureName): bool
     {
-        foreach ($this->measures as $existingMeasure) {
-            if ($existingMeasure->getName() === $measureName) {
+        foreach ($this->measures as $measure) {
+            if ($measure->getName() === $measureName) {
                 return true;
             }
         }
@@ -112,7 +113,7 @@ class StrategicOutput extends Model
         $this->measures = [];
     }
     
-    public function findMeasureByName(string $measureName): ?Measure
+    public function findMeasureByName(string $measureName): Measure
     {
         foreach ($this->measures as $measure) {
             if ($measure->getName() === $measureName) {

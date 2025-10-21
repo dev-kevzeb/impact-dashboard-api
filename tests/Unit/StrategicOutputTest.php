@@ -224,9 +224,16 @@ class StrategicOutputTest extends TestCase
     {
         $this->validStrategicOutput->addMeasure($this->validMeasure1);
         
-        $found = $this->validStrategicOutput->findMeasureByName("No Existe");
-        
-        $this->assertNull($found);
+        $this->shouldThrowAndAssert(
+            function () {
+                $this->validStrategicOutput->findMeasureByName("No Existe");
+            },
+            RuntimeException::class,
+            function ($exception) {
+                $this->assertStringContainsString(StrategicOutput::$ERROR_MEASURE_NOT_FOUND, $exception->getMessage());
+                $this->assertStringContainsString("No Existe", $exception->getMessage());
+            }
+        );
     }
 
     public function test_strategic_output_remove_measure_existing_returns_true()
