@@ -27,8 +27,8 @@ class StrategicOutput extends Model
         $this->kpa = $kpa;
         $this->measures = []; 
     }
-    
-    public static function at($name, $kpa): StrategicOutput  
+
+    public static function at($name, Kpa $kpa): StrategicOutput
     {
         if (empty(trim($name))) {
             throw new RuntimeException(self::$ERROR_NAME_EMPTY);
@@ -52,10 +52,6 @@ class StrategicOutput extends Model
         return $this->name;
     }
     
-    public function getKpa(): Kpa
-    {
-        return $this->kpa;
-    }
 
     public function addMeasure($measure): void
     {
@@ -120,6 +116,9 @@ class StrategicOutput extends Model
                 return $measure;
             }
         }
-        throw new Exception('Medida no encontrada');
+        throw new RuntimeException(self::$ERROR_MEASURE_NOT_FOUND . ': ' . $measureName);
     }
+
+
+   
 }

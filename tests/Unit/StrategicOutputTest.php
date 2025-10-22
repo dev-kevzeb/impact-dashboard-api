@@ -3,7 +3,6 @@
 namespace Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
-use App\Models\Kpa;
 use App\Models\StrategicOutput;
 use App\Models\Measure;
 use Exception;
@@ -11,7 +10,6 @@ use RuntimeException;
 
 class StrategicOutputTest extends TestCase
 {
-    private Kpa $validKpa;
     private StrategicOutput $validStrategicOutput;
     private Measure $validMeasure1;
     private Measure $validMeasure2;
@@ -19,10 +17,9 @@ class StrategicOutputTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->validKpa = Kpa::at("Desarrollo Rural", 75.0);
-        $this->validStrategicOutput = StrategicOutput::at("Incrementar Productividad", $this->validKpa);
-        $this->validMeasure1 = Measure::at("Toneladas por hectárea", $this->validStrategicOutput);
-        $this->validMeasure2 = Measure::at("Porcentaje de mejora", $this->validStrategicOutput);
+        $this->validStrategicOutput = StrategicOutput::at("Incrementar Productividad");
+        $this->validMeasure1 = Measure::at("Toneladas por hectárea");
+        $this->validMeasure2 = Measure::at("Porcentaje de mejora");
     }
 
     public function shouldThrowAndAssert($should, $exceptionType, $assertions)
@@ -38,18 +35,17 @@ class StrategicOutputTest extends TestCase
 
     public function test_strategic_output_can_be_created_with_valid_data()
     {
-        $strategicOutput = StrategicOutput::at("Incrementar productividad agrícola", $this->validKpa);
+        $strategicOutput = StrategicOutput::at("Incrementar productividad agrícola");
 
         $this->assertInstanceOf(StrategicOutput::class, $strategicOutput);
         $this->assertEquals("Incrementar productividad agrícola", $strategicOutput->getName());
-        $this->assertEquals($this->validKpa, $strategicOutput->getKpa());
     }
 
     public function test_strategic_output_name_cannot_be_empty()
     {
         $this->shouldThrowAndAssert(
             function () {
-                StrategicOutput::at("", $this->validKpa);
+                StrategicOutput::at("");
             },
             RuntimeException::class,
             function ($exception) {
@@ -62,7 +58,7 @@ class StrategicOutputTest extends TestCase
     {
         $this->shouldThrowAndAssert(
             function () {
-                StrategicOutput::at("   ", $this->validKpa);
+                StrategicOutput::at("   ");
             },
             RuntimeException::class,
             function ($exception) {
@@ -75,7 +71,7 @@ class StrategicOutputTest extends TestCase
     {
         $this->shouldThrowAndAssert(
             function () {
-                StrategicOutput::at("A", $this->validKpa);
+                StrategicOutput::at("A");
             },
             RuntimeException::class,
             function ($exception) {
@@ -90,7 +86,7 @@ class StrategicOutputTest extends TestCase
 
         $this->shouldThrowAndAssert(
             function () use ($longName) {
-                StrategicOutput::at($longName, $this->validKpa);
+                StrategicOutput::at($longName);
             },
             RuntimeException::class,
             function ($exception) {
@@ -99,35 +95,11 @@ class StrategicOutputTest extends TestCase
         );
     }
 
-    public function test_strategic_output_kpa_cannot_be_null()
-    {
-        $this->shouldThrowAndAssert(
-            function () {
-                StrategicOutput::at("Valid Name", null);
-            },
-            RuntimeException::class,
-            function ($exception) {
-                $this->assertEquals(StrategicOutput::$ERROR_KPA_INVALID, $exception->getMessage());
-            }
-        );
-    }
 
-    public function test_strategic_output_kpa_must_be_kpa_instance()
-    {
-        $this->shouldThrowAndAssert(
-            function () {
-                StrategicOutput::at("Valid Name", "Not a KPA");
-            },
-            RuntimeException::class,
-            function ($exception) {
-                $this->assertEquals(StrategicOutput::$ERROR_KPA_INVALID, $exception->getMessage());
-            }
-        );
-    }
 
     public function test_strategic_output_name_with_minimum_length_is_valid()
     {
-        $strategicOutput = StrategicOutput::at("AI", $this->validKpa);
+        $strategicOutput = StrategicOutput::at("AI");
         
         $this->assertEquals("AI", $strategicOutput->getName());
     }
@@ -135,21 +107,21 @@ class StrategicOutputTest extends TestCase
     public function test_strategic_output_name_with_maximum_length_is_valid()
     {
         $maxName = str_repeat("A", 200); // 200 caracteres exactos
-        $strategicOutput = StrategicOutput::at($maxName, $this->validKpa);
+        $strategicOutput = StrategicOutput::at($maxName);
         
         $this->assertEquals($maxName, $strategicOutput->getName());
     }
 
     public function test_strategic_output_name_gets_trimmed()
     {
-        $strategicOutput = StrategicOutput::at("  Incrementar productividad  ", $this->validKpa);
+        $strategicOutput = StrategicOutput::at("  Incrementar productividad  ");
         
         $this->assertEquals("Incrementar productividad", $strategicOutput->getName());
     }
 
     public function test_strategic_output_name_with_unicode_characters_is_valid()
     {
-        $strategicOutput = StrategicOutput::at("Mejorar educación técnica", $this->validKpa);
+        $strategicOutput = StrategicOutput::at("Mejorar educación técnica");
         
         $this->assertEquals("Mejorar educación técnica", $strategicOutput->getName());
     }
@@ -183,7 +155,7 @@ class StrategicOutputTest extends TestCase
 
     public function test_strategic_output_add_measure_with_duplicate_name_throws_exception()
     {
-        $duplicateMeasure = Measure::at("Toneladas por hectárea", $this->validStrategicOutput);
+        $duplicateMeasure = Measure::at("Toneladas por hectárea");
         
         $this->validStrategicOutput->addMeasure($this->validMeasure1);
         
@@ -200,7 +172,7 @@ class StrategicOutputTest extends TestCase
 
     public function test_strategic_output_can_add_multiple_measures()
     {
-        $measure3 = Measure::at("Ingresos por familia", $this->validStrategicOutput);
+        $measure3 = Measure::at("Ingresos por familia");
         
         $this->validStrategicOutput->addMeasure($this->validMeasure1);
         $this->validStrategicOutput->addMeasure($this->validMeasure2);

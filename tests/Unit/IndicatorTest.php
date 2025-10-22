@@ -3,183 +3,182 @@
 namespace Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
-use App\Models\Country;
 use Exception;
 use RuntimeException;
 use App\Models\Indicator;
 use App\Models\IndicatorType;
-use App\Models\Measure;
-use App\Models\StrategicOutput;
 
 class IndicatorTest extends TestCase
 {
     private IndicatorType $validIndicatorType;
-    private Measure $validMeasure;
-    private StrategicOutput $validStrategicOutput;
 
     protected function setUp(): void
     {
         parent::setUp();
         $this->validIndicatorType = IndicatorType::at("TipoValido");
-        $this->validStrategicOutput = StrategicOutput::at("OutputValido", "DescripcionValida");
-        $this->validMeasure = new Measure("MedidaValida", $this->validStrategicOutput);
     }
-    public function assertThrows($should, $exception, $assert){
-        try{
+    public function shouldThrowAndAssert($should, $exceptionType, $assertions)
+    {
+        try {
             $should->__invoke();
             $this->fail();
-        }catch(Exception $e){
-            $this->assertEquals(get_class($e), $exception);
-            $assert->__invoke($e);  
+        } catch (Exception $exception) {
+            $this->assertEquals($exceptionType, get_class($exception));
+            $assertions->__invoke($exception);
         }
     }
-    public function test_validate_name_with_only_whitespaces()
+    public function test_indicator_name_cannot_be_empty()
     {
         $indicatorType = $this->validIndicatorType;
-        $measure = $this->validMeasure;
-        $this->assertThrows(
-            function() use ($indicatorType, $measure){ 
-                Indicator::at("   ", $measure, $indicatorType, 1); 
+        $this->shouldThrowAndAssert(
+            function() use ($indicatorType){ 
+                Indicator::at("", $indicatorType, 1); 
             },
             RuntimeException::class,
-            function($e){
-                $this->assertEquals($e->getMessage(), Indicator::$NAME_MIN_LENGTH);
+            function($exception){
+                $this->assertEquals(Indicator::$ERROR_NAME_EMPTY, $exception->getMessage());
             }   
         );
     }
 
-    public function test_validate_name_returns_true_for_valid_name()
+    public function test_indicator_name_cannot_be_only_spaces()
     {
         $indicatorType = $this->validIndicatorType;
-        $measure = $this->validMeasure;
-        $this->assertThrows(
-            function() use ($indicatorType, $measure){ Indicator::at("In", $measure, $indicatorType, 1); },
-            RuntimeException::class,
-            function($e){
-                $this->assertEquals($e->getMessage(), Indicator::$NAME_MIN_LENGTH);
-            }   
-        );
-            
-    }   
-       public function test_validate_name_not_empty()
-    {
-        $indicatorType = IndicatorType::at("TipoValido"); 
-        $indicatorType = $this->validIndicatorType;
-        $measure = $this->validMeasure;
-        $this->assertThrows(
-            function() use ($indicatorType, $measure){ Indicator::at("", $measure, $indicatorType, 1); },
-            RuntimeException::class,
-            function($e){
-                $this->assertEquals($e->getMessage(), Indicator::$NAME_MIN_LENGTH);
-            }   
-        );
-            
-    }   
-    public function test_validate_name_not_null()
-    {
-        $indicatorType = IndicatorType::at("TipoValido"); 
-        $indicatorType = $this->validIndicatorType;
-        $measure = $this->validMeasure;
-        $this->assertThrows(
-            function() use ($indicatorType, $measure){ Indicator::at(null, $measure, $indicatorType, 1) ; },
-            RuntimeException::class,
-            function($e){
-                $this->assertEquals($e->getMessage(), Indicator::$NAME_MIN_LENGTH);
-            }
-        );
-    }
-    public function test_validate_measure_not_empty()
-    {
-        $indicatorType = IndicatorType::at("TipoValido"); 
-        $indicatorType = $this->validIndicatorType; 
-        $measure = $this->validMeasure;
-        $this->assertThrows(
-            function() use ($indicatorType, $measure){ Indicator::at("IndicadorValido", " ", $indicatorType, 1); },
-            RuntimeException::class,
-            function($e){
-                $this->assertEquals($e->getMessage(), Indicator::$INSTANCE_OF_MEASURE);
-            }   
-        );
-            
-    }
-    public function test_validate_measure_not_null()
-    {
-        $indicatorType = IndicatorType::at("TipoValido"); 
-        $indicatorType = $this->validIndicatorType;
-        // $measure = $this->validMeasure;
-        $this->assertThrows(
-            function() use ($indicatorType){ Indicator::at("IndicadorValido", null, $indicatorType, 1); },
-            RuntimeException::class,
-            function($e){
-                $this->assertEquals($e->getMessage(), Indicator::$INSTANCE_OF_MEASURE);
-            }   
-        );
-            
-    }
-    public function test_validate_indicator_type_not_null()
-    {   
-        // $indicatorType = $this->validIndicatorType;
-        $measure = $this->validMeasure;
-        $this->assertThrows(
-            function() use($measure){ Indicator::at("IndicadorValido", $measure, null, 1); },
-            RuntimeException::class,
-            function($e){
-                $this->assertEquals($e->getMessage(), Indicator::$INSTANCE_OF_INDICATORTYPE);
-            }   
-        );
-            
-    }
-    public function test_validate_indicator_type_are_instance_of_indicator_type()
-    {
-        // $indicatorType = $this->validIndicatorType;
-        $measure = $this->validMeasure;
-        $this->assertThrows(
-            function() use($measure){ Indicator::at("IndicadorValido", $measure, "NotAnIndicatorType", 1); },
-            RuntimeException::class,
-            function($e){
-                $this->assertEquals($e->getMessage(), Indicator::$INSTANCE_OF_INDICATORTYPE);
-            }   
-        );
-    }
-    public function test_validate_numeric_parameter_is_positive()
-    {
-        $indicatorType = $this->validIndicatorType;
-        $measure = $this->validMeasure;
-        $this->assertThrows(
-            function() use ($indicatorType, $measure){ 
-                Indicator::at("IndicadorValido", $measure, $indicatorType, -1); 
-            },
-            RuntimeException::class,
-            function($e){
-                $this->assertStringContainsString("positive", strtolower($e->getMessage()));
-            }   
-        );
-    }
-    public function test_validate_measure_is_instance_of_measure()
-    {
-        $indicatorType = $this->validIndicatorType;
-        $this->assertThrows(
+        $this->shouldThrowAndAssert(
             function() use ($indicatorType){ 
-                Indicator::at("IndicadorValido", new \stdClass(), $indicatorType, 1); 
+                Indicator::at("   ", $indicatorType, 1); 
             },
             RuntimeException::class,
-            function($e){
-                $this->assertEquals($e->getMessage(), Indicator::$INSTANCE_OF_MEASURE);
+            function($exception){
+                $this->assertEquals(Indicator::$ERROR_NAME_EMPTY, $exception->getMessage());
             }   
         );
     }
-    public function test_validate_numeric_parameter_is_numeric()
+
+    public function test_indicator_name_too_short_throws_runtime_exception()
     {
         $indicatorType = $this->validIndicatorType;
-        $measure = $this->validMeasure;
-        $this->assertThrows(
-            function() use ($indicatorType, $measure){ 
-                Indicator::at("IndicadorValido", $measure, $indicatorType, "not a number"); 
-            },
+        $this->shouldThrowAndAssert(
+            function() use ($indicatorType){ Indicator::at("I", $indicatorType, 1); },
             RuntimeException::class,
-            function($e){
-                $this->assertStringContainsString("numeric", strtolower($e->getMessage()));
+            function($exception){
+                $this->assertEquals(Indicator::$ERROR_NAME_MIN_LENGTH, $exception->getMessage());
             }   
         );
+    }   
+
+    public function test_indicator_type_cannot_be_null()
+    {   
+        $this->shouldThrowAndAssert(
+            function(){ Indicator::at("IndicadorValido", null, 1); },
+            RuntimeException::class,
+            function($exception){
+                $this->assertEquals(Indicator::$ERROR_TYPE_REQUIRED, $exception->getMessage());
+            }   
+        );
+    }
+
+    public function test_indicator_type_must_be_instance_of_indicator_type()
+    {
+        $this->shouldThrowAndAssert(
+            function(){ Indicator::at("IndicadorValido", "NotAnIndicatorType", 1); },
+            RuntimeException::class,
+            function($exception){
+                $this->assertEquals(Indicator::$ERROR_TYPE_REQUIRED, $exception->getMessage());
+            }   
+        );
+    }
+
+    public function test_indicator_target_must_be_positive()
+    {
+        $indicatorType = $this->validIndicatorType;
+        $this->shouldThrowAndAssert(
+            function() use ($indicatorType){ 
+                Indicator::at("IndicadorValido", $indicatorType, -1); 
+            },
+            RuntimeException::class,
+            function($exception){
+                $this->assertEquals(Indicator::$ERROR_TARGET_INVALID, $exception->getMessage());
+            }   
+        );
+    }
+
+    public function test_indicator_target_must_be_numeric()
+    {
+        $indicatorType = $this->validIndicatorType;
+        $this->shouldThrowAndAssert(
+            function() use ($indicatorType){ 
+                Indicator::at("IndicadorValido", $indicatorType, "not a number"); 
+            },
+            RuntimeException::class,
+            function($exception){
+                $this->assertEquals(Indicator::$ERROR_TARGET_INVALID, $exception->getMessage());
+            }   
+        );
+    }
+
+    public function test_indicator_can_be_created_with_valid_data()
+    {
+        $indicatorType = $this->validIndicatorType;
+        
+        $indicator = Indicator::at("Indicador Valido", $indicatorType, 100);
+        
+        $this->assertInstanceOf(Indicator::class, $indicator);
+        $this->assertEquals("Indicador Valido", $indicator->getName());
+        $this->assertEquals($indicatorType, $indicator->getType());
+        $this->assertEquals(100, $indicator->getTarget());
+    }
+
+    public function test_indicator_name_too_long_throws_runtime_exception()
+    {
+        $indicatorType = $this->validIndicatorType;
+        $longName = str_repeat("A", 201); // 201 caracteres
+        
+        $this->shouldThrowAndAssert(
+            function() use ($indicatorType, $longName){ 
+                Indicator::at($longName, $indicatorType, 1); 
+            },
+            RuntimeException::class,
+            function($exception){
+                $this->assertEquals(Indicator::$ERROR_NAME_MAX_LENGTH, $exception->getMessage());
+            }   
+        );
+    }
+
+    public function test_indicator_name_with_minimum_length_is_valid()
+    {
+        $indicatorType = $this->validIndicatorType;
+        
+        $indicator = Indicator::at("AB", $indicatorType, 1);
+        
+        $this->assertEquals("AB", $indicator->getName());
+    }
+
+    public function test_indicator_name_with_maximum_length_is_valid()
+    {
+        $indicatorType = $this->validIndicatorType;
+        $maxName = str_repeat("A", 200); // 200 caracteres exactos
+        
+        $indicator = Indicator::at($maxName, $indicatorType, 50);
+        
+        $this->assertEquals($maxName, $indicator->getName());
+    }
+
+    public function test_indicator_trims_name_when_created()
+    {
+        $indicatorType = $this->validIndicatorType;
+        
+        $indicator = Indicator::at("  Indicador Con Espacios  ", $indicatorType, 50);
+        
+        $this->assertEquals("Indicador Con Espacios", $indicator->getName());
+    }
+
+    public function test_indicator_name_with_unicode_characters_is_valid()
+    {
+        $indicatorType = $this->validIndicatorType;
+        
+        $indicator = Indicator::at("Indicador con niños educados", $indicatorType, 75);
+        
+        $this->assertEquals("Indicador con niños educados", $indicator->getName());
     }
 }

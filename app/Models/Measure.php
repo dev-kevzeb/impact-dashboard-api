@@ -12,23 +12,20 @@ class Measure extends Model
     public static $ERROR_NAME_EMPTY = 'el nombre del Measure no debe ir vacio';
     public static $ERROR_NAME_MIN_LENGTH = 'el nombre del Measure debe tener al menos 2 caracteres';
     public static $ERROR_NAME_MAX_LENGTH = 'el nombre del Measure no debe exceder 150 caracteres';
-    public static $ERROR_STRATEGIC_OUTPUT_INVALID = 'el StrategicOutput debe ser una instancia de StrategicOutput';
     public static $ERROR_INDICATORS_DUPLICATED = 'no se permiten indicadores duplicados en la medida';
     public static $ERROR_INDICATOR_INVALID_INSTANCE = 'el indicador debe ser una instancia de Indicator';
     public static $ERROR_INDICATOR_NOT_FOUND = 'el indicador especificado no existe en esta medida';
 
     private string $name;
-    private StrategicOutput $strategicOutput;
     private array $indicators;
     
-    public function __construct(string $name, StrategicOutput $strategicOutput)
+    public function __construct(string $name)
     {
         $this->name = $name;
-        $this->strategicOutput = $strategicOutput;
         $this->indicators = []; 
     }
     
-    public static function at($name, $strategicOutput): Measure  
+    public static function at($name): Measure  
     {
         if (empty(trim($name))) {
             throw new RuntimeException(self::$ERROR_NAME_EMPTY);
@@ -40,21 +37,12 @@ class Measure extends Model
             throw new RuntimeException(self::$ERROR_NAME_MAX_LENGTH);
         }
         
-        if (!($strategicOutput instanceof StrategicOutput)) {
-            throw new RuntimeException(self::$ERROR_STRATEGIC_OUTPUT_INVALID);
-        }
-        
-        return new Measure(trim($name), $strategicOutput);
+        return new Measure(trim($name));
     }
     
     public function getName(): string
     {
         return $this->name;
-    }
-    
-    public function getStrategicOutput(): StrategicOutput
-    {
-        return $this->strategicOutput;
     }
 
     public function addIndicator($indicator): void
@@ -120,6 +108,6 @@ class Measure extends Model
                 return $indicator;
             }
         }
-        throw new Exception('Indicador no encontrado');
+        throw new RuntimeException(self::$ERROR_INDICATOR_NOT_FOUND . ': ' . $indicatorName);
     }
 }

@@ -2,10 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use RuntimeException;
 
-class Donor extends Model
+class Donor
 {
     // Constantes de mensajes de error
     public static $ERROR_NAME_EMPTY = 'el nombre del donante no debe ir vacio';
