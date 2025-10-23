@@ -1,6 +1,9 @@
 <?php 
+
 namespace App\Modules\Currency\Repository;
-use App\Modules\Currency\Domain\Entities\CurrencyModel as Currency;
+use App\Modules\Currency\Domain\Currency as Currency;
+use Exception;
+
 class CurrencyRepository {
     protected Currency $model;
     public function __construct(Currency $model)
@@ -29,6 +32,6 @@ class CurrencyRepository {
         if($currency){
             return $currency->update($data);
         }
-        return null;
+        throw new Exception('Currency not found');
     }
 }

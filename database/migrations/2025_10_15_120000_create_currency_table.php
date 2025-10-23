@@ -11,12 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('Country', function (Blueprint $table) {
+        Schema::create('Currency', function (Blueprint $table) {
             $table->id();
-            $table->string('name', 100);
-            $table->string('iso2', 2)->nullable()->index();
-            $table->string('iso3', 3)->nullable()->index();
-            $table->foreignId('currency_id')->constrained('Currency');
+            // según tu SQL original: code varchar(4)
+            $table->string('code', 4);
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->nullable();
         });
@@ -27,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('Country');
+        Schema::dropIfExists('Currency');
     }
 };

@@ -1,6 +1,6 @@
 <?php 
 namespace App\Modules\Kpa\Repository;
-use App\Modules\Kpa\Domain\Entities\KpaModel as Kpa;
+use App\Modules\Kpa\Domain\Kpa;
 // backup: original file saved as KpaRepository.php.bak
 class KpaRepository {
     protected Kpa $model;

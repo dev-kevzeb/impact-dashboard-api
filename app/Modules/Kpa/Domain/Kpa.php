@@ -1,15 +1,16 @@
 <?php
 
-namespace App\Models;
-
+namespace App\Modules\Kpa\Domain;
+use \App\Modules\Country\Domain\Country;
 use Illuminate\Database\Eloquent\Model;
 use RuntimeException;
 
 class Kpa extends Model
 {
 
-    protected $table = 'kpas';
+    protected $table = 'kpa';
     protected $fillable = ['name', 'implementation'];
+
 
     // Constantes de mensajes de error
     public static $ERROR_NAME_EMPTY = 'el nombre del KPA no debe ir vacio';
@@ -24,21 +25,8 @@ class Kpa extends Model
     private float $implementation;
     private array $strategicOutputs = [];
 
-    /**
-     * Constructor de dominio. Los parámetros son opcionales para que Eloquent
-     * pueda instanciar el modelo sin argumentos al hidratar registros.
-     */
-    public function __construct(string $name = '', float $implementation = 0.0)
-    {
-        if ($name !== '') {
-            $this->name = $name;
-            $this->implementation = $implementation;
-            $this->strategicOutputs = [];
-        }
-
-        parent::__construct();
-    }
-
+    
+    
     public static function at($name, $implementation): Kpa
     {
         if (empty(trim($name))) {
@@ -56,7 +44,7 @@ class Kpa extends Model
         if($implementation < 0 || $implementation > 100){
             throw new RuntimeException(self::$ERROR_IMPLEMENTATION_OUT_OF_RANGE);
         }
-        return new Kpa(trim($name), $implementation);
+        return new self([trim($name), $implementation]);
     }
     
     public function getName(): string
@@ -71,9 +59,9 @@ class Kpa extends Model
     
     public function addStrategicOutput($strategicOutput): void
     {
-        if (!($strategicOutput instanceof StrategicOutput)) {
-            throw new RuntimeException(self::$ERROR_STRATEGIC_OUTPUT_INVALID_INSTANCE);
-        }
+        // if (!($strategicOutput instanceof StrategicOutput)) {
+        //     throw new RuntimeException(self::$ERROR_STRATEGIC_OUTPUT_INVALID_INSTANCE);
+        // }
         
         // Verificar duplicados por nombre
         if ($this->hasStrategicOutputWithName($strategicOutput->getName())) {
@@ -117,7 +105,7 @@ class Kpa extends Model
         $this->strategicOutputs = [];
     }
     
-    public function findStrategicOutputByName(string $outputName): StrategicOutput
+    public function findStrategicOutputByName(string $outputName)
     {
         foreach ($this->strategicOutputs as $output) {
             if ($output->getName() === $outputName) {
@@ -137,9 +125,6 @@ class Kpa extends Model
         return false;
     }
 
-    /**
-     * Relación muchos a muchos con Country a través de la tabla pivot 'country_kpas'.
-     */
     public function countries()
     {
         return $this->belongsToMany(Country::class, 'country_kpas', 'id_kpa', 'id_country');

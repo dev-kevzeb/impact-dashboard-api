@@ -11,10 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('country_kpas', function (Blueprint $table) {
+        Schema::create('country_kpa', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('id_country')->constrained('countries');
-            $table->foreignId('id_kpa')->constrained('kpas');
+            $table->foreignId('id_country')->constrained('Country');
+            $table->foreignId('id_kpa')->constrained('Kpa');
         });
     }
 
@@ -23,6 +23,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('country_kpas');
+        Schema::dropIfExists('country_kpa');
     }
 };

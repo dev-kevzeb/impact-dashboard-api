@@ -1,15 +1,16 @@
 <?php
 
-namespace App\Models;
+namespace App\Modules\Currency\Domain;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 
 class Currency extends Model
 {
-    protected $table = 'currencies';
+    protected $table = 'Currency';
     protected $fillable = ['code'];
-    
+   
+   
     // Validación en el boot del modelo
     protected static function boot()
     {
@@ -70,8 +71,8 @@ class Currency extends Model
     {
         return in_array(strtoupper(trim($code)), self::$validCodes, true);
     }
-       public function countries()
+    public function countries()
     {
-        return $this->hasMany(Country::class);
+        return $this->hasMany(\App\Modules\Country\Domain\Country::class, 'currency_id');
     }
 }

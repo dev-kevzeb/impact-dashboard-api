@@ -11,13 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('currencies', function (Blueprint $table) {
-            $table->id();
-            // según tu SQL original: code varchar(4)
-            $table->string('code', 4);
-            $table->timestamp('created_at')->useCurrent();
-            $table->timestamp('updated_at')->nullable();
-        });
+        if (!Schema::hasTable('Currency')) {
+            Schema::create('Currency', function (Blueprint $table) {
+                $table->id();
+                $table->string('code', 4);
+                $table->timestamp('created_at')->useCurrent();
+                $table->timestamp('updated_at')->nullable();
+            });
+        }
     }
 
     /**
@@ -25,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('currencies');
+        Schema::dropIfExists('Currency');
     }
 };

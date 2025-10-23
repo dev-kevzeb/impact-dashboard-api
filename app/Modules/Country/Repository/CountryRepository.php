@@ -1,7 +1,7 @@
 <?php 
 
 namespace App\Modules\Country\Repository;
-use App\Modules\Country\Domain\Entities\CountryModel as Country;
+use App\Modules\Country\Domain\Country;
 // backup: original file saved as CountryRepository.php.bak
 class CountryRepository {
 

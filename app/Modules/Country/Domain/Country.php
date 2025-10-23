@@ -1,13 +1,17 @@
 <?php
 
-namespace App\Models;
+namespace App\Modules\Country\Domain;
+
+use App\Modules\Currency\Domain\Currency;
+use App\Modules\Kpa\Domain\Kpa;
 
 use Illuminate\Database\Eloquent\Model;
 use RuntimeException;
 
 class Country extends Model
 {
-    
+    protected $table = 'Country';
+    protected $fillable = ['name', 'currency_id'];
 
     // Constantes para mensajes de validación
     public static $ERROR_NAME_EMPTY = 'el nombre del país no debe ir vacio';
@@ -16,19 +20,9 @@ class Country extends Model
     public static $ERROR_NAME_INVALID_CHARACTERS = 'el nombre del país contiene caracteres no válidos';
     public static $ERROR_CURRENCY_INVALID = 'la moneda debe ser una instancia de Currency';
     public static $ERROR_KPA_MUST_BE_ARRAY = 'los KPAs deben estar en un array';
-    private ?string $name = null;
-    private ?Currency $currency = null;
-    // private array $kpa = [];
-    static $INVALIDNAME = 'el nombre del país no debe ir vacio';
-    public function __construct(string $name, Currency $currency, array $kpa)
-    {
-            $this->name = $name;
-            $this->currency = $currency;
-            $this->kpa = $kpa;
+   
 
-    }
-
-    public static function at($name, $currency, $kpa): Country
+    public static function at($name, $currency): Country
     {
         
         if (empty(trim($name))) {
@@ -50,34 +44,11 @@ class Country extends Model
             throw new RuntimeException(self::$ERROR_NAME_INVALID_CHARACTERS);
         }
         
-        if (!($currency instanceof Currency)) {
+        if (!($currency instanceof Currency )) {
             throw new RuntimeException(self::$ERROR_CURRENCY_INVALID);
         }
-        if (!is_array($kpa)) {
-            throw new RuntimeException(self::$ERROR_KPA_MUST_BE_ARRAY);
-        }
 
-        if (count($kpa) === 0) {
-            throw new RuntimeException('debe haber al menos un KPA en el array de KPAs');
-        }
-        foreach ($kpa as $item) {
-            if (!($item instanceof Kpa)) {
-                throw new RuntimeException('cada KPA debe ser una instancia de Kpa');
-            }
-        }
-      $seen = [];
-        foreach ($kpa as $kp) {
-            $name = mb_strtolower(trim($kp->getName()));
-            if ($name === "") {
-                throw new RuntimeException("El KPA tiene un nombre vacío");
-            }
-            if (isset($seen[$name])) {
-                throw new RuntimeException("no puede haber KPAs con el mismo nombre en un país");
-            }
-            $seen[$name] = true;
-        }
-        
-        return new Country($trimmedName, $currency, $kpa);
+        return new self(['name' => $trimmedName, 'currency_id' => $currency->getKey()]);
     }
 
     
@@ -101,5 +72,13 @@ class Country extends Model
         return $this->kpa;
     }
      
+    public function kpas()
+    {
+        return $this->belongsToMany(Kpa::class, 'country_kpas', 'id_country', 'id_kpa');
+    }
 
+    public function currency()
+    {
+        return $this->belongsTo(Currency::class, 'currency_id');
+    }
 }

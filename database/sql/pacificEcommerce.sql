@@ -1,11 +1,11 @@
-CREATE TABLE currencies(
+CREATE TABLE Currency(
   id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   code VARCHAR(4),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, 
   updated_at TIMESTAMP
 );
 
-CREATE TABLE countries(
+CREATE TABLE country(
   id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   name VARCHAR(100),
   currency_id INT REFERENCES currencies(id),
@@ -13,14 +13,14 @@ CREATE TABLE countries(
   updated_at TIMESTAMP
 );
 
-CREATE TABLE kpas(
+CREATE TABLE kpa(
   id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   name VARCHAR(100),
   implementation NUMERIC(5,2) CHECK (implementation >= 0 AND implementation <= 100)
 );
 
-CREATE TABLE country_kpas(
+CREATE TABLE countryKpa(
   id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-  id_country INT REFERENCES countries(id),
-  id_kpa INT REFERENCES kpas(id)
+  id_country INT REFERENCES country(id),
+  id_kpa INT REFERENCES kpa(id)
 );

@@ -9,12 +9,14 @@ use RuntimeException;
 abstract class AbstractRepository implements RepositoryInterface
 {
     /**
-     * @var T
+     * Instancia del modelo Eloquent manejado por el repositorio
+     *
+     * @var Model
      */
     protected Model $model;
 
     /**
-     * @param T $model
+     * @param Model $model
      */
     public function __construct(Model $model)
     {
@@ -36,7 +38,9 @@ abstract class AbstractRepository implements RepositoryInterface
     }
 
     /**
-     * @return T
+     * Buscar entidad por ID
+     *
+     * @return object
      * @throws \RuntimeException Si la entidad no existe
      */
     public function findById(int $id): object
@@ -61,9 +65,11 @@ abstract class AbstractRepository implements RepositoryInterface
     }
 
     /**
+     * Buscar entidad por campo
+     *
      * @param string $field
      * @param mixed $value
-     * @return T
+     * @return object
      * @throws \RuntimeException Si la entidad no existe
      */
     public function findBy(string $field, mixed $value): object
@@ -88,7 +94,9 @@ abstract class AbstractRepository implements RepositoryInterface
     }
 
     /**
-     * @return array<T>
+     * Obtener todas las entidades
+     *
+     * @return array
      */
     public function getAll(): array
     {
@@ -102,6 +110,8 @@ abstract class AbstractRepository implements RepositoryInterface
     }
 
     /**
+     * Verificar existencia por campo
+     *
      * @param string $field
      * @param mixed $value
      * @return bool
@@ -118,6 +128,8 @@ abstract class AbstractRepository implements RepositoryInterface
     }
 
     /**
+     * Contar entidades
+     *
      * @return int
      */
     public function count(): int
