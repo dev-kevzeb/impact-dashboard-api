@@ -11,9 +11,9 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 // API Routes para Donors
 Route::prefix('donors')->group(function () {
     Route::get('/', [DonorController::class, 'index']);
-    Route::get('/stats', [DonorController::class, 'stats']);
-    Route::get('/search', [DonorController::class, 'search']);
-    Route::get('/{id}', [DonorController::class, 'show']);
     Route::post('/', [DonorController::class, 'store']);
-    Route::put('/{id}', [DonorController::class, 'update']);
+    Route::get('/stats', [DonorController::class, 'stats']);          
+    Route::get('/search', [DonorController::class, 'search']);        
+    Route::get('/{id}', [DonorController::class, 'show']);            
+    Route::put('/{id}', [DonorController::class, 'update']);          
 });

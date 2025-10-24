@@ -38,7 +38,7 @@ class DonorService
         return $this->donorRepository->findBy('name', $name);
     }
 
-    public function getAllDonors(): array
+    public function getAllDonors()
     {
         return $this->donorRepository->getAll();
     }
@@ -48,9 +48,15 @@ class DonorService
         $donor = $this->donorRepository->findById($id);
 
         // Validar que el nuevo nombre no esté duplicado (excepto el actual)
-        $existingDonor = $this->donorRepository->findBy('name', trim($name));
-        if ($existingDonor && $existingDonor->id !== $id) {
-            throw new RuntimeException("Ya existe otro donante con el nombre: {$name}");
+        try {
+            $existingDonor = $this->donorRepository->findBy('name', trim($name));
+            if ($existingDonor && $existingDonor->id !== $id) {
+                throw new RuntimeException("Ya existe otro donante con el nombre: {$name}");
+            }
+        } catch (RuntimeException $e) {
+            if (!str_contains($e->getMessage(), 'no encontrado')) {
+                throw $e;
+            }
         }
 
         // Validar el nuevo nombre usando las reglas del dominio
@@ -70,5 +76,31 @@ class DonorService
     public function getTotalDonors(): int
     {
         return $this->donorRepository->count();
+    }
+
+    public function getStats(): array
+    {
+        return [
+            'total_donors' => $this->donorRepository->count(),
+            'active_donors' => $this->donorRepository->count(), // Todos están activos por defecto
+            'created_today' => $this->getDonorsCreatedToday(),
+            'created_this_month' => $this->getDonorsCreatedThisMonth()
+        ];
+    }
+
+    private function getDonorsCreatedToday(): int
+    {
+        return $this->donorRepository->countByDateRange(
+            now()->startOfDay(),
+            now()->endOfDay()
+        );
+    }
+
+    private function getDonorsCreatedThisMonth(): int
+    {
+        return $this->donorRepository->countByDateRange(
+            now()->startOfMonth(),
+            now()->endOfMonth()
+        );
     }
 }

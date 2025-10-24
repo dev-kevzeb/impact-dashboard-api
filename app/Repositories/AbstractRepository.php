@@ -3,6 +3,7 @@
 namespace App\Repositories;
 
 use App\Repositories\RepositoryInterface;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use RuntimeException;
 
@@ -88,12 +89,12 @@ abstract class AbstractRepository implements RepositoryInterface
     }
 
     /**
-     * @return array<T>
+     * @return Collection<int, T>
      */
-    public function getAll(): array
+    public function getAll()
     {
         try {
-            return $this->model->all()->toArray();
+            return $this->model->all(); // Collection de objetos Eloquent
         } catch (\Exception $e) {
             throw new RuntimeException(
                 "Error al obtener todas las entidades: " . $e->getMessage()
@@ -127,6 +128,24 @@ abstract class AbstractRepository implements RepositoryInterface
         } catch (\Exception $e) {
             throw new RuntimeException(
                 "Error al contar entidades: " . $e->getMessage()
+            );
+        }
+    }
+
+    /**
+     * @param \DateTime $startDate
+     * @param \DateTime $endDate
+     * @return int
+     */
+    public function countByDateRange(\DateTime $startDate, \DateTime $endDate): int
+    {
+        try {
+            return $this->model
+                ->whereBetween('created_at', [$startDate, $endDate])
+                ->count();
+        } catch (\Exception $e) {
+            throw new RuntimeException(
+                "Error al contar entidades por rango de fechas: " . $e->getMessage()
             );
         }
     }
