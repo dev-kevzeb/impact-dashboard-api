@@ -70,7 +70,14 @@ abstract class AbstractRepository implements RepositoryInterface
     public function findBy(string $field, mixed $value): object
     {
         try {
-            $entity = $this->model->where($field, $value)->first();
+            if (is_string($value)) {
+                $entity = $this->model->whereRaw(
+                    "LOWER({$field}) = LOWER(?)", 
+                    [trim($value)]
+                )->first();
+            } else {
+                $entity = $this->model->where($field, $value)->first();
+            }
             
             if (!$entity) {
                 throw new RuntimeException(
@@ -110,6 +117,14 @@ abstract class AbstractRepository implements RepositoryInterface
     public function exists(string $field, mixed $value): bool
     {
         try {
+            // Case-insensitive para strings, normal para otros tipos
+            if (is_string($value)) {
+                return $this->model->whereRaw(
+                    "LOWER({$field}) = LOWER(?)", 
+                    [trim($value)]
+                )->exists();
+            }
+            
             return $this->model->where($field, $value)->exists();
         } catch (\Exception $e) {
             throw new RuntimeException(
