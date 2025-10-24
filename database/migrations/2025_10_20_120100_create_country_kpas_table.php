@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('country_kpa', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('id_country')->constrained('Country');
-            $table->foreignId('id_kpa')->constrained('Kpa');
+            $table->foreignId('id_country')->constrained('country');
+            $table->foreignId('id_kpa')->constrained('kpa');
         });
     }
 

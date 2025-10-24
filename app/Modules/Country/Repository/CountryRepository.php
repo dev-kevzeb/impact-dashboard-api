@@ -2,7 +2,6 @@
 
 namespace App\Modules\Country\Repository;
 use App\Modules\Country\Domain\Country;
-// backup: original file saved as CountryRepository.php.bak
 class CountryRepository {
 
     protected Country $model;
@@ -12,10 +11,13 @@ class CountryRepository {
     }
 
     public function getAll(){
-        return $this->model->all();         
-    }
+        // obtenemos todos los registros de la tabla countries
+            $country = $this->model->with('currency')->get()->makeHidden(['currency_id']);
+            return $country;
+        }
     public function getById(int $id){
-        return $this->model->find($id);
+
+        return $this->model->with('currency')->find($id)->makeHidden(['currency_id']);
     }
     public function create(array $data){
         return $this->model->create($data);

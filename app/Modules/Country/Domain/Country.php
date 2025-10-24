@@ -10,7 +10,7 @@ use RuntimeException;
 
 class Country extends Model
 {
-    protected $table = 'Country';
+    protected $table = 'country';
     protected $fillable = ['name', 'currency_id'];
 
     // Constantes para mensajes de validación
@@ -72,13 +72,16 @@ class Country extends Model
         return $this->kpa;
     }
      
+    // relaciones Eloquent (persistencia)
     public function kpas()
     {
+        // definimos la relacion N:M con Kpa, usando la tabla pivote 'country_kpas'
         return $this->belongsToMany(Kpa::class, 'country_kpas', 'id_country', 'id_kpa');
     }
 
     public function currency()
     {
+        // definimos la relacion 1:1 con Currency
         return $this->belongsTo(Currency::class, 'currency_id');
     }
 }

@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 
 class Currency extends Model
 {
-    protected $table = 'Currency';
+    protected $table = 'currency';
     protected $fillable = ['code'];
    
    

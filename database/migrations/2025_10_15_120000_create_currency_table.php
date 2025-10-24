@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('Currency', function (Blueprint $table) {
+        Schema::create('currency', function (Blueprint $table) {
             $table->id();
             // según tu SQL original: code varchar(4)
             $table->string('code', 4);

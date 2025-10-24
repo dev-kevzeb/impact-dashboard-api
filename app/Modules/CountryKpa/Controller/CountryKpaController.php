@@ -65,32 +65,6 @@ class CountryKpaController extends Controller
 		}
 	}
 
-	public function attach(Request $request): \Illuminate\Http\JsonResponse
-	{
-		try {
-			$request->validate(['id_country' => 'required|integer', 'id_kpa' => 'required|integer']);
-			$data = $request->only(['id_country', 'id_kpa']);
-			$result = $this->service->attach((int)$data['id_country'], (int)$data['id_kpa']);
-			return ApiResponse::success('Adjuntado', 200, $result);
-		} catch (\Illuminate\Validation\ValidationException $e) {
-			return ApiResponse::validationError($e->errors());
-		} catch (RuntimeException $e) {
-			return ApiResponse::error($e->getMessage(), 400);
-		}
-	}
 
-	public function detach(Request $request): \Illuminate\Http\JsonResponse
-	{
-		try {
-			$request->validate(['id_country' => 'required|integer', 'id_kpa' => 'required|integer']);
-			$data = $request->only(['id_country', 'id_kpa']);
-			$result = $this->service->detach((int)$data['id_country'], (int)$data['id_kpa']);
-			return ApiResponse::success('Desvinculado', 200, ['deleted' => $result]);
-		} catch (\Illuminate\Validation\ValidationException $e) {
-			return ApiResponse::validationError($e->errors());
-		} catch (RuntimeException $e) {
-			return ApiResponse::error($e->getMessage(), 400);
-		}
-	}
 }
 

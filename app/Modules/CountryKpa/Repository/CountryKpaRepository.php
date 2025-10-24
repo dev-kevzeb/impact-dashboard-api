@@ -4,24 +4,28 @@ namespace App\Modules\CountryKpa\Repository;
 
 use App\Repositories\AbstractRepository;
 use App\Repositories\RepositoryInterface;
-use App\Modules\CountryKpa\Domain\CountryKpa as CountryKpaModel;
+use App\Modules\CountryKpa\Domain\CountryKpa;
+use Illuminate\Database\Eloquent\Model;
 use RuntimeException;
 
-class CountryKpaRepository extends AbstractRepository implements RepositoryInterface
+class CountryKpaRepository extends Model
 {
-	public function __construct(CountryKpaModel $model)
+
+    protected CountryKpa $model;
+    public function __construct(CountryKpa $model)
+    {
+        $this->model = $model;
+    }
+
+	public function getAll()
 	{
-		parent::__construct($model);
+		return $this->model->with(['country','kpa'])->get()->makeHidden(['id_country','id_kpa'])->toArray();
 	}
 
-	public function getAll(): array
+	public function getById(int $id)
 	{
-		return parent::getAll();
-	}
+		return $this->model->with(['country','kpa'])->find($id)->makeHidden(['id_country','id_kpa']);
 
-	public function getById(int $id): object
-	{
-		return parent::findById($id);
 	}
 
 	public function create(array $data): object
@@ -33,23 +37,8 @@ class CountryKpaRepository extends AbstractRepository implements RepositoryInter
 		}
 	}
 
-	public function delete(int $id): ?object
-	{
-		$rec = $this->model->find($id);
-		if ($rec) {
-			$rec->delete();
-		}
-		return $rec;
-	}
+	
 
-	public function attachKpaToCountry(int $countryId, int $kpaId): object
-	{
-		return $this->create(['id_country' => $countryId, 'id_kpa' => $kpaId]);
-	}
 
-	public function detachKpaFromCountry(int $countryId, int $kpaId): int
-	{
-		return $this->model->where('id_country', $countryId)->where('id_kpa', $kpaId)->delete();
-	}
 }
 
