@@ -26,3 +26,12 @@ Route::prefix('beneficiaries')->group(function () {
     Route::get('/{id}', [BeneficiaryController::class, 'show']);            
     Route::put('/{id}', [BeneficiaryController::class, 'update']);
 });
+
+// API Routes para ProgramStates
+Route::prefix('program_states')->group(function () {
+    Route::get('/', [\App\Modules\ProgramState\Controller\ProgramStateController::class, 'index']);
+    Route::post('/', [\App\Modules\ProgramState\Controller\ProgramStateController::class, 'store']);
+    Route::get('/search', [\App\Modules\ProgramState\Controller\ProgramStateController::class, 'search']);
+    Route::get('/{id}', [\App\Modules\ProgramState\Controller\ProgramStateController::class, 'show']);
+    Route::put('/{id}', [\App\Modules\ProgramState\Controller\ProgramStateController::class, 'update']);
+});
