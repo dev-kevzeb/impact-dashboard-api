@@ -5,7 +5,7 @@ namespace App\Http\Resources;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class DonorResource extends JsonResource
+class BeneficiaryResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -32,7 +32,7 @@ class DonorResource extends JsonResource
     {
         return [
             'meta' => [
-                'resource_type' => 'donor',
+                'resource_type' => 'beneficiary',
                 'version' => '1.0',
             ],
         ];

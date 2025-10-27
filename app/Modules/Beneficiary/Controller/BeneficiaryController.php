@@ -1,38 +1,38 @@
 <?php
 
-namespace App\Modules\Donor\Controller;
+namespace App\Modules\Beneficiary\Controller;
 
 use App\Http\Controllers\Controller;
+use App\Modules\Beneficiary\Service\BeneficiaryService;
 use App\Http\Responses\ApiResponse;
-use App\Http\Resources\DonorResource;
-use App\Modules\Donor\Service\DonorService;
-use Illuminate\Http\JsonResponse;
+use App\Http\Resources\BeneficiaryResource;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use RuntimeException;
 
-class DonorController extends Controller
+class BeneficiaryController extends Controller
 {
-    private DonorService $donorService;
+    private BeneficiaryService $beneficiaryService;
 
-    public function __construct(DonorService $donorService)
+    public function __construct(BeneficiaryService $beneficiaryService)
     {
-        $this->donorService = $donorService;
+        $this->beneficiaryService = $beneficiaryService;
     }
 
     /**
-     * Listar todos los donantes
+     * Listar todos los beneficiarios
      */
     public function index(): JsonResponse
     {
         try {
-            $donors = $this->donorService->getAllDonors();
+            $beneficiaries = $this->beneficiaryService->getAllBeneficiaries();
             
             return ApiResponse::success(
-                'Lista de donantes obtenida exitosamente',
+                'Lista de beneficiarios obtenida exitosamente',
                 200,
                 [
-                    'donors' => DonorResource::collection($donors),
-                    'total' => $donors->count()
+                    'beneficiaries' => BeneficiaryResource::collection($beneficiaries),
+                    'total' => $beneficiaries->count()
                 ]
             );
         } catch (RuntimeException $e) {
@@ -43,27 +43,7 @@ class DonorController extends Controller
     }
 
     /**
-     * Mostrar un donante específico
-     */
-    public function show(int $id): JsonResponse
-    {
-        try {
-            $donor = $this->donorService->getDonorById($id);
-
-            return ApiResponse::success(
-                'Donante encontrado',
-                200,
-                new DonorResource($donor)
-            );
-        } catch (RuntimeException $e) {
-            return ApiResponse::notFound('Donante');
-        } catch (\Exception $e) {
-            return ApiResponse::error('Error interno del servidor', 500);
-        }
-    }
-
-    /**
-     * Crear un nuevo donante
+     * Crear un nuevo beneficiario
      */
     public function store(Request $request): JsonResponse
     {
@@ -73,13 +53,12 @@ class DonorController extends Controller
                 'name' => 'required|string'
             ]);
 
-            $donor = $this->donorService->createDonor($request->input('name'));
+            $beneficiary = $this->beneficiaryService->createBeneficiary($request->input('name'));
 
             return ApiResponse::created(
-                'Donante creado exitosamente',
-                new DonorResource($donor)
+                'Beneficiario creado exitosamente',
+                new BeneficiaryResource($beneficiary)
             );
-
         } catch (RuntimeException $e) {
             return ApiResponse::error($e->getMessage(), 400);
         } catch (\Illuminate\Validation\ValidationException $e) {
@@ -88,7 +67,27 @@ class DonorController extends Controller
     }
 
     /**
-     * Actualizar un donante existente
+     * Mostrar un beneficiario específico
+     */
+    public function show(int $id): JsonResponse
+    {
+        try {
+            $beneficiary = $this->beneficiaryService->getBeneficiaryById($id);
+
+            return ApiResponse::success(
+                'Beneficiario encontrado',
+                200,
+                new BeneficiaryResource($beneficiary)
+            );
+        } catch (RuntimeException $e) {
+            return ApiResponse::notFound('Beneficiario');
+        } catch (\Exception $e) {
+            return ApiResponse::error('Error interno del servidor', 500);
+        }
+    }
+
+    /**
+     * Actualizar un beneficiario existente
      */
     public function update(Request $request, int $id): JsonResponse
     {
@@ -98,12 +97,12 @@ class DonorController extends Controller
                 'name' => 'required|string'
             ]);
 
-            $donor = $this->donorService->updateDonor($id, $request->input('name'));
+            $beneficiary = $this->beneficiaryService->updateBeneficiary($id, $request->input('name'));
 
             return ApiResponse::success(
-                'Donante actualizado exitosamente',
+                'Beneficiario actualizado exitosamente',
                 200,
-                new DonorResource($donor)
+                new BeneficiaryResource($beneficiary)
             );
 
         } catch (RuntimeException $e) {
@@ -114,7 +113,7 @@ class DonorController extends Controller
     }
 
     /**
-     * Buscar donante por nombre
+     * Buscar beneficiario por nombre
      */
     public function search(Request $request): JsonResponse
     {
@@ -123,16 +122,16 @@ class DonorController extends Controller
                 'name' => 'required|string|min:1'
             ]);
 
-            $donor = $this->donorService->findDonorByName($request->input('name'));
+            $beneficiary = $this->beneficiaryService->findBeneficiaryByName($request->input('name'));
 
             return ApiResponse::success(
-                'Donante encontrado',
+                'Beneficiario encontrado',
                 200,
-                new DonorResource($donor)
+                new BeneficiaryResource($beneficiary)
             );
 
         } catch (RuntimeException $e) {
-            return ApiResponse::notFound('Donante');
+            return ApiResponse::notFound('Beneficiario');
         } catch (\Illuminate\Validation\ValidationException $e) {
             return ApiResponse::validationError($e->errors());
         } catch (\Exception $e) {
