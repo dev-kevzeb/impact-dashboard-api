@@ -1,24 +1,24 @@
 <?php
 
-namespace App\Modules\Donor\Domain;
+namespace App\Modules\Beneficiary\Domain;
 
 use Illuminate\Database\Eloquent\Model;
 use RuntimeException;
 
-class Donor extends Model
+class Beneficiary extends Model
 {
-    protected $table = 'donor';
+    protected $table = 'beneficiary';
     protected $fillable = ['name'];
     
-    public static $ERROR_NAME_EMPTY = 'el nombre del donante no debe ir vacio';
-    public static $ERROR_NAME_MIN_LENGTH = 'el nombre del donante debe tener al menos 2 caracteres';
+    public static $ERROR_NAME_EMPTY = 'el nombre del beneficiario no debe ir vacio';
+    public static $ERROR_NAME_MIN_LENGTH = 'el nombre del beneficiario debe tener al menos 2 caracteres';
     
     public function __construct(array $attributes = [])
     {
         parent::__construct($attributes);
     }
     
-    public static function at(string $name): Donor  
+    public static function at(string $name): Beneficiary  
     {
         if (empty(trim($name))) {
             throw new RuntimeException(self::$ERROR_NAME_EMPTY);
@@ -27,7 +27,7 @@ class Donor extends Model
             throw new RuntimeException(self::$ERROR_NAME_MIN_LENGTH);
         }
         
-        return new Donor(['name' => trim($name)]);
+        return new Beneficiary(['name' => trim($name)]);
     }
     
     public function validateName(): bool

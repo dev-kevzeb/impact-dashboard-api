@@ -1,12 +1,16 @@
 <?php
 
-namespace App\Models;
+namespace App\Modules\Contact\Domain;
 
 use Illuminate\Database\Eloquent\Model;
 use RuntimeException;
 
 class Contact extends Model
 {
+    // tabla asociada para el orm eloquent
+    protected $table = 'contact';
+    // atributos asignables
+    protected $fillable = ['first_name', 'last_name', 'title', 'email', 'phone'];
     // Constantes de mensajes de error
     public static $ERROR_FIRST_NAME_EMPTY = 'el nombre del contacto no debe ir vacío';
     public static $ERROR_FIRST_NAME_MIN_LENGTH = 'el nombre del contacto debe tener al menos 2 caracteres';
@@ -34,14 +38,7 @@ class Contact extends Model
     private string $email;
     private string $phone;
 
-    public function __construct(string $firstName, string $lastName, string $title, string $email, string $phone)
-    {
-        $this->firstName = $firstName;
-        $this->lastName = $lastName;
-        $this->title = $title;
-        $this->email = $email;
-        $this->phone = $phone;
-    }
+  
 
     public static function at(string $firstName, string $lastName, string $title, string $email, string $phone = ""): Contact
     {
@@ -145,8 +142,17 @@ class Contact extends Model
                 throw new RuntimeException(self::$ERROR_PHONE_TOO_LONG);
             }
         }
-
-        return new Contact($trimmedFirstName, $trimmedLastName, $trimmedTitle, $trimmedEmail, $trimmedPhone);
+        // capitalize php
+        $first = mb_convert_case(mb_strtolower($trimmedFirstName, 'UTF-8'), MB_CASE_TITLE, 'UTF-8');
+        $last  = mb_convert_case(mb_strtolower($trimmedLastName, 'UTF-8'), MB_CASE_TITLE, 'UTF-8');
+        $title = mb_convert_case(mb_strtolower($trimmedTitle, 'UTF-8'), MB_CASE_TITLE, 'UTF-8');
+       return new self([
+            'first_name' => $first,
+            'last_name'  => $last,
+            'title'      => $title,
+            'email'      => strtolower($trimmedEmail),
+            'phone'      => $trimmedPhone,
+        ]);
     }
 
     private static function hasValidTextCharacters(string $text): bool

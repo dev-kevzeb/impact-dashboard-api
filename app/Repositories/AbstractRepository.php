@@ -3,6 +3,7 @@
 namespace App\Repositories;
 
 use App\Repositories\RepositoryInterface;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use RuntimeException;
 
@@ -75,7 +76,14 @@ abstract class AbstractRepository implements RepositoryInterface
     public function findBy(string $field, mixed $value): object
     {
         try {
-            $entity = $this->model->where($field, $value)->first();
+            if (is_string($value)) {
+                $entity = $this->model->whereRaw(
+                    "LOWER({$field}) = LOWER(?)", 
+                    [trim($value)]
+                )->first();
+            } else {
+                $entity = $this->model->where($field, $value)->first();
+            }
             
             if (!$entity) {
                 throw new RuntimeException(
@@ -94,14 +102,12 @@ abstract class AbstractRepository implements RepositoryInterface
     }
 
     /**
-     * Obtener todas las entidades
-     *
-     * @return array
+     * @return Collection<int, T>
      */
-    public function getAll(): array
+    public function getAll()
     {
         try {
-            return $this->model->all()->toArray();
+            return $this->model->all(); // Collection de objetos Eloquent
         } catch (\Exception $e) {
             throw new RuntimeException(
                 "Error al obtener todas las entidades: " . $e->getMessage()
@@ -119,6 +125,14 @@ abstract class AbstractRepository implements RepositoryInterface
     public function exists(string $field, mixed $value): bool
     {
         try {
+            // Case-insensitive para strings, normal para otros tipos
+            if (is_string($value)) {
+                return $this->model->whereRaw(
+                    "LOWER({$field}) = LOWER(?)", 
+                    [trim($value)]
+                )->exists();
+            }
+            
             return $this->model->where($field, $value)->exists();
         } catch (\Exception $e) {
             throw new RuntimeException(
@@ -139,6 +153,24 @@ abstract class AbstractRepository implements RepositoryInterface
         } catch (\Exception $e) {
             throw new RuntimeException(
                 "Error al contar entidades: " . $e->getMessage()
+            );
+        }
+    }
+
+    /**
+     * @param \DateTime $startDate
+     * @param \DateTime $endDate
+     * @return int
+     */
+    public function countByDateRange(\DateTime $startDate, \DateTime $endDate): int
+    {
+        try {
+            return $this->model
+                ->whereBetween('created_at', [$startDate, $endDate])
+                ->count();
+        } catch (\Exception $e) {
+            throw new RuntimeException(
+                "Error al contar entidades por rango de fechas: " . $e->getMessage()
             );
         }
     }

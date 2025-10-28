@@ -22,4 +22,9 @@ Route::prefix('v1')->middleware('api')->group(function () {
     Route::apiResource('country-kpas', \App\Modules\CountryKpa\Controller\CountryKpaController::class)->parameters([
         'country-kpas' => 'id'
     ]);
+    Route::apiResource('contacts', \App\Modules\Contact\Controller\ContactController::class)->parameters([
+        'contacts' => 'id'
+    ]);
+
+
 });

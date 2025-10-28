@@ -12,7 +12,6 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('kpa', function (Blueprint $table) {
-            // Añadir columnas created_at y updated_at que Eloquent espera por defecto
             if (!Schema::hasColumn('kpa', 'created_at') && !Schema::hasColumn('kpa', 'updated_at')) {
                 $table->timestamps();
             }

@@ -8,21 +8,21 @@ use RuntimeException;
 
 class DonorService
 {
-    public function __construct(
-        private readonly DonorRepository $donorRepository
-    ) {}
+    private DonorRepository $donorRepository;
+
+    public function __construct(DonorRepository $donorRepository)
+    {
+        $this->donorRepository = $donorRepository;
+    }
 
     public function createDonor(string $name): Donor
     {
-        // Validar que no exista un donante con el mismo nombre
         if ($this->donorRepository->exists('name', trim($name))) {
             throw new RuntimeException("Ya existe un donante con el nombre: {$name}");
         }
 
-        // Crear usando Factory Method del Domain (validaciones internas)
         $donor = Donor::at($name);
         
-        // Persistir usando Repository genérico
         $this->donorRepository->save($donor);
         
         return $donor;
@@ -38,7 +38,7 @@ class DonorService
         return $this->donorRepository->findBy('name', $name);
     }
 
-    public function getAllDonors(): array
+    public function getAllDonors()
     {
         return $this->donorRepository->getAll();
     }
@@ -47,13 +47,17 @@ class DonorService
     {
         $donor = $this->donorRepository->findById($id);
 
-        // Validar que el nuevo nombre no esté duplicado (excepto el actual)
-        $existingDonor = $this->donorRepository->findBy('name', trim($name));
-        if ($existingDonor && $existingDonor->id !== $id) {
-            throw new RuntimeException("Ya existe otro donante con el nombre: {$name}");
+        try {
+            $existingDonor = $this->donorRepository->findBy('name', trim($name));
+            if ($existingDonor && $existingDonor->id !== $id) {
+                throw new RuntimeException("Ya existe otro donante con el nombre: {$name}");
+            }
+        } catch (RuntimeException $e) {
+            if (!str_contains($e->getMessage(), 'no encontrado')) {
+                throw $e; 
+            }
         }
 
-        // Validar el nuevo nombre usando las reglas del dominio
         $updatedDonor = Donor::at($name);
         $donor->name = $updatedDonor->name;
         
@@ -65,10 +69,5 @@ class DonorService
     public function donorExists(string $name): bool
     {
         return $this->donorRepository->exists('name', $name);
-    }
-
-    public function getTotalDonors(): int
-    {
-        return $this->donorRepository->count();
     }
 }
