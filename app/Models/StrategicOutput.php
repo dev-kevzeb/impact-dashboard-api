@@ -24,13 +24,8 @@ class StrategicOutput extends Model
         $this->name = $name;
         $this->measures = []; 
     }
-<<<<<<< HEAD
-
-    public static function at($name, Kpa $kpa): StrategicOutput
-=======
     
     public static function at($name): StrategicOutput  
->>>>>>> 7efe099 (correcciones-realizadas)
     {
         if (empty(trim($name))) {
             throw new RuntimeException(self::$ERROR_NAME_EMPTY);
