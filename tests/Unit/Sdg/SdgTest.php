@@ -3,7 +3,7 @@
 namespace Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
-use App\Models\Sdg;
+use App\Modules\Sdg\Domain\Sdg;
 use Exception;
 use RuntimeException;
 

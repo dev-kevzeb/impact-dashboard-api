@@ -1,12 +1,23 @@
 <?php
 
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Modules\Donor\Controller\DonorController;
 use App\Modules\Beneficiary\Controller\BeneficiaryController;
+use App\Modules\ProgramState\Controller\ProgramStateController;
+use App\Modules\Sdg\Controller\SdgController;
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
+});
+// API Routes para SDG
+Route::prefix('sdgs')->group(function () {
+    Route::get('/', [SdgController::class, 'index']);
+    Route::post('/', [SdgController::class, 'store']);
+    Route::get('/search', [SdgController::class, 'search']);
+    Route::get('/{id}', [SdgController::class, 'show']);
+    Route::put('/{id}', [SdgController::class, 'update']);
 });
 
 // API Routes para Donors
@@ -29,9 +40,9 @@ Route::prefix('beneficiaries')->group(function () {
 
 // API Routes para ProgramStates
 Route::prefix('program_states')->group(function () {
-    Route::get('/', [\App\Modules\ProgramState\Controller\ProgramStateController::class, 'index']);
-    Route::post('/', [\App\Modules\ProgramState\Controller\ProgramStateController::class, 'store']);
-    Route::get('/search', [\App\Modules\ProgramState\Controller\ProgramStateController::class, 'search']);
-    Route::get('/{id}', [\App\Modules\ProgramState\Controller\ProgramStateController::class, 'show']);
-    Route::put('/{id}', [\App\Modules\ProgramState\Controller\ProgramStateController::class, 'update']);
+    Route::get('/', [ProgramStateController::class, 'index']);
+    Route::post('/', [ProgramStateController::class, 'store']);
+    Route::get('/search', [ProgramStateController::class, 'search']);
+    Route::get('/{id}', [ProgramStateController::class, 'show']);
+    Route::put('/{id}', [ProgramStateController::class, 'update']);
 });
