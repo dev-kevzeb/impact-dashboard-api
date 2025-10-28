@@ -41,3 +41,4 @@ Route::prefix('beneficiaries')->group(function () {
     Route::get('/{id}', [BeneficiaryController::class, 'show']);            
     Route::put('/{id}', [BeneficiaryController::class, 'update']);
 });
+});
