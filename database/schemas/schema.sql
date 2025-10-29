@@ -61,7 +61,8 @@ ALTER TABLE program_state
 /*==============================================================*/
 CREATE TABLE sdg (
     id              BIGINT          NOT NULL,
-    name            VARCHAR(255)    NOT NULL,
+    image           VARCHAR(255)    NOT NULL,
+    filename        VARCHAR(255)    NOT NULL,
     created_at      TIMESTAMP       NOT NULL,
     updated_at      TIMESTAMP       NOT NULL
 );
@@ -70,5 +71,6 @@ ALTER TABLE sdg
     ALTER COLUMN    id              SET DEFAULT nextval('sdg_seq'),
     ALTER COLUMN    created_at      SET DEFAULT CURRENT_TIMESTAMP,
     ALTER COLUMN    updated_at      SET DEFAULT CURRENT_TIMESTAMP,
-    ADD CONSTRAINT  pk_sdg       PRIMARY KEY(id),
-    ADD CONSTRAINT  uq_sdg_name  UNIQUE(name);
+    ADD CONSTRAINT  pk_sdg          PRIMARY KEY(id),
+    ADD CONSTRAINT  uq_sdg_image    UNIQUE(image),
+    ADD CONSTRAINT  uq_sdg_filename UNIQUE(filename);

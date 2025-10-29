@@ -67,9 +67,15 @@ class SdgController extends Controller
     {
         try {
             $request->validate([
-                'image' => 'required|string'
+                'image' => 'required|image|mimes:jpg,jpeg,png,gif,webp,svg|max:2048'
             ]);
-            $sdg = $this->sdgService->createSdg($request->input('image'));
+
+            $file = $request->file('image');
+            $filename = time() . '_' . $file->getClientOriginalName();
+            $path = $file->storeAs('sdg_images', $filename, 'public');
+            $filename = $file->getClientOriginalName();
+
+            $sdg = $this->sdgService->createSdg($path, $filename);
             return ApiResponse::created(
                 'SDG creado exitosamente',
                 new SdgResource($sdg)
@@ -78,6 +84,8 @@ class SdgController extends Controller
             return ApiResponse::error($e->getMessage(), 400);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return ApiResponse::validationError($e->errors());
+        } catch (\Exception $e) {
+            return ApiResponse::error('Error interno del servidor', 500);
         }
     }
 
@@ -88,9 +96,15 @@ class SdgController extends Controller
     {
         try {
             $request->validate([
-                'image' => 'required|string'
+                'image' => 'required|image|mimes:jpg,jpeg,png,gif,webp,svg|max:2048'
             ]);
-            $sdg = $this->sdgService->updateSdg($id, $request->input('image'));
+
+            $file = $request->file('image');
+            $filename = time() . '_' . $file->getClientOriginalName();
+            $path = $file->storeAs('sdg_images', $filename, 'public');
+            $filename = $file->getClientOriginalName();
+
+            $sdg = $this->sdgService->updateSdg($id, $path, $filename);
             return ApiResponse::success(
                 'SDG actualizado exitosamente',
                 200,
@@ -100,19 +114,21 @@ class SdgController extends Controller
             return ApiResponse::error($e->getMessage(), 400);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return ApiResponse::validationError($e->errors());
+        } catch (\Exception $e) {
+            return ApiResponse::error('Error interno del servidor', 500);
         }
     }
 
     /**
-     * Buscar SDG por nombre
+     * Buscar SDG por filename
      */
     public function search(Request $request): JsonResponse
     {
         try {
             $request->validate([
-                'image' => 'required|string|min:1'
+                'filename' => 'required|string|min:1'
             ]);
-            $sdg = $this->sdgService->findSdgByImage($request->input('image'));
+            $sdg = $this->sdgService->findSdgByFilename($request->query('filename'));
             return ApiResponse::success(
                 'SDG encontrado',
                 200,

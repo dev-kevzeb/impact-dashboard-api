@@ -17,6 +17,7 @@ class SdgResource extends JsonResource
         return [
             'id' => $this->id,
             'image' => $this->image,
+            'filename' => $this->filename,
         ];
     }
 

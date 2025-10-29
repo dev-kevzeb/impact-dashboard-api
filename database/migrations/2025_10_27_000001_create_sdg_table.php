@@ -10,6 +10,7 @@ return new class extends Migration {
         Schema::create('sdg', function (Blueprint $table) {
             $table->id();
             $table->string('image')->unique();
+            $table->string('filename')->unique();
             $table->timestamps();
         });
     }
