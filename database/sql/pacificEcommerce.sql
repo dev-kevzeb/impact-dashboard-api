@@ -1,0 +1,26 @@
+CREATE TABLE Currency(
+  id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  code VARCHAR(4),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, 
+  updated_at TIMESTAMP
+);
+
+CREATE TABLE country(
+  id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  name VARCHAR(100),
+  currency_id INT REFERENCES currencies(id),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, 
+  updated_at TIMESTAMP
+);
+
+CREATE TABLE kpa(
+  id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  name VARCHAR(100),
+  implementation NUMERIC(5,2) CHECK (implementation >= 0 AND implementation <= 100)
+);
+
+CREATE TABLE countryKpa(
+  id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  id_country INT REFERENCES country(id),
+  id_kpa INT REFERENCES kpa(id)
+);

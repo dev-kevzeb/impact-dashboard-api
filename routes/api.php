@@ -3,10 +3,31 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Modules\Country\Controller\CountryController;
+use App\Modules\Currency\Controller\CurrencyController;
+use App\Modules\Kpa\Controller\KpaController;
 use App\Modules\Donor\Controller\DonorController;
 use App\Modules\Beneficiary\Controller\BeneficiaryController;
 use App\Modules\ProgramState\Controller\ProgramStateController;
 use App\Modules\Sdg\Controller\SdgController;
+
+Route::prefix('v1')->middleware('api')->group(function () {
+    // Currencies resource (index, show, store, update, destroy)
+    Route::apiResource('currencies', CurrencyController::class)->parameters([
+        'currencies' => 'id'
+    ]);
+
+    Route::apiResource('countries', CountryController::class)->parameters([
+        'countries' => 'id'
+    ]);
+
+    Route::apiResource('kpas', KpaController::class)->parameters([
+        'kpas' => 'id'
+    ]);
+    Route::apiResource('country-kpas', \App\Modules\CountryKpa\Controller\CountryKpaController::class)->parameters([
+        'country-kpas' => 'id'
+    ]);
+});
 
 // API Routes para Donors
 Route::prefix('donors')->group(function () {
