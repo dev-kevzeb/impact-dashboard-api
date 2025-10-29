@@ -23,6 +23,26 @@ class AppServiceProvider extends ServiceProvider
                 );
             }
         );
+
+        // Beneficiary Module - Repository binding
+        $this->app->bind(
+            \App\Modules\Beneficiary\Repository\BeneficiaryRepository::class,
+            function ($app) {
+                return new \App\Modules\Beneficiary\Repository\BeneficiaryRepository(
+                    $app->make(\App\Modules\Beneficiary\Domain\Beneficiary::class)
+                );
+            }
+        );
+
+        // Beneficiary Module - Service binding
+        $this->app->bind(
+            \App\Modules\Beneficiary\Service\BeneficiaryService::class,
+            function ($app) {
+                return new \App\Modules\Beneficiary\Service\BeneficiaryService(
+                    $app->make(\App\Modules\Beneficiary\Repository\BeneficiaryRepository::class)
+                );
+            }
+        );
     }
 
     /**
