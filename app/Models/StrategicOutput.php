@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Exception;
 use Illuminate\Database\Eloquent\Model;
 use RuntimeException;
 
@@ -110,4 +111,7 @@ class StrategicOutput extends Model
         }
         throw new RuntimeException(self::$ERROR_MEASURE_NOT_FOUND . ': ' . $measureName);
     }
+
+
+   
 }

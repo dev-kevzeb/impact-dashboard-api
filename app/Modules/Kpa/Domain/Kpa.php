@@ -1,12 +1,17 @@
 <?php
 
-namespace App\Models;
-
+namespace App\Modules\Kpa\Domain;
+use \App\Modules\Country\Domain\Country;
 use Illuminate\Database\Eloquent\Model;
 use RuntimeException;
 
 class Kpa extends Model
 {
+
+    protected $table = 'kpa';
+    protected $fillable = ['name', 'implementation'];
+
+
     // Constantes de mensajes de error
     public static $ERROR_NAME_EMPTY = 'el nombre del KPA no debe ir vacio';
     public static $ERROR_NAME_MIN_LENGTH = 'el nombre del KPA debe tener al menos 2 caracteres';
@@ -19,13 +24,9 @@ class Kpa extends Model
     private string $name;
     private float $implementation;
     private array $strategicOutputs = [];
-    public function __construct(string $name, float $implementation)
-    {
-        $this->name = $name;
-        $this->implementation = $implementation;
-        $this->strategicOutputs = []; 
-    }
 
+    
+    
     public static function at($name, $implementation): Kpa
     {
         if (empty(trim($name))) {
@@ -43,7 +44,7 @@ class Kpa extends Model
         if($implementation < 0 || $implementation > 100){
             throw new RuntimeException(self::$ERROR_IMPLEMENTATION_OUT_OF_RANGE);
         }
-        return new Kpa(trim($name), $implementation);
+        return new self([trim($name), $implementation]);
     }
     
     public function getName(): string
@@ -58,9 +59,9 @@ class Kpa extends Model
     
     public function addStrategicOutput($strategicOutput): void
     {
-        if (!($strategicOutput instanceof StrategicOutput)) {
-            throw new RuntimeException(self::$ERROR_STRATEGIC_OUTPUT_INVALID_INSTANCE);
-        }
+        // if (!($strategicOutput instanceof StrategicOutput)) {
+        //     throw new RuntimeException(self::$ERROR_STRATEGIC_OUTPUT_INVALID_INSTANCE);
+        // }
         
         // Verificar duplicados por nombre
         if ($this->hasStrategicOutputWithName($strategicOutput->getName())) {
@@ -104,7 +105,7 @@ class Kpa extends Model
         $this->strategicOutputs = [];
     }
     
-    public function findStrategicOutputByName(string $outputName): StrategicOutput
+    public function findStrategicOutputByName(string $outputName)
     {
         foreach ($this->strategicOutputs as $output) {
             if ($output->getName() === $outputName) {
@@ -122,5 +123,10 @@ class Kpa extends Model
             }
         }
         return false;
+    }
+
+    public function countries()
+    {
+        return $this->belongsToMany(Country::class, 'country_kpas', 'id_kpa', 'id_country');
     }
 }
