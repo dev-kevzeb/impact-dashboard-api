@@ -11,8 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('Currency')) {
-            Schema::create('Currency', function (Blueprint $table) {
+        if (!Schema::hasTable('currency')) {
+            Schema::create('currency', function (Blueprint $table) {
                 $table->id();
                 $table->string('code', 4);
                 $table->timestamp('created_at')->useCurrent();
