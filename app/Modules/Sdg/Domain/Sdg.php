@@ -55,6 +55,15 @@ class Sdg extends Model
         if (!self::hasValidCharacters($trimmedFilename)) {
             throw new RuntimeException(self::$ERROR_INVALID_CHARACTERS);
         }
+        $filenameBasename = basename($trimmedFilename);
+        $filenameExtension = pathinfo($filenameBasename, PATHINFO_EXTENSION);
+        if (empty($filenameExtension)) {
+            throw new RuntimeException(self::$ERROR_MISSING_EXTENSION);
+        }
+        $filenameNameWithoutExt = pathinfo($filenameBasename, PATHINFO_FILENAME);
+        if (empty(trim($filenameNameWithoutExt))) {
+            throw new RuntimeException(self::$ERROR_MISSING_FILENAME);
+        }
         return new Sdg(['image' => $trimmedImage, 'filename' => $trimmedFilename]);
     }
 

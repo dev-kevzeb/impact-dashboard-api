@@ -29,7 +29,7 @@ Route::prefix('v1')->middleware('api')->group(function () {
     ]);
 });
 
-Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
+Route::prefix('v1')->group(function () {
     // API Routes para Donors
     Route::get('donors', [DonorController::class, 'index']);
     Route::post('donors', [DonorController::class, 'store']);

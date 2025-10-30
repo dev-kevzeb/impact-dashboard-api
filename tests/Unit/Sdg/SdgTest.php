@@ -329,4 +329,30 @@ class SdgTest extends TestCase
         $this->assertInstanceOf(Sdg::class, $sdg);
     }
 
+    public function test_filename_must_have_extension()
+    {
+        $this->shouldThrowAndAssert(
+            function () {
+                Sdg::at("valid.png", "filename_without_extension");
+            },
+            RuntimeException::class,
+            function ($exception) {
+                $this->assertEquals(Sdg::$ERROR_MISSING_EXTENSION, $exception->getMessage());
+            }
+        );
+    }
+
+    public function test_filename_with_only_extension_throws_error()
+    {
+        $this->shouldThrowAndAssert(
+            function () {
+                Sdg::at("valid.png", ".jpg");
+            },
+            RuntimeException::class,
+            function ($exception) {
+                $this->assertEquals(Sdg::$ERROR_MISSING_FILENAME, $exception->getMessage());
+            }
+        );
+    }
+
 }
