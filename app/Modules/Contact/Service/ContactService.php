@@ -43,40 +43,43 @@ class ContactService {
     string $lastName, 
     string $title, 
     string $email, 
-    string $phone
+    string $phone = ""
 ): Contact {
+        // 1) Obtener el modelo existente (lanza RuntimeException si no existe)
         $contact = $this->contactRepository->findById($id);
-        $trimFirst = trim($firstName);
-        $trimLast = trim($lastName);
-        $trimTitle = trim($title);
-        $emailNorm = mb_strtolower(trim($email), 'UTF-8');
-        $trimPhone = trim($phone);
-        if (!filter_var($emailNorm, FILTER_VALIDATE_EMAIL)) {
-            throw new \RuntimeException("Email inválido: {$email}");
-        }
+
+        // 2) Validar y normalizar con Contact::at (usarlo como fábrica/validador)
+        //    No vamos a guardar la instancia devuelta, solo la usamos para obtener
+        //    los atributos ya validados y normalizados.
+        $validated = Contact::at($firstName, $lastName, $title, $email, $phone);
+
+        // 3) Comprobar duplicado de email (si existe y no es este contacto)
         try {
-            $existing = $this->contactRepository->findBy('email', $emailNorm);
+            $existing = $this->contactRepository->findBy('email', $validated->email);
             if ($existing && $existing->id !== $contact->id) {
-                throw new \RuntimeException("Ya existe otro contacto con el email: {$emailNorm}");
+                throw new \RuntimeException("Ya existe otro contacto con el email: {$validated->email}");
             }
         } catch (\RuntimeException $e) {
+            // findBy lanza RuntimeException cuando no encuentra la entidad; ignorar ese caso
             if (stripos($e->getMessage(), 'no encontrado') === false) {
                 throw $e;
             }
         }
-        $firstNorm = mb_convert_case(mb_strtolower($trimFirst, 'UTF-8'), MB_CASE_TITLE, 'UTF-8');
-        $lastNorm = mb_convert_case(mb_strtolower($trimLast, 'UTF-8'), MB_CASE_TITLE, 'UTF-8');
-        $titleNorm = mb_convert_case(mb_strtolower($trimTitle, 'UTF-8'), MB_CASE_TITLE, 'UTF-8');
-        $contact->first_name = $firstNorm;
-        $contact->last_name  = $lastNorm;
-        $contact->title      = $titleNorm;
-        $contact->email      = $emailNorm;
-        $contact->phone      = $trimPhone;
+
+        if (method_exists($contact, 'fill')) {
+            $contact->fill($validated->toArray());
+        } else {
+            $contact->first_name = $validated->first_name;
+            $contact->last_name  = $validated->last_name;
+            $contact->title      = $validated->title;
+            $contact->email      = $validated->email;
+            $contact->phone      = $validated->phone;
+        }
 
         $this->contactRepository->save($contact);
 
         return $contact;
-}
+    }
 private function validateContactData(string $firstName, string $email): void {
     if (empty($firstName)) {
         throw new \RuntimeException("El nombre es obligatorio");
