@@ -8,8 +8,7 @@ use App\Modules\Kpa\Controller\KpaController;
 use App\Modules\Donor\Controller\DonorController;
 use App\Modules\Beneficiary\Controller\BeneficiaryController;
 use App\Modules\ProgramState\Controller\ProgramStateController;
-
-
+use App\Modules\ProjectState\Controller\ProjectStateController;
 Route::prefix('v1')->middleware('api')->group(function () {
     // Currencies resource (index, show, store, update, destroy)
     Route::apiResource('currencies', CurrencyController::class)->parameters([
@@ -29,7 +28,9 @@ Route::prefix('v1')->middleware('api')->group(function () {
     Route::apiResource('contacts', \App\Modules\Contact\Controller\ContactController::class)->parameters([
         'contacts' => 'id'
     ]);
-
+    Route::apiResource('project-states', ProjectStateController::class)->parameters([
+        'project-states' => 'id'
+    ]);
 
 });
 
