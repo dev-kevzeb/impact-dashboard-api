@@ -17,7 +17,6 @@ class ProjectStateService {
     }
     public function createProjectState(string $state): ProjectState
     {
-
         if($this->projectStateRepository->exists('state', trim($state))){
             throw new \RuntimeException("El estado del proyecto ya existe: {$state}");
         }
@@ -25,5 +24,27 @@ class ProjectStateService {
         $this->projectStateRepository->save($projectState);
         return $projectState;
     }
+    public function getProjectStateById(int $id): ProjectState
+    {   
+        $projectState = $this->projectStateRepository->findById($id);
+        if(!$projectState){
+            throw new \RuntimeException("El estado del proyecto con id {$id} no existe.");
+        }
+        return $projectState;
+    }
+   public function updateProjectState(int $id, string $state): ProjectState
+{
+    $projectState = $this->getProjectStateById($id);
+    if(!$projectState){
+        throw new \RuntimeException("El estado del proyecto con id {$id} no existe.");
+    }
+    $existing = $this->projectStateRepository->findByState(trim($state));
+    if($existing && $existing->id !== $id){
+        throw new \RuntimeException("El estado del proyecto ya existe: {$state}");
+    }
+    $projectState->update(['state' => $state]);
+    $this->projectStateRepository->save($projectState);
+    return $projectState;
+}   
 
 }

@@ -32,7 +32,9 @@ class ProjectState extends Model
         if(strlen(trim($state)) > 100){
             throw new \InvalidArgumentException(self::$ERROR_STATE_MAX_LENGTH);
         }
-        return new self([trim($state)]);
+        $state = trim($state);
+        $state = mb_strtolower($state);
+        return new self(['state' => trim($state)]);
     }
 
     // getters

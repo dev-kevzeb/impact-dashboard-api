@@ -7,34 +7,12 @@ use App\Modules\Currency\Controller\CurrencyController;
 use App\Modules\Kpa\Controller\KpaController;
 use App\Modules\Donor\Controller\DonorController;
 use App\Modules\Beneficiary\Controller\BeneficiaryController;
+use App\Modules\Contact\Controller\ContactController;
+use App\Modules\CountryKpa\Controller\CountryKpaController;
 use App\Modules\ProgramState\Controller\ProgramStateController;
 use App\Modules\ProjectState\Controller\ProjectStateController;
-Route::prefix('v1')->middleware('api')->group(function () {
-    // Currencies resource (index, show, store, update, destroy)
-    Route::apiResource('currencies', CurrencyController::class)->parameters([
-        'currencies' => 'id'
-    ]);
 
-    Route::apiResource('countries', CountryController::class)->parameters([
-        'countries' => 'id'
-    ]);
-
-    Route::apiResource('kpas', KpaController::class)->parameters([
-        'kpas' => 'id'
-    ]);
-    Route::apiResource('country-kpas', \App\Modules\CountryKpa\Controller\CountryKpaController::class)->parameters([
-        'country-kpas' => 'id'
-    ]);
-    Route::apiResource('contacts', \App\Modules\Contact\Controller\ContactController::class)->parameters([
-        'contacts' => 'id'
-    ]);
-    Route::apiResource('project-states', ProjectStateController::class)->parameters([
-        'project-states' => 'id'
-    ]);
-
-});
-
-Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
+Route::prefix('v1')->group(function () {
     // API Routes para Donors
     Route::get('donors', [DonorController::class, 'index']);
     Route::post('donors', [DonorController::class, 'store']);
@@ -55,4 +33,43 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::get('program_states/search', [ProgramStateController::class, 'search']);
     Route::get('program_states/{id}', [ProgramStateController::class, 'show']);
     Route::put('program_states/{id}', [ProgramStateController::class, 'update']);
+
+    // API Routes para Currencies
+    Route::get('currencies', [CurrencyController::class, 'index']);
+    Route::post('currencies', [CurrencyController::class, 'store']);
+    Route::get('currencies/{id}', [CurrencyController::class, 'show']);
+    Route::put('currencies/{id}', [CurrencyController::class, 'update']);
+    Route::delete('currencies/{id}', [CurrencyController::class, 'destroy']);
+
+    // API Routes para Countries
+    Route::get('countries', [CountryController::class, 'index']);
+    Route::post('countries', [CountryController::class, 'store']);
+    Route::get('countries/{id}', [CountryController::class, 'show']);
+    Route::put('countries/{id}', [CountryController::class, 'update']);
+    Route::delete('countries/{id}', [CountryController::class, 'destroy']);
+
+    // API Routes para Kpas
+    Route::get('kpas', [KpaController::class, 'index']);
+    Route::post('kpas', [KpaController::class, 'store']);
+    Route::get('kpas/{id}', [KpaController::class, 'show']);
+    Route::put('kpas/{id}', [KpaController::class, 'update']);
+    Route::delete('kpas/{id}', [KpaController::class, 'destroy']);
+
+    // API Routes para Country-Kpas
+    Route::get('country-kpas', [CountryKpaController::class, 'index']);
+    Route::post('country-kpas', [CountryKpaController::class, 'store']);
+    Route::get('country-kpas/{id}', [CountryKpaController::class, 'show']);
+    Route::delete('country-kpas/{id}', [CountryKpaController::class, 'destroy']);
+
+    // API Routes para Contacts
+    Route::get('contacts', [ContactController::class, 'index']);
+    Route::post('contacts', [ContactController::class, 'store']);
+    Route::get('contacts/{id}', [ContactController::class, 'show']);
+    Route::put('contacts/{id}', [ContactController::class, 'update']);
+
+    // API Routes para ProjectStates
+    Route::get('project_states', [ProjectStateController::class, 'index']);
+    Route::post('project_states', [ProjectStateController::class, 'store']);
+    Route::get('project_states/{id}', [ProjectStateController::class, 'show']);
+    Route::put('project_states/{id}', [ProjectStateController::class, 'update']);
 });
