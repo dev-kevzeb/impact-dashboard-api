@@ -3,6 +3,7 @@
 CREATE SEQUENCE donor_seq;
 CREATE SEQUENCE beneficiary_seq;
 CREATE SEQUENCE program_state_seq;
+CREATE SEQUENCE sdg_seq;
 
 /*==============================================================*/
 /* Table: Donor                                                 */
@@ -54,3 +55,22 @@ ALTER TABLE program_state
     ALTER COLUMN    updated_at      SET DEFAULT CURRENT_TIMESTAMP,
     ADD CONSTRAINT  pk_program_state       PRIMARY KEY(id),
     ADD CONSTRAINT  uq_program_state_name  UNIQUE(name);
+
+/*==============================================================*/
+/* Table: SDG                                                   */
+/*==============================================================*/
+CREATE TABLE sdg (
+    id              BIGINT          NOT NULL,
+    image           VARCHAR(255)    NOT NULL,
+    filename        VARCHAR(255)    NOT NULL,
+    created_at      TIMESTAMP       NOT NULL,
+    updated_at      TIMESTAMP       NOT NULL
+);
+
+ALTER TABLE sdg
+    ALTER COLUMN    id              SET DEFAULT nextval('sdg_seq'),
+    ALTER COLUMN    created_at      SET DEFAULT CURRENT_TIMESTAMP,
+    ALTER COLUMN    updated_at      SET DEFAULT CURRENT_TIMESTAMP,
+    ADD CONSTRAINT  pk_sdg          PRIMARY KEY(id),
+    ADD CONSTRAINT  uq_sdg_image    UNIQUE(image),
+    ADD CONSTRAINT  uq_sdg_filename UNIQUE(filename);

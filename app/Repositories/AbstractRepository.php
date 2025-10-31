@@ -180,23 +180,13 @@ abstract class AbstractRepository implements RepositoryInterface
      * @param string $state
      * @return object
      */
-    public function findByState(string $state): object
+    public function findByState(string $state): ?object
     {
         try {
-            $entity = $this->model->whereRaw(
-                "LOWER(state) = LOWER(?)", 
+            return $this->model->whereRaw(
+                "LOWER(state) = LOWER(?)",
                 [trim($state)]
             )->first();
-            
-            if (!$entity) {
-                throw new RuntimeException(
-                    class_basename($this->model) . " no encontrado con state: {$state}"
-                );
-            }
-            
-            return $entity;
-        } catch (RuntimeException $e) {
-            throw $e;
         } catch (\Exception $e) {
             throw new RuntimeException(
                 "Error al buscar entidad por state {$state}: " . $e->getMessage()

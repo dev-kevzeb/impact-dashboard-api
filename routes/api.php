@@ -10,7 +10,10 @@ use App\Modules\Beneficiary\Controller\BeneficiaryController;
 use App\Modules\Contact\Controller\ContactController;
 use App\Modules\CountryKpa\Controller\CountryKpaController;
 use App\Modules\ProgramState\Controller\ProgramStateController;
+use App\Modules\Sdg\Controller\SdgController;
 use App\Modules\ProjectState\Controller\ProjectStateController;
+
+
 
 Route::prefix('v1')->group(function () {
     // API Routes para Donors
@@ -72,4 +75,10 @@ Route::prefix('v1')->group(function () {
     Route::post('project_states', [ProjectStateController::class, 'store']);
     Route::get('project_states/{id}', [ProjectStateController::class, 'show']);
     Route::put('project_states/{id}', [ProjectStateController::class, 'update']);
+    // API Routes para SDG
+    Route::get('sdgs', [SdgController::class, 'index']);
+    Route::post('sdgs', [SdgController::class, 'store']);
+    Route::get('sdgs/search', [SdgController::class, 'search']);
+    Route::get('sdgs/{id}', [SdgController::class, 'show']);
+    Route::put('sdgs/{id}', [SdgController::class, 'update']);
 });
