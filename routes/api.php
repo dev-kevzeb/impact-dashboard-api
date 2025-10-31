@@ -8,6 +8,7 @@ use App\Modules\Kpa\Controller\KpaController;
 use App\Modules\Donor\Controller\DonorController;
 use App\Modules\Beneficiary\Controller\BeneficiaryController;
 use App\Modules\ProgramState\Controller\ProgramStateController;
+use App\Modules\Sdg\Controller\SdgController;
 
 
 Route::prefix('v1')->middleware('api')->group(function () {
@@ -28,7 +29,7 @@ Route::prefix('v1')->middleware('api')->group(function () {
     ]);
 });
 
-Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
+Route::prefix('v1')->group(function () {
     // API Routes para Donors
     Route::get('donors', [DonorController::class, 'index']);
     Route::post('donors', [DonorController::class, 'store']);
@@ -49,4 +50,11 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::get('program_states/search', [ProgramStateController::class, 'search']);
     Route::get('program_states/{id}', [ProgramStateController::class, 'show']);
     Route::put('program_states/{id}', [ProgramStateController::class, 'update']);
+
+    // API Routes para SDG
+    Route::get('sdgs', [SdgController::class, 'index']);
+    Route::post('sdgs', [SdgController::class, 'store']);
+    Route::get('sdgs/search', [SdgController::class, 'search']);
+    Route::get('sdgs/{id}', [SdgController::class, 'show']);
+    Route::put('sdgs/{id}', [SdgController::class, 'update']);
 });
