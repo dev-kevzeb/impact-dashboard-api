@@ -11,7 +11,6 @@ class CountryRepository {
     }
 
     public function getAll(){
-        // obtenemos todos los registros de la tabla countries
             $country = $this->model->with('currency')->get()->makeHidden(['currency_id']);
             return $country;
         }
@@ -37,5 +36,29 @@ class CountryRepository {
             $country->delete();
         }
         return $country;
+    }
+
+    /**
+     * Buscar país por nombre (case-insensitive)
+     */
+    public function findByName(string $name): ?Country
+    {
+        return $this->model->whereRaw('LOWER(name) = LOWER(?)', [trim($name)])->first();
+    }
+
+    /**
+     * Verificar si existe un país con ese nombre
+     */
+    public function existsByName(string $name): bool
+    {
+        return $this->model->whereRaw('LOWER(name) = LOWER(?)', [trim($name)])->exists();
+    }
+
+    /**
+     * Guardar una entidad Country
+     */
+    public function save(Country $country): void
+    {
+        $country->save();
     }
 }

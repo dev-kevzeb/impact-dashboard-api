@@ -27,16 +27,52 @@ class CountryController extends Controller
 
     public function store(Request $request)
     {
-        $data = $request->only(['name','currency_id']);
-        $country = $this->service->createCountry($data);
-        return response()->json($country, 201);
+        try {
+            $data = $request->only(['name','currency_id']);
+            $country = $this->service->createCountry($data);
+            return response()->json([
+                'success' => true,
+                'message' => 'País creado exitosamente',
+                'data' => $country
+            ], 201);
+        } catch (\RuntimeException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+                'data' => []
+            ], 400);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al crear el país',
+                'data' => []
+            ], 500);
+        }
     }
 
     public function update(Request $request, $id)
     {
-        $data = $request->only(['name','currency_id']);
-        $country = $this->service->updateCountry((int)$id, $data);
-        return response()->json($country);
+        try {
+            $data = $request->only(['name','currency_id']);
+            $country = $this->service->updateCountry((int)$id, $data);
+            return response()->json([
+                'success' => true,
+                'message' => 'País actualizado exitosamente',
+                'data' => $country
+            ], 200);
+        } catch (\RuntimeException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+                'data' => []
+            ], 400);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al actualizar el país',
+                'data' => []
+            ], 500);
+        }
     }
 
     public function destroy($id)
