@@ -13,6 +13,7 @@ use App\Modules\ProgramState\Controller\ProgramStateController;
 use App\Modules\Contact\Controller\ContactController;
 use App\Modules\CountryKpa\Controller\CountryKpaController;
 use App\Modules\Sdg\Controller\SdgController;
+use App\Modules\Agency\Controller\AgencyController;
 
 
 
@@ -77,4 +78,11 @@ Route::prefix('v1')->group(function () {
     Route::get('sdgs/search', [SdgController::class, 'search']);
     Route::get('sdgs/{id}', [SdgController::class, 'show']);
     Route::put('sdgs/{id}', [SdgController::class, 'update']);
+
+    // API Routes para Agency
+    Route::get('agencies', [AgencyController::class, 'index']);
+    Route::post('agencies', [AgencyController::class, 'store']);
+    Route::get('agencies/search', [AgencyController::class, 'search']);
+    Route::get('agencies/{id}', [AgencyController::class, 'show']);
+    Route::put('agencies/{id}', [AgencyController::class, 'update']);
 });

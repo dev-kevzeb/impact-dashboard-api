@@ -4,6 +4,7 @@ CREATE SEQUENCE donor_seq;
 CREATE SEQUENCE beneficiary_seq;
 CREATE SEQUENCE program_state_seq;
 CREATE SEQUENCE sdg_seq;
+CREATE SEQUENCE agency_seq;
 
 /*==============================================================*/
 /* Table: Donor                                                 */
@@ -74,3 +75,23 @@ ALTER TABLE sdg
     ADD CONSTRAINT  pk_sdg          PRIMARY KEY(id),
     ADD CONSTRAINT  uq_sdg_image    UNIQUE(image),
     ADD CONSTRAINT  uq_sdg_filename UNIQUE(filename);
+
+/*==============================================================*/
+/* Table: Agency                                                */
+/*==============================================================*/
+CREATE TABLE agency (
+    id              BIGINT          NOT NULL,
+    name            VARCHAR(100)    NOT NULL,
+    url             VARCHAR(255)    NOT NULL,
+    is_approved     BOOLEAN         NOT NULL DEFAULT FALSE,
+    created_at      TIMESTAMP       NOT NULL,
+    updated_at      TIMESTAMP       NOT NULL
+);
+
+ALTER TABLE agency
+    ALTER COLUMN    id              SET DEFAULT nextval('agency_seq'),
+    ALTER COLUMN    is_approved     SET DEFAULT FALSE,
+    ALTER COLUMN    created_at      SET DEFAULT CURRENT_TIMESTAMP,
+    ALTER COLUMN    updated_at      SET DEFAULT CURRENT_TIMESTAMP,
+    ADD CONSTRAINT  pk_agency       PRIMARY KEY(id),
+    ADD CONSTRAINT  uq_agency_name  UNIQUE(name);
