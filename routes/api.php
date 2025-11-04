@@ -81,4 +81,10 @@ Route::prefix('v1')->group(function () {
     Route::get('sdgs/search', [SdgController::class, 'search']);
     Route::get('sdgs/{id}', [SdgController::class, 'show']);
     Route::put('sdgs/{id}', [SdgController::class, 'update']);
+
+    // API routes para Strategic Outputs
+    Route::get('strategic-outputs', [\App\Modules\StrategicOutput\Controller\StrategicOutputController::class, 'index']);
+    Route::post('strategic-outputs', [\App\Modules\StrategicOutput\Controller\StrategicOutputController::class, 'store']);
+    Route::get('strategic-outputs/{id}', [\App\Modules\StrategicOutput\Controller\StrategicOutputController::class, 'show']);
+    Route::put('strategic-outputs/{id}', [\App\Modules\StrategicOutput\Controller\StrategicOutputController::class, 'update']);
 });

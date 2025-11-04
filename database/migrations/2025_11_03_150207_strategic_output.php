@@ -11,11 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('currency', function (Blueprint $table) {
+        Schema::create('strategic_output', function (Blueprint $table) {
             $table->id();
-            $table->string('code', 4);
-            $table->timestamp('created_at')->useCurrent();
-            $table->timestamp('updated_at')->nullable();
+            $table->string('name', 255);
+            $table->foreignId('id_ck')->constrained('country_kpa');
+            $table->timestamps();
+
         });
     }
 
@@ -24,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('Currency');
+        //
     }
 };
