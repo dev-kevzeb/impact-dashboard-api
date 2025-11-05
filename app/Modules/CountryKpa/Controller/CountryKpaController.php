@@ -27,18 +27,19 @@ class CountryKpaController extends Controller
 		}
 	}
 
-	public function show($id): \Illuminate\Http\JsonResponse
-	{
-		try {
-			$item = $this->service->getById((int)$id);
-			return ApiResponse::success('Registro encontrado', 200, $item);
-		} catch (RuntimeException $e) {
-			return ApiResponse::notFound('CountryKpa');
-		} catch (\Exception $e) {
-			return ApiResponse::error('Error interno del servidor', 500);
-		}
-	}
+public function show($id): \Illuminate\Http\JsonResponse
+{
+    try {
+        // Obtener el país con sus KPAs relacionados
+        $countryWithKpas = $this->service->getCountryKpasByCountryId((int)$id);
 
+        return ApiResponse::success('Registro obtenido', 200, $countryWithKpas);
+    } catch (RuntimeException $e) {
+        return ApiResponse::notFound('CountryKpa');
+    } catch (\Exception $e) {
+        return ApiResponse::error('Error interno del servidor', 500);
+    }
+}
 	public function store(Request $request): \Illuminate\Http\JsonResponse
 	{
 		try {

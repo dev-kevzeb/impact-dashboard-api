@@ -19,9 +19,9 @@ class CountryKpaService
         return $this->repo->getAll();
     }
 
-    public function getById(int $id): object
+    public function getCountryKpasByCountryId(int $id): array
     {
-        return $this->repo->getById($id);
+        return $this->repo->getCountryKpasByCountryId($id);
     }
 
     public function create(array $data): object
