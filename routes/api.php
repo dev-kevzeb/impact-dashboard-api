@@ -50,9 +50,9 @@ Route::prefix('v1')->group(function () {
     // API Routes para Countries
     Route::get('countries', [CountryController::class, 'index']);
     Route::post('countries', [CountryController::class, 'store']);
+    Route::get('countries/search', [CountryController::class, 'search']);
     Route::get('countries/{id}', [CountryController::class, 'show']);
     Route::put('countries/{id}', [CountryController::class, 'update']);
-    Route::delete('countries/{id}', [CountryController::class, 'destroy']);
 
     // API Routes para Kpas
     Route::get('kpas', [KpaController::class, 'index']);
