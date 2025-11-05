@@ -5,6 +5,7 @@ CREATE SEQUENCE beneficiary_seq;
 CREATE SEQUENCE program_state_seq;
 CREATE SEQUENCE sdg_seq;
 CREATE SEQUENCE agency_seq;
+CREATE SEQUENCE currency_seq;
 
 /*==============================================================*/
 /* Table: Donor                                                 */
@@ -95,3 +96,20 @@ ALTER TABLE agency
     ALTER COLUMN    updated_at      SET DEFAULT CURRENT_TIMESTAMP,
     ADD CONSTRAINT  pk_agency       PRIMARY KEY(id),
     ADD CONSTRAINT  uq_agency_name  UNIQUE(name);
+
+/*==============================================================*/
+/* Table: Currency                                              */
+/*==============================================================*/
+CREATE TABLE currency (
+    id              BIGINT          NOT NULL,
+    code            VARCHAR(3)      NOT NULL,
+    created_at      TIMESTAMP       NOT NULL,
+    updated_at      TIMESTAMP       NOT NULL
+);
+
+ALTER TABLE currency
+    ALTER COLUMN    id              SET DEFAULT nextval('currency_seq'),
+    ALTER COLUMN    created_at      SET DEFAULT CURRENT_TIMESTAMP,
+    ALTER COLUMN    updated_at      SET DEFAULT CURRENT_TIMESTAMP,
+    ADD CONSTRAINT  pk_currency       PRIMARY KEY(id),
+    ADD CONSTRAINT  uq_currency_code  UNIQUE(code);
