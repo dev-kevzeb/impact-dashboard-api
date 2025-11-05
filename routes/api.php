@@ -43,10 +43,10 @@ Route::prefix('v1')->group(function () {
     // API Routes para Currencies
     Route::get('currencies', [CurrencyController::class, 'index']);
     Route::post('currencies', [CurrencyController::class, 'store']);
+    Route::get('currencies/search', [CurrencyController::class, 'search']);
     Route::get('currencies/{id}', [CurrencyController::class, 'show']);
-    Route::put('currencies/{id}', [CurrencyController::class, 'update']);
-    Route::delete('currencies/{id}', [CurrencyController::class, 'destroy']);
-
+    Route::put('currencies/{id}', [CurrencyController::class, 'update']);  
+    
     // API Routes para Countries
     Route::get('countries', [CountryController::class, 'index']);
     Route::post('countries', [CountryController::class, 'store']);

@@ -3,56 +3,140 @@
 namespace App\Modules\Currency\Controller;
 
 use App\Http\Controllers\Controller;
+use App\Http\Responses\ApiResponse;
+use App\Http\Resources\CurrencyResource;
 use App\Modules\Currency\Service\CurrencyService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use RuntimeException;
 
 class CurrencyController extends Controller
 {
-    protected CurrencyService $service;
+    private CurrencyService $currencyService;
 
-    public function __construct(CurrencyService $service)
+    public function __construct(CurrencyService $currencyService)
     {
-        $this->service = $service;
+        $this->currencyService = $currencyService;
     }
 
-    public function index()
-    {
-        return response()->json($this->service->getAllCurrencies());
-    }
-
-    public function show($id)
-    {
-        return response()->json($this->service->getCurrencyById((int)$id));
-    }
-
-    public function store(Request $request)
+    /**
+     * Listar todas las monedas
+     */
+    public function index(): JsonResponse
     {
         try {
-            $currency = $this->service->createCurrency($request->only(['code']));
-            return response()->json($currency, 201);
+            $currencies = $this->currencyService->getAllCurrencies();
+            
+            return ApiResponse::success(
+                'Lista de monedas obtenida exitosamente',
+                200,
+                [
+                    'currencies' => CurrencyResource::collection($currencies),
+                    'total' => $currencies->count()
+                ]
+            );
+        } catch (RuntimeException $e) {
+            return ApiResponse::error($e->getMessage(), 500);
         } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 422);
+            return ApiResponse::error('Error interno del servidor', 500);
         }
     }
 
-    public function update(Request $request, $id)
+    /**
+     * Mostrar una moneda específica
+     */
+    public function show(int $id): JsonResponse
     {
-        $data = $request->only(['code']);
-        // basic validation: code must be 3 chars
-
         try {
-            $currency = $this->service->updateCurrency((int)$id, $data);
-            return response()->json($currency);
-        } catch (\InvalidArgumentException $e) {
-            return response()->json(['error' => $e->getMessage()], 422);
+            $currency = $this->currencyService->getCurrencyById($id);
+
+            return ApiResponse::success(
+                'Moneda encontrada',
+                200,
+                new CurrencyResource($currency)
+            );
+        } catch (RuntimeException $e) {
+            return ApiResponse::notFound('Moneda');
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Error al actualizar la moneda'], 500);
+            return ApiResponse::error('Error interno del servidor', 500);
         }
     }
 
-    public function destroy($id)
+    /**
+     * Crear una nueva moneda
+     */
+    public function store(Request $request): JsonResponse
     {
-        $this->service->deleteCurrency((int)$id);
-        return response()->json(null, 204);
+        try {
+            // Solo validar que el code esté presente
+            $request->validate([
+                'code' => 'required|string'
+            ]);
+
+            $currency = $this->currencyService->createCurrency($request->input('code'));
+
+            return ApiResponse::created(
+                'Moneda creada exitosamente',
+                new CurrencyResource($currency)
+            );
+
+        } catch (RuntimeException $e) {
+            return ApiResponse::error($e->getMessage(), 400);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return ApiResponse::validationError($e->errors());
+        }
+    }
+
+    /**
+     * Actualizar una moneda existente
+     */
+    public function update(Request $request, int $id): JsonResponse
+    {
+        try {
+            // Solo validar que el code esté presente
+            $request->validate([
+                'code' => 'required|string'
+            ]);
+
+            $currency = $this->currencyService->updateCurrency($id, $request->input('code'));
+
+            return ApiResponse::success(
+                'Moneda actualizada exitosamente',
+                200,
+                new CurrencyResource($currency)
+            );
+
+        } catch (RuntimeException $e) {
+            return ApiResponse::error($e->getMessage(), 400);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return ApiResponse::validationError($e->errors());
+        }
+    }
+
+    /**
+     * Buscar moneda por código
+     */
+    public function search(Request $request): JsonResponse
+    {
+        try {
+            $request->validate([
+                'code' => 'required|string|min:1'
+            ]);
+
+            $currency = $this->currencyService->findCurrencyByCode($request->input('code'));
+
+            return ApiResponse::success(
+                'Moneda encontrada',
+                200,
+                new CurrencyResource($currency)
+            );
+
+        } catch (RuntimeException $e) {
+            return ApiResponse::notFound('Moneda');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return ApiResponse::validationError($e->errors());
+        } catch (\Exception $e) {
+            return ApiResponse::error('Error interno del servidor', 500);
+        }
     }
 }
