@@ -13,10 +13,9 @@
         {
             Schema::create('country', function (Blueprint $table) {
                 $table->id();
-                $table->string('name', 100);
-                $table->foreignId('currency_id')->constrained('Currency');
-                $table->timestamp('created_at')->useCurrent();
-                $table->timestamp('updated_at')->nullable();
+                $table->string('name', 100)->unique();
+                $table->foreignId('currency_id')->constrained('currency');
+                $table->timestamps();
             });
         }
 
