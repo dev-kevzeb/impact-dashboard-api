@@ -67,6 +67,7 @@ Route::prefix('v1')->group(function () {
     Route::get('country-kpas', [CountryKpaController::class, 'index']);
     Route::post('country-kpas', [CountryKpaController::class, 'store']);
     Route::get('country-kpas/{id}', [CountryKpaController::class, 'show']);
+    Route::put('country-kpas/{id}', [CountryKpaController::class, 'update']);
     Route::delete('country-kpas/{id}', [CountryKpaController::class, 'destroy']);
 
     // API Routes para Contacts

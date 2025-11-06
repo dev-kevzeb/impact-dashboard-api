@@ -19,6 +19,11 @@ class CountryKpaService
         return $this->repo->getAll();
     }
 
+    public function getById(int $id): object
+    {
+        return $this->repo->getById($id);
+    }
+
     public function getCountryKpasByCountryId(int $id): array
     {
         return $this->repo->getCountryKpasByCountryId($id);
@@ -35,6 +40,11 @@ class CountryKpaService
         return $this->repo->delete($id);
     }
 
+    public function update(int $id, array $data): object
+    {
+        return $this->repo->updateCountryKpa($id, $data);
+    }
+
     public function attach(int $countryId, int $kpaId): object
     {
         return $this->repo->attachKpaToCountry($countryId, $kpaId);
@@ -45,3 +55,4 @@ class CountryKpaService
         return $this->repo->detachKpaFromCountry($countryId, $kpaId);
     }
 }
+

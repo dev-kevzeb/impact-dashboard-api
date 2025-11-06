@@ -17,9 +17,15 @@ class CountryKpaController extends Controller
 		$this->service = $service;
 	}
 
-	public function index(): \Illuminate\Http\JsonResponse
+	public function index(Request $request): \Illuminate\Http\JsonResponse
 	{
 		try {
+			if ($request->has('country')) {
+				$countryId = (int) $request->query('country');
+				$countryWithKpas = $this->service->getCountryKpasByCountryId($countryId);
+				return ApiResponse::success('KPAs del pais obtenidos', 200, $countryWithKpas);
+			}
+			
 			$items = $this->service->getAll();
 			return ApiResponse::success('Lista obtenida', 200, ['items' => $items, 'total' => count($items)]);
 		} catch (RuntimeException $e) {
@@ -27,19 +33,18 @@ class CountryKpaController extends Controller
 		}
 	}
 
-public function show($id): \Illuminate\Http\JsonResponse
-{
-    try {
-        // Obtener el país con sus KPAs relacionados
-        $countryWithKpas = $this->service->getCountryKpasByCountryId((int)$id);
-
-        return ApiResponse::success('Registro obtenido', 200, $countryWithKpas);
-    } catch (RuntimeException $e) {
-        return ApiResponse::notFound('CountryKpa');
-    } catch (\Exception $e) {
-        return ApiResponse::error('Error interno del servidor', 500);
-    }
-}
+	public function show($id): \Illuminate\Http\JsonResponse
+	{
+		try {
+			// Obtener por ID de la tabla country_kpa
+			$countryKpa = $this->service->getById((int)$id);
+			return ApiResponse::success('Registro obtenido', 200, $countryKpa);
+		} catch (RuntimeException $e) {
+			return ApiResponse::notFound('CountryKpa');
+		} catch (\Exception $e) {
+			return ApiResponse::error('Error interno del servidor', 500);
+		}
+	}
 	public function store(Request $request): \Illuminate\Http\JsonResponse
 	{
 		try {
@@ -47,6 +52,22 @@ public function show($id): \Illuminate\Http\JsonResponse
 			$data = $request->only(['id_country', 'id_kpa']);
 			$created = $this->service->create($data);
 			return ApiResponse::created('Creado exitosamente', $created);
+		} catch (\Illuminate\Validation\ValidationException $e) {
+			return ApiResponse::validationError($e->errors());
+		} catch (RuntimeException $e) {
+			return ApiResponse::error($e->getMessage(), 400);
+		} catch (\Exception $e) {
+			return ApiResponse::error('Error interno del servidor', 500);
+		}
+	}
+
+	public function update(Request $request, $id): \Illuminate\Http\JsonResponse
+	{
+		try {
+			$request->validate(['id_country' => 'required|integer', 'id_kpa' => 'required|integer']);
+			$data = $request->only(['id_country', 'id_kpa']);
+			$updated = $this->service->update((int)$id, $data);
+			return ApiResponse::success('Actualizado exitosamente', 200, $updated);
 		} catch (\Illuminate\Validation\ValidationException $e) {
 			return ApiResponse::validationError($e->errors());
 		} catch (RuntimeException $e) {
@@ -68,4 +89,5 @@ public function show($id): \Illuminate\Http\JsonResponse
 
 
 }
+
 
