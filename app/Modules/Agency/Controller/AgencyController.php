@@ -1,38 +1,38 @@
 <?php
 
-namespace App\Modules\Currency\Controller;
+namespace App\Modules\Agency\Controller;
 
 use App\Http\Controllers\Controller;
 use App\Http\Responses\ApiResponse;
-use App\Http\Resources\CurrencyResource;
-use App\Modules\Currency\Service\CurrencyService;
+use App\Http\Resources\AgencyResource;
+use App\Modules\Agency\Service\AgencyService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use RuntimeException;
 
-class CurrencyController extends Controller
+class AgencyController extends Controller
 {
-    private CurrencyService $currencyService;
+    private AgencyService $agencyService;
 
-    public function __construct(CurrencyService $currencyService)
+    public function __construct(AgencyService $agencyService)
     {
-        $this->currencyService = $currencyService;
+        $this->agencyService = $agencyService;
     }
 
     /**
-     * Listar todas las monedas
+     * Listar todas las agencias
      */
     public function index(): JsonResponse
     {
         try {
-            $currencies = $this->currencyService->getAllCurrencies();
+            $agencies = $this->agencyService->getAllAgencies();
             
             return ApiResponse::success(
-                'Lista de monedas obtenida exitosamente',
+                'Lista de agencias obtenida exitosamente',
                 200,
                 [
-                    'currencies' => CurrencyResource::collection($currencies),
-                    'total' => $currencies->count()
+                    'agencies' => AgencyResource::collection($agencies),
+                    'total' => $agencies->count()
                 ]
             );
         } catch (RuntimeException $e) {
@@ -43,41 +43,47 @@ class CurrencyController extends Controller
     }
 
     /**
-     * Mostrar una moneda específica
+     * Mostrar una agencia específica
      */
     public function show(int $id): JsonResponse
     {
         try {
-            $currency = $this->currencyService->getCurrencyById($id);
+            $agency = $this->agencyService->getAgencyById($id);
 
             return ApiResponse::success(
-                'Moneda encontrada',
+                'Agencia encontrada',
                 200,
-                new CurrencyResource($currency)
+                new AgencyResource($agency)
             );
         } catch (RuntimeException $e) {
-            return ApiResponse::notFound('Moneda');
+            return ApiResponse::notFound('Agencia');
         } catch (\Exception $e) {
             return ApiResponse::error('Error interno del servidor', 500);
         }
     }
 
     /**
-     * Crear una nueva moneda
+     * Crear una nueva agencia
      */
     public function store(Request $request): JsonResponse
     {
         try {
-            // Solo validar que el code esté presente
+            // Validar campos requeridos
             $request->validate([
-                'code' => 'required|string'
+                'name' => 'required|string',
+                'url' => 'required|string',
+                'is_approved' => 'required|boolean'
             ]);
 
-            $currency = $this->currencyService->createCurrency($request->input('code'));
+            $agency = $this->agencyService->createAgency(
+                $request->input('name'),
+                $request->input('url'),
+                $request->input('is_approved')
+            );
 
             return ApiResponse::created(
-                'Moneda creada exitosamente',
-                new CurrencyResource($currency)
+                'Agencia creada exitosamente',
+                new AgencyResource($agency)
             );
 
         } catch (RuntimeException $e) {
@@ -88,22 +94,29 @@ class CurrencyController extends Controller
     }
 
     /**
-     * Actualizar una moneda existente
+     * Actualizar una agencia existente
      */
     public function update(Request $request, int $id): JsonResponse
     {
         try {
-            // Solo validar que el code esté presente
+            // Validar campos requeridos
             $request->validate([
-                'code' => 'required|string'
+                'name' => 'required|string',
+                'url' => 'required|string',
+                'is_approved' => 'required|boolean'
             ]);
 
-            $currency = $this->currencyService->updateCurrency($id, $request->input('code'));
+            $agency = $this->agencyService->updateAgency(
+                $id,
+                $request->input('name'),
+                $request->input('url'),
+                $request->input('is_approved')
+            );
 
             return ApiResponse::success(
-                'Moneda actualizada exitosamente',
+                'Agencia actualizada exitosamente',
                 200,
-                new CurrencyResource($currency)
+                new AgencyResource($agency)
             );
 
         } catch (RuntimeException $e) {
@@ -114,25 +127,25 @@ class CurrencyController extends Controller
     }
 
     /**
-     * Buscar moneda por código
+     * Buscar agencia por nombre
      */
     public function search(Request $request): JsonResponse
     {
         try {
             $request->validate([
-                'code' => 'required|string|min:1'
+                'name' => 'required|string|min:1'
             ]);
 
-            $currency = $this->currencyService->findCurrencyByCode($request->input('code'));
+            $agency = $this->agencyService->findAgencyByName($request->input('name'));
 
             return ApiResponse::success(
-                'Moneda encontrada',
+                'Agencia encontrada',
                 200,
-                new CurrencyResource($currency)
+                new AgencyResource($agency)
             );
 
         } catch (RuntimeException $e) {
-            return ApiResponse::notFound('Moneda');
+            return ApiResponse::notFound('Agencia');
         } catch (\Illuminate\Validation\ValidationException $e) {
             return ApiResponse::validationError($e->errors());
         } catch (\Exception $e) {

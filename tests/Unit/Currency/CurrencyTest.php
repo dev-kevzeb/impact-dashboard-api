@@ -3,7 +3,7 @@
 namespace Tests\Unit;
 
 use Tests\TestCase;
-use App\Models\Currency;
+use App\Modules\Currency\Domain\Currency;
 use Exception;
 use RuntimeException;
 

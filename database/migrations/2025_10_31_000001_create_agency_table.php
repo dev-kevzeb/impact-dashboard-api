@@ -11,9 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('currency', function (Blueprint $table) {
+        Schema::create('agency', function (Blueprint $table) {
             $table->id();
-            $table->string('code', 3)->unique();
+            $table->string('name', 100)->unique();
+            $table->string('url', 255);
+            $table->boolean('is_approved')->default(false);
             $table->timestamps();
         });
     }
@@ -23,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('currency');
+        Schema::dropIfExists('agency');
     }
 };

@@ -15,6 +15,7 @@ use App\Modules\ProgramState\Controller\ProgramStateController;
 
 use App\Modules\Sdg\Controller\SdgController;
 use App\Modules\ProjectState\Controller\ProjectStateController;
+use App\Modules\Agency\Controller\AgencyController;
 
 
 
@@ -44,16 +45,16 @@ Route::prefix('v1')->group(function () {
     // API Routes para Currencies
     Route::get('currencies', [CurrencyController::class, 'index']);
     Route::post('currencies', [CurrencyController::class, 'store']);
+    Route::get('currencies/search', [CurrencyController::class, 'search']);
     Route::get('currencies/{id}', [CurrencyController::class, 'show']);
-    Route::put('currencies/{id}', [CurrencyController::class, 'update']);
-    Route::delete('currencies/{id}', [CurrencyController::class, 'destroy']);
-
+    Route::put('currencies/{id}', [CurrencyController::class, 'update']);  
+    
     // API Routes para Countries
     Route::get('countries', [CountryController::class, 'index']);
     Route::post('countries', [CountryController::class, 'store']);
+    Route::get('countries/search', [CountryController::class, 'search']);
     Route::get('countries/{id}', [CountryController::class, 'show']);
     Route::put('countries/{id}', [CountryController::class, 'update']);
-    Route::delete('countries/{id}', [CountryController::class, 'destroy']);
 
     // API Routes para Kpas
     Route::get('kpas', [KpaController::class, 'index']);
@@ -91,4 +92,10 @@ Route::prefix('v1')->group(function () {
     Route::post('strategic-outputs', [\App\Modules\StrategicOutput\Controller\StrategicOutputController::class, 'store']);
     Route::get('strategic-outputs/{id}', [\App\Modules\StrategicOutput\Controller\StrategicOutputController::class, 'show']);
     Route::put('strategic-outputs/{id}', [\App\Modules\StrategicOutput\Controller\StrategicOutputController::class, 'update']);
+    // API Routes para Agency
+    Route::get('agencies', [AgencyController::class, 'index']);
+    Route::post('agencies', [AgencyController::class, 'store']);
+    Route::get('agencies/search', [AgencyController::class, 'search']);
+    Route::get('agencies/{id}', [AgencyController::class, 'show']);
+    Route::put('agencies/{id}', [AgencyController::class, 'update']);
 });

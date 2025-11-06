@@ -1,9 +1,9 @@
 <?php
 
-namespace Tests\Unit;
+namespace Tests\Unit\Agency;
 
-use Tests\TestCase;
-use App\Models\Agency;
+use PHPUnit\Framework\TestCase;
+use App\Modules\Agency\Domain\Agency;
 use Exception;
 use RuntimeException;
 

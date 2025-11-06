@@ -2,15 +2,42 @@
 
 namespace App\Modules\Currency\Service;
 
+use App\Modules\Currency\Domain\Currency;
 use App\Modules\Currency\Repository\CurrencyRepository;
+use RuntimeException;
 
 class CurrencyService
 {
-    protected CurrencyRepository $currencyRepository;
+    private CurrencyRepository $currencyRepository;
 
     public function __construct(CurrencyRepository $currencyRepository)
     {
         $this->currencyRepository = $currencyRepository;
+    }
+
+    public function createCurrency(string $code): Currency
+    {
+        $normalizedCode = strtoupper(trim($code));
+        
+        if ($this->currencyRepository->exists('code', $normalizedCode)) {
+            throw new RuntimeException("Ya existe una moneda con el código: {$normalizedCode}");
+        }
+
+        $currency = Currency::at($code);
+        
+        $this->currencyRepository->save($currency);
+        
+        return $currency;
+    }
+
+    public function getCurrencyById(int $id): Currency
+    {
+        return $this->currencyRepository->findById($id);
+    }
+
+    public function findCurrencyByCode(string $code): Currency
+    {
+        return $this->currencyRepository->findBy('code', strtoupper(trim($code)));
     }
 
     public function getAllCurrencies()
@@ -18,23 +45,33 @@ class CurrencyService
         return $this->currencyRepository->getAll();
     }
 
-    public function getCurrencyById(int $id)
+    public function updateCurrency(int $id, string $code): Currency
     {
-        return $this->currencyRepository->getById($id);
+        $currency = $this->currencyRepository->findById($id);
+        
+        $normalizedCode = strtoupper(trim($code));
+
+        try {
+            $existingCurrency = $this->currencyRepository->findBy('code', $normalizedCode);
+            if ($existingCurrency && $existingCurrency->id !== $id) {
+                throw new RuntimeException("Ya existe otra moneda con el código: {$normalizedCode}");
+            }
+        } catch (RuntimeException $e) {
+            if (!str_contains($e->getMessage(), 'no encontrado')) {
+                throw $e; 
+            }
+        }
+
+        $updatedCurrency = Currency::at($code);
+        $currency->code = $updatedCurrency->code;
+        
+        $this->currencyRepository->save($currency);
+        
+        return $currency;
     }
 
-    public function createCurrency(array $data)
+    public function currencyExists(string $code): bool
     {
-        return $this->currencyRepository->create($data);
-    }
-
-    public function updateCurrency(int $id, array $data)
-    {
-        return $this->currencyRepository->update($id, $data);
-    }
-
-    public function deleteCurrency(int $id)
-    {
-        return $this->currencyRepository->delete($id);
+        return $this->currencyRepository->exists('code', strtoupper(trim($code)));
     }
 }
