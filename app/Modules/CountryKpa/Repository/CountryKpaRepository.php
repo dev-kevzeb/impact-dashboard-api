@@ -65,7 +65,7 @@ class CountryKpaRepository extends Model
 				->where('id_kpa', $id_kpa)
 				->first();
 			// echo "salida: " . json_encode($existing);
-			if($existing){
+			if($existing){	
 				throw new RuntimeException("La relación CountryKpa ya existe para id_country: {$id_country} e id_kpa: {$id_kpa}");
 			}else{
 				echo "No existing CountryKpa found. Proceeding to create.\n";	
