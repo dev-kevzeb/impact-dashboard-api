@@ -3,81 +3,147 @@
 namespace App\Modules\Country\Controller;
 
 use App\Http\Controllers\Controller;
+use App\Http\Responses\ApiResponse;
+use App\Http\Resources\CountryResource;
 use App\Modules\Country\Service\CountryService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use RuntimeException;
 
 class CountryController extends Controller
 {
-    protected CountryService $service;
+    private CountryService $countryService;
 
-    public function __construct(CountryService $service)
+    public function __construct(CountryService $countryService)
     {
-        $this->service = $service;
+        $this->countryService = $countryService;
     }
 
-    public function index()
-    {
-        return response()->json($this->service->getAllCountries());
-    }
-
-    public function show($id)
-    {
-        return response()->json($this->service->getCountryById((int)$id));
-    }
-
-    public function store(Request $request)
+    /**
+     * Listar todos los países
+     */
+    public function index(): JsonResponse
     {
         try {
-            $data = $request->only(['name','currency_id']);
-            $country = $this->service->createCountry($data);
-            return response()->json([
-                'success' => true,
-                'message' => 'País creado exitosamente',
-                'data' => $country
-            ], 201);
-        } catch (\RuntimeException $e) {
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage(),
-                'data' => []
-            ], 400);
+            $countries = $this->countryService->getAllCountries();
+            
+            return ApiResponse::success(
+                'Lista de países obtenida exitosamente',
+                200,
+                [
+                    'countries' => CountryResource::collection($countries),
+                    'total' => $countries->count()
+                ]
+            );
+        } catch (RuntimeException $e) {
+            return ApiResponse::error($e->getMessage(), 500);
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Error al crear el país',
-                'data' => []
-            ], 500);
+            return ApiResponse::error('Error interno del servidor', 500);
         }
     }
 
-    public function update(Request $request, $id)
+    /**
+     * Mostrar un país específico
+     */
+    public function show(int $id): JsonResponse
     {
         try {
-            $data = $request->only(['name','currency_id']);
-            $country = $this->service->updateCountry((int)$id, $data);
-            return response()->json([
-                'success' => true,
-                'message' => 'País actualizado exitosamente',
-                'data' => $country
-            ], 200);
-        } catch (\RuntimeException $e) {
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage(),
-                'data' => []
-            ], 400);
+            $country = $this->countryService->getCountryById($id);
+
+            return ApiResponse::success(
+                'País encontrado',
+                200,
+                new CountryResource($country)
+            );
+        } catch (RuntimeException $e) {
+            return ApiResponse::notFound('País');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Error al actualizar el país',
-                'data' => []
-            ], 500);
+            return ApiResponse::error('Error interno del servidor', 500);
         }
     }
 
-    public function destroy($id)
+    /**
+     * Crear un nuevo país
+     */
+    public function store(Request $request): JsonResponse
     {
-        $this->service->deleteCountry((int)$id);
-        return response()->json(null, 204);
+        try {
+            $request->validate([
+                'name' => 'required|string',
+                'currency_id' => 'required|integer'
+            ]);
+
+            $country = $this->countryService->createCountry(
+                $request->input('name'),
+                $request->input('currency_id')
+            );
+
+            return ApiResponse::created(
+                'País creado exitosamente',
+                new CountryResource($country)
+            );
+
+        } catch (RuntimeException $e) {
+            return ApiResponse::error($e->getMessage(), 400);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return ApiResponse::validationError($e->errors());
+        }
+    }
+
+    /**
+     * Actualizar un país existente
+     */
+    public function update(Request $request, int $id): JsonResponse
+    {
+        try {
+            $request->validate([
+                'name' => 'required|string',
+                'currency_id' => 'required|integer'
+            ]);
+
+            $country = $this->countryService->updateCountry(
+                $id,
+                $request->input('name'),
+                $request->input('currency_id')
+            );
+
+            return ApiResponse::success(
+                'País actualizado exitosamente',
+                200,
+                new CountryResource($country)
+            );
+
+        } catch (RuntimeException $e) {
+            return ApiResponse::error($e->getMessage(), 400);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return ApiResponse::validationError($e->errors());
+        }
+    }
+
+    /**
+     * Buscar país por nombre
+     */
+    public function search(Request $request): JsonResponse
+    {
+        try {
+            $request->validate([
+                'name' => 'required|string|min:1'
+            ]);
+
+            $country = $this->countryService->findCountryByName($request->input('name'));
+
+            return ApiResponse::success(
+                'País encontrado',
+                200,
+                new CountryResource($country)
+            );
+
+        } catch (RuntimeException $e) {
+            return ApiResponse::notFound('País');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return ApiResponse::validationError($e->errors());
+        } catch (\Exception $e) {
+            return ApiResponse::error('Error interno del servidor', 500);
+        }
     }
 }

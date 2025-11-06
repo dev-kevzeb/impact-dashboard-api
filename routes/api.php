@@ -2,16 +2,22 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Models\User;
+use Illuminate\Support\Facades\Hash;
 use App\Modules\Country\Controller\CountryController;
 use App\Modules\Currency\Controller\CurrencyController;
 use App\Modules\Kpa\Controller\KpaController;
 use App\Modules\Donor\Controller\DonorController;
 use App\Modules\Beneficiary\Controller\BeneficiaryController;
+use App\Modules\ProgramState\Controller\ProgramStateController;
 use App\Modules\Contact\Controller\ContactController;
 use App\Modules\CountryKpa\Controller\CountryKpaController;
-use App\Modules\ProgramState\Controller\ProgramStateController;
 use App\Modules\Sdg\Controller\SdgController;
 use App\Modules\ProjectState\Controller\ProjectStateController;
+
+
+use App\Modules\Agency\Controller\AgencyController;
+
 
 
 
@@ -40,16 +46,16 @@ Route::prefix('v1')->group(function () {
     // API Routes para Currencies
     Route::get('currencies', [CurrencyController::class, 'index']);
     Route::post('currencies', [CurrencyController::class, 'store']);
+    Route::get('currencies/search', [CurrencyController::class, 'search']);
     Route::get('currencies/{id}', [CurrencyController::class, 'show']);
-    Route::put('currencies/{id}', [CurrencyController::class, 'update']);
-    Route::delete('currencies/{id}', [CurrencyController::class, 'destroy']);
-
+    Route::put('currencies/{id}', [CurrencyController::class, 'update']);  
+    
     // API Routes para Countries
     Route::get('countries', [CountryController::class, 'index']);
     Route::post('countries', [CountryController::class, 'store']);
+    Route::get('countries/search', [CountryController::class, 'search']);
     Route::get('countries/{id}', [CountryController::class, 'show']);
     Route::put('countries/{id}', [CountryController::class, 'update']);
-    Route::delete('countries/{id}', [CountryController::class, 'destroy']);
 
     // API Routes para Kpas
     Route::get('kpas', [KpaController::class, 'index']);
@@ -81,4 +87,11 @@ Route::prefix('v1')->group(function () {
     Route::get('sdgs/search', [SdgController::class, 'search']);
     Route::get('sdgs/{id}', [SdgController::class, 'show']);
     Route::put('sdgs/{id}', [SdgController::class, 'update']);
+
+    // API Routes para Agency
+    Route::get('agencies', [AgencyController::class, 'index']);
+    Route::post('agencies', [AgencyController::class, 'store']);
+    Route::get('agencies/search', [AgencyController::class, 'search']);
+    Route::get('agencies/{id}', [AgencyController::class, 'show']);
+    Route::put('agencies/{id}', [AgencyController::class, 'update']);
 });

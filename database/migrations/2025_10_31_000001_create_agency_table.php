@@ -11,17 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('contact', function (Blueprint $table) {
+        Schema::create('agency', function (Blueprint $table) {
             $table->id();
-            $table->string('first_name');
-            $table->string('last_name');
-            $table->string('title');
-            $table->string('email')->unique();
-<<<<<<< HEAD
-            $table->string('phone')->nullable();
-=======
-            $table->string('phone');
->>>>>>> origin/develop
+            $table->string('name', 100)->unique();
+            $table->string('url', 255);
+            $table->boolean('is_approved')->default(false);
             $table->timestamps();
         });
     }
@@ -31,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('contact');
+        Schema::dropIfExists('agency');
     }
 };

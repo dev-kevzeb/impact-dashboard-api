@@ -3,25 +3,18 @@
 namespace App\Modules\Currency\Domain;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Casts\Attribute;
+use RuntimeException;
 
 class Currency extends Model
 {
     protected $table = 'currency';
     protected $fillable = ['code'];
-   
-   
-    // Validación en el boot del modelo
-    protected static function boot()
-    {
-        parent::boot();
-        
-        static::saving(function ($currency) {
-            $currency->validateCode($currency->code);
-        });
-    }
     
- 
+    // Constantes de mensajes de error
+    public static $ERROR_CODE_EMPTY = 'el código de moneda no debe ir vacío';
+    public static $ERROR_CODE_LENGTH = 'el código de moneda debe tener exactamente 3 caracteres';
+    public static $ERROR_CODE_FORMAT = 'el código de moneda debe contener solo letras (sin números ni símbolos)';
+    public static $ERROR_CODE_INVALID = 'el código de moneda debe ser un código ISO 4217 válido';
     
     // Lista de códigos ISO 4217 válidos
     private static array $validCodes = [
@@ -37,40 +30,40 @@ class Currency extends Model
         'SLL', 'STN', 'SOL'
     ];
     
-    public function validateCode(?string $code): void
+    public function __construct(array $attributes = [])
     {
-        if (empty(trim($code ?? ''))) {
-            throw new \InvalidArgumentException('El código de moneda no debe ir vacío');
+        parent::__construct($attributes);
+    }
+    
+    public static function at(string $code): Currency
+    {
+        if (empty(trim($code))) {
+            throw new RuntimeException(self::$ERROR_CODE_EMPTY);
         }
         
-        $trimmedCode = trim($code);
+        $trimmedCode = strtoupper(trim($code));
         
         if (strlen($trimmedCode) !== 3) {
-            throw new \InvalidArgumentException('El código de moneda debe tener exactamente 3 caracteres');
+            throw new RuntimeException(self::$ERROR_CODE_LENGTH);
         }
         
-        if (!preg_match('/^[A-Z]{3}$/', $trimmedCode)) {
-            throw new \InvalidArgumentException('El código de moneda debe contener solo letras mayúsculas');
+        // Validar que solo contenga letras (no números ni símbolos)
+        if (!ctype_alpha($trimmedCode)) {
+            throw new RuntimeException(self::$ERROR_CODE_FORMAT);
         }
         
         if (!in_array($trimmedCode, self::$validCodes, true)) {
-            throw new \InvalidArgumentException('El código de moneda debe ser un código ISO 4217 válido');
+            throw new RuntimeException(self::$ERROR_CODE_INVALID);
         }
+        
+        return new Currency(['code' => $trimmedCode]);
     }
     
-    // Accessor para asegurar que siempre esté en mayúsculas
-    protected function code(): Attribute
+    public function getCode(): string
     {
-        return Attribute::make(
-            get: fn ($value) => strtoupper($value),
-            set: fn ($value) => strtoupper(trim($value))
-        );
+        return $this->code;
     }
     
-    public static function isValidCode(string $code): bool
-    {
-        return in_array(strtoupper(trim($code)), self::$validCodes, true);
-    }
     public function countries()
     {
         return $this->hasMany(\App\Modules\Country\Domain\Country::class, 'currency_id');
