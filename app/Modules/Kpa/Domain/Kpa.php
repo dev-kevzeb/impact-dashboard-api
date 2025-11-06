@@ -18,16 +18,13 @@ class Kpa extends Model
     public static $ERROR_NAME_MAX_LENGTH = 'el nombre del KPA no debe exceder 100 caracteres';
     public static $ERROR_IMPLEMENTATION_NOT_NUMERIC = 'la implementación del KPA debe ser un número';
     public static $ERROR_IMPLEMENTATION_OUT_OF_RANGE = 'la implementación del KPA debe estar entre 0 y 100';
-    public static $ERROR_STRATEGIC_OUTPUTS_DUPLICATED = 'no se permiten resultados estratégicos duplicados en el KPA';
-    public static $ERROR_STRATEGIC_OUTPUT_INVALID_INSTANCE = 'el resultado estratégico debe ser una instancia de StrategicOutput';
-    public static $ERROR_STRATEGIC_OUTPUT_NOT_FOUND = 'el resultado estratégico no fue encontrado';
-    private string $name;
-    private float $implementation;
-    private array $strategicOutputs = [];
 
+    public function __construct(array $attributes = [])
+    {
+        parent::__construct($attributes);
+    }
     
-    
-    public static function at($name, $implementation): Kpa
+    public static function at(string $name, mixed $implementation): Kpa
     {
         if (empty(trim($name))) {
             throw new RuntimeException(self::$ERROR_NAME_EMPTY);
@@ -44,7 +41,7 @@ class Kpa extends Model
         if($implementation < 0 || $implementation > 100){
             throw new RuntimeException(self::$ERROR_IMPLEMENTATION_OUT_OF_RANGE);
         }
-        return new self([trim($name), $implementation]);
+        return new Kpa(['name' => trim($name), 'implementation' => (float) $implementation]);
     }
     
     public function getName(): string
@@ -56,77 +53,9 @@ class Kpa extends Model
     {
         return $this->implementation;
     }
-    
-    public function addStrategicOutput($strategicOutput): void
-    {
-        // if (!($strategicOutput instanceof StrategicOutput)) {
-        //     throw new RuntimeException(self::$ERROR_STRATEGIC_OUTPUT_INVALID_INSTANCE);
-        // }
-        
-        // Verificar duplicados por nombre
-        if ($this->hasStrategicOutputWithName($strategicOutput->getName())) {
-            throw new RuntimeException(self::$ERROR_STRATEGIC_OUTPUTS_DUPLICATED);
-        }
-        
-        $this->strategicOutputs[] = $strategicOutput;
-    }
-
-
-    
-    public function getStrategicOutputs(): array
-    {
-        return $this->strategicOutputs;
-    }
-    
-    public function getStrategicOutputCount(): int
-    {
-        return count($this->strategicOutputs);
-    }
-    
-    public function hasStrategicOutputs(): bool
-    {
-        return !empty($this->strategicOutputs);
-    }
-    
-    public function removeStrategicOutput(string $outputName): bool
-    {
-        foreach ($this->strategicOutputs as $index => $output) {
-            if ($output->getName() === $outputName) {
-                unset($this->strategicOutputs[$index]);
-                $this->strategicOutputs = array_values($this->strategicOutputs); // Re-indexar array
-                return true; // Eliminado exitosamente
-            }
-        }
-        return false; // No encontrado
-    }
-    
-    public function clearStrategicOutputs(): void
-    {
-        $this->strategicOutputs = [];
-    }
-    
-    public function findStrategicOutputByName(string $outputName)
-    {
-        foreach ($this->strategicOutputs as $output) {
-            if ($output->getName() === $outputName) {
-                return $output;
-            }
-        }
-        throw new RuntimeException(self::$ERROR_STRATEGIC_OUTPUT_NOT_FOUND . ': ' . $outputName);
-    }
-
-    public function hasStrategicOutputWithName(string $outputName): bool
-    {
-        foreach ($this->strategicOutputs as $output) {
-            if ($output->getName() === $outputName) {
-                return true;
-            }
-        }
-        return false;
-    }
 
     public function countries()
     {
-        return $this->belongsToMany(Country::class, 'country_kpas', 'id_kpa', 'id_country');
+        return $this->belongsToMany(Country::class, 'country_kpa', 'id_kpa', 'id_country');
     }
 }
