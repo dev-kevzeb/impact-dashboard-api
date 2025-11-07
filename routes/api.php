@@ -10,16 +10,13 @@ use App\Modules\Kpa\Controller\KpaController;
 use App\Modules\Donor\Controller\DonorController;
 use App\Modules\Beneficiary\Controller\BeneficiaryController;
 use App\Modules\ProgramState\Controller\ProgramStateController;
-use App\Modules\Contact\Controller\ContactController;
-use App\Modules\CountryKpa\Controller\CountryKpaController;
+
 use App\Modules\Sdg\Controller\SdgController;
 use App\Modules\ProjectState\Controller\ProjectStateController;
 
-
+use App\Modules\Contact\Controller\ContactController;
 use App\Modules\Agency\Controller\AgencyController;
-
-
-
+use App\Modules\CountryKpa\Controller\CountryKpaController;
 
 Route::prefix('v1')->group(function () {
     // API Routes para Donors
@@ -68,6 +65,7 @@ Route::prefix('v1')->group(function () {
     Route::get('country-kpas', [CountryKpaController::class, 'index']);
     Route::post('country-kpas', [CountryKpaController::class, 'store']);
     Route::get('country-kpas/{id}', [CountryKpaController::class, 'show']);
+    Route::put('country-kpas/{id}', [CountryKpaController::class, 'update']);
     Route::delete('country-kpas/{id}', [CountryKpaController::class, 'destroy']);
 
     // API Routes para Contacts
@@ -88,6 +86,11 @@ Route::prefix('v1')->group(function () {
     Route::get('sdgs/{id}', [SdgController::class, 'show']);
     Route::put('sdgs/{id}', [SdgController::class, 'update']);
 
+    // API routes para Strategic Outputs
+    Route::get('strategic-outputs', [\App\Modules\StrategicOutput\Controller\StrategicOutputController::class, 'index']);
+    Route::post('strategic-outputs', [\App\Modules\StrategicOutput\Controller\StrategicOutputController::class, 'store']);
+    Route::get('strategic-outputs/{id}', [\App\Modules\StrategicOutput\Controller\StrategicOutputController::class, 'show']);
+    Route::put('strategic-outputs/{id}', [\App\Modules\StrategicOutput\Controller\StrategicOutputController::class, 'update']);
     // API Routes para Agency
     Route::get('agencies', [AgencyController::class, 'index']);
     Route::post('agencies', [AgencyController::class, 'store']);

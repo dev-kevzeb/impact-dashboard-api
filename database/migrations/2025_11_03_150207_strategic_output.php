@@ -11,14 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('contact', function (Blueprint $table) {
+        Schema::create('strategic_output', function (Blueprint $table) {
             $table->id();
-            $table->string('first_name');
-            $table->string('last_name');
-            $table->string('title');
-            $table->string('email')->unique();
-            $table->string('phone');
+            $table->string('name', 255);
+            $table->foreignId('id_ck')->constrained('country_kpa');
             $table->timestamps();
+
         });
     }
 
@@ -27,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('contact');
+        //
     }
 };
