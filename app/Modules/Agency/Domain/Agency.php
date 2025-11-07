@@ -14,9 +14,7 @@ class Agency extends Model
     // Constantes de mensajes de error
     public static $ERROR_NAME_EMPTY = 'el nombre de la agencia no debe ir vacio';
     public static $ERROR_NAME_TOO_SHORT = 'el nombre de la agencia debe tener al menos 2 caracteres';
-    public static $ERROR_NAME_MIN_LENGTH = 'el nombre de la agencia debe tener al menos 2 caracteres';
     public static $ERROR_NAME_TOO_LONG = 'el nombre de la agencia no debe exceder 100 caracteres';
-    public static $ERROR_NAME_MAX_LENGTH = 'el nombre de la agencia no debe exceder 100 caracteres';
     public static $ERROR_URL_EMPTY = 'la URL de la agencia no debe ir vacia';
     public static $ERROR_URL_INVALID_FORMAT = 'la URL de la agencia debe tener un formato válido';
     public static $ERROR_URL_INVALID_PROTOCOL = 'la URL de la agencia debe usar protocolo HTTP o HTTPS';
@@ -72,21 +70,6 @@ class Agency extends Model
         ]);
     }
     
-    public function validateName(): bool
-    {
-        return strlen($this->name) >= 2 && strlen($this->name) <= 100;
-    }
-    
-    public function validateUrl(): bool
-    {
-        if (!filter_var($this->url, FILTER_VALIDATE_URL)) {
-            return false;
-        }
-        
-        $parsedUrl = parse_url($this->url);
-        return isset($parsedUrl['scheme']) && in_array($parsedUrl['scheme'], ['http', 'https'], true);
-    }
-    
     public function getName(): string
     {
         return $this->name;
@@ -97,19 +80,9 @@ class Agency extends Model
         return $this->url;
     }
     
-    public function getIsApproved(): bool
-    {
-        return (bool) $this->is_approved;
-    }
-    
     public function isApproved(): bool
     {
         return (bool) $this->is_approved;
-    }
-    
-    public function compareIsApproved(bool $isApproved): bool
-    {
-        return $this->is_approved === $isApproved;
     }
     
     public function programs()

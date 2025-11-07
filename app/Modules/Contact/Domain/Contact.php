@@ -32,14 +32,6 @@ class Contact extends Model
     public static $ERROR_PHONE_TOO_SHORT = 'el teléfono debe tener al menos 7 dígitos';
     public static $ERROR_PHONE_TOO_LONG = 'el teléfono no debe exceder 15 dígitos';
 
-    private string $firstName;
-    private string $lastName;
-    private string $title;
-    private string $email;
-    private string $phone;
-
-  
-
     public static function at(string $firstName, string $lastName, string $title, string $email, string $phone = ""): Contact
     {
         // Validar firstName
@@ -164,12 +156,12 @@ class Contact extends Model
     // Getters
     public function getFirstName(): string
     {
-        return $this->firstName;
+        return $this->first_name;
     }
 
     public function getLastName(): string
     {
-        return $this->lastName;
+        return $this->last_name;
     }
 
     public function getTitle(): string
@@ -189,7 +181,7 @@ class Contact extends Model
 
     public function getFullName(): string
     {
-        return $this->firstName . ' ' . $this->lastName;
+        return $this->first_name . ' ' . $this->last_name;
     }
 
     public function hasPhone(): bool
