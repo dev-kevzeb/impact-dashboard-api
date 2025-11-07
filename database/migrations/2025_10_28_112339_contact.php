@@ -17,15 +17,7 @@ return new class extends Migration
             $table->string('last_name');
             $table->string('title');
             $table->string('email')->unique();
-<<<<<<< HEAD
             $table->string('phone');
-=======
-<<<<<<< HEAD
-            $table->string('phone')->nullable();
-=======
-            $table->string('phone');
->>>>>>> origin/develop
->>>>>>> develop
             $table->timestamps();
         });
     }
