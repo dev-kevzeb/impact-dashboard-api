@@ -27,27 +27,24 @@ class Country extends Model
         if (empty(trim($name))) {
             throw new RuntimeException(self::$ERROR_NAME_EMPTY);
         }
-        
-        $trimmedName = trim($name);
-        
-        if (strlen($trimmedName) < 2) {
+        // Normalizar espacios: quitar dobles espacios y espacios al inicio/fin
+        $normalizedName = preg_replace('/\s+/', ' ', trim($name));
+        if (strlen($normalizedName) < 2) {
             throw new RuntimeException(self::$ERROR_NAME_TOO_SHORT);
         }
-        
-        if (strlen($trimmedName) > 100) {
+        if (strlen($normalizedName) > 100) {
             throw new RuntimeException(self::$ERROR_NAME_TOO_LONG);
         }
-        
-        // Validar que contenga solo letras, espacios, guiones, apostrofes y caracteres unicode válidos
-        if (!preg_match('/^[a-zA-ZÀ-ÿñÑ\s\-\'\.]+$/u', $trimmedName)) {
+        // Validar caracteres permitidos
+        if (!preg_match('/^[a-zA-ZÀ-ÿñÑ\s\-\'\.]+$/u', $normalizedName)) {
             throw new RuntimeException(self::$ERROR_NAME_INVALID_CHARACTERS);
         }
-        
         if (!($currency instanceof Currency )) {
             throw new RuntimeException(self::$ERROR_CURRENCY_INVALID);
         }
-
-        return new self(['name' => $trimmedName, 'currency_id' => $currency->getKey()]);
+        // Capitalizar cada palabra
+        $capitalizedName = mb_convert_case($normalizedName, MB_CASE_TITLE, "UTF-8");
+        return new self(['name' => $capitalizedName, 'currency_id' => $currency->getKey()]);
     }
 
     

@@ -1,43 +1,45 @@
 <?php
 
-namespace App\Models;
+namespace App\Modules\StrategicOutput\Domain;
 
-use Exception;
+use App\Models\Measure;
 use Illuminate\Database\Eloquent\Model;
 use RuntimeException;
 
 class StrategicOutput extends Model
 {
+
+
+    protected $table = 'strategic_output';
+    protected $fillable = ['name', 'id_ck'];
     // Constantes de mensajes de error
-    public static $ERROR_NAME_EMPTY = 'el nombre del StrategicOutput no debe ir vacio';
-    public static $ERROR_NAME_MIN_LENGTH = 'el nombre del StrategicOutput debe tener al menos 2 caracteres';
-    public static $ERROR_NAME_MAX_LENGTH = 'el nombre del StrategicOutput no debe exceder 200 caracteres';
+    public static $ERROR_NAME_EMPTY = 'el nombre del resultado estratégico no debe ir vacío';
+    public static $ERROR_NAME_MIN_LENGTH = 'el nombre del resultado estratégico debe tener al menos 3 caracteres';
+    public static $ERROR_NAME_MAX_LENGTH = 'el nombre del resultado estratégico no debe exceder 200 caracteres';
     public static $ERROR_MEASURES_DUPLICATED = 'no se permiten medidas duplicadas en el resultado estratégico';
     public static $ERROR_MEASURE_INVALID_INSTANCE = 'la medida debe ser una instancia de Measure';
     public static $ERROR_MEASURE_NOT_FOUND = 'la medida especificada no existe en este resultado estratégico';
-
-    private string $name;
-    private array $measures;
     
-    public function __construct(string $name)
-    {
-        $this->name = $name;
-        $this->measures = []; 
-    }
-    
-    public static function at($name): StrategicOutput  
+    public static function at(string $name): StrategicOutput  
     {
         if (empty(trim($name))) {
             throw new RuntimeException(self::$ERROR_NAME_EMPTY);
         }
-        if (strlen(trim($name)) < 2) {
+        
+        // Normalizar espacios: quitar dobles espacios
+        $normalizedName = preg_replace('/\s+/', ' ', trim($name));
+        
+        if (strlen($normalizedName) < 3) {
             throw new RuntimeException(self::$ERROR_NAME_MIN_LENGTH);
         }
-        if (strlen(trim($name)) > 200) {
+        if (strlen($normalizedName) > 200) {
             throw new RuntimeException(self::$ERROR_NAME_MAX_LENGTH);
         }
+
+        // Capitalizar primera letra de cada palabra
+        $capitalizedName = mb_convert_case($normalizedName, MB_CASE_TITLE, "UTF-8");
         
-        return new StrategicOutput(trim($name));
+        return new self(['name' => $capitalizedName]);
     }
     
     public function getName(): string
@@ -50,8 +52,7 @@ class StrategicOutput extends Model
     {
         if (!($measure instanceof Measure)) {
             throw new RuntimeException(self::$ERROR_MEASURE_INVALID_INSTANCE);
-        }
-        
+        }        
         // Verificar duplicados por nombre
         if ($this->hasMeasureWithName($measure->getName())) {
             throw new RuntimeException(self::$ERROR_MEASURES_DUPLICATED);
@@ -84,6 +85,12 @@ class StrategicOutput extends Model
     {
         return !empty($this->measures);
     }
+
+    // Relación con CountryKpa
+    public function countryKpa()
+    {
+        return $this->belongsTo(\App\Modules\CountryKpa\Domain\CountryKpa::class, 'id_ck');
+    }
     
     public function removeMeasure(string $measureName): bool
     {
@@ -112,6 +119,6 @@ class StrategicOutput extends Model
         throw new RuntimeException(self::$ERROR_MEASURE_NOT_FOUND . ': ' . $measureName);
     }
 
-
+    
    
 }
