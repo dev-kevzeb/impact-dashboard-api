@@ -11,17 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('contact', function (Blueprint $table) {
+        Schema::create('project_state', function(Blueprint $table){
             $table->id();
-            $table->string('first_name');
-            $table->string('last_name');
-            $table->string('title');
-            $table->string('email')->unique();
-<<<<<<< HEAD
-            $table->string('phone')->nullable();
-=======
-            $table->string('phone');
->>>>>>> origin/develop
+            $table->string('state', 100)->default('pendiente');
             $table->timestamps();
         });
     }
@@ -31,6 +23,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('contact');
+        Schema::dropIfExists('project_state');
+        //
     }
 };

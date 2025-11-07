@@ -13,6 +13,9 @@ use App\Modules\ProgramState\Controller\ProgramStateController;
 use App\Modules\Contact\Controller\ContactController;
 use App\Modules\CountryKpa\Controller\CountryKpaController;
 use App\Modules\Sdg\Controller\SdgController;
+use App\Modules\ProjectState\Controller\ProjectStateController;
+
+
 use App\Modules\Agency\Controller\AgencyController;
 
 
@@ -72,6 +75,12 @@ Route::prefix('v1')->group(function () {
     Route::post('contacts', [ContactController::class, 'store']);
     Route::get('contacts/{id}', [ContactController::class, 'show']);
     Route::put('contacts/{id}', [ContactController::class, 'update']);
+
+    // API Routes para ProjectStates
+    Route::get('project_states', [ProjectStateController::class, 'index']);
+    Route::post('project_states', [ProjectStateController::class, 'store']);
+    Route::get('project_states/{id}', [ProjectStateController::class, 'show']);
+    Route::put('project_states/{id}', [ProjectStateController::class, 'update']);
     // API Routes para SDG
     Route::get('sdgs', [SdgController::class, 'index']);
     Route::post('sdgs', [SdgController::class, 'store']);

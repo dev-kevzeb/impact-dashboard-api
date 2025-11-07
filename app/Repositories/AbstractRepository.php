@@ -174,4 +174,23 @@ abstract class AbstractRepository implements RepositoryInterface
             );
         }
     }
+     /**
+     * Verificar existencia de estado
+     *
+     * @param string $state
+     * @return object
+     */
+    public function findByState(string $state): ?object
+    {
+        try {
+            return $this->model->whereRaw(
+                "LOWER(state) = LOWER(?)",
+                [trim($state)]
+            )->first();
+        } catch (\Exception $e) {
+            throw new RuntimeException(
+                "Error al buscar entidad por state {$state}: " . $e->getMessage()
+            );
+        }
+    }
 }
