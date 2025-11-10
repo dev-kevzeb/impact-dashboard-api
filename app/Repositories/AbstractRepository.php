@@ -77,8 +77,9 @@ abstract class AbstractRepository implements RepositoryInterface
     {
         try {
             if (is_string($value)) {
+                // Case-insensitive y accent-insensitive (normaliza tildes)
                 $entity = $this->model->whereRaw(
-                    "LOWER({$field}) = LOWER(?)", 
+                    "LOWER(unaccent({$field})) = LOWER(unaccent(?))", 
                     [trim($value)]
                 )->first();
             } else {
@@ -125,10 +126,10 @@ abstract class AbstractRepository implements RepositoryInterface
     public function exists(string $field, mixed $value): bool
     {
         try {
-            // Case-insensitive para strings, normal para otros tipos
+            // Case-insensitive y accent-insensitive (normaliza tildes)
             if (is_string($value)) {
                 return $this->model->whereRaw(
-                    "LOWER({$field}) = LOWER(?)", 
+                    "LOWER(unaccent({$field})) = LOWER(unaccent(?))", 
                     [trim($value)]
                 )->exists();
             }

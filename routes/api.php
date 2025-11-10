@@ -57,9 +57,9 @@ Route::prefix('v1')->group(function () {
     // API Routes para Kpas
     Route::get('kpas', [KpaController::class, 'index']);
     Route::post('kpas', [KpaController::class, 'store']);
+    Route::get('kpas/search', [KpaController::class, 'search']);
     Route::get('kpas/{id}', [KpaController::class, 'show']);
     Route::put('kpas/{id}', [KpaController::class, 'update']);
-    Route::delete('kpas/{id}', [KpaController::class, 'destroy']);
 
     // API Routes para Country-Kpas
     Route::get('country-kpas', [CountryKpaController::class, 'index']);

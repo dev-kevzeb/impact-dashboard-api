@@ -2,15 +2,40 @@
 
 namespace App\Modules\Kpa\Service;
 
+use App\Modules\Kpa\Domain\Kpa;
 use App\Modules\Kpa\Repository\KpaRepository;
+use RuntimeException;
 
 class KpaService
 {
-    protected KpaRepository $kpaRepository;
+    private KpaRepository $kpaRepository;
 
     public function __construct(KpaRepository $kpaRepository)
     {
         $this->kpaRepository = $kpaRepository;
+    }
+
+    public function createKpa(string $name, float $implementation): Kpa
+    {
+        if ($this->kpaRepository->exists('name', trim($name))) {
+            throw new RuntimeException("Ya existe un KPA con el nombre: {$name}");
+        }
+
+        $kpa = Kpa::at($name, $implementation);
+        
+        $this->kpaRepository->save($kpa);
+        
+        return $kpa;
+    }
+
+    public function getKpaById(int $id): Kpa
+    {
+        return $this->kpaRepository->findById($id);
+    }
+
+    public function findKpaByName(string $name): Kpa
+    {
+        return $this->kpaRepository->findBy('name', $name);
     }
 
     public function getAllKpas()
@@ -18,22 +43,32 @@ class KpaService
         return $this->kpaRepository->getAll();
     }
 
-    public function getKpaById(int $id)
+    public function updateKpa(int $id, string $name, float $implementation): Kpa
     {
-        return $this->kpaRepository->getById($id);
+        $kpa = $this->kpaRepository->findById($id);
+
+        try {
+            $existingKpa = $this->kpaRepository->findBy('name', trim($name));
+            if ($existingKpa && $existingKpa->id !== $id) {
+                throw new RuntimeException("Ya existe otro KPA con el nombre: {$name}");
+            }
+        } catch (RuntimeException $e) {
+            if (!str_contains($e->getMessage(), 'no encontrado')) {
+                throw $e; 
+            }
+        }
+
+        $updatedKpa = Kpa::at($name, $implementation);
+        $kpa->name = $updatedKpa->name;
+        $kpa->implementation = $updatedKpa->implementation;
+        
+        $this->kpaRepository->save($kpa);
+        
+        return $kpa;
     }
 
-    public function createKpa(array $data)
+    public function kpaExists(string $name): bool
     {
-        return $this->kpaRepository->create($data);
-    }
-
-    public function updateKpa(int $id, array $data)
-    {
-        return $this->kpaRepository->update($id, $data);
-    }
-    public function deleteKpa(int $id)
-    {
-        return $this->kpaRepository->delete($id);
+        return $this->kpaRepository->exists('name', $name);
     }
 }
