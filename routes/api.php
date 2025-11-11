@@ -17,6 +17,7 @@ use App\Modules\ProjectState\Controller\ProjectStateController;
 use App\Modules\Contact\Controller\ContactController;
 use App\Modules\Agency\Controller\AgencyController;
 use App\Modules\CountryKpa\Controller\CountryKpaController;
+use App\Modules\Program\Controller\ProgramController;
 
 Route::prefix('v1')->group(function () {
     // API Routes para Donors
@@ -98,4 +99,11 @@ Route::prefix('v1')->group(function () {
     Route::get('agencies/search', [AgencyController::class, 'search']);
     Route::get('agencies/{id}', [AgencyController::class, 'show']);
     Route::put('agencies/{id}', [AgencyController::class, 'update']);
+
+    // API Routes para Programs
+    Route::get('programs', [ProgramController::class, 'index']);
+    Route::post('programs', [ProgramController::class, 'store']);
+    Route::get('programs/search', [ProgramController::class, 'search']);
+    Route::get('programs/{id}', [ProgramController::class, 'show']);
+    Route::put('programs/{id}', [ProgramController::class, 'update']);
 });

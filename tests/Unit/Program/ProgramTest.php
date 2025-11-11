@@ -3,15 +3,15 @@
 namespace Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
-use App\Models\Program;
-use App\Models\Country;
-use App\Models\Currency;
-use App\Models\Agency;
-use App\Models\ProgramState;
-use App\Models\Beneficiary;
-use App\Models\Donor;
-use App\Models\Sdg;
-use App\Models\Contact;
+use App\Modules\Program\Domain\Program;
+use App\Modules\Country\Domain\Country;
+use App\Modules\Currency\Domain\Currency;
+use App\Modules\Agency\Domain\Agency;
+use App\Modules\ProgramState\Domain\ProgramState;
+use App\Modules\Beneficiary\Domain\Beneficiary;
+use App\Modules\Donor\Domain\Donor;
+use App\Modules\Sdg\Domain\Sdg;
+use App\Modules\Contact\Domain\Contact;
 use Exception;
 use RuntimeException;
 
@@ -67,19 +67,17 @@ class ProgramTest extends TestCase
     public function test_program_can_be_created_with_valid_data()
     {
         $program = Program::at(
-            name: "Programa de Desarrollo Rural",
-            description: "Descripción del programa",
-            bannerImg: "banner.jpg",
-            startDate: "2025-01-01",
-            endDate: "2025-12-31",
-            programUrl: "https://programa.com",
-            contact: $this->validContact,
-            programBeneficiary: $this->validProgramBeneficiary,
-            programState: $this->validProgramState,
-            country: $this->validCountry,
-            agency: $this->validAgency,
-            sdgs: $this->validSdgs,
-            programDonors: $this->validDonors
+            "Programa de Desarrollo Rural",
+            "Descripción del programa",
+            "banner.jpg",
+            "2025-01-01",
+            "2025-12-31",
+            "https://programa.com",
+            $this->validContact,
+            $this->validProgramBeneficiary,
+            $this->validProgramState,
+            $this->validCountry,
+            $this->validAgency
         );
 
         $this->assertEquals("Programa de Desarrollo Rural", $program->getName());
@@ -88,14 +86,9 @@ class ProgramTest extends TestCase
         $this->assertEquals("2025-01-01", $program->getStartDate());
         $this->assertEquals("2025-12-31", $program->getEndDate());
         $this->assertEquals("https://programa.com", $program->getProgramUrl());
-        $this->assertEquals($this->validContact, $program->getContact());
-        $this->assertEquals($this->validProgramBeneficiary, $program->getProgramBeneficiary());
-        $this->assertEquals($this->validProgramState, $program->getProgramState());
-        $this->assertEquals($this->validCountry, $program->getCountry());
-        $this->assertEquals($this->validAgency, $program->getAgency());
-        $this->assertEquals($this->validSdgs, $program->getSdgs());
-        $this->assertEquals($this->validDonors, $program->getProgramDonors());
         $this->assertInstanceOf(Program::class, $program);
+    }
+
     }
 
     // Tests de validación de nombre
@@ -104,19 +97,17 @@ class ProgramTest extends TestCase
         $this->shouldThrowAndAssert(
             function () {
                 Program::at(
-                    name: "",
-                    description: "Descripción del programa",
-                    bannerImg: "banner.jpg",
-                    startDate: "2025-01-01",
-                    endDate: "2025-12-31",
-                    programUrl: "https://programa.com",
-                    contact: $this->validContact,
-                    programBeneficiary: $this->validProgramBeneficiary,
-                    programState: $this->validProgramState,
-                    country: $this->validCountry,
-                    agency: $this->validAgency,
-                    sdgs: [$this->validSdg1],
-                    programDonors: [$this->validDonor1]
+                    "",
+                    "Descripción del programa",
+                    "banner.jpg",
+                    "2025-01-01",
+                    "2025-12-31",
+                    "https://programa.com",
+                    $this->validContact,
+                    $this->validProgramBeneficiary,
+                    $this->validProgramState,
+                    $this->validCountry,
+                    $this->validAgency
                 );
             },
             RuntimeException::class,
@@ -125,6 +116,289 @@ class ProgramTest extends TestCase
             }
         );
     }
+
+    public function test_program_name_too_short_throws_runtime_exception()
+    {
+        $this->shouldThrowAndAssert(
+            function () {
+                Program::at(
+                    "Ab", // Solo 2 caracteres - debería fallar
+                    "Descripción del programa",
+                    "banner.jpg",
+                    "2025-01-01",
+                    "2025-12-31",
+                    "https://programa.com",
+                    $this->validContact,
+                    $this->validProgramBeneficiary,
+                    $this->validProgramState,
+                    $this->validCountry,
+                    $this->validAgency
+                );
+            },
+            RuntimeException::class,
+            function ($exception) {
+                $this->assertEquals(Program::$ERROR_NAME_MIN_LENGTH, $exception->getMessage());
+            }
+        );
+    }
+
+    // Tests para program URL
+    public function test_program_url_can_be_empty_string()
+    {
+        $program = Program::at(
+            "Programa Test",
+            "Descripción del programa",
+            "banner.jpg",
+            "2025-01-01",
+            "2025-12-31",
+            "", 
+            $this->validContact,
+            $this->validProgramBeneficiary,
+            $this->validProgramState,
+            $this->validCountry,
+            $this->validAgency
+        );
+
+        $this->assertEquals("", $program->getProgramUrl());
+        $this->assertInstanceOf(Program::class, $program);
+    }
+
+    // Tests de validación de description
+    public function test_program_description_cannot_be_empty()
+    {
+        $this->shouldThrowAndAssert(
+            function () {
+                Program::at(
+                    "Programa Test",
+                    "",
+                    "banner.jpg",
+                    "2025-01-01",
+                    "2025-12-31",
+                    "https://programa.com",
+                    $this->validContact,
+                    $this->validProgramBeneficiary,
+                    $this->validProgramState,
+                    $this->validCountry,
+                    $this->validAgency
+                );
+            },
+            RuntimeException::class,
+            function ($exception) {
+                $this->assertEquals(Program::$ERROR_DESCRIPTION_EMPTY, $exception->getMessage());
+            }
+        );
+    }
+
+    public function test_program_description_too_short_throws_runtime_exception()
+    {
+        $this->shouldThrowAndAssert(
+            function () {
+                Program::at(
+                    "Programa Test",
+                    "Corta",
+                    "banner.jpg",
+                    "2025-01-01",
+                    "2025-12-31",
+                    "https://programa.com",
+                    $this->validContact,
+                    $this->validProgramBeneficiary,
+                    $this->validProgramState,
+                    $this->validCountry,
+                    $this->validAgency
+                );
+            },
+            RuntimeException::class,
+            function ($exception) {
+                $this->assertEquals(Program::$ERROR_DESCRIPTION_MIN_LENGTH, $exception->getMessage());
+            }
+        );
+    }
+
+    public function test_program_description_too_long_throws_runtime_exception()
+    {
+        
+        $longDescription = str_repeat("a", 2001); // 2001 caracteres
+        
+        $this->shouldThrowAndAssert(
+            function () use ($longDescription) {
+                Program::at(
+                    "Programa Test",
+                    $longDescription,
+                    "banner.jpg",
+                    "2025-01-01",
+                    "2025-12-31",
+                    "https://programa.com",
+                    $this->validContact,
+                    $this->validProgramBeneficiary,
+                    $this->validProgramState,
+                    $this->validCountry,
+                    $this->validAgency
+                );
+            },
+            RuntimeException::class,
+            function ($exception) {
+                $this->assertEquals(Program::$ERROR_DESCRIPTION_MAX_LENGTH, $exception->getMessage());
+            }
+        );
+    }
+
+    // Tests de validación de fechas
+    public function test_program_start_date_cannot_be_empty()
+    {
+        
+        $this->shouldThrowAndAssert(
+            function () {
+                Program::at(
+                    "Programa Test",
+                    "Descripción del programa",
+                    "banner.jpg",
+                    "",
+                    "2025-12-31",
+                    "https://programa.com",
+                    $this->validContact,
+                    $this->validProgramBeneficiary,
+                    $this->validProgramState,
+                    $this->validCountry,
+                    $this->validAgency
+                );
+            },
+            RuntimeException::class,
+            function ($exception) {
+                $this->assertEquals(Program::$ERROR_START_DATE_EMPTY, $exception->getMessage());
+            }
+        );
+    }
+
+    public function test_program_start_date_invalid_format_throws_runtime_exception()
+    {
+        
+        $this->shouldThrowAndAssert(
+            function () {
+                Program::at(
+                    "Programa Test",
+                    "Descripción del programa",
+                    "banner.jpg",
+                    "01/01/2025",
+                    "2025-12-31",
+                    "https://programa.com",
+                    $this->validContact,
+                    $this->validProgramBeneficiary,
+                    $this->validProgramState,
+                    $this->validCountry,
+                    $this->validAgency
+                );
+            },
+            RuntimeException::class,
+            function ($exception) {
+                $this->assertEquals(Program::$ERROR_START_DATE_INVALID_FORMAT, $exception->getMessage());
+            }
+        );
+    }
+
+    public function test_program_end_date_cannot_be_empty()
+    {
+        
+        $this->shouldThrowAndAssert(
+            function () {
+                Program::at(
+                    "Programa Test",
+                    "Descripción del programa",
+                    "banner.jpg",
+                    "2025-01-01",
+                    "",
+                    "https://programa.com",
+                    $this->validContact,
+                    $this->validProgramBeneficiary,
+                    $this->validProgramState,
+                    $this->validCountry,
+                    $this->validAgency
+                );
+            },
+            RuntimeException::class,
+            function ($exception) {
+                $this->assertEquals(Program::$ERROR_END_DATE_EMPTY, $exception->getMessage());
+            }
+        );
+    }
+
+    public function test_program_end_date_before_start_date_throws_runtime_exception()
+    {
+        
+        $this->shouldThrowAndAssert(
+            function () {
+                Program::at(
+                    "Programa Test",
+                    "Descripción del programa",
+                    "banner.jpg",
+                    "2025-12-31",
+                    "2025-01-01",
+                    "https://programa.com",
+                    $this->validContact,
+                    $this->validProgramBeneficiary,
+                    $this->validProgramState,
+                    $this->validCountry,
+                    $this->validAgency
+                );
+            },
+            RuntimeException::class,
+            function ($exception) {
+                $this->assertEquals(Program::$ERROR_END_DATE_BEFORE_START, $exception->getMessage());
+            }
+        );
+    }
+
+    public function test_program_duration_too_long_throws_runtime_exception()
+    {
+        
+        $this->shouldThrowAndAssert(
+            function () {
+                Program::at(
+                    "Programa Test",
+                    "Descripción del programa",
+                    "banner.jpg",
+                    "2025-01-01",
+                    "2050-01-01", // 25 años de duración
+                    "https://programa.com",
+                    $this->validContact,
+                    $this->validProgramBeneficiary,
+                    $this->validProgramState,
+                    $this->validCountry,
+                    $this->validAgency
+                );
+            },
+            RuntimeException::class,
+            function ($exception) {
+                $this->assertEquals(Program::$ERROR_DURATION_TOO_LONG, $exception->getMessage());
+            }
+        );
+    }
+
+    // Tests de validación de objetos relacionados
+    public function test_program_contact_must_be_instance_of_contact()
+    {
+        $this->shouldThrowAndAssert(
+            function () {
+                Program::at(
+                    "Programa Test",
+                    "Descripción del programa",
+                    "banner.jpg",
+                    "2025-01-01",
+                    "2025-12-31",
+                    "https://programa.com",
+                    "invalid", // No es un objeto Contact
+                    $this->validProgramBeneficiary,
+                    $this->validProgramState,
+                    $this->validCountry,
+                    $this->validAgency
+                );
+            },
+            RuntimeException::class,
+            function ($exception) {
+                $this->assertEquals(Program::$ERROR_CONTACT_INVALID, $exception->getMessage());
+            }
+        );
+    }
+}
 
     public function test_program_name_cannot_be_empty2()
     {

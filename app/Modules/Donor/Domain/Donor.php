@@ -50,4 +50,17 @@ class Donor extends Model
     {
         return $this->name;
     }
+
+    // ============================================
+    // RELACIONES ELOQUENT
+    // ============================================
+
+    /**
+     * Relación M:N con Program
+     * Un donante puede financiar múltiples programas
+     */
+    public function programs()
+    {
+        return $this->belongsToMany(\App\Modules\Program\Domain\Program::class, 'program_donor', 'donor_id', 'program_id');
+    }
 }
