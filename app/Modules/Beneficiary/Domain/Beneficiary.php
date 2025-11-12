@@ -2,16 +2,27 @@
 
 namespace App\Modules\Beneficiary\Domain;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use RuntimeException;
 
 class Beneficiary extends Model
 {
+    use HasFactory;
+    
     protected $table = 'beneficiary';
     protected $fillable = ['name'];
     
     public static $ERROR_NAME_EMPTY = 'el nombre del beneficiario no debe ir vacio';
     public static $ERROR_NAME_MIN_LENGTH = 'el nombre del beneficiario debe tener al menos 2 caracteres';
+    
+    /**
+     * Create a new factory instance for the model.
+     */
+    protected static function newFactory()
+    {
+        return \Database\Factories\BeneficiaryFactory::new();
+    }
     
     public function __construct(array $attributes = [])
     {

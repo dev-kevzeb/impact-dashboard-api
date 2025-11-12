@@ -17,10 +17,6 @@ class BeneficiaryService
 
     public function createBeneficiary(string $name): Beneficiary
     {
-        if ($this->beneficiaryRepository->exists('name', trim($name))) {
-            throw new RuntimeException("Ya existe un beneficiario con el nombre: {$name}");
-        }
-
         $beneficiary = Beneficiary::at($name);
         
         $this->beneficiaryRepository->save($beneficiary);
@@ -46,18 +42,6 @@ class BeneficiaryService
     public function updateBeneficiary(int $id, string $name): Beneficiary
     {
         $beneficiary = $this->beneficiaryRepository->findById($id);
-
-        try {
-            $existingBeneficiary = $this->beneficiaryRepository->findBy('name', trim($name));
-            if ($existingBeneficiary && $existingBeneficiary->id !== $id) {
-                throw new RuntimeException("Ya existe otro beneficiario con el nombre: {$name}");
-            }
-        } catch (RuntimeException $e) {
-            if (!str_contains($e->getMessage(), 'no encontrado')) {
-                throw $e; 
-            }
-        }
-
         $updatedBeneficiary = Beneficiary::at($name);
         $beneficiary->name = $updatedBeneficiary->name;
         
