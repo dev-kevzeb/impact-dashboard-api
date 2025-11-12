@@ -19,8 +19,7 @@ class Country extends Model
     public static $ERROR_NAME_TOO_LONG = 'el nombre del país no debe exceder 100 caracteres';
     public static $ERROR_NAME_INVALID_CHARACTERS = 'el nombre del país contiene caracteres no válidos';
     public static $ERROR_CURRENCY_INVALID = 'la moneda debe ser una instancia de Currency';
-   
-
+    
     public static function at($name, $currency): Country
     {
         
@@ -67,12 +66,12 @@ class Country extends Model
     {
         return $this->kpa;
     }
-     
+
     // relaciones Eloquent (persistencia)
     public function kpas()
     {
         // definimos la relacion N:M con Kpa, usando la tabla pivote 'country_kpas'
-        return $this->belongsToMany(Kpa::class, 'country_kpas', 'id_country', 'id_kpa');
+        return $this->belongsToMany(Kpa::class, 'country_kpa', 'id_country', 'id_kpa');
     }
 
     public function currency()

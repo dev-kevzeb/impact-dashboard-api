@@ -71,6 +71,7 @@ Route::prefix('v1')->group(function () {
     // API Routes para Contacts
     Route::get('contacts', [ContactController::class, 'index']);
     Route::post('contacts', [ContactController::class, 'store']);
+    Route::get('contacts/search', [ContactController::class, 'search']);
     Route::get('contacts/{id}', [ContactController::class, 'show']);
     Route::put('contacts/{id}', [ContactController::class, 'update']);
 
