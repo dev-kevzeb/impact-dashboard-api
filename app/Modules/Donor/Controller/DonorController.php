@@ -5,6 +5,7 @@ namespace App\Modules\Donor\Controller;
 use App\Http\Controllers\Controller;
 use App\Http\Responses\ApiResponse;
 use App\Http\Resources\DonorResource;
+use App\Http\Requests\DonorRequest;
 use App\Modules\Donor\Service\DonorService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -65,51 +66,43 @@ class DonorController extends Controller
     /**
      * Crear un nuevo donante
      */
-    public function store(Request $request): JsonResponse
+    public function store(DonorRequest $request): JsonResponse
     {
         try {
-            // Solo validar que el name esté presente
-            $request->validate([
-                'name' => 'required|string'
-            ]);
+            $validated = $request->validated();
 
-            $donor = $this->donorService->createDonor($request->input('name'));
+            $donor = $this->donorService->createDonor($validated['name']);
 
             return ApiResponse::created(
                 'Donante creado exitosamente',
                 new DonorResource($donor)
             );
-
         } catch (RuntimeException $e) {
             return ApiResponse::error($e->getMessage(), 400);
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            return ApiResponse::validationError($e->errors());
         }
     }
 
     /**
      * Actualizar un donante existente
      */
-    public function update(Request $request, int $id): JsonResponse
+    public function update(DonorRequest $request, int $id): JsonResponse
     {
         try {
-            // Solo validar que el name esté presente
-            $request->validate([
-                'name' => 'required|string'
-            ]);
+            $validated = $request->validated();
 
-            $donor = $this->donorService->updateDonor($id, $request->input('name'));
+            $donor = $this->donorService->updateDonor($id, $validated['name']);
 
             return ApiResponse::success(
                 'Donante actualizado exitosamente',
                 200,
                 new DonorResource($donor)
             );
-
         } catch (RuntimeException $e) {
+            // Si el error es "no encontrado", retornar 404
+            if (str_contains($e->getMessage(), 'no encontrado')) {
+                return ApiResponse::notFound('Donante');
+            }
             return ApiResponse::error($e->getMessage(), 400);
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            return ApiResponse::validationError($e->errors());
         }
     }
 

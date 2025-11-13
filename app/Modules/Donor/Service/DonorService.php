@@ -17,10 +17,6 @@ class DonorService
 
     public function createDonor(string $name): Donor
     {
-        if ($this->donorRepository->exists('name', trim($name))) {
-            throw new RuntimeException("Ya existe un donante con el nombre: {$name}");
-        }
-
         $donor = Donor::at($name);
         
         $this->donorRepository->save($donor);
@@ -46,28 +42,11 @@ class DonorService
     public function updateDonor(int $id, string $name): Donor
     {
         $donor = $this->donorRepository->findById($id);
-
-        try {
-            $existingDonor = $this->donorRepository->findBy('name', trim($name));
-            if ($existingDonor && $existingDonor->id !== $id) {
-                throw new RuntimeException("Ya existe otro donante con el nombre: {$name}");
-            }
-        } catch (RuntimeException $e) {
-            if (!str_contains($e->getMessage(), 'no encontrado')) {
-                throw $e; 
-            }
-        }
-
         $updatedDonor = Donor::at($name);
         $donor->name = $updatedDonor->name;
         
         $this->donorRepository->save($donor);
         
         return $donor;
-    }
-
-    public function donorExists(string $name): bool
-    {
-        return $this->donorRepository->exists('name', $name);
     }
 }

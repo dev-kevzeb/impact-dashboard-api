@@ -49,9 +49,4 @@ class BeneficiaryService
         
         return $beneficiary;
     }
-
-    public function beneficiaryExists(string $name): bool
-    {
-        return $this->beneficiaryRepository->exists('name', $name);
-    }
 }
