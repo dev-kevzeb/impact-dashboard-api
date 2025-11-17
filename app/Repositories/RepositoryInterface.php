@@ -31,8 +31,6 @@ interface RepositoryInterface
      */
     public function getAll();    
     
-    public function exists(string $field, mixed $value): bool;
-
     public function count(): int;
 
     public function countByDateRange(\DateTime $startDate, \DateTime $endDate): int;

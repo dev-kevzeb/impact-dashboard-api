@@ -3,6 +3,7 @@
 namespace App\Modules\Beneficiary\Controller;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\BeneficiaryRequest;
 use App\Modules\Beneficiary\Service\BeneficiaryService;
 use App\Http\Responses\ApiResponse;
 use App\Http\Resources\BeneficiaryResource;
@@ -45,15 +46,12 @@ class BeneficiaryController extends Controller
     /**
      * Crear un nuevo beneficiario
      */
-    public function store(Request $request): JsonResponse
+    public function store(BeneficiaryRequest $request): JsonResponse
     {
         try {
-            // Solo validar que el name esté presente
-            $request->validate([
-                'name' => 'required|string'
-            ]);
+            $validated = $request->validated();
 
-            $beneficiary = $this->beneficiaryService->createBeneficiary($request->input('name'));
+            $beneficiary = $this->beneficiaryService->createBeneficiary($validated['name']);
 
             return ApiResponse::created(
                 'Beneficiario creado exitosamente',
@@ -61,8 +59,6 @@ class BeneficiaryController extends Controller
             );
         } catch (RuntimeException $e) {
             return ApiResponse::error($e->getMessage(), 400);
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            return ApiResponse::validationError($e->errors());
         }
     }
 
@@ -89,15 +85,12 @@ class BeneficiaryController extends Controller
     /**
      * Actualizar un beneficiario existente
      */
-    public function update(Request $request, int $id): JsonResponse
+    public function update(BeneficiaryRequest $request, int $id): JsonResponse
     {
         try {
-            // Solo validar que el name esté presente
-            $request->validate([
-                'name' => 'required|string'
-            ]);
+            $validated = $request->validated();
 
-            $beneficiary = $this->beneficiaryService->updateBeneficiary($id, $request->input('name'));
+            $beneficiary = $this->beneficiaryService->updateBeneficiary($id, $validated['name']);
 
             return ApiResponse::success(
                 'Beneficiario actualizado exitosamente',
@@ -106,9 +99,12 @@ class BeneficiaryController extends Controller
             );
 
         } catch (RuntimeException $e) {
+            // Si el mensaje indica que no se encontró, retornar 404
+            if (str_contains($e->getMessage(), 'no encontrado')) {
+                return ApiResponse::notFound('Beneficiario');
+            }
+            // Otros errores de negocio retornan 400
             return ApiResponse::error($e->getMessage(), 400);
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            return ApiResponse::validationError($e->errors());
         }
     }
 

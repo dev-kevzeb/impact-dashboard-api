@@ -77,9 +77,9 @@ abstract class AbstractRepository implements RepositoryInterface
     {
         try {
             if (is_string($value)) {
-                // Case-insensitive y accent-insensitive (normaliza tildes)
+                // Case-insensitive (sin distinción de mayúsculas)
                 $entity = $this->model->whereRaw(
-                    "LOWER(unaccent({$field})) = LOWER(unaccent(?))", 
+                    "LOWER({$field}) = LOWER(?)", 
                     [trim($value)]
                 )->first();
             } else {
@@ -112,32 +112,6 @@ abstract class AbstractRepository implements RepositoryInterface
         } catch (\Exception $e) {
             throw new RuntimeException(
                 "Error al obtener todas las entidades: " . $e->getMessage()
-            );
-        }
-    }
-
-    /**
-     * Verificar existencia por campo
-     *
-     * @param string $field
-     * @param mixed $value
-     * @return bool
-     */
-    public function exists(string $field, mixed $value): bool
-    {
-        try {
-            // Case-insensitive y accent-insensitive (normaliza tildes)
-            if (is_string($value)) {
-                return $this->model->whereRaw(
-                    "LOWER(unaccent({$field})) = LOWER(unaccent(?))", 
-                    [trim($value)]
-                )->exists();
-            }
-            
-            return $this->model->where($field, $value)->exists();
-        } catch (\Exception $e) {
-            throw new RuntimeException(
-                "Error al verificar existencia de entidad: " . $e->getMessage()
             );
         }
     }
