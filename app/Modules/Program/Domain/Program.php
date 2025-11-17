@@ -2,6 +2,7 @@
 
 namespace App\Modules\Program\Domain;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use RuntimeException;
 use App\Modules\Contact\Domain\Contact;
@@ -14,6 +15,8 @@ use App\Modules\Donor\Domain\Donor;
 
 class Program extends Model
 {
+    use HasFactory;
+    
     protected $table = 'program';  // SINGULAR
     
     protected $fillable = [
@@ -30,25 +33,13 @@ class Program extends Model
         'agency_id'
     ];
 
-    // Constantes de mensajes de error
+    // Constantes de mensajes de error (solo reglas de negocio)
     public static $ERROR_NAME_EMPTY = 'el nombre del programa no debe ir vacío';
     public static $ERROR_NAME_MIN_LENGTH = 'el nombre del programa debe tener al menos 3 caracteres';
-    public static $ERROR_NAME_MAX_LENGTH = 'el nombre del programa no debe exceder 255 caracteres';
     public static $ERROR_DESCRIPTION_EMPTY = 'la descripción del programa no debe ir vacío';
     public static $ERROR_DESCRIPTION_MIN_LENGTH = 'la descripción del programa debe tener al menos 10 caracteres';
-    public static $ERROR_DESCRIPTION_MAX_LENGTH = 'la descripción del programa no debe exceder 2000 caracteres';
-    public static $ERROR_BANNER_IMG_EMPTY = 'la imagen banner del programa no debe ir vacío';
-    public static $ERROR_BANNER_IMG_TOO_LONG = 'el nombre de la imagen banner no puede exceder 500 caracteres';
-    public static $ERROR_BANNER_IMG_INVALID_CHARACTERS = 'el nombre de la imagen contiene caracteres no permitidos: < > : " | ? * \\ null';
-    public static $ERROR_START_DATE_EMPTY = 'la fecha de inicio del programa no debe ir vacío';
-    public static $ERROR_START_DATE_INVALID_FORMAT = 'la fecha de inicio debe tener formato válido (YYYY-MM-DD)';
-    public static $ERROR_START_DATE_TOO_OLD = 'la fecha de inicio no puede ser anterior a 10 años';
-    public static $ERROR_END_DATE_EMPTY = 'la fecha de fin del programa no debe ir vacío';
-    public static $ERROR_END_DATE_INVALID_FORMAT = 'la fecha de fin debe tener formato válido (YYYY-MM-DD)';
-    public static $ERROR_END_DATE_BEFORE_START = 'la fecha de fin debe ser posterior a la fecha de inicio';
     public static $ERROR_DURATION_TOO_LONG = 'la duración del programa no puede exceder 20 años';
-    public static $ERROR_URL_INVALID_FORMAT = 'la URL del programa debe tener un formato válido';
-    public static $ERROR_URL_INVALID_PROTOCOL = 'la URL del programa debe usar protocolo HTTP o HTTPS';
+    public static $ERROR_END_DATE_BEFORE_START = 'la fecha de fin debe ser posterior a la fecha de inicio';
     public static $ERROR_CONTACT_INVALID = 'el contacto debe ser una instancia de Contact';
     public static $ERROR_BENEFICIARY_INVALID = 'el beneficiario debe ser una instancia de Beneficiary';
     public static $ERROR_PROGRAM_STATE_INVALID = 'el estado debe ser una instancia de ProgramState';
@@ -76,7 +67,7 @@ class Program extends Model
         Country $country,
         Agency $agency
     ): Program {
-        // Validaciones del nombre
+        // Validación de nombre (reglas de negocio)
         if (empty(trim($name))) {
             throw new RuntimeException(self::$ERROR_NAME_EMPTY);
         }
@@ -86,12 +77,8 @@ class Program extends Model
         if (strlen($trimmedName) < 3) {
             throw new RuntimeException(self::$ERROR_NAME_MIN_LENGTH);
         }
-        
-        if (strlen($trimmedName) > 255) {
-            throw new RuntimeException(self::$ERROR_NAME_MAX_LENGTH);
-        }
 
-        // Validaciones de la descripción
+        // Validación de descripción (reglas de negocio)
         if (empty(trim($description))) {
             throw new RuntimeException(self::$ERROR_DESCRIPTION_EMPTY);
         }
@@ -101,85 +88,23 @@ class Program extends Model
         if (strlen($trimmedDescription) < 10) {
             throw new RuntimeException(self::$ERROR_DESCRIPTION_MIN_LENGTH);
         }
-        
-        if (strlen($trimmedDescription) > 2000) {
-            throw new RuntimeException(self::$ERROR_DESCRIPTION_MAX_LENGTH);
-        }
 
-        // Validaciones del bannerImg
-        if (empty(trim($bannerImg))) {
-            throw new RuntimeException(self::$ERROR_BANNER_IMG_EMPTY);
-        }
-        
-        $trimmedBanner = trim($bannerImg);
-        
-        // Validar longitud máxima
-        if (strlen($trimmedBanner) > 500) {
-            throw new RuntimeException(self::$ERROR_BANNER_IMG_TOO_LONG);
-        }
-        
-        // Validar caracteres peligrosos
-        if (!self::hasValidCharacters($trimmedBanner)) {
-            throw new RuntimeException(self::$ERROR_BANNER_IMG_INVALID_CHARACTERS);
-        }
-
-        // Validaciones de startDate
-        if (empty(trim($startDate))) {
-            throw new RuntimeException(self::$ERROR_START_DATE_EMPTY);
-        }
-        
-        $trimmedStartDate = trim($startDate);
-        
-        if (!self::isValidDate($trimmedStartDate)) {
-            throw new RuntimeException(self::$ERROR_START_DATE_INVALID_FORMAT);
-        }
-        
-        // Validar que no sea una fecha en el pasado muy lejano (más de 10 años)
-        $startDateTime = new \DateTime($trimmedStartDate);
-        $tenYearsAgo = new \DateTime('-10 years');
-        if ($startDateTime < $tenYearsAgo) {
-            throw new RuntimeException(self::$ERROR_START_DATE_TOO_OLD);
-        }
-
-        // Validaciones de endDate
-        if (empty(trim($endDate))) {
-            throw new RuntimeException(self::$ERROR_END_DATE_EMPTY);
-        }
-        
-        $trimmedEndDate = trim($endDate);
-        
-        if (!self::isValidDate($trimmedEndDate)) {
-            throw new RuntimeException(self::$ERROR_END_DATE_INVALID_FORMAT);
-        }
-
-        // DateTime para comparaciones
-        $endDateTime = new \DateTime($trimmedEndDate);
+        // Validación de fechas (reglas de negocio)
+        $startDateTime = new \DateTime(trim($startDate));
+        $endDateTime = new \DateTime(trim($endDate));
 
         if ($endDateTime < $startDateTime) {
             throw new RuntimeException(self::$ERROR_END_DATE_BEFORE_START);
         }
         
-        // Validar duración máxima razonable (20 años)
+        // Validar duración máxima razonable (20 años) - regla de negocio
         $maxDuration = clone $startDateTime;
         $maxDuration->add(new \DateInterval('P20Y'));
         if ($endDateTime > $maxDuration) {
             throw new RuntimeException(self::$ERROR_DURATION_TOO_LONG);
         }
 
-        // Validaciones de programUrl (opcional)
-        $trimmedUrl = trim($programUrl);
-        if (!empty($trimmedUrl)) {
-            if (!filter_var($trimmedUrl, FILTER_VALIDATE_URL)) {
-                throw new RuntimeException(self::$ERROR_URL_INVALID_FORMAT);
-            }
-            
-            $parsedUrl = parse_url($trimmedUrl);
-            if (!in_array($parsedUrl['scheme'] ?? '', ['http', 'https'], true)) {
-                throw new RuntimeException(self::$ERROR_URL_INVALID_PROTOCOL);
-            }
-        }
-
-        // Validaciones de IDs (deben ser positivos)
+        // Validación de instancias de entidades relacionadas
         if (!($contact instanceof Contact)) {
             throw new RuntimeException(self::$ERROR_CONTACT_INVALID);
         }
@@ -199,49 +124,16 @@ class Program extends Model
         return new Program([
             'name' => $trimmedName,
             'description' => $trimmedDescription,
-            'banner_img' => $trimmedBanner,
-            'start_date' => $trimmedStartDate,
-            'end_date' => $trimmedEndDate,
-            'program_url' => $trimmedUrl,
+            'banner_img' => trim($bannerImg),
+            'start_date' => trim($startDate),
+            'end_date' => trim($endDate),
+            'program_url' => trim($programUrl),
             'contact_id' => $contact->getKey(),
             'beneficiary_id' => $beneficiary->getKey(),
             'program_state_id' => $programState->getKey(),
             'country_id' => $country->getKey(),
             'agency_id' => $agency->getKey()
         ]);
-    }
-
-    /**
-     * Validar formato de fecha YYYY-MM-DD
-     */
-    private static function isValidDate(string $date): bool
-    {
-        if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
-            return false;
-        }
-        
-        $dateTime = \DateTime::createFromFormat('Y-m-d', $date);
-        $errors = \DateTime::getLastErrors();
-        
-        if ($errors && ($errors['error_count'] > 0 || $errors['warning_count'] > 0)) {
-            return false;
-        }
-        
-        return $dateTime && $dateTime->format('Y-m-d') === $date;
-    }
-
-    /**
-     * Validar que el nombre de archivo no contenga caracteres peligrosos
-     */
-    private static function hasValidCharacters(string $filename): bool
-    {
-        $dangerousChars = ['<', '>', ':', '"', '|', '?', '*', '\\', "\0"];
-        foreach ($dangerousChars as $char) {
-            if (str_contains($filename, $char)) {
-                return false;
-            }
-        }
-        return true;
     }
 
     // ============================================
@@ -349,9 +241,19 @@ class Program extends Model
 
     /**
      * Relación 1:N con Project (un programa tiene muchos proyectos)
+     * TODO: Descomentar cuando el módulo Project esté implementado
      */
-    public function projects()
+    // public function projects()
+    // {
+    //     return $this->hasMany(\App\Modules\Project\Domain\Project::class, 'program_id');
+    // }
+    
+    /**
+     * Laravel Factory integration
+     * Requerido para arquitectura modular
+     */
+    protected static function newFactory()
     {
-        return $this->hasMany(\App\Modules\Project\Domain\Project::class, 'program_id');
+        return \Database\Factories\ProgramFactory::new();
     }
 }

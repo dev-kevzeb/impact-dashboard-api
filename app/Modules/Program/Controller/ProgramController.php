@@ -138,16 +138,23 @@ class ProgramController extends Controller
         try {
             $validated = $request->validated();
 
-            // Manejar upload de imagen
-            $file = $request->file('banner_img');
-            $filename = time() . '_' . $file->getClientOriginalName();
-            $path = $file->storeAs('program_banners', $filename, 'public');
+            // Manejar upload de imagen (opcional en update)
+            $bannerPath = null;
+            if ($request->hasFile('banner_img')) {
+                $file = $request->file('banner_img');
+                $filename = time() . '_' . $file->getClientOriginalName();
+                $bannerPath = $file->storeAs('program_banners', $filename, 'public');
+            } else {
+                // Mantener el banner actual
+                $currentProgram = $this->programService->getProgramById($id);
+                $bannerPath = $currentProgram->banner_img;
+            }
 
             $program = $this->programService->updateProgram(
                 $id,
                 $validated['name'],
                 $validated['description'],
-                $path,
+                $bannerPath,
                 $validated['start_date'],
                 $validated['end_date'],
                 $validated['program_url'] ?? '',

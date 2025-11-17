@@ -62,11 +62,6 @@ class ProgramService
         array $sdgIds = [],
         array $donorIds = []
     ): Program {
-        // Validar que no exista programa con el mismo nombre
-        if ($this->programRepository->exists('name', trim($name))) {
-            throw new RuntimeException("Ya existe un programa con el nombre: {$name}");
-        }
-
         // Validar que existan las entidades relacionadas
         $this->validateRelatedEntities(
             $contactId,
@@ -152,18 +147,6 @@ class ProgramService
         // Obtener programa existente
         $program = $this->programRepository->findById($id);
 
-        // Validar duplicados (excepto el mismo programa)
-        try {
-            $existing = $this->programRepository->findBy('name', trim($name));
-            if ($existing && $existing->id !== $id) {
-                throw new RuntimeException("Ya existe otro programa con el nombre: {$name}");
-            }
-        } catch (RuntimeException $e) {
-            if (!str_contains($e->getMessage(), 'no encontrado')) {
-                throw $e;
-            }
-        }
-
         // Validar entidades relacionadas
         $this->validateRelatedEntities(
             $contactId,
@@ -197,20 +180,21 @@ class ProgramService
             $agency
         );
 
-        // Actualizar
-        $this->programRepository->update($program, [
-            'name' => trim($name),
-            'description' => trim($description),
-            'banner_img' => trim($bannerImg),
-            'start_date' => trim($startDate),
-            'end_date' => trim($endDate),
-            'program_url' => trim($programUrl),
-            'contact_id' => $contactId,
-            'beneficiary_id' => $beneficiaryId,
-            'program_state_id' => $programStateId,
-            'country_id' => $countryId,
-            'agency_id' => $agencyId
-        ]);
+        // Actualizar campos
+        $program->name = trim($name);
+        $program->description = trim($description);
+        $program->banner_img = trim($bannerImg);
+        $program->start_date = trim($startDate);
+        $program->end_date = trim($endDate);
+        $program->program_url = trim($programUrl);
+        $program->contact_id = $contactId;
+        $program->beneficiary_id = $beneficiaryId;
+        $program->program_state_id = $programStateId;
+        $program->country_id = $countryId;
+        $program->agency_id = $agencyId;
+        
+        // Guardar cambios
+        $this->programRepository->save($program);
 
         // Sincronizar relaciones M:N
         $this->programRepository->syncSdgs($program, $sdgIds);
@@ -257,7 +241,7 @@ class ProgramService
         // Validar que el estado exista
         $this->programStateRepository->findById($programStateId);
         
-        return $this->programRepository->findByState($programStateId);
+        return $this->programRepository->findByProgramState($programStateId);
     }
 
     /**

@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use App\Http\Responses\ApiResponse;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
+use Illuminate\Validation\Rule;
 
 class ProgramRequest extends FormRequest
 {
@@ -23,13 +24,22 @@ class ProgramRequest extends FormRequest
      */
     public function rules(): array
     {
+        $programId = $this->route('id');
+        
         return [
-            'name' => 'required|string|max:255',
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('program', 'name')->ignore($programId)
+            ],
             'description' => 'required|string|max:2000',
-            'banner_img' => 'required|image|mimes:jpg,jpeg,png,gif,webp|max:2048',
-            'start_date' => 'required|date_format:Y-m-d',
-            'end_date' => 'required|date_format:Y-m-d|after:start_date',
-            'program_url' => 'nullable|string|url',
+            'banner_img' => $this->isMethod('PUT') 
+                ? 'nullable|image|mimes:jpg,jpeg,png,gif,webp|max:2048'
+                : 'required|image|mimes:jpg,jpeg,png,gif,webp|max:2048',
+            'start_date' => 'required|date_format:Y-m-d|after_or_equal:-10 years',
+            'end_date' => 'required|date_format:Y-m-d|after:start_date|before_or_equal:start_date +20 years',
+            'program_url' => 'nullable|string|url|regex:/^https?:\/\//',
             'contact_id' => 'required|integer|min:1|exists:contact,id',
             'beneficiary_id' => 'required|integer|min:1|exists:beneficiary,id',
             'program_state_id' => 'required|integer|min:1|exists:program_state,id',
@@ -51,7 +61,9 @@ class ProgramRequest extends FormRequest
     {
         return [
             'name.required' => 'El nombre del programa es obligatorio.',
+            'name.string' => 'El nombre debe ser una cadena de texto.',
             'name.max' => 'El nombre del programa no debe exceder 255 caracteres.',
+            'name.unique' => 'Ya existe un programa con este nombre.',
             'description.required' => 'La descripción del programa es obligatoria.',
             'description.max' => 'La descripción no debe exceder 2000 caracteres.',
             'banner_img.required' => 'La imagen banner es obligatoria.',
@@ -60,10 +72,13 @@ class ProgramRequest extends FormRequest
             'banner_img.max' => 'La imagen no debe exceder 2MB.',
             'start_date.required' => 'La fecha de inicio es obligatoria.',
             'start_date.date_format' => 'La fecha de inicio debe tener formato YYYY-MM-DD.',
+            'start_date.after_or_equal' => 'La fecha de inicio no puede ser anterior a 10 años.',
             'end_date.required' => 'La fecha de fin es obligatoria.',
             'end_date.date_format' => 'La fecha de fin debe tener formato YYYY-MM-DD.',
             'end_date.after' => 'La fecha de fin debe ser posterior a la fecha de inicio.',
+            'end_date.before_or_equal' => 'La duración del programa no puede exceder 20 años.',
             'program_url.url' => 'La URL del programa debe ser válida.',
+            'program_url.regex' => 'La URL del programa debe usar protocolo HTTP o HTTPS.',
             'contact_id.required' => 'El ID del contacto es obligatorio.',
             'contact_id.exists' => 'El contacto seleccionado no existe.',
             'beneficiary_id.required' => 'El ID del beneficiario es obligatorio.',
@@ -92,7 +107,7 @@ class ProgramRequest extends FormRequest
     protected function failedValidation(\Illuminate\Contracts\Validation\Validator $validator)
     {
         throw new HttpResponseException(
-            ApiResponse::validationError($validator->errors())
+            ApiResponse::validationError($validator->errors()->toArray())
         );
     }
 }

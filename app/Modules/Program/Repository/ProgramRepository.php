@@ -37,8 +37,8 @@ class ProgramRepository extends AbstractRepository
                 'country',
                 'agency',
                 'sdgs',
-                'donors',
-                'projects'
+                'donors'
+                // 'projects' // TODO: Descomentar cuando el módulo Project exista
             ])
             ->get();
     }
@@ -60,8 +60,8 @@ class ProgramRepository extends AbstractRepository
                 'country',
                 'agency',
                 'sdgs',
-                'donors',
-                'projects'
+                'donors'
+                // 'projects' // TODO: Descomentar cuando el módulo Project exista
             ])
             ->find($id);
             
@@ -130,7 +130,7 @@ class ProgramRepository extends AbstractRepository
      * @param int $programStateId
      * @return \Illuminate\Database\Eloquent\Collection
      */
-    public function findByState(int $programStateId)
+    public function findByProgramState(int $programStateId)
     {
         return $this->model
             ->where('program_state_id', $programStateId)

@@ -53,9 +53,6 @@ class ProgramResource extends JsonResource
             'projects' => $this->whenLoaded('projects', function () {
                 return ProjectResource::collection($this->projects);
             }),
-            
-            'created_at' => $this->created_at?->toISOString(),
-            'updated_at' => $this->updated_at?->toISOString(),
         ];
     }
 
