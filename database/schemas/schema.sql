@@ -133,3 +133,5 @@ ALTER TABLE country
     ADD CONSTRAINT  pk_country        PRIMARY KEY(id),
     ADD CONSTRAINT  uq_country_name   UNIQUE(name),
     ADD CONSTRAINT  fk_country_currency FOREIGN KEY (currency_id) REFERENCES currency(id);
+
+    
