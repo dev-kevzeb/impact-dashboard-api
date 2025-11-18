@@ -1,5 +1,7 @@
 <?php
 
+use App\Modules\Indicator\Controller\IndicatorController;
+use App\Modules\IndicatorType\Controller\IndicatorTypeController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Models\User;
@@ -98,4 +100,18 @@ Route::prefix('v1')->group(function () {
     Route::get('agencies/search', [AgencyController::class, 'search']);
     Route::get('agencies/{id}', [AgencyController::class, 'show']);
     Route::put('agencies/{id}', [AgencyController::class, 'update']);
+
+    // API Routes para Indicator Type
+    Route::get('indicator-types', [IndicatorTypeController::class, 'index']);
+    Route::post('indicator-types', [IndicatorTypeController::class, 'store']);
+    Route::get('indicator-types/search', [IndicatorTypeController::class, 'search']);
+    Route::get('indicator-types/{id}', [IndicatorTypeController::class, 'show']);
+    Route::put('indicator-types/{id}', [IndicatorTypeController::class, 'update']);
+
+    // API Routes para Indicator
+    Route::get('indicator', [IndicatorController::class, 'index']);
+    Route::post('indicator', [IndicatorController::class, 'store']);
+    Route::get('indicator/search', [IndicatorController::class, 'search']);
+    Route::get('indicator/{id}', [IndicatorController::class, 'show']);
+    Route::put('indicator/{id}', [IndicatorController::class, 'update']);
 });
