@@ -1,5 +1,7 @@
 <?php
 
+use App\Modules\Indicator\Controller\IndicatorController;
+use App\Modules\IndicatorType\Controller\IndicatorTypeController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Models\User;
@@ -10,10 +12,8 @@ use App\Modules\Kpa\Controller\KpaController;
 use App\Modules\Donor\Controller\DonorController;
 use App\Modules\Beneficiary\Controller\BeneficiaryController;
 use App\Modules\ProgramState\Controller\ProgramStateController;
-
 use App\Modules\Sdg\Controller\SdgController;
 use App\Modules\ProjectState\Controller\ProjectStateController;
-
 use App\Modules\Contact\Controller\ContactController;
 use App\Modules\Agency\Controller\AgencyController;
 use App\Modules\CountryKpa\Controller\CountryKpaController;
@@ -81,6 +81,7 @@ Route::prefix('v1')->group(function () {
     Route::post('project_states', [ProjectStateController::class, 'store']);
     Route::get('project_states/{id}', [ProjectStateController::class, 'show']);
     Route::put('project_states/{id}', [ProjectStateController::class, 'update']);
+
     // API Routes para SDG
     Route::get('sdgs', [SdgController::class, 'index']);
     Route::post('sdgs', [SdgController::class, 'store']);
@@ -93,6 +94,7 @@ Route::prefix('v1')->group(function () {
     Route::post('strategic-outputs', [\App\Modules\StrategicOutput\Controller\StrategicOutputController::class, 'store']);
     Route::get('strategic-outputs/{id}', [\App\Modules\StrategicOutput\Controller\StrategicOutputController::class, 'show']);
     Route::put('strategic-outputs/{id}', [\App\Modules\StrategicOutput\Controller\StrategicOutputController::class, 'update']);
+
     // API Routes para Agency
     Route::get('agencies', [AgencyController::class, 'index']);
     Route::post('agencies', [AgencyController::class, 'store']);
@@ -106,4 +108,18 @@ Route::prefix('v1')->group(function () {
     Route::get('programs/search', [ProgramController::class, 'search']);
     Route::get('programs/{id}', [ProgramController::class, 'show']);
     Route::put('programs/{id}', [ProgramController::class, 'update']);
+
+    // API Routes para Indicator Type
+    Route::get('indicator-types', [IndicatorTypeController::class, 'index']);
+    Route::post('indicator-types', [IndicatorTypeController::class, 'store']);
+    Route::get('indicator-types/search', [IndicatorTypeController::class, 'search']);
+    Route::get('indicator-types/{id}', [IndicatorTypeController::class, 'show']);
+    Route::put('indicator-types/{id}', [IndicatorTypeController::class, 'update']);
+
+    // API Routes para Indicator
+    Route::get('indicator', [IndicatorController::class, 'index']);
+    Route::post('indicator', [IndicatorController::class, 'store']);
+    Route::get('indicator/search', [IndicatorController::class, 'search']);
+    Route::get('indicator/{id}', [IndicatorController::class, 'show']);
+    Route::put('indicator/{id}', [IndicatorController::class, 'update']);
 });
