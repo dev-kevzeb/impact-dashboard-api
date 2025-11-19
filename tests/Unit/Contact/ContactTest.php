@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Unit;
+namespace Tests\Unit\Contact;
 
 use PHPUnit\Framework\TestCase;
 use App\Modules\Contact\Domain\Contact;
