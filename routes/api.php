@@ -12,13 +12,12 @@ use App\Modules\Kpa\Controller\KpaController;
 use App\Modules\Donor\Controller\DonorController;
 use App\Modules\Beneficiary\Controller\BeneficiaryController;
 use App\Modules\ProgramState\Controller\ProgramStateController;
-
 use App\Modules\Sdg\Controller\SdgController;
 use App\Modules\ProjectState\Controller\ProjectStateController;
-
 use App\Modules\Contact\Controller\ContactController;
 use App\Modules\Agency\Controller\AgencyController;
 use App\Modules\CountryKpa\Controller\CountryKpaController;
+use App\Modules\Program\Controller\ProgramController;
 
 Route::prefix('v1')->group(function () {
     // API Routes para Donors
@@ -82,6 +81,7 @@ Route::prefix('v1')->group(function () {
     Route::post('project_states', [ProjectStateController::class, 'store']);
     Route::get('project_states/{id}', [ProjectStateController::class, 'show']);
     Route::put('project_states/{id}', [ProjectStateController::class, 'update']);
+
     // API Routes para SDG
     Route::get('sdgs', [SdgController::class, 'index']);
     Route::post('sdgs', [SdgController::class, 'store']);
@@ -94,12 +94,20 @@ Route::prefix('v1')->group(function () {
     Route::post('strategic-outputs', [\App\Modules\StrategicOutput\Controller\StrategicOutputController::class, 'store']);
     Route::get('strategic-outputs/{id}', [\App\Modules\StrategicOutput\Controller\StrategicOutputController::class, 'show']);
     Route::put('strategic-outputs/{id}', [\App\Modules\StrategicOutput\Controller\StrategicOutputController::class, 'update']);
+
     // API Routes para Agency
     Route::get('agencies', [AgencyController::class, 'index']);
     Route::post('agencies', [AgencyController::class, 'store']);
     Route::get('agencies/search', [AgencyController::class, 'search']);
     Route::get('agencies/{id}', [AgencyController::class, 'show']);
     Route::put('agencies/{id}', [AgencyController::class, 'update']);
+
+    // API Routes para Programs
+    Route::get('programs', [ProgramController::class, 'index']);
+    Route::post('programs', [ProgramController::class, 'store']);
+    Route::get('programs/search', [ProgramController::class, 'search']);
+    Route::get('programs/{id}', [ProgramController::class, 'show']);
+    Route::put('programs/{id}', [ProgramController::class, 'update']);
 
     // API Routes para Indicator Type
     Route::get('indicator-types', [IndicatorTypeController::class, 'index']);
