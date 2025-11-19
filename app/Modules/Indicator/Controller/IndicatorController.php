@@ -63,13 +63,15 @@ class IndicatorController extends Controller
             $request->validate([
                 'name' => 'required|string',
                 'target'=>'required|numeric',
-                'type_id' => 'required|integer'
+                'type_id' => 'required|integer',
+                'measure_id' => 'required|integer'
             ]);
 
             $indicator = $this->indicatorService->createIndicator(
                 $request->input('name'),
                 $request->input('target'),
                 $request->input('type_id'),
+                $request->input('measure_id'),
             );
 
             return ApiResponse::created(
@@ -90,7 +92,8 @@ class IndicatorController extends Controller
             $request->validate([
                 'name' => 'required|string',
                 'target'=>'required|numeric',
-                'type_id' => 'required|integer'
+                'type_id' => 'required|integer',
+                'measure_id' => 'required|integer'
             ]);
 
             $indicator = $this->indicatorService->updateIndicator(
@@ -98,10 +101,11 @@ class IndicatorController extends Controller
                 $request->input('name'),
                 $request->input('target'),
                 $request->input('type_id'),
+                $request->input('measure_id'),
             );
 
             return ApiResponse::success(
-                    'Indicador creado exitosamente',
+                    'Indicador actualizado exitosamente',
                     200,
                     new IndicatorResource($indicator)
                 );

@@ -2,6 +2,7 @@
 
 use App\Modules\Indicator\Controller\IndicatorController;
 use App\Modules\IndicatorType\Controller\IndicatorTypeController;
+use App\Modules\Measure\Controller\MeasureController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Models\User;
@@ -109,9 +110,21 @@ Route::prefix('v1')->group(function () {
     Route::put('indicator-types/{id}', [IndicatorTypeController::class, 'update']);
 
     // API Routes para Indicator
-    Route::get('indicator', [IndicatorController::class, 'index']);
-    Route::post('indicator', [IndicatorController::class, 'store']);
-    Route::get('indicator/search', [IndicatorController::class, 'search']);
-    Route::get('indicator/{id}', [IndicatorController::class, 'show']);
-    Route::put('indicator/{id}', [IndicatorController::class, 'update']);
-});
+    Route::get('indicators', [IndicatorController::class, 'index']);
+    Route::post('indicators', [IndicatorController::class, 'store']);
+    Route::get('indicators/search', [IndicatorController::class, 'search']);
+    Route::get('indicators/{id}', [IndicatorController::class, 'show']);
+    Route::put('indicators/{id}', [IndicatorController::class, 'update']);
+
+    // API Routes para Measure
+    Route::get('measures', [MeasureController::class, 'index']);
+    Route::post('measures', [MeasureController::class, 'store']);
+    Route::put('measures/{id}', [MeasureController::class, 'update']);
+    Route::get('measures/search', [MeasureController::class, 'search']);
+    Route::get('measures/{id}', [MeasureController::class, 'show']);
+
+    Route::get('measures-indicators/{id}', [MeasureController::class, 'showWithIndicators']);
+    Route::post('measures-indicators', [MeasureController::class, 'addIndicator']);
+    Route::get('measures/{id}/indicators/{name}', [MeasureController::class, 'getIndicatorByName']);
+
+}); 
