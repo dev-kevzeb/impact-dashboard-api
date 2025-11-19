@@ -11,15 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('indicator', function (Blueprint $table) {
+        Schema::create('measure', function (Blueprint $table) {
             $table->id();
             $table->string('name', 100);
-            $table->decimal('target');
-            $table->foreignId('type_id')->constrained('indicator_type');
-            $table->foreignId('measure_id')->constrained('measure');
-
-            $table->unique(['measure_id','name'], 'measure_indicator_unique_name');
-
             $table->timestamps();
         });
     }
@@ -29,6 +23,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('indicator');
+        Schema::dropIfExists('measure');
     }
 };

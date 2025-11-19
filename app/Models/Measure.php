@@ -93,7 +93,7 @@ class Measure extends Model
                 return true; // Eliminado exitosamente
             }
         }
-        return false; // No encontrado
+        return false;
     }
     
     public function clearIndicators(): void
