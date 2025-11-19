@@ -232,3 +232,4 @@ ALTER TABLE program_donor
     ADD CONSTRAINT  uq_program_donor  UNIQUE(program_id, donor_id),
     ADD CONSTRAINT  fk_program_donor_program FOREIGN KEY (program_id) REFERENCES program(id) ON DELETE CASCADE,
     ADD CONSTRAINT  fk_program_donor_donor   FOREIGN KEY (donor_id) REFERENCES donor(id) ON DELETE CASCADE;
+
