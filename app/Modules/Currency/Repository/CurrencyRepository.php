@@ -13,4 +13,10 @@ class CurrencyRepository extends AbstractRepository implements RepositoryInterfa
     {
         parent::__construct($model);
     }
+
+    public function exists(string $field, $value): bool
+    {
+        return $this->model->where($field, $value)->exists();
+    }
+
 }

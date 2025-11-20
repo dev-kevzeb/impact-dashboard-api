@@ -4,20 +4,29 @@ namespace App\Modules\Measure\Service;
 
 use App\Modules\Measure\Domain\Measure;
 use App\Modules\Measure\Repository\MeasureRepository;
+use App\Modules\StrategicOutput\Domain\StrategicOutput;
+
 use RuntimeException;
+use App\Modules\StrategicOutput\Repository\StrategicOutputRepository;
 
 class MeasureService
 {
     private MeasureRepository $measureRepository;
+    private StrategicOutputRepository $strategicOutputRepository;
 
-    public function __construct(MeasureRepository $measureRepository)
+    public function __construct(MeasureRepository $measureRepository, StrategicOutputRepository $strategicOutputRepository)
     {
         $this->measureRepository = $measureRepository;
+        $this->strategicOutputRepository = $strategicOutputRepository;
     }
 
-    public function createMeasure(string $name): Measure
+    public function createMeasure(string $name, int $strategicOutputId): Measure
     {
-        $measure = Measure::at($name);
+        $strategicOutput = $this->strategicOutputRepository->findById($strategicOutputId);
+        if (!$strategicOutput instanceof StrategicOutput) throw new RuntimeException("El resultado estratégico con id {$strategicOutputId} no existe.");
+        
+        $measure = Measure::at($name, $strategicOutput);
+
         $this->measureRepository->save($measure);
         return $measure;
     }
@@ -43,14 +52,17 @@ class MeasureService
         return $this->measureRepository->getAll();
     }
 
-    public function updateMeasure(int $id, string $newName): Measure
+    public function updateMeasure(int $id, string $newName, int $strategicOutputId): Measure
     {
         $measure = $this->measureRepository->findById($id);
+        $strategicOutput = $this->strategicOutputRepository->findById($strategicOutputId);
 
         if (!$measure) {throw new RuntimeException("No se encontró la medida con ID: {$id}");}
+        if (!$strategicOutput instanceof StrategicOutput) throw new RuntimeException("El resultado estratégico con id {$strategicOutputId} no existe.");
 
-        $validatedMeasure = Measure::at($newName);
+        $validatedMeasure = Measure::at($newName, $strategicOutput);
         $measure->name = $validatedMeasure->getName();
+        $measure->strategic_output_id = $validatedMeasure->strategic_output_id;
 
         $this->measureRepository->save($measure);
 

@@ -108,11 +108,15 @@ class MeasureController extends Controller
     {
         try {
             $request->validate([
-                'name' => 'required|string|min:2|max:100'
+                'name' => 'required|string|min:2|max:100',
+                'strategic_output_id'=> 'required|integer',
             ]);
 
             $measure = $this->measureService->createMeasure(
-                $request->input('name'));
+                $request->input('name'),
+                $request->input('strategic_output_id'),
+                );
+
 
             return ApiResponse::created(
                 'Medida creada exitosamente',
@@ -131,10 +135,11 @@ class MeasureController extends Controller
     {
         try {
             $request->validate([
-                'name' => 'required|string|min:2|max:100'
+                'name' => 'required|string|min:2|max:100',
+                'strategic_output_id'=> 'required|integer',
             ]);
 
-            $measure = $this->measureService->updateMeasure($id, $request->input('name'));
+            $measure = $this->measureService->updateMeasure($id, $request->input('name'), $request->input('strategic_output_id'));
 
             return ApiResponse::success(
                 'Medida actualziada exitosamente',
@@ -207,7 +212,7 @@ class MeasureController extends Controller
         $indicator = $this->indicatorService->getIndicatorById($request->input('indicator_id'));
         $this->measureService->removeIndicatorFromMeasure($request->input('measure_id'), $indicator);
         
-        $measure = $this->measureService->getMeasureWithIndicators($request->input('measure_id'));
+        $measure = $this->measureService->findMeasureByName($request->input('measure_id'));
 
         return ApiResponse::success(
             'Indicador removido exitosamente',

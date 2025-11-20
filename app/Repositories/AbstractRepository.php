@@ -168,4 +168,17 @@ abstract class AbstractRepository implements RepositoryInterface
             );
         }
     }
+
+     /**
+     * Verificar existencia de un objeto por un campo
+     *
+     * @param string $field
+     * @param $value
+     * @return bool
+     */
+        
+    public function exists(string $field, $value): bool
+    {
+        return $this->model->where($field, $value)->exists();
+    }
 }

@@ -1,6 +1,7 @@
 <?php
 namespace App\Modules\StrategicOutput\Controller;
 
+use App\Modules\Measure\Domain\Measure;
 use App\Modules\Measure\Service\MeasureService;
 use App\Modules\StrategicOutput\Service\StrategicOutputService;
 use App\Http\Controllers\Controller;
@@ -122,13 +123,12 @@ class StrategicOutputController extends Controller
         try {
             $request->validate([
                 'strategic_output_id' => 'required|integer',
-                'measure_id' => 'required|integer',
+                'name' => 'required|string|min:2|max:100',
             ]);
 
             $strategicOutput = $this->strategicOutputService->getStrategicOutputById($request->input('strategic_output_id'));
 
-            $measure = $this->measureService->getMeasureById($request->input('measure_id'));
-
+            $measure = Measure::at($request->input('name'), $strategicOutput);
             $strategicOutput->addMeasure($measure);
 
             $strategicOutput->load('measures');

@@ -20,6 +20,7 @@
     use App\Modules\Contact\Controller\ContactController;
     use App\Modules\Agency\Controller\AgencyController;
     use App\Modules\CountryKpa\Controller\CountryKpaController;
+    use \App\Modules\StrategicOutput\Controller\StrategicOutputController;
 
     Route::prefix('v1')->group(function () {
         // API Routes para Donors
@@ -90,11 +91,6 @@
         Route::get('sdgs/{id}', [SdgController::class, 'show']);
         Route::put('sdgs/{id}', [SdgController::class, 'update']);
 
-        // API routes para Strategic Outputs
-        Route::get('strategic-outputs', [\App\Modules\StrategicOutput\Controller\StrategicOutputController::class, 'index']);
-        Route::post('strategic-outputs', [\App\Modules\StrategicOutput\Controller\StrategicOutputController::class, 'store']);
-        Route::get('strategic-outputs/{id}', [\App\Modules\StrategicOutput\Controller\StrategicOutputController::class, 'show']);
-        Route::put('strategic-outputs/{id}', [\App\Modules\StrategicOutput\Controller\StrategicOutputController::class, 'update']);
         // API Routes para Agency
         Route::get('agencies', [AgencyController::class, 'index']);
         Route::post('agencies', [AgencyController::class, 'store']);
@@ -122,17 +118,17 @@
         Route::put('measures/{id}', [MeasureController::class, 'update']);
         Route::get('measures/search', [MeasureController::class, 'search']);
         Route::get('measures/{id}', [MeasureController::class, 'show']);
-        
-        Route::get('measures-indicators/{id}', [MeasureController::class, 'showWithIndicators']);
         Route::post('measures-indicators', [MeasureController::class, 'addIndicator']);
+        Route::get('measures-indicators/{id}', [MeasureController::class, 'showWithIndicators']);
         Route::get('measures/{id}/indicators/{name}', [MeasureController::class, 'getIndicatorByName']);
-        // PREGUNTAR SI LA RUTA ESAT BIEN
         Route::post('measures/remove-indicator', [MeasureController::class, 'removeIndicator']);
 
         // API Routes para Strategic Outputs
-        Route::get('strategic-outputs', [\App\Modules\StrategicOutput\Controller\StrategicOutputController::class, 'index']);
-        Route::post('strategic-outputs', [\App\Modules\StrategicOutput\Controller\StrategicOutputController::class, 'store']);
-        Route::get('strategic-outputs/search', [\App\Modules\StrategicOutput\Controller\StrategicOutputController::class, 'search']);
-        Route::get('strategic-outputs/{id}', [\App\Modules\StrategicOutput\Controller\StrategicOutputController::class, 'show']);
-        Route::put('strategic-outputs/{id}', [\App\Modules\StrategicOutput\Controller\StrategicOutputController::class, 'update']);
-    }); 
+        Route::get('strategic-outputs', [StrategicOutputController::class, 'index']);
+        Route::post('strategic-outputs', [StrategicOutputController::class, 'store']);
+        Route::get('strategic-outputs/search', [StrategicOutputController::class, 'search']);
+        Route::get('strategic-outputs/{id}', [StrategicOutputController::class, 'show']);
+        Route::put('strategic-outputs/{id}', [StrategicOutputController::class, 'update']);
+        Route::post('strategic-outputs-measures', [StrategicOutputController::class, 'addMeasure']);
+        Route::post('strategic-outputs/remove-measure', [StrategicOutputController::class, 'removeMeasure']);
+    });

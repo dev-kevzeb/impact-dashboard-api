@@ -18,7 +18,7 @@ class Measure extends Model
     public static $ERROR_INDICATORS_DUPLICATED = 'no se permiten indicadores duplicados en la medida';
     public static $ERROR_INDICATOR_NOT_FOUND = 'el indicador especificado no existe en esta medida';
 
-    public static function at(string $name): self
+    public static function at(string $name, StrategicOutput $strategicOutput): self
     {
         $name = trim($name);
 
@@ -26,7 +26,7 @@ class Measure extends Model
         if (strlen($name) < 2) throw new RuntimeException(self::$ERROR_NAME_MIN_LENGTH);
         if (strlen($name) > 100) throw new RuntimeException(self::$ERROR_NAME_MAX_LENGTH);
 
-        return new self(['name' => $name]);
+        return new self(['name' => $name, 'strategic_output_id' => $strategicOutput->id]);
     }
 
     public function getName(): string
