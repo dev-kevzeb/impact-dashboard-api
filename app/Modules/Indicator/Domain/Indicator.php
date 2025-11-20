@@ -3,6 +3,7 @@
 namespace App\Modules\Indicator\Domain;
 
 use App\Modules\IndicatorType\Domain\IndicatorType;
+use App\Modules\Measure\Domain\Measure;
 use Illuminate\Database\Eloquent\Model;
 use RuntimeException;
 
@@ -12,7 +13,7 @@ class  Indicator extends Model
     protected $table = 'indicator';
 
     // Campos permitidos
-    protected $fillable = ['name', 'type_id', 'target'];
+    protected $fillable = ['name', 'type_id', 'target', 'measure_id'];
 
     // Constantes de error
     public static $ERROR_NAME_EMPTY = 'el nombre del indicador no debe ir vacio';
@@ -32,7 +33,7 @@ class  Indicator extends Model
     /**
      * Fábrica de creación con validación de dominio
      */
-    public static function at(string $name, IndicatorType $type, float $target): Indicator
+    public static function at(string $name, IndicatorType $type, float $target, Measure $measure): Indicator
     {
         if (empty(trim($name))) {
             throw new RuntimeException(self::$ERROR_NAME_EMPTY);
@@ -54,6 +55,7 @@ class  Indicator extends Model
             'name' => trim($name),
             'type_id' => $type->id,
             'target' => $target,
+            'measure_id'=> $measure->id,
         ]);
     }
 
@@ -77,5 +79,10 @@ class  Indicator extends Model
     public function type()
     {
         return $this->belongsTo(IndicatorType::class, 'type_id');
+    }
+
+    public function measure()
+    {
+        return $this->belongsTo( Measure::class,  'measure_id', 'id');
     }
 }
