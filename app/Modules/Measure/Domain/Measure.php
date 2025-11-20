@@ -18,20 +18,13 @@ class Measure extends Model
     public static $ERROR_INDICATORS_DUPLICATED = 'no se permiten indicadores duplicados en la medida';
     public static $ERROR_INDICATOR_NOT_FOUND = 'el indicador especificado no existe en esta medida';
 
-
     public static function at(string $name): self
     {
         $name = trim($name);
 
-        if ($name === '') {
-            throw new RuntimeException(self::$ERROR_NAME_EMPTY);
-        }
-        if (strlen($name) < 2) {
-            throw new RuntimeException(self::$ERROR_NAME_MIN_LENGTH);
-        }
-        if (strlen($name) > 100) {
-            throw new RuntimeException(self::$ERROR_NAME_MAX_LENGTH);
-        }
+        if ($name === '') throw new RuntimeException(self::$ERROR_NAME_EMPTY);
+        if (strlen($name) < 2) throw new RuntimeException(self::$ERROR_NAME_MIN_LENGTH);
+        if (strlen($name) > 100) throw new RuntimeException(self::$ERROR_NAME_MAX_LENGTH);
 
         return new self(['name' => $name]);
     }
@@ -41,16 +34,30 @@ class Measure extends Model
         return $this->name;
     }
 
+    public function addIndicator(Indicator $indicator): void
+    {
+        if ($this->hasIndicatorWithName($indicator->getName())) throw new RuntimeException(self::$ERROR_INDICATORS_DUPLICATED);
+        $this->indicators()->save($indicator);
+    }
+
     public function hasIndicatorWithName(string $name): bool
     {
         return $this->indicators()->where('name', trim($name))->exists();
     }
 
-    public function addIndicator(Indicator $indicator): void
+    public function getIndicatorsCountAttribute(): int
     {
-        if ($this->hasIndicatorWithName($indicator->getName())) throw new RuntimeException(self::$ERROR_INDICATORS_DUPLICATED);
-        
-        $this->indicators()->save($indicator);
+        return $this->indicators()->count();
+    }
+
+    public function getIndicators()
+    {
+        return $this->indicators()->get();
+    }
+
+    public function hasIndicators(): bool
+    {
+        return $this->indicators()->exists();
     }
     
     public function removeIndicator(string $name): bool
@@ -58,7 +65,8 @@ class Measure extends Model
         $found = $this->indicators()->where('name', trim($name))->first();
         if (!$found) return false;
         
-        $found->delete();
+         $found->measure_id = null;
+        $found->save();
         return true;
     }
 
@@ -70,11 +78,9 @@ class Measure extends Model
         return $indicator;
     }
 
-    public function getIndicatorsCountAttribute(): int
-    {
-        return $this->indicators()->count();
-    }
 
+    
+    // RELACIONES
     public function indicators()
     {
         return $this->hasMany(Indicator::class, 'measure_id', 'id');
@@ -83,19 +89,5 @@ class Measure extends Model
     public function StrategicOutput()
     {
         return $this->belongsTo( StrategicOutput::class,  'strategic_output_id', 'id');
-    }
-
-    // ESTOS 3 METODOS FALTAN IMPLEMENTAR, PREGUNTAR SI DEBEN TENER ENDPOINTS
-    public function clearIndicators(): void
-    {
-        $this->indicators()->delete();
-    }   
-    public function hasIndicators(): bool
-    {
-        return $this->indicators()->exists();
-    }
-    public function getIndicators()
-    {
-        return $this->indicators()->get();
     }
 }

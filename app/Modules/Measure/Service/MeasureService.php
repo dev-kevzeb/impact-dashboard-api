@@ -57,15 +57,6 @@ class MeasureService
         return $measure;
     }
 
-
-    public function getMeasureWithIndicators(int $id): Measure
-    {
-        $measure = $this->measureRepository->findWithIndicators($id);
-        if (!$measure) {throw new RuntimeException("No se encontró la measure con ID: {$id}");}
-
-        return $measure;
-    }
-
     public function getIndicatorOfMeasureByName(int $measureId, string $indicatorName)
     {
         $measure = $this->measureRepository->findById($measureId);
@@ -78,10 +69,11 @@ class MeasureService
     public function addIndicatorToMeasure(int $measureId, $indicator): void
     {
         $measure = $this->getMeasureById($measureId);
+        if (!$measure) throw new \RuntimeException("La medida con id {$measure} no existe.");
+
         $measure->addIndicator($indicator);
     }
 
-    // ESTO AUN NO ESTA IMPLEMENTADO COMO RUTA
     public function removeIndicatorFromMeasure(int $measureId, $indicator): void
     {
         $measure = $this->getMeasureById($measureId);
