@@ -14,12 +14,12 @@ return new class extends Migration
     {
         Schema::create('project_state', function(Blueprint $table){
             $table->id();
-            $table->string('name', 100);
+            $table->string('state', 100);
             $table->timestamps();
         });
 
         // Índice único case-insensitive usando expresión SQL
-        DB::statement('CREATE UNIQUE INDEX project_state_name_unique_ci ON project_state (LOWER(name))');
+        DB::statement('CREATE UNIQUE INDEX project_state_state_unique_ci ON project_state (LOWER(state))');
     }
 
     /**
@@ -27,7 +27,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        DB::statement('DROP INDEX IF EXISTS project_state_name_unique_ci');
+        DB::statement('DROP INDEX IF EXISTS project_state_state_unique_ci');
         Schema::dropIfExists('project_state');
     }
 };

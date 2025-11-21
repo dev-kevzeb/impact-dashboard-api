@@ -11,7 +11,7 @@ class ProjectState extends Model
     use HasFactory;
 
     protected $table = 'project_state';
-    protected $fillable = ['name'];
+    protected $fillable = ['state'];
 
     // Error constants in Spanish
     public static $ERROR_NAME_EMPTY = 'el nombre del estado del proyecto no debe ir vacío';
@@ -30,12 +30,12 @@ class ProjectState extends Model
         if (strlen(trim($name)) > 100) {
             throw new RuntimeException(self::$ERROR_NAME_MAX_LENGTH);
         }
-        return new ProjectState(['name' => trim($name)]);
+        return new ProjectState(['state' => trim($name)]);
     }
 
-    public function getName(): string
+    public function getState(): string
     {
-        return $this->name;
+        return $this->state;
     }
 
     // Laravel Factory integration (required for testing)

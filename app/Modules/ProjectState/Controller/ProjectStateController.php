@@ -33,14 +33,12 @@ class ProjectStateController extends Controller
     }
 
     public function show($id): JsonResponse
-    public function show($id): JsonResponse
     {
         try {
             $state = $this->projectStateService->getProjectStateById($id);
             return ApiResponse::success(
                 'Estado del proyecto encontrado',
                 200,
-                new ProjectStateResource($state)
                 new ProjectStateResource($state)
             );
         } catch (RuntimeException $e) {
@@ -52,16 +50,14 @@ class ProjectStateController extends Controller
     {
         try {
             $validated = $request->validated();
-            $state = $this->projectStateService->createProjectState($validated['name']);
+            $state = $this->projectStateService->createProjectState($validated['state']);
             
             return ApiResponse::created(
                 'Estado del proyecto creado exitosamente',
                 new ProjectStateResource($state)
-                new ProjectStateResource($state)
             );
         } catch (RuntimeException $e) {
-            // Si el error es de duplicado, retornar como error de validación (422)
-            if (str_contains($e->getMessage(), 'ya existe')) {
+            if (str_contains($e->getMessage(), 'Ya existe')) {
                 return ApiResponse::validationError(['state' => [$e->getMessage()]]);
             }
             return ApiResponse::error($e->getMessage(), 400);
@@ -72,22 +68,19 @@ class ProjectStateController extends Controller
     {
         try {
             $validated = $request->validated();
-            $state = $this->projectStateService->updateProjectState($id, $validated['name']);
+            $state = $this->projectStateService->updateProjectState($id, $validated['state']);
             
             return ApiResponse::success(
                 'Estado del proyecto actualizado exitosamente',
                 200,
                 new ProjectStateResource($state)
-                new ProjectStateResource($state)
             );
         } catch (RuntimeException $e) {
-            // Si el mensaje indica que no se encontró, retornar 404
-            if (str_contains($e->getMessage(), 'no existe')) {
-                return ApiResponse::notFound('Estado del proyecto');
-            }
-            // Si el error es de duplicado, retornar como error de validación (422)
-            if (str_contains($e->getMessage(), 'ya existe')) {
+            if (str_contains($e->getMessage(), 'Ya existe')) {
                 return ApiResponse::validationError(['state' => [$e->getMessage()]]);
+            }
+            if (str_contains($e->getMessage(), 'no encontrado')) {
+                return ApiResponse::notFound('Estado del proyecto');
             }
             return ApiResponse::error($e->getMessage(), 400);
         }

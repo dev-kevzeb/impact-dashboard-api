@@ -16,10 +16,14 @@ class ProjectStateService {
         return $this->projectStateRepository->getAll();
     }
 
-    public function createProjectState(string $name): ProjectState
+    public function createProjectState(string $state): ProjectState
     {
-        // NO duplicate check here - FormRequest handles it via Rule::unique()
-        $projectState = ProjectState::at($name);  // Domain validation only
+        // Validar duplicados
+        if ($this->projectStateRepository->exists('state', trim($state))) {
+            throw new \RuntimeException("Ya existe un estado del proyecto con el nombre: {$state}");
+        }
+
+        $projectState = ProjectState::at($state);
         $this->projectStateRepository->save($projectState);
         return $projectState;
     }
@@ -29,32 +33,26 @@ class ProjectStateService {
         return $this->projectStateRepository->findById($id);
     }
 
-    public function updateProjectState(int $id, string $name): ProjectState
+    public function updateProjectState(int $id, string $state): ProjectState
     {
         $projectState = $this->getProjectStateById($id);
         
-        // NO duplicate check here - FormRequest handles it via Rule::unique()->ignore($id)
-        $updated = ProjectState::at($name);  // Re-validate domain rules
-        $projectState->name = $updated->name;
+        // Validar duplicados (excepto el mismo registro)
+        $existing = $this->projectStateRepository->exists('state', trim($state));
+        if ($existing && strtolower(trim($projectState->state)) !== strtolower(trim($state))) {
+            throw new \RuntimeException("Ya existe un estado del proyecto con el nombre: {$state}");
+        }
+        
+        $updated = ProjectState::at($state);
+        $projectState->state = $updated->state;
         $this->projectStateRepository->save($projectState);
         
         return $projectState;
     }
-   public function updateProjectState(int $id, string $state): ProjectState
-{
-    $projectState = $this->getProjectStateById($id);
-    
-    // Validar duplicados (excepto el mismo registro)
-    $existing = $this->projectStateRepository->exists('state', trim($state));
-    if ($existing && strtolower(trim($projectState->state)) !== strtolower(trim($state))) {
-        throw new \RuntimeException("El estado del proyecto ya existe: {$state}");
+
+    public function findProjectStateByName(string $state): ProjectState
+    {
+        return $this->projectStateRepository->findBy('state', $state);
     }
-    
-    $updatedState = ProjectState::at($state);
-    $projectState->state = $updatedState->state;
-    $this->projectStateRepository->save($projectState);
-    
-    return $projectState;
-}   
 
 }
