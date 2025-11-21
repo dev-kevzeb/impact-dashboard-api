@@ -20,14 +20,9 @@ namespace App\Http\Resources\Schemas;
  *         description="Contacto responsable del programa"
  *     ),
  *     @OA\Property(
- *         property="beneficiary",
- *         ref="#/components/schemas/Beneficiary",
- *         description="Beneficiario principal del programa"
- *     ),
- *     @OA\Property(
  *         property="program_state",
  *         ref="#/components/schemas/ProgramState",
- *         description="Estado actual del programa"
+ *         description="Estado actual del programa (Inactivo al crear, Activo cuando tiene proyectos)"
  *     ),
  *     @OA\Property(
  *         property="country",
@@ -35,21 +30,10 @@ namespace App\Http\Resources\Schemas;
  *         description="País donde opera el programa"
  *     ),
  *     @OA\Property(
- *         property="agency",
- *         ref="#/components/schemas/Agency",
- *         description="Agencia ejecutora del programa"
- *     ),
- *     @OA\Property(
  *         property="sdgs",
  *         type="array",
  *         @OA\Items(ref="#/components/schemas/SDG"),
  *         description="Objetivos de Desarrollo Sostenible asociados"
- *     ),
- *     @OA\Property(
- *         property="donors",
- *         type="array",
- *         @OA\Items(ref="#/components/schemas/Donor"),
- *         description="Donantes que financian el programa"
  *     )
  * )
  * 
@@ -57,47 +41,31 @@ namespace App\Http\Resources\Schemas;
  *     schema="Contact",
  *     title="Contact",
  *     @OA\Property(property="id", type="integer", example=1),
- *     @OA\Property(property="name", type="string", example="Juan Pérez"),
+ *     @OA\Property(property="first_name", type="string", example="Juan"),
+ *     @OA\Property(property="last_name", type="string", example="Pérez"),
+ *     @OA\Property(property="title", type="string", example="Director"),
  *     @OA\Property(property="email", type="string", example="juan.perez@example.com"),
- *     @OA\Property(property="phone", type="string", example="+506 8888-8888")
- * )
- * 
- * @OA\Schema(
- *     schema="Beneficiary",
- *     title="Beneficiary",
- *     @OA\Property(property="id", type="integer", example=2),
- *     @OA\Property(property="name", type="string", example="Comunidades Rurales de América Latina")
+ *     @OA\Property(property="phone", type="string", example="+591 77123456")
  * )
  * 
  * @OA\Schema(
  *     schema="ProgramState",
  *     title="ProgramState",
  *     @OA\Property(property="id", type="integer", example=1),
- *     @OA\Property(property="name", type="string", example="Activo")
+ *     @OA\Property(property="name", type="string", example="Inactivo", description="Posibles valores: Inactivo, Activo, Finalizado")
  * )
  * 
  * @OA\Schema(
  *     schema="Country",
  *     title="Country",
  *     @OA\Property(property="id", type="integer", example=1),
- *     @OA\Property(property="name", type="string", example="Costa Rica"),
+ *     @OA\Property(property="name", type="string", example="Bolivia"),
  *     @OA\Property(
  *         property="currency",
  *         type="object",
  *         @OA\Property(property="id", type="integer", example=1),
- *         @OA\Property(property="name", type="string", example="Colón Costarricense"),
- *         @OA\Property(property="code", type="string", example="CRC"),
- *         @OA\Property(property="symbol", type="string", example="₡")
+ *         @OA\Property(property="code", type="string", example="BOB")
  *     )
- * )
- * 
- * @OA\Schema(
- *     schema="Agency",
- *     title="Agency",
- *     @OA\Property(property="id", type="integer", example=1),
- *     @OA\Property(property="name", type="string", example="UNICEF"),
- *     @OA\Property(property="url", type="string", example="https://www.unicef.org"),
- *     @OA\Property(property="is_approved", type="boolean", example=true)
  * )
  * 
  * @OA\Schema(
@@ -106,16 +74,8 @@ namespace App\Http\Resources\Schemas;
  *     description="Objetivo de Desarrollo Sostenible (ODS)",
  *     @OA\Property(property="id", type="integer", example=4),
  *     @OA\Property(property="name", type="string", example="Educación de Calidad"),
- *     @OA\Property(property="image", type="string", example="sdg_images/sdg4.png"),
- *     @OA\Property(property="filename", type="string", example="sdg4.png")
- * )
- * 
- * @OA\Schema(
- *     schema="Donor",
- *     title="Donor",
- *     description="Donante financiador",
- *     @OA\Property(property="id", type="integer", example=1),
- *     @OA\Property(property="name", type="string", example="Banco Mundial")
+ *     @OA\Property(property="description", type="string", example="Garantizar una educación inclusiva, equitativa y de calidad"),
+ *     @OA\Property(property="color_hex", type="string", example="#C5192D")
  * )
  */
 class ProgramSchema

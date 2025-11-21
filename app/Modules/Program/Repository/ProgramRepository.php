@@ -32,12 +32,9 @@ class ProgramRepository extends AbstractRepository
         return $this->model
             ->with([
                 'contact',
-                'beneficiary',
                 'programState',
                 'country',
-                'agency',
-                'sdgs',
-                'donors'
+                'sdgs'
                 // 'projects' // TODO: Descomentar cuando el módulo Project exista
             ])
             ->get();
@@ -55,12 +52,9 @@ class ProgramRepository extends AbstractRepository
         $program = $this->model
             ->with([
                 'contact',
-                'beneficiary',
                 'programState',
                 'country',
-                'agency',
-                'sdgs',
-                'donors'
+                'sdgs'
                 // 'projects' // TODO: Descomentar cuando el módulo Project exista
             ])
             ->find($id);
@@ -85,18 +79,6 @@ class ProgramRepository extends AbstractRepository
     }
     
     /**
-     * Sincronizar Donors del programa
-     * 
-     * @param Program $program
-     * @param array $donorIds Array de IDs de Donors
-     * @return void
-     */
-    public function syncDonors(Program $program, array $donorIds): void
-    {
-        $program->donors()->sync($donorIds);
-    }
-    
-    /**
      * Obtener programas por país
      * 
      * @param int $countryId
@@ -106,21 +88,7 @@ class ProgramRepository extends AbstractRepository
     {
         return $this->model
             ->where('country_id', $countryId)
-            ->with(['contact', 'beneficiary', 'programState', 'agency'])
-            ->get();
-    }
-    
-    /**
-     * Obtener programas por agencia
-     * 
-     * @param int $agencyId
-     * @return \Illuminate\Database\Eloquent\Collection
-     */
-    public function findByAgency(int $agencyId)
-    {
-        return $this->model
-            ->where('agency_id', $agencyId)
-            ->with(['contact', 'beneficiary', 'programState', 'country'])
+            ->with(['contact', 'programState', 'sdgs'])
             ->get();
     }
     
@@ -134,7 +102,7 @@ class ProgramRepository extends AbstractRepository
     {
         return $this->model
             ->where('program_state_id', $programStateId)
-            ->with(['contact', 'beneficiary', 'country', 'agency'])
+            ->with(['contact', 'programState', 'country', 'sdgs'])
             ->get();
     }
 }

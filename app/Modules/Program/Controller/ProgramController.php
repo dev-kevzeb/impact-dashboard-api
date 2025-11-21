@@ -78,31 +78,22 @@ class ProgramController extends Controller
      *         @OA\MediaType(
      *             mediaType="multipart/form-data",
      *             @OA\Schema(
-     *                 required={"name", "description", "banner_img", "start_date", "end_date", "contact_id", "beneficiary_id", "program_state_id", "country_id", "agency_id"},
+     *                 required={"name", "description", "start_date", "end_date", "contact_id", "country_id"},
      *                 @OA\Property(property="name", type="string", maxLength=255, example="Programa de Educación Rural 2025"),
      *                 @OA\Property(property="description", type="string", maxLength=2000, example="Programa enfocado en mejorar la educación en zonas rurales mediante capacitación docente y equipamiento."),
-     *                 @OA\Property(property="banner_img", type="string", format="binary", description="Imagen banner del programa (JPG, PNG, GIF, WEBP - máx 2MB)"),
+     *                 @OA\Property(property="banner_img", type="string", format="binary", description="Imagen banner del programa (OPCIONAL - JPG, PNG, GIF, WEBP - máx 2MB)"),
      *                 @OA\Property(property="start_date", type="string", format="date", example="2025-01-15", description="Fecha de inicio (YYYY-MM-DD)"),
      *                 @OA\Property(property="end_date", type="string", format="date", example="2027-12-31", description="Fecha de fin (YYYY-MM-DD, máx 20 años desde inicio)"),
      *                 @OA\Property(property="program_url", type="string", format="url", example="https://www.programa-educacion.org", description="URL del sitio web del programa (opcional)"),
      *                 @OA\Property(property="contact_id", type="integer", example=1, description="ID del contacto responsable"),
-     *                 @OA\Property(property="beneficiary_id", type="integer", example=2, description="ID del beneficiario principal"),
-     *                 @OA\Property(property="program_state_id", type="integer", example=1, description="ID del estado del programa"),
+     *                 @OA\Property(property="program_state_id", type="integer", example=1, description="ID del estado (IGNORADO: siempre se crea como Inactivo)"),
      *                 @OA\Property(property="country_id", type="integer", example=1, description="ID del país donde opera"),
-     *                 @OA\Property(property="agency_id", type="integer", example=1, description="ID de la agencia ejecutora"),
      *                 @OA\Property(
      *                     property="sdg_ids[]",
      *                     type="array",
      *                     @OA\Items(type="integer"),
      *                     example={2, 4, 13},
      *                     description="Array de IDs de ODS (opcional). Usar: sdg_ids[0]=2, sdg_ids[1]=4, sdg_ids[2]=13"
-     *                 ),
-     *                 @OA\Property(
-     *                     property="donor_ids[]",
-     *                     type="array",
-     *                     @OA\Items(type="integer"),
-     *                     example={1, 3},
-     *                     description="Array de IDs de Donors (opcional). Usar: donor_ids[0]=1, donor_ids[1]=3"
      *                 )
      *             )
      *         )
@@ -148,10 +139,13 @@ class ProgramController extends Controller
         try {
             $validated = $request->validated();
 
-            // Manejar upload de imagen
-            $file = $request->file('banner_img');
-            $filename = time() . '_' . $file->getClientOriginalName();
-            $path = $file->storeAs('program_banners', $filename, 'public');
+            // Manejar upload de imagen (opcional)
+            $path = null;
+            if ($request->hasFile('banner_img')) {
+                $file = $request->file('banner_img');
+                $filename = time() . '_' . $file->getClientOriginalName();
+                $path = $file->storeAs('program_banners', $filename, 'public');
+            }
 
             $program = $this->programService->createProgram(
                 $validated['name'],
@@ -161,12 +155,9 @@ class ProgramController extends Controller
                 $validated['end_date'],
                 $validated['program_url'] ?? '',
                 $validated['contact_id'],
-                $validated['beneficiary_id'],
-                $validated['program_state_id'],
+                $validated['program_state_id'] ?? null,  // Ignorado, siempre será Inactivo
                 $validated['country_id'],
-                $validated['agency_id'],
-                $validated['sdg_ids'] ?? [],
-                $validated['donor_ids'] ?? []
+                $validated['sdg_ids'] ?? []
             );
 
             return ApiResponse::created(
@@ -179,7 +170,7 @@ class ProgramController extends Controller
             }
             return ApiResponse::error($e->getMessage(), 400);
         } catch (\Exception $e) {
-            return ApiResponse::error('Error al crear el programa', 500);
+            return ApiResponse::error('Error al crear el programa: ' . $e->getMessage(), 500);
         }
     }
 
@@ -328,7 +319,7 @@ class ProgramController extends Controller
      *         @OA\MediaType(
      *             mediaType="multipart/form-data",
      *             @OA\Schema(
-     *                 required={"name", "description", "start_date", "end_date", "contact_id", "beneficiary_id", "program_state_id", "country_id", "agency_id"},
+     *                 required={"name", "description", "start_date", "end_date", "contact_id", "program_state_id", "country_id"},
      *                 @OA\Property(property="_method", type="string", example="PUT", description="Método HTTP spoofing (requerido en Postman con form-data)"),
      *                 @OA\Property(property="name", type="string", maxLength=255, example="Programa de Educación Rural 2025 - Actualizado"),
      *                 @OA\Property(property="description", type="string", maxLength=2000, example="Descripción actualizada del programa"),
@@ -337,12 +328,9 @@ class ProgramController extends Controller
      *                 @OA\Property(property="end_date", type="string", format="date", example="2030-12-31"),
      *                 @OA\Property(property="program_url", type="string", format="url", example="https://www.programa-actualizado.org"),
      *                 @OA\Property(property="contact_id", type="integer", example=3),
-     *                 @OA\Property(property="beneficiary_id", type="integer", example=4),
      *                 @OA\Property(property="program_state_id", type="integer", example=2),
      *                 @OA\Property(property="country_id", type="integer", example=5),
-     *                 @OA\Property(property="agency_id", type="integer", example=2),
-     *                 @OA\Property(property="sdg_ids", type="array", @OA\Items(type="integer", example=1), description="IDs de ODS (reemplaza los existentes)"),
-     *                 @OA\Property(property="donor_ids", type="array", @OA\Items(type="integer", example=3), description="IDs de donantes (reemplaza los existentes)")
+     *                 @OA\Property(property="sdg_ids", type="array", @OA\Items(type="integer", example=1), description="IDs de ODS (reemplaza los existentes)")
      *             )
      *         )
      *     ),
@@ -403,12 +391,9 @@ class ProgramController extends Controller
                 $validated['end_date'],
                 $validated['program_url'] ?? '',
                 $validated['contact_id'],
-                $validated['beneficiary_id'],
                 $validated['program_state_id'],
                 $validated['country_id'],
-                $validated['agency_id'],
-                $validated['sdg_ids'] ?? [],
-                $validated['donor_ids'] ?? []
+                $validated['sdg_ids'] ?? []
             );
 
             return ApiResponse::success(

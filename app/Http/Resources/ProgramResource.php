@@ -26,10 +26,6 @@ class ProgramResource extends JsonResource
                 return new ContactResource($this->contact);
             }),
             
-            'beneficiary' => $this->whenLoaded('beneficiary', function () {
-                return new BeneficiaryResource($this->beneficiary);
-            }),
-            
             'program_state' => $this->whenLoaded('programState', function () {
                 return new ProgramStateResource($this->programState);
             }),
@@ -38,16 +34,8 @@ class ProgramResource extends JsonResource
                 return new CountryResource($this->country);
             }),
             
-            'agency' => $this->whenLoaded('agency', function () {
-                return new AgencyResource($this->agency);
-            }),
-            
             'sdgs' => $this->whenLoaded('sdgs', function () {
                 return SdgResource::collection($this->sdgs);
-            }),
-            
-            'donors' => $this->whenLoaded('donors', function () {
-                return DonorResource::collection($this->donors);
             }),
             
             'projects' => $this->whenLoaded('projects', function () {
