@@ -7,6 +7,7 @@ use App\Http\Requests\BeneficiaryRequest;
 use App\Modules\Beneficiary\Service\BeneficiaryService;
 use App\Http\Responses\ApiResponse;
 use App\Http\Resources\BeneficiaryResource;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use RuntimeException;
@@ -57,7 +58,17 @@ class BeneficiaryController extends Controller
                 'Beneficiario creado exitosamente',
                 new BeneficiaryResource($beneficiary)
             );
+        } catch (QueryException $e) {
+            // Error 23505 = Unique violation en PostgreSQL
+            if ($e->getCode() == 23505 || $e->getCode() === '23505') {
+                return ApiResponse::validationError(['name' => ['Este beneficiario ya existe en el sistema.']]);
+            }
+            return ApiResponse::error('Error de base de datos: ' . $e->getMessage(), 500);
         } catch (RuntimeException $e) {
+            // Si el error es de duplicado, retornar como error de validación (422)
+            if (str_contains($e->getMessage(), 'Ya existe')) {
+                return ApiResponse::validationError(['name' => [$e->getMessage()]]);
+            }
             return ApiResponse::error($e->getMessage(), 400);
         }
     }
@@ -98,10 +109,20 @@ class BeneficiaryController extends Controller
                 new BeneficiaryResource($beneficiary)
             );
 
+        } catch (QueryException $e) {
+            // Error 23505 = Unique violation en PostgreSQL
+            if ($e->getCode() == 23505 || $e->getCode() === '23505') {
+                return ApiResponse::validationError(['name' => ['Este beneficiario ya existe en el sistema.']]);
+            }
+            return ApiResponse::error('Error de base de datos', 500);
         } catch (RuntimeException $e) {
             // Si el mensaje indica que no se encontró, retornar 404
             if (str_contains($e->getMessage(), 'no encontrado')) {
                 return ApiResponse::notFound('Beneficiario');
+            }
+            // Si el error es de duplicado, retornar como error de validación (422)
+            if (str_contains($e->getMessage(), 'Ya existe')) {
+                return ApiResponse::validationError(['name' => [$e->getMessage()]]);
             }
             // Otros errores de negocio retornan 400
             return ApiResponse::error($e->getMessage(), 400);

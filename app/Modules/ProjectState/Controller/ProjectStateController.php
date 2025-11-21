@@ -3,8 +3,9 @@ namespace App\Modules\ProjectState\Controller;
 use App\Modules\ProjectState\Service\ProjectStateService;
 use App\Http\Controllers\Controller;
 use App\Http\Responses\ApiResponse;
+use App\Http\Resources\ProjectStateResource;
 use Illuminate\Http\Request;
-use PhpParser\Node\Stmt\TryCatch;
+use Illuminate\Http\JsonResponse;
 use RuntimeException;
 
 class ProjectStateController extends Controller
@@ -17,7 +18,7 @@ class ProjectStateController extends Controller
     }
 
     // Metodos a futuro
-    public function index()
+    public function index(): JsonResponse
     {
         try {
             $states = $this->projectStateService->getAllProjectStates();
@@ -25,7 +26,7 @@ class ProjectStateController extends Controller
                 'Lista de estados obtenida exitosamente',
                 200,
                 [
-                    'project_states' => $states,
+                    'project_states' => ProjectStateResource::collection($states),
                     'total' => $states->count()
                 ]
             );
@@ -37,14 +38,14 @@ class ProjectStateController extends Controller
         
     }
 
-    public function show($id)
+    public function show($id): JsonResponse
     {
         try {
             $state = $this->projectStateService->getProjectStateById($id);
             return ApiResponse::success(
                 'Estado encontrado',
                 200,
-                $state
+                new ProjectStateResource($state)
             );
         } catch (RuntimeException $e) {
             return ApiResponse::notFound('Estado del proyecto');
@@ -53,7 +54,7 @@ class ProjectStateController extends Controller
         }
     }
 
-    public function store(Request $request)
+    public function store(Request $request): JsonResponse
     {
         $request->validate([
             'state' => 'required|string|max:255',
@@ -61,19 +62,22 @@ class ProjectStateController extends Controller
 
         try {
             $state = $this->projectStateService->createProjectState($request->input('state'));
-            return ApiResponse::success(
+            return ApiResponse::created(
                 'Estado del proyecto creado exitosamente',
-                201,
-                $state
+                new ProjectStateResource($state)
             );
         } catch (RuntimeException $e) {
+            // Si el error es de duplicado, retornar como error de validación (422)
+            if (str_contains($e->getMessage(), 'ya existe')) {
+                return ApiResponse::validationError(['state' => [$e->getMessage()]]);
+            }
             return ApiResponse::error($e->getMessage(), 400);
         } catch (\Exception $e) {
             return ApiResponse::error('Error interno del servidor', 500);
         }
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request, $id): JsonResponse
     {
         $request->validate([
             'state' => 'required|string|max:255',
@@ -84,9 +88,17 @@ class ProjectStateController extends Controller
             return ApiResponse::success(
                 'Estado del proyecto actualizado exitosamente',
                 200,
-                $state
+                new ProjectStateResource($state)
             );
         } catch (RuntimeException $e) {
+            // Si el mensaje indica que no se encontró, retornar 404
+            if (str_contains($e->getMessage(), 'no existe')) {
+                return ApiResponse::notFound('Estado del proyecto');
+            }
+            // Si el error es de duplicado, retornar como error de validación (422)
+            if (str_contains($e->getMessage(), 'ya existe')) {
+                return ApiResponse::validationError(['state' => [$e->getMessage()]]);
+            }
             return ApiResponse::error($e->getMessage(), 400);
         } catch (\Exception $e) {
             return ApiResponse::error('Error interno del servidor', 500);

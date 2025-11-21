@@ -31,6 +31,9 @@ abstract class AbstractRepository implements RepositoryInterface
     {
         try {
             $entity->save();
+        } catch (\Illuminate\Database\QueryException $e) {
+            // Dejar pasar QueryException para manejo en Controller (ej: violaciones de unicidad)
+            throw $e;
         } catch (\Exception $e) {
             throw new RuntimeException(
                 "Error al guardar entidad: " . $e->getMessage()
@@ -149,7 +152,7 @@ abstract class AbstractRepository implements RepositoryInterface
             );
         }
     }
-     /**
+    /**
      * Verificar existencia de estado
      *
      * @param string $state
@@ -165,6 +168,31 @@ abstract class AbstractRepository implements RepositoryInterface
         } catch (\Exception $e) {
             throw new RuntimeException(
                 "Error al buscar entidad por state {$state}: " . $e->getMessage()
+            );
+        }
+    }
+
+    /**
+     * @param string $field Nombre del campo a buscar
+     * @param mixed $value Valor a buscar
+     * @return bool
+     */
+    public function exists(string $field, mixed $value): bool
+    {
+        try {
+            if (is_string($value)) {
+                // Case-insensitive para strings
+                return $this->model->whereRaw(
+                    "LOWER({$field}) = LOWER(?)",
+                    [trim($value)]
+                )->exists();
+            }
+            
+            // Búsqueda exacta para otros tipos (int, bool, etc.)
+            return $this->model->where($field, $value)->exists();
+        } catch (\Exception $e) {
+            throw new RuntimeException(
+                "Error al verificar existencia de {$field}={$value}: " . $e->getMessage()
             );
         }
     }

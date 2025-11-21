@@ -91,6 +91,10 @@ class ContactController extends Controller
         } catch (ValidationException $e) {
             return ApiResponse::validationError($e->errors());
         } catch (RuntimeException $e) {
+            // Si el error es de duplicado, retornar como error de validación (422)
+            if (str_contains($e->getMessage(), 'Ya existe')) {
+                return ApiResponse::validationError(['email' => [$e->getMessage()]]);
+            }
             return ApiResponse::error($e->getMessage(), 400);
         } catch (\Exception $e) {
             return ApiResponse::error('Error interno del servidor', 500);
@@ -130,6 +134,10 @@ class ContactController extends Controller
         } catch (RuntimeException $e) {
             if (stripos($e->getMessage(), 'no encontrado') !== false) {
                 return ApiResponse::notFound('Contact');
+            }
+            // Si el error es de duplicado, retornar como error de validación (422)
+            if (str_contains($e->getMessage(), 'Ya existe')) {
+                return ApiResponse::validationError(['email' => [$e->getMessage()]]);
             }
             return ApiResponse::error($e->getMessage(), 400);
         } catch (\Exception $e) {

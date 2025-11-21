@@ -17,6 +17,11 @@ class DonorService
 
     public function createDonor(string $name): Donor
     {
+        // Validar duplicados antes de crear
+        if ($this->donorRepository->exists('name', trim($name))) {
+            throw new RuntimeException("Ya existe un donante con el nombre: {$name}");
+        }
+        
         $donor = Donor::at($name);
         
         $this->donorRepository->save($donor);
@@ -42,6 +47,13 @@ class DonorService
     public function updateDonor(int $id, string $name): Donor
     {
         $donor = $this->donorRepository->findById($id);
+        
+        // Validar duplicados (excepto el mismo registro)
+        $existing = $this->donorRepository->exists('name', trim($name));
+        if ($existing && strtolower(trim($donor->name)) !== strtolower(trim($name))) {
+            throw new RuntimeException("Ya existe un donante con el nombre: {$name}");
+        }
+        
         $updatedDonor = Donor::at($name);
         $donor->name = $updatedDonor->name;
         

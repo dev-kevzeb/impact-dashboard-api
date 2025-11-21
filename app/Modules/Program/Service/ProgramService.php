@@ -62,6 +62,11 @@ class ProgramService
         array $sdgIds = [],
         array $donorIds = []
     ): Program {
+        // Validar duplicados
+        if ($this->programRepository->exists('name', trim($name))) {
+            throw new RuntimeException("Ya existe un programa con el nombre: {$name}");
+        }
+
         // Validar que existan las entidades relacionadas
         $this->validateRelatedEntities(
             $contactId,
@@ -146,6 +151,12 @@ class ProgramService
     ): Program {
         // Obtener programa existente
         $program = $this->programRepository->findById($id);
+
+        // Validar duplicados (excepto el actual)
+        $existing = $this->programRepository->exists('name', trim($name));
+        if ($existing && strtolower(trim($program->name)) !== strtolower(trim($name))) {
+            throw new RuntimeException("Ya existe un programa con el nombre: {$name}");
+        }
 
         // Validar entidades relacionadas
         $this->validateRelatedEntities(
