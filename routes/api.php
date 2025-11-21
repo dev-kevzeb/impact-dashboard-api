@@ -80,6 +80,7 @@ Route::prefix('v1')->group(function () {
     // API Routes para ProjectStates
     Route::get('project_states', [ProjectStateController::class, 'index']);
     Route::post('project_states', [ProjectStateController::class, 'store']);
+    Route::get('project_states/search', [ProjectStateController::class, 'search']);
     Route::get('project_states/{id}', [ProjectStateController::class, 'show']);
     Route::put('project_states/{id}', [ProjectStateController::class, 'update']);
 

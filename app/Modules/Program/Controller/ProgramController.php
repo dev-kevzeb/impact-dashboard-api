@@ -174,6 +174,9 @@ class ProgramController extends Controller
                 new ProgramResource($program)
             );
         } catch (RuntimeException $e) {
+            if (str_contains($e->getMessage(), 'Ya existe')) {
+                return ApiResponse::validationError(['name' => [$e->getMessage()]]);
+            }
             return ApiResponse::error($e->getMessage(), 400);
         } catch (\Exception $e) {
             return ApiResponse::error('Error al crear el programa', 500);
@@ -414,6 +417,9 @@ class ProgramController extends Controller
                 new ProgramResource($program)
             );
         } catch (RuntimeException $e) {
+            if (str_contains($e->getMessage(), 'Ya existe')) {
+                return ApiResponse::validationError(['name' => [$e->getMessage()]]);
+            }
             if (str_contains($e->getMessage(), 'no encontrado')) {
                 return ApiResponse::notFound('Programa');
             }
