@@ -78,6 +78,10 @@ class DonorController extends Controller
                 new DonorResource($donor)
             );
         } catch (RuntimeException $e) {
+            // Si el error es de duplicado, retornar como error de validación (422)
+            if (str_contains($e->getMessage(), 'Ya existe')) {
+                return ApiResponse::validationError(['name' => [$e->getMessage()]]);
+            }
             return ApiResponse::error($e->getMessage(), 400);
         }
     }
@@ -101,6 +105,10 @@ class DonorController extends Controller
             // Si el error es "no encontrado", retornar 404
             if (str_contains($e->getMessage(), 'no encontrado')) {
                 return ApiResponse::notFound('Donante');
+            }
+            // Si el error es de duplicado, retornar como error de validación (422)
+            if (str_contains($e->getMessage(), 'Ya existe')) {
+                return ApiResponse::validationError(['name' => [$e->getMessage()]]);
             }
             return ApiResponse::error($e->getMessage(), 400);
         }

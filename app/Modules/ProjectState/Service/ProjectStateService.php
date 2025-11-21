@@ -40,9 +40,21 @@ class ProjectStateService {
         
         return $projectState;
     }
-
-    public function findProjectStateByName(string $name): ProjectState
-    {
-        return $this->projectStateRepository->findBy('name', $name);
+   public function updateProjectState(int $id, string $state): ProjectState
+{
+    $projectState = $this->getProjectStateById($id);
+    
+    // Validar duplicados (excepto el mismo registro)
+    $existing = $this->projectStateRepository->exists('state', trim($state));
+    if ($existing && strtolower(trim($projectState->state)) !== strtolower(trim($state))) {
+        throw new \RuntimeException("El estado del proyecto ya existe: {$state}");
     }
+    
+    $updatedState = ProjectState::at($state);
+    $projectState->state = $updatedState->state;
+    $this->projectStateRepository->save($projectState);
+    
+    return $projectState;
+}   
+
 }
