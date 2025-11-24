@@ -26,6 +26,14 @@ class StrategicOutputService{
         return $strategicOutput;
     }
 
+    public function findStrategicOutputByName(string $name): StrategicOutput
+    {
+        $strategicOutput = $this->strategicOutputRepository->findByName($name);
+        if (!$strategicOutput) throw new \RuntimeException("El resultado estratégico con nombre {$name} no existe.");
+        
+        return $strategicOutput;
+    }
+
     public function createStrategicOutput(string $name, int $idCk): StrategicOutput
     {
         $normalizedName = mb_convert_case(preg_replace('/\s+/', ' ', trim($name)), MB_CASE_TITLE, "UTF-8");
@@ -60,5 +68,19 @@ class StrategicOutputService{
         return $strategicOutput;
     }
 
-    
+    public function addMeasureToStrategicOutput(int $strategicOutputId, $measure)
+    {
+        $strategicOutput = $this->getStrategicOutputById($strategicOutputId);
+        if (!$strategicOutput) throw new \RuntimeException("El resultado estratégico con id {$strategicOutputId} no existe.");
+
+        $strategicOutput->addMeasure($measure);
+    }
+
+    public function removeMeasureFromStrategicOutput(int $strategicOutputId, $measure)
+    {
+        $strategicOutputId = $this->getStrategicOutputById($strategicOutputId);
+        $removed = $strategicOutputId->removeMeasure($measure->getName());
+
+        if (!$removed) throw new \RuntimeException("El indicador especificado no existe en esta medida");
+    }
 }

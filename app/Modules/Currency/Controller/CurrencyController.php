@@ -73,6 +73,13 @@ class CurrencyController extends Controller
                 'code' => 'required|string'
             ]);
 
+            $currency = $this->currencyService->currencyExists($request->input('code'));
+
+            //$currency = $this->currencyService->create($request->input('code'));
+
+            if(!empty($currency)) {
+                throw new RuntimeException("Ya existe una moneda con el código: {$request->input('code')}");
+            }
             $currency = $this->currencyService->createCurrency($request->input('code'));
 
             return ApiResponse::created(
