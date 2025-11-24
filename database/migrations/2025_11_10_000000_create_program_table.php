@@ -16,20 +16,16 @@ return new class extends Migration
             $table->string('name', 255);
             $table->text('description');
             $table->string('banner_img', 500)->nullable();
-            $table->date('start_date');
-            $table->date('end_date');
             $table->string('program_url', 500)->nullable();
             
             // Foreign keys
             $table->foreignId('contact_id')->constrained('contact')->onDelete('restrict');
             $table->foreignId('program_state_id')->constrained('program_state')->onDelete('restrict');
-            $table->foreignId('country_id')->constrained('country')->onDelete('restrict');
             
             $table->timestamps();
             
             // Índices para búsquedas frecuentes
             $table->index('name');
-            $table->index('country_id');
             $table->index('program_state_id');
         });
 

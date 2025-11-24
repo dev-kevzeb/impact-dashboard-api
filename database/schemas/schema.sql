@@ -165,12 +165,9 @@ CREATE TABLE program (
     name                VARCHAR(255)    NOT NULL,
     description         TEXT            NOT NULL,
     banner_img          VARCHAR(500)    NULL,
-    start_date          DATE            NOT NULL,
-    end_date            DATE            NOT NULL,
     program_url         VARCHAR(500)    NULL,
     contact_id          BIGINT          NOT NULL,
     program_state_id    BIGINT          NOT NULL,
-    country_id          BIGINT          NOT NULL,
     created_at          TIMESTAMP       NOT NULL,
     updated_at          TIMESTAMP       NOT NULL
 );

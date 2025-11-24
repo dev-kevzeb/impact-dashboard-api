@@ -33,7 +33,6 @@ class ProgramRepository extends AbstractRepository
             ->with([
                 'contact',
                 'programState',
-                'country',
                 'sdgs'
                 // 'projects' // TODO: Descomentar cuando el módulo Project exista
             ])
@@ -53,7 +52,6 @@ class ProgramRepository extends AbstractRepository
             ->with([
                 'contact',
                 'programState',
-                'country',
                 'sdgs'
                 // 'projects' // TODO: Descomentar cuando el módulo Project exista
             ])
@@ -79,20 +77,6 @@ class ProgramRepository extends AbstractRepository
     }
     
     /**
-     * Obtener programas por país
-     * 
-     * @param int $countryId
-     * @return \Illuminate\Database\Eloquent\Collection
-     */
-    public function findByCountry(int $countryId)
-    {
-        return $this->model
-            ->where('country_id', $countryId)
-            ->with(['contact', 'programState', 'sdgs'])
-            ->get();
-    }
-    
-    /**
      * Obtener programas por estado
      * 
      * @param int $programStateId
@@ -102,7 +86,7 @@ class ProgramRepository extends AbstractRepository
     {
         return $this->model
             ->where('program_state_id', $programStateId)
-            ->with(['contact', 'programState', 'country', 'sdgs'])
+            ->with(['contact', 'programState', 'sdgs'])
             ->get();
     }
 }

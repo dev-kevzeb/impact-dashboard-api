@@ -17,8 +17,6 @@ class ProgramResource extends JsonResource
             'name' => $this->name,
             'description' => $this->description,
             'banner_img' => $this->banner_img,
-            'start_date' => $this->start_date,
-            'end_date' => $this->end_date,
             'program_url' => $this->program_url,
             
             // Relaciones cargadas (si existen)
@@ -28,10 +26,6 @@ class ProgramResource extends JsonResource
             
             'program_state' => $this->whenLoaded('programState', function () {
                 return new ProgramStateResource($this->programState);
-            }),
-            
-            'country' => $this->whenLoaded('country', function () {
-                return new CountryResource($this->country);
             }),
             
             'sdgs' => $this->whenLoaded('sdgs', function () {

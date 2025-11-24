@@ -10,9 +10,7 @@ namespace App\Http\Resources\Schemas;
  *     @OA\Property(property="id", type="integer", example=1, description="ID único del programa"),
  *     @OA\Property(property="name", type="string", example="Programa de Educación Rural 2025", description="Nombre del programa"),
  *     @OA\Property(property="description", type="string", example="Programa enfocado en mejorar la educación en zonas rurales", description="Descripción detallada"),
- *     @OA\Property(property="banner_img", type="string", example="program_banners/1731884521_banner.jpg", description="Path de la imagen banner"),
- *     @OA\Property(property="start_date", type="string", format="date", example="2025-01-15", description="Fecha de inicio"),
- *     @OA\Property(property="end_date", type="string", format="date", example="2027-12-31", description="Fecha de fin"),
+ *     @OA\Property(property="banner_img", type="string", example="program_banners/1731884521_banner.jpg", nullable=true, description="Path de la imagen banner (opcional)"),
  *     @OA\Property(property="program_url", type="string", example="https://www.programa-educacion.org", description="URL del sitio web del programa"),
  *     @OA\Property(
  *         property="contact",
@@ -23,11 +21,6 @@ namespace App\Http\Resources\Schemas;
  *         property="program_state",
  *         ref="#/components/schemas/ProgramState",
  *         description="Estado actual del programa (Inactivo al crear, Activo cuando tiene proyectos)"
- *     ),
- *     @OA\Property(
- *         property="country",
- *         ref="#/components/schemas/Country",
- *         description="País donde opera el programa"
  *     ),
  *     @OA\Property(
  *         property="sdgs",
@@ -53,19 +46,6 @@ namespace App\Http\Resources\Schemas;
  *     title="ProgramState",
  *     @OA\Property(property="id", type="integer", example=1),
  *     @OA\Property(property="name", type="string", example="Inactivo", description="Posibles valores: Inactivo, Activo, Finalizado")
- * )
- * 
- * @OA\Schema(
- *     schema="Country",
- *     title="Country",
- *     @OA\Property(property="id", type="integer", example=1),
- *     @OA\Property(property="name", type="string", example="Bolivia"),
- *     @OA\Property(
- *         property="currency",
- *         type="object",
- *         @OA\Property(property="id", type="integer", example=1),
- *         @OA\Property(property="code", type="string", example="BOB")
- *     )
  * )
  * 
  * @OA\Schema(

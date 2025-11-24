@@ -4,7 +4,6 @@ namespace App\Modules\Agency\Domain;
 
 use Illuminate\Database\Eloquent\Model;
 use RuntimeException;
-use App\Modules\Program\Domain\Program;
 
 class Agency extends Model
 {
@@ -83,10 +82,5 @@ class Agency extends Model
     public function isApproved(): bool
     {
         return (bool) $this->is_approved;
-    }
-    
-    public function programs()
-    {
-        return $this->hasMany(Program::class, 'agency_id');
     }
 }

@@ -50,17 +50,4 @@ class Beneficiary extends Model
     {
         return $this->name;
     }
-
-    // ============================================
-    // RELACIONES ELOQUENT
-    // ============================================
-
-    /**
-     * Relación 1:N con Program
-     * Un beneficiario puede tener múltiples programas
-     */
-    public function programs()
-    {
-        return $this->hasMany(\App\Modules\Program\Domain\Program::class, 'beneficiary_id');
-    }
 }

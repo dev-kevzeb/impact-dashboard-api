@@ -6,7 +6,6 @@ use App\Modules\Program\Domain\Program;
 use App\Modules\Program\Repository\ProgramRepository;
 use App\Modules\Contact\Repository\ContactRepository;
 use App\Modules\ProgramState\Repository\ProgramStateRepository;
-use App\Modules\Country\Repository\CountryRepository;
 use App\Modules\Sdg\Repository\SdgRepository;
 use RuntimeException;
 
@@ -15,20 +14,17 @@ class ProgramService
     private ProgramRepository $programRepository;
     private ContactRepository $contactRepository;
     private ProgramStateRepository $programStateRepository;
-    private CountryRepository $countryRepository;
     private SdgRepository $sdgRepository;
 
     public function __construct(
         ProgramRepository $programRepository,
         ContactRepository $contactRepository,
         ProgramStateRepository $programStateRepository,
-        CountryRepository $countryRepository,
         SdgRepository $sdgRepository
     ) {
         $this->programRepository = $programRepository;
         $this->contactRepository = $contactRepository;
         $this->programStateRepository = $programStateRepository;
-        $this->countryRepository = $countryRepository;
         $this->sdgRepository = $sdgRepository;
     }
 
@@ -39,12 +35,9 @@ class ProgramService
         string $name,
         string $description,
         ?string $bannerImg,
-        string $startDate,
-        string $endDate,
         string $programUrl,
         int $contactId,
         ?int $programStateId,
-        int $countryId,
         array $sdgIds = []
     ): Program {
         // Validar duplicados
@@ -61,26 +54,21 @@ class ProgramService
         $this->validateRelatedEntities(
             $contactId,
             $programStateId,
-            $countryId,
             $sdgIds
         );
 
         // Obtener objetos de las entidades relacionadas
         $contact = $this->contactRepository->findById($contactId);
         $programState = $this->programStateRepository->findById($programStateId);
-        $country = $this->countryRepository->findById($countryId);
 
         // Crear programa usando factory method con objetos
         $program = Program::at(
             $name,
             $description,
             $bannerImg,
-            $startDate,
-            $endDate,
             $programUrl,
             $contact,
-            $programState,
-            $country
+            $programState
         );
 
         // Guardar en base de datos
@@ -91,7 +79,7 @@ class ProgramService
             $this->programRepository->syncSdgs($program, $sdgIds);
         }
 
-        return $program->fresh(['contact', 'programState', 'country', 'sdgs']);
+        return $program->fresh(['contact', 'programState', 'sdgs']);
     }
 
     /**
@@ -118,12 +106,9 @@ class ProgramService
         string $name,
         string $description,
         ?string $bannerImg,
-        string $startDate,
-        string $endDate,
         string $programUrl,
         int $contactId,
         int $programStateId,
-        int $countryId,
         array $sdgIds = []
     ): Program {
         // Obtener programa existente
@@ -139,38 +124,30 @@ class ProgramService
         $this->validateRelatedEntities(
             $contactId,
             $programStateId,
-            $countryId,
             $sdgIds
         );
 
         // Obtener objetos de las entidades relacionadas
         $contact = $this->contactRepository->findById($contactId);
         $programState = $this->programStateRepository->findById($programStateId);
-        $country = $this->countryRepository->findById($countryId);
 
         // Validar datos con factory method (sin guardar)
         Program::at(
             $name,
             $description,
             $bannerImg,
-            $startDate,
-            $endDate,
             $programUrl,
             $contact,
-            $programState,
-            $country
+            $programState
         );
 
         // Actualizar campos
         $program->name = trim($name);
         $program->description = trim($description);
-        $program->banner_img = trim($bannerImg);
-        $program->start_date = trim($startDate);
-        $program->end_date = trim($endDate);
+        $program->banner_img = $bannerImg ? trim($bannerImg) : $program->banner_img;
         $program->program_url = trim($programUrl);
         $program->contact_id = $contactId;
         $program->program_state_id = $programStateId;
-        $program->country_id = $countryId;
         
         // Guardar cambios
         $this->programRepository->save($program);
@@ -178,7 +155,7 @@ class ProgramService
         // Sincronizar relaciones M:N
         $this->programRepository->syncSdgs($program, $sdgIds);
 
-        return $program->fresh(['contact', 'programState', 'country', 'sdgs']);
+        return $program->fresh(['contact', 'programState', 'sdgs']);
     }
 
     /**
@@ -190,34 +167,11 @@ class ProgramService
     }
 
     /**
-     * Obtener programas por país
-     */
-    public function getProgramsByCountry(int $countryId)
-    {
-        // Validar que el país exista
-        $this->countryRepository->findById($countryId);
-        
-        return $this->programRepository->findByCountry($countryId);
-    }
-
-    /**
-     * Obtener programas por estado
-     */
-    public function getProgramsByState(int $programStateId)
-    {
-        // Validar que el estado exista
-        $this->programStateRepository->findById($programStateId);
-        
-        return $this->programRepository->findByProgramState($programStateId);
-    }
-
-    /**
      * Validar que existan todas las entidades relacionadas
      */
     private function validateRelatedEntities(
         int $contactId,
         int $programStateId,
-        int $countryId,
         array $sdgIds
     ): void {
         // Validar Contact
@@ -225,9 +179,6 @@ class ProgramService
 
         // Validar ProgramState
         $this->programStateRepository->findById($programStateId);
-
-        // Validar Country
-        $this->countryRepository->findById($countryId);
 
         // Validar SDGs
         foreach ($sdgIds as $sdgId) {

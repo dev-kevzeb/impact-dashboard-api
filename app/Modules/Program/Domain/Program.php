@@ -7,7 +7,6 @@ use Illuminate\Database\Eloquent\Model;
 use RuntimeException;
 use App\Modules\Contact\Domain\Contact;
 use App\Modules\ProgramState\Domain\ProgramState;
-use App\Modules\Country\Domain\Country;
 use App\Modules\Sdg\Domain\Sdg;
 
 class Program extends Model
@@ -20,12 +19,9 @@ class Program extends Model
         'name',
         'description',
         'banner_img',
-        'start_date',
-        'end_date',
         'program_url',
         'contact_id',
-        'program_state_id',
-        'country_id'
+        'program_state_id'
     ];
 
     // Constantes de mensajes de error (solo reglas de negocio)
@@ -33,11 +29,8 @@ class Program extends Model
     public static $ERROR_NAME_MIN_LENGTH = 'el nombre del programa debe tener al menos 3 caracteres';
     public static $ERROR_DESCRIPTION_EMPTY = 'la descripción del programa no debe ir vacío';
     public static $ERROR_DESCRIPTION_MIN_LENGTH = 'la descripción del programa debe tener al menos 10 caracteres';
-    public static $ERROR_DURATION_TOO_LONG = 'la duración del programa no puede exceder 20 años';
-    public static $ERROR_END_DATE_BEFORE_START = 'la fecha de fin debe ser posterior a la fecha de inicio';
     public static $ERROR_CONTACT_INVALID = 'el contacto debe ser una instancia de Contact';
     public static $ERROR_PROGRAM_STATE_INVALID = 'el estado debe ser una instancia de ProgramState';
-    public static $ERROR_COUNTRY_INVALID = 'el país debe ser una instancia de Country';
 
     public function __construct(array $attributes = [])
     {
@@ -51,12 +44,9 @@ class Program extends Model
         string $name,
         string $description,
         ?string $bannerImg,
-        string $startDate,
-        string $endDate,
         string $programUrl,
         Contact $contact,
-        ProgramState $programState,
-        Country $country
+        ProgramState $programState
     ): Program {
         // Validación de nombre (reglas de negocio)
         if (empty(trim($name))) {
@@ -80,21 +70,6 @@ class Program extends Model
             throw new RuntimeException(self::$ERROR_DESCRIPTION_MIN_LENGTH);
         }
 
-        // Validación de fechas (reglas de negocio)
-        $startDateTime = new \DateTime(trim($startDate));
-        $endDateTime = new \DateTime(trim($endDate));
-
-        if ($endDateTime < $startDateTime) {
-            throw new RuntimeException(self::$ERROR_END_DATE_BEFORE_START);
-        }
-        
-        // Validar duración máxima razonable (20 años) - regla de negocio
-        $maxDuration = clone $startDateTime;
-        $maxDuration->add(new \DateInterval('P20Y'));
-        if ($endDateTime > $maxDuration) {
-            throw new RuntimeException(self::$ERROR_DURATION_TOO_LONG);
-        }
-
         // Validación de instancias de entidades relacionadas
         if (!($contact instanceof Contact)) {
             throw new RuntimeException(self::$ERROR_CONTACT_INVALID);
@@ -102,20 +77,14 @@ class Program extends Model
         if (!($programState instanceof ProgramState)) {
             throw new RuntimeException(self::$ERROR_PROGRAM_STATE_INVALID);
         }
-        if (!($country instanceof Country)) {
-            throw new RuntimeException(self::$ERROR_COUNTRY_INVALID);
-        }
 
         return new Program([
             'name' => $trimmedName,
             'description' => $trimmedDescription,
             'banner_img' => $bannerImg ? trim($bannerImg) : null,
-            'start_date' => trim($startDate),
-            'end_date' => trim($endDate),
             'program_url' => trim($programUrl),
             'contact_id' => $contact->getKey(),
-            'program_state_id' => $programState->getKey(),
-            'country_id' => $country->getKey()
+            'program_state_id' => $programState->getKey()
         ]);
     }
 
@@ -165,14 +134,6 @@ class Program extends Model
     public function programState()
     {
         return $this->belongsTo(ProgramState::class, 'program_state_id');
-    }
-
-    /**
-     * Relación 1:1 con Country
-     */
-    public function country()
-    {
-        return $this->belongsTo(Country::class, 'country_id');
     }
 
     /**
