@@ -22,17 +22,12 @@ class  Indicator extends Model
     public static $ERROR_TYPE_REQUIRED = 'el tipo de indicador debe ser una instancia de IndicatorType';
     public static $ERROR_TARGET_INVALID = 'el target del indicador debe ser un número positivo';
 
-    /**
-     * Constructor opcional (dejarlo sin romper Eloquent)
-     */
+
     public function __construct(array $attributes = [])
     {
         parent::__construct($attributes);
     }
 
-    /**
-     * Fábrica de creación con validación de dominio
-     */
     public static function at(string $name, IndicatorType $type, float $target, Measure $measure): Indicator
     {
         if (empty(trim($name))) {
@@ -59,7 +54,6 @@ class  Indicator extends Model
         ]);
     }
 
-    // Getters
     public function getName(): string
     {   
         return $this->name;
@@ -75,10 +69,9 @@ class  Indicator extends Model
         return $this->type;
     }
 
- 
     public function type()
     {
-        return $this->belongsTo(IndicatorType::class, 'type_id');
+        return $this->belongsTo(IndicatorType::class, 'type_id','id');
     }
 
     public function measure()

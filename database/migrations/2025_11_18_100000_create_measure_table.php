@@ -14,6 +14,10 @@ return new class extends Migration
         Schema::create('measure', function (Blueprint $table) {
             $table->id();
             $table->string('name', 100);
+            $table->foreignId('strategic_output_id')->constrained('strategic_output');
+
+            $table->unique(['strategic_output_id','name'], 'strategic_output_measure_unique_name');
+
             $table->timestamps();
         });
     }

@@ -25,6 +25,7 @@ class StrategicOutput extends Model
     public static function at(string $name): StrategicOutput  
     {
         if (empty(trim($name))) throw new RuntimeException(self::$ERROR_NAME_EMPTY);
+        
         // Normalizar espacios: quitar dobles espacios
         $normalizedName = preg_replace('/\s+/', ' ', trim($name));
         
@@ -63,7 +64,16 @@ class StrategicOutput extends Model
     {
         return $this->measures()->where('name', trim($measureName))->exists();
     }
+
+    public function hasMeasures(): bool
+    {
+        return $this->measures()->exists();
+    }
     
+    public function getMeasures()
+    {
+        return $this->measures()->get();
+    }
 
     public function getMeasuresCountAttribute(): int
     {
@@ -80,7 +90,7 @@ class StrategicOutput extends Model
 
     public function countryKpa()
     {
-        return $this->belongsTo(CountryKpa::class, 'id_ck');
+        return $this->belongsTo(CountryKpa::class, 'id_ck', 'id');
     }
 
     public function measures()
@@ -88,17 +98,4 @@ class StrategicOutput extends Model
         return $this->hasMany(Measure::class, 'strategic_output_id', 'id');
     }
      
-    // ESTOS 3 METODOS FALTAN IMPLEMENTAR, PREGUNTAR SI DEBEN TENER ENDPOINTS
-    public function clearMeasures(): void
-    {
-        $this->measures->delete();
-    }   
-    public function hasMeasures(): bool
-    {
-        return $this->measures()->exists();
-    }
-    public function getMeasures()
-    {
-        return $this->measures()->get();
-    }
 }

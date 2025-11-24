@@ -72,6 +72,6 @@ class CurrencyService
 
     public function currencyExists(string $code): bool
     {
-        return $this->currencyRepository->exists('code', strtoupper(trim($code)));
+        return $this->currencyRepository->exists('code',$code);
     }
 }

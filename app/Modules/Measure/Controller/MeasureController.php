@@ -9,6 +9,7 @@ use App\Http\Responses\ApiResponse;
 use Illuminate\Http\JsonResponse;
 
 use App\Modules\IndicatorType\Service\IndicatorTypeService;
+use App\Modules\Indicator\Service\IndicatorService;
 use App\Modules\Measure\Service\MeasureService;
 
 use Illuminate\Http\Request;
@@ -19,17 +20,20 @@ class MeasureController extends Controller
 {
     private MeasureService $measureService;
     private IndicatorTypeService $indicatorTypeService;
+    private IndicatorService $indicatorService;
 
-    public function __construct(MeasureService $measureService, IndicatorTypeService $indicatorTypeService)
+    public function __construct(MeasureService $measureService, IndicatorTypeService $indicatorTypeService, IndicatorService $indicatorService)
     {
         $this->measureService = $measureService;
         $this->indicatorTypeService = $indicatorTypeService;
+        $this->indicatorService = $indicatorService;
     }
 
     public function index()
     {
         try{
             $measure = $this->measureService->getAllMeasures();
+
             return ApiResponse::success(
                 'Lista de medidas obtenida exitosamente',
                 200,
@@ -66,8 +70,9 @@ class MeasureController extends Controller
     public function showWithIndicators(int $id)
     {
         try {
-            $measure = $this->measureService->getMeasureWithIndicators($id);
+            $measure = $this->measureService->getMeasureById($id);
 
+            $measure->load('indicators');
 
             return ApiResponse::success(
                 'Medida con sus indicadores recuperada exitosamente',
@@ -84,7 +89,8 @@ class MeasureController extends Controller
     public function showWithIndicatorsCount(int $id)
     {
         try {
-            $measure = $this->measureService->getMeasureWithIndicators($id);
+            $measure = $this->measureService->getMeasureById($id);
+            $measure->load('indicators');
 
             return ApiResponse::success(
                 'Lista de medidas con sus indicadores recuperada exitosamente',
@@ -102,11 +108,15 @@ class MeasureController extends Controller
     {
         try {
             $request->validate([
-                'name' => 'required|string|min:2|max:100'
+                'name' => 'required|string|min:2|max:100',
+                'strategic_output_id'=> 'required|integer',
             ]);
 
             $measure = $this->measureService->createMeasure(
-                $request->input('name'));
+                $request->input('name'),
+                $request->input('strategic_output_id'),
+                );
+
 
             return ApiResponse::created(
                 'Medida creada exitosamente',
@@ -125,10 +135,11 @@ class MeasureController extends Controller
     {
         try {
             $request->validate([
-                'name' => 'required|string|min:2|max:100'
+                'name' => 'required|string|min:2|max:100',
+                'strategic_output_id'=> 'required|integer',
             ]);
 
-            $measure = $this->measureService->updateMeasure($id, $request->input('name'));
+            $measure = $this->measureService->updateMeasure($id, $request->input('name'), $request->input('strategic_output_id'));
 
             return ApiResponse::success(
                 'Medida actualziada exitosamente',
@@ -189,6 +200,25 @@ class MeasureController extends Controller
         } catch (\Illuminate\Validation\ValidationException $e) {
             return ApiResponse::validationError($e->errors());
         }
+    }
+
+    public function removeIndicator(Request $request)
+    {
+        $request->validate([
+            'measure_id' => 'required|integer',
+            'indicator_id' => 'required|integer'
+        ]);
+
+        $indicator = $this->indicatorService->getIndicatorById($request->input('indicator_id'));
+        $this->measureService->removeIndicatorFromMeasure($request->input('measure_id'), $indicator);
+        
+        $measure = $this->measureService->findMeasureByName($request->input('measure_id'));
+
+        return ApiResponse::success(
+            'Indicador removido exitosamente',
+            200,
+            new MeasureResource($measure)
+        );
     }
 
     public function search(Request $request): JsonResponse

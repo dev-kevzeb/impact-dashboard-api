@@ -12,9 +12,4 @@ class MeasureRepository extends AbstractRepository implements RepositoryInterfac
     {
         parent::__construct($measure);
     }
-
-    public function findWithIndicators(int $id): ?Measure
-    {
-        return $this->model->with('indicators')->find($id);
-    }
 }

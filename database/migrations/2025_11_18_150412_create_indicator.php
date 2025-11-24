@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('name', 100);
             $table->decimal('target');
             $table->foreignId('type_id')->constrained('indicator_type');
-            $table->foreignId('measure_id')->constrained('measure');
+            $table->foreignId('measure_id')->nullable()->constrained('measure')->onDelete('set null');
 
             $table->unique(['measure_id','name'], 'measure_indicator_unique_name');
 
