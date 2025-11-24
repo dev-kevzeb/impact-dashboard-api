@@ -4,6 +4,67 @@ namespace App\Http\Controllers;
 
 use Illuminate\Routing\Controller as BaseController;
 
+/**
+ * @OA\Info(
+ *     title="Pacific Ecommerce API",
+ *     version="1.0.0",
+ *     description="Gestión de programas y proyectos",
+ *     @OA\Contact(
+ *         email="info@pacificecommerce.org",
+ *         name="Pacific Ecommerce Support"
+ *     )
+ * )
+ * 
+ * @OA\Server(
+ *     url="http://127.0.0.1:8000/api/v1",
+ *     description="Servidor de Desarrollo Local"
+ * )
+ * 
+ * @OA\Server(
+ *     url="https://api.pacificecommerce.org/api/v1",
+ *     description="Servidor de Producción"
+ * )
+ * 
+ * @OA\Tag(
+ *     name="Programs",
+ *     description="Gestión de Programas - CRUD completo con relaciones M:N"
+ * )
+ * 
+ * @OA\Tag(
+ *     name="Donors",
+ *     description="Gestión de Donantes"
+ * )
+ * 
+ * @OA\Tag(
+ *     name="Beneficiaries",
+ *     description="Gestión de Beneficiarios"
+ * )
+ * 
+ * @OA\Tag(
+ *     name="Contacts",
+ *     description="Gestión de Contactos"
+ * )
+ * 
+ * @OA\Tag(
+ *     name="Countries",
+ *     description="Gestión de Países"
+ * )
+ * 
+ * @OA\Tag(
+ *     name="Agencies",
+ *     description="Gestión de Agencias"
+ * )
+ * 
+ * @OA\Tag(
+ *     name="SDGs",
+ *     description="Objetivos de Desarrollo Sostenible (ODS)"
+ * )
+ * 
+ * @OA\Tag(
+ *     name="Program States",
+ *     description="Estados de Programas"
+ * )
+ */
 class Controller extends BaseController
 {
     // Base controller for application (modular controllers extend this)

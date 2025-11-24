@@ -131,4 +131,11 @@
         Route::put('strategic-outputs/{id}', [StrategicOutputController::class, 'update']);
         Route::post('strategic-outputs-measures', [StrategicOutputController::class, 'addMeasure']);
         Route::post('strategic-outputs/remove-measure', [StrategicOutputController::class, 'removeMeasure']);
+      
+        // API Routes para Programs
+        Route::get('programs', [ProgramController::class, 'index']);
+        Route::post('programs', [ProgramController::class, 'store']);
+        Route::get('programs/search', [ProgramController::class, 'search']);
+        Route::get('programs/{id}', [ProgramController::class, 'show']);
+        Route::put('programs/{id}', [ProgramController::class, 'update']);
     });

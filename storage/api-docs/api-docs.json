@@ -1,0 +1,814 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Pacific Ecommerce API",
+        "description": "Gestión de programas y proyectos",
+        "contact": {
+            "name": "Pacific Ecommerce Support",
+            "email": "info@pacificecommerce.org"
+        },
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "http://127.0.0.1:8000/api/v1",
+            "description": "Servidor de Desarrollo Local"
+        },
+        {
+            "url": "https://api.pacificecommerce.org/api/v1",
+            "description": "Servidor de Producción"
+        }
+    ],
+    "paths": {
+        "/programs": {
+            "get": {
+                "tags": [
+                    "Programs"
+                ],
+                "summary": "Listar todos los programas",
+                "description": "Obtiene la lista completa de programas con todas sus relaciones cargadas",
+                "operationId": "1a0c18a69150e8a1b50d24e2edde1c50",
+                "responses": {
+                    "200": {
+                        "description": "Lista de programas obtenida exitosamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Lista de programas obtenida exitosamente"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "programs": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "$ref": "#/components/schemas/Program"
+                                                    }
+                                                },
+                                                "total": {
+                                                    "type": "integer",
+                                                    "example": 15
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error interno del servidor",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Error al obtener la lista de programas"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Programs"
+                ],
+                "summary": "Crear nuevo programa",
+                "description": "Crea un nuevo programa con todas sus relaciones. **Arrays:** Usa `sdg_ids[]=2&sdg_ids[]=5` o en form-data: `sdg_ids[0]=2, sdg_ids[1]=5`",
+                "operationId": "e279e3f39108a843cc1bc40116976cdc",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "description",
+                                    "banner_img",
+                                    "start_date",
+                                    "end_date",
+                                    "contact_id",
+                                    "beneficiary_id",
+                                    "program_state_id",
+                                    "country_id",
+                                    "agency_id"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "maxLength": 255,
+                                        "example": "Programa de Educación Rural 2025"
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "maxLength": 2000,
+                                        "example": "Programa enfocado en mejorar la educación en zonas rurales mediante capacitación docente y equipamiento."
+                                    },
+                                    "banner_img": {
+                                        "description": "Imagen banner del programa (JPG, PNG, GIF, WEBP - máx 2MB)",
+                                        "type": "string",
+                                        "format": "binary"
+                                    },
+                                    "start_date": {
+                                        "description": "Fecha de inicio (YYYY-MM-DD)",
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2025-01-15"
+                                    },
+                                    "end_date": {
+                                        "description": "Fecha de fin (YYYY-MM-DD, máx 20 años desde inicio)",
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2027-12-31"
+                                    },
+                                    "program_url": {
+                                        "description": "URL del sitio web del programa (opcional)",
+                                        "type": "string",
+                                        "format": "url",
+                                        "example": "https://www.programa-educacion.org"
+                                    },
+                                    "contact_id": {
+                                        "description": "ID del contacto responsable",
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "beneficiary_id": {
+                                        "description": "ID del beneficiario principal",
+                                        "type": "integer",
+                                        "example": 2
+                                    },
+                                    "program_state_id": {
+                                        "description": "ID del estado del programa",
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "country_id": {
+                                        "description": "ID del país donde opera",
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "agency_id": {
+                                        "description": "ID de la agencia ejecutora",
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "sdg_ids[]": {
+                                        "description": "Array de IDs de ODS (opcional). Usar: sdg_ids[0]=2, sdg_ids[1]=4, sdg_ids[2]=13",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "integer"
+                                        },
+                                        "example": [
+                                            2,
+                                            4,
+                                            13
+                                        ]
+                                    },
+                                    "donor_ids[]": {
+                                        "description": "Array de IDs de Donors (opcional). Usar: donor_ids[0]=1, donor_ids[1]=3",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "integer"
+                                        },
+                                        "example": [
+                                            1,
+                                            3
+                                        ]
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Programa creado exitosamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Programa creado exitosamente"
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/Program"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Error de validación de negocio",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "El nombre debe tener al menos 3 caracteres"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Error de validación técnica",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Error de validación"
+                                        },
+                                        "errors": {
+                                            "properties": {
+                                                "name": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "Ya existe un programa con este nombre."
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error interno del servidor"
+                    }
+                }
+            }
+        },
+        "/programs/search": {
+            "get": {
+                "tags": [
+                    "Programs"
+                ],
+                "summary": "Buscar programa por nombre",
+                "description": "Busca un programa por su nombre exacto (case-insensitive)",
+                "operationId": "b095456be7b15c4fd8ef98ff726b3926",
+                "parameters": [
+                    {
+                        "name": "name",
+                        "in": "query",
+                        "description": "Nombre exacto del programa a buscar",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "Programa de Educación Rural 2025"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Programa encontrado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Programa encontrado"
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/Program"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Parámetro name requerido",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "El parámetro name es requerido"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Programa no encontrado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Programa no encontrado"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/programs/{id}": {
+            "get": {
+                "tags": [
+                    "Programs"
+                ],
+                "summary": "Obtener un programa específico",
+                "description": "Obtiene los detalles completos de un programa por su ID, incluyendo todas sus relaciones",
+                "operationId": "ec77b751faa5045d092b2a071778bee7",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID del programa",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Programa encontrado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Programa encontrado"
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/Program"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Programa no encontrado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Programa no encontrado"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Programs"
+                ],
+                "summary": "Actualizar programa",
+                "description": "Actualiza un programa existente. Usar POST con _method=PUT para enviar archivos desde Postman",
+                "operationId": "477b4f7a7885677cd89d2bf5f4db6ac7",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID del programa a actualizar",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "description",
+                                    "start_date",
+                                    "end_date",
+                                    "contact_id",
+                                    "beneficiary_id",
+                                    "program_state_id",
+                                    "country_id",
+                                    "agency_id"
+                                ],
+                                "properties": {
+                                    "_method": {
+                                        "description": "Método HTTP spoofing (requerido en Postman con form-data)",
+                                        "type": "string",
+                                        "example": "PUT"
+                                    },
+                                    "name": {
+                                        "type": "string",
+                                        "maxLength": 255,
+                                        "example": "Programa de Educación Rural 2025 - Actualizado"
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "maxLength": 2000,
+                                        "example": "Descripción actualizada del programa"
+                                    },
+                                    "banner_img": {
+                                        "description": "Nueva imagen banner (opcional, si no se envía mantiene la actual)",
+                                        "type": "string",
+                                        "format": "binary"
+                                    },
+                                    "start_date": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2025-06-01"
+                                    },
+                                    "end_date": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2030-12-31"
+                                    },
+                                    "program_url": {
+                                        "type": "string",
+                                        "format": "url",
+                                        "example": "https://www.programa-actualizado.org"
+                                    },
+                                    "contact_id": {
+                                        "type": "integer",
+                                        "example": 3
+                                    },
+                                    "beneficiary_id": {
+                                        "type": "integer",
+                                        "example": 4
+                                    },
+                                    "program_state_id": {
+                                        "type": "integer",
+                                        "example": 2
+                                    },
+                                    "country_id": {
+                                        "type": "integer",
+                                        "example": 5
+                                    },
+                                    "agency_id": {
+                                        "type": "integer",
+                                        "example": 2
+                                    },
+                                    "sdg_ids": {
+                                        "description": "IDs de ODS (reemplaza los existentes)",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "integer",
+                                            "example": 1
+                                        }
+                                    },
+                                    "donor_ids": {
+                                        "description": "IDs de donantes (reemplaza los existentes)",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "integer",
+                                            "example": 3
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Programa actualizado exitosamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Programa actualizado exitosamente"
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/Program"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Error de validación de negocio"
+                    },
+                    "404": {
+                        "description": "Programa no encontrado"
+                    },
+                    "422": {
+                        "description": "Error de validación técnica"
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "Program": {
+                "title": "Program",
+                "description": "Modelo de Programa con todas sus relaciones",
+                "properties": {
+                    "id": {
+                        "description": "ID único del programa",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "name": {
+                        "description": "Nombre del programa",
+                        "type": "string",
+                        "example": "Programa de Educación Rural 2025"
+                    },
+                    "description": {
+                        "description": "Descripción detallada",
+                        "type": "string",
+                        "example": "Programa enfocado en mejorar la educación en zonas rurales"
+                    },
+                    "banner_img": {
+                        "description": "Path de la imagen banner",
+                        "type": "string",
+                        "example": "program_banners/1731884521_banner.jpg"
+                    },
+                    "start_date": {
+                        "description": "Fecha de inicio",
+                        "type": "string",
+                        "format": "date",
+                        "example": "2025-01-15"
+                    },
+                    "end_date": {
+                        "description": "Fecha de fin",
+                        "type": "string",
+                        "format": "date",
+                        "example": "2027-12-31"
+                    },
+                    "program_url": {
+                        "description": "URL del sitio web del programa",
+                        "type": "string",
+                        "example": "https://www.programa-educacion.org"
+                    },
+                    "contact": {
+                        "$ref": "#/components/schemas/Contact"
+                    },
+                    "beneficiary": {
+                        "$ref": "#/components/schemas/Beneficiary"
+                    },
+                    "program_state": {
+                        "$ref": "#/components/schemas/ProgramState"
+                    },
+                    "country": {
+                        "$ref": "#/components/schemas/Country"
+                    },
+                    "agency": {
+                        "$ref": "#/components/schemas/Agency"
+                    },
+                    "sdgs": {
+                        "description": "Objetivos de Desarrollo Sostenible asociados",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/SDG"
+                        }
+                    },
+                    "donors": {
+                        "description": "Donantes que financian el programa",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Donor"
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "Contact": {
+                "title": "Contact",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Juan Pérez"
+                    },
+                    "email": {
+                        "type": "string",
+                        "example": "juan.perez@example.com"
+                    },
+                    "phone": {
+                        "type": "string",
+                        "example": "+506 8888-8888"
+                    }
+                },
+                "type": "object"
+            },
+            "Beneficiary": {
+                "title": "Beneficiary",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 2
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Comunidades Rurales de América Latina"
+                    }
+                },
+                "type": "object"
+            },
+            "ProgramState": {
+                "title": "ProgramState",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Activo"
+                    }
+                },
+                "type": "object"
+            },
+            "Country": {
+                "title": "Country",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Costa Rica"
+                    },
+                    "currency": {
+                        "properties": {
+                            "id": {
+                                "type": "integer",
+                                "example": 1
+                            },
+                            "name": {
+                                "type": "string",
+                                "example": "Colón Costarricense"
+                            },
+                            "code": {
+                                "type": "string",
+                                "example": "CRC"
+                            },
+                            "symbol": {
+                                "type": "string",
+                                "example": "₡"
+                            }
+                        },
+                        "type": "object"
+                    }
+                },
+                "type": "object"
+            },
+            "Agency": {
+                "title": "Agency",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "UNICEF"
+                    },
+                    "url": {
+                        "type": "string",
+                        "example": "https://www.unicef.org"
+                    },
+                    "is_approved": {
+                        "type": "boolean",
+                        "example": true
+                    }
+                },
+                "type": "object"
+            },
+            "SDG": {
+                "title": "SDG",
+                "description": "Objetivo de Desarrollo Sostenible (ODS)",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 4
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Educación de Calidad"
+                    },
+                    "image": {
+                        "type": "string",
+                        "example": "sdg_images/sdg4.png"
+                    },
+                    "filename": {
+                        "type": "string",
+                        "example": "sdg4.png"
+                    }
+                },
+                "type": "object"
+            },
+            "Donor": {
+                "title": "Donor",
+                "description": "Donante financiador",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Banco Mundial"
+                    }
+                },
+                "type": "object"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Programs",
+            "description": "Gestión de Programas - CRUD completo con relaciones M:N"
+        }
+    ]
+}
