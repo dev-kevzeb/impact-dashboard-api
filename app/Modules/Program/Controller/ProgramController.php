@@ -72,7 +72,7 @@ class ProgramController extends Controller
      *     path="/programs",
      *     tags={"Programs"},
      *     summary="Crear nuevo programa",
-     *     description="Crea un nuevo programa con todas sus relaciones. **Arrays:** Usa `sdg_ids[]=2&sdg_ids[]=5` o en form-data: `sdg_ids[0]=2, sdg_ids[1]=5`",
+     *     description="Crea un nuevo programa con estado 'Inactivo' por defecto (regla de negocio). Para cambiar el estado, usar PUT. **Arrays:** Usa `sdg_ids[]=2&sdg_ids[]=5` o en form-data: `sdg_ids[0]=2, sdg_ids[1]=5`",
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\MediaType(
@@ -83,8 +83,7 @@ class ProgramController extends Controller
      *                 @OA\Property(property="description", type="string", maxLength=2000, example="Programa enfocado en mejorar la educación en zonas rurales mediante capacitación docente y equipamiento."),
      *                 @OA\Property(property="banner_img", type="string", format="binary", description="Imagen banner del programa (OPCIONAL - JPG, PNG, GIF, WEBP - máx 2MB)"),
      *                 @OA\Property(property="program_url", type="string", format="url", example="https://www.programa-educacion.org", description="URL del sitio web del programa (opcional)"),
-     *                 @OA\Property(property="contact_id", type="integer", example=1, description="ID del contacto responsable"),
-     *                 @OA\Property(property="program_state_id", type="integer", example=1, description="ID del estado (IGNORADO: siempre se crea como Inactivo)"),
+     *                 @OA\Property(property="contact_id", type="integer", example=1, description="ID del contacto responsable (requerido). El programa se crea automáticamente con estado 'Inactivo'."),
      *                 @OA\Property(
      *                     property="sdg_ids[]",
      *                     type="array",
@@ -150,7 +149,6 @@ class ProgramController extends Controller
                 $path,  // Path guardado en storage
                 $validated['program_url'] ?? '',
                 $validated['contact_id'],
-                $validated['program_state_id'] ?? null,  // Ignorado, siempre será Inactivo
                 $validated['sdg_ids'] ?? []
             );
 
@@ -300,7 +298,7 @@ class ProgramController extends Controller
      *     path="/programs/{id}",
      *     tags={"Programs"},
      *     summary="Actualizar programa",
-     *     description="Actualiza un programa existente. Usar POST con _method=PUT para enviar archivos desde Postman",
+     *     description="Actualiza un programa existente, incluyendo cambios de estado. Usar POST con _method=PUT para enviar archivos desde Postman",
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
@@ -319,8 +317,8 @@ class ProgramController extends Controller
      *                 @OA\Property(property="description", type="string", maxLength=2000, example="Descripción actualizada del programa"),
      *                 @OA\Property(property="banner_img", type="string", format="binary", description="Nueva imagen banner (opcional, si no se envía mantiene la actual)"),
      *                 @OA\Property(property="program_url", type="string", format="url", example="https://www.programa-actualizado.org"),
-     *                 @OA\Property(property="contact_id", type="integer", example=3),
-     *                 @OA\Property(property="program_state_id", type="integer", example=2),
+     *                 @OA\Property(property="contact_id", type="integer", example=3, description="ID del contacto responsable (requerido)"),
+     *                 @OA\Property(property="program_state_id", type="integer", example=2, description="ID del estado del programa (requerido): 1=Inactivo, 2=Activo, 3=Finalizado"),
      *                 @OA\Property(property="sdg_ids", type="array", @OA\Items(type="integer", example=1), description="IDs de ODS (reemplaza los existentes)")
      *             )
      *         )

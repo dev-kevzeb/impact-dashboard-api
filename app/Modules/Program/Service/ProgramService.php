@@ -37,7 +37,6 @@ class ProgramService
         ?string $bannerImg,
         string $programUrl,
         int $contactId,
-        ?int $programStateId,
         array $sdgIds = []
     ): Program {
         // Validar duplicados
@@ -48,18 +47,19 @@ class ProgramService
         // Forzar estado "Inactivo" al crear (regla de negocio)
         // Solo cambiará a "Activo" cuando tenga proyectos asociados
         $inactiveState = $this->programStateRepository->findBy('name', 'Inactivo');
-        $programStateId = $inactiveState->id;
 
-        // Validar que existan las entidades relacionadas
-        $this->validateRelatedEntities(
-            $contactId,
-            $programStateId,
-            $sdgIds
-        );
-
-        // Obtener objetos de las entidades relacionadas
+        // Validar Contact
         $contact = $this->contactRepository->findById($contactId);
-        $programState = $this->programStateRepository->findById($programStateId);
+
+        // Validar SDGs si existen
+        if (!empty($sdgIds)) {
+            foreach ($sdgIds as $sdgId) {
+                $this->sdgRepository->findById($sdgId);
+            }
+        }
+
+        // Usar el estado Inactivo encontrado
+        $programState = $inactiveState;
 
         // Crear programa usando factory method con objetos
         $program = Program::at(
