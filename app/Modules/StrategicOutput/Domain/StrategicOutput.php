@@ -29,7 +29,7 @@ class StrategicOutput extends Model
         // Normalizar espacios: quitar dobles espacios
         $normalizedName = preg_replace('/\s+/', ' ', trim($name));
         
-        if (strlen($normalizedName) < 3) throw new RuntimeException(self::$ERROR_NAME_MIN_LENGTH);
+        if (strlen($normalizedName) < 2) throw new RuntimeException(self::$ERROR_NAME_MIN_LENGTH);
         if (strlen($normalizedName) > 200) throw new RuntimeException(self::$ERROR_NAME_MAX_LENGTH);
         
         // Capitalizar primera letra de cada palabra

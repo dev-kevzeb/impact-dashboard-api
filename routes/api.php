@@ -3,6 +3,8 @@
     use App\Modules\Indicator\Controller\IndicatorController;
     use App\Modules\IndicatorType\Controller\IndicatorTypeController;
     use App\Modules\Measure\Controller\MeasureController;
+    use App\Modules\Project\Controller\ProjectController;
+    use App\Modules\ProjectAgency\Controller\ProjectAgencyController;
     use Illuminate\Http\Request;
     use Illuminate\Support\Facades\Route;
     use App\Models\User;
@@ -131,4 +133,24 @@
         Route::put('strategic-outputs/{id}', [StrategicOutputController::class, 'update']);
         Route::post('strategic-outputs-measures', [StrategicOutputController::class, 'addMeasure']);
         Route::post('strategic-outputs/remove-measure', [StrategicOutputController::class, 'removeMeasure']);
+
+        // API Routes para Project
+        Route::get('projects', [ProjectController::class, 'index']);
+        Route::post('projects', [ProjectController::class, 'store']);
+        Route::get('projects/search', [ProjectController::class, 'search']);
+        Route::get('projects/{id}', [ProjectController::class, 'show']);
+        Route::put('projects/{id}', [ProjectController::class, 'update']);
+
+
+        // Listar todas las relaciones proyecto-agencia
+        Route::get('project-agencies', [ProjectAgencyController::class,'index']);
+        Route::post('project-agencies', [ProjectAgencyController::class,'createProjectAgency']);
+        Route::delete('project-agencies', [ProjectAgencyController::class,'deleteProjectAgency']);
+        
+        Route::get('project-agencies/projects/by-agency/{id}', [ProjectAgencyController::class,'showProjectsByAgencyId']);
+        Route::get('project-agencies/projects/by-agency-name/{name}', [ProjectAgencyController::class, 'showProjectsByAgencyName']);
+        
+        Route::get('project-agencies/agencies/by-project/{id}', [ProjectAgencyController::class,'showAgenciesByProjectId']);
+        Route::get('project-agencies/agencies/by-project-name/{name}', [ProjectAgencyController::class,'showAgenciesByProjectName']);
+
     });

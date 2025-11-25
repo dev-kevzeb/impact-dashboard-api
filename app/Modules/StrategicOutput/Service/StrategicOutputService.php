@@ -22,7 +22,6 @@ class StrategicOutputService{
     {
         $strategicOutput = $this->strategicOutputRepository->findById($id);
         if (!$strategicOutput) throw new \RuntimeException("El resultado estratégico con id {$id} no existe.");
-        
         return $strategicOutput;
     }
 
