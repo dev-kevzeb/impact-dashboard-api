@@ -15,6 +15,7 @@
     use App\Modules\Donor\Controller\DonorController;
     use App\Modules\Beneficiary\Controller\BeneficiaryController;
     use App\Modules\ProgramState\Controller\ProgramStateController;
+    use App\Modules\Program\Controller\ProgramController;
 
     use App\Modules\Sdg\Controller\SdgController;
     use App\Modules\ProjectState\Controller\ProjectStateController;
@@ -153,4 +154,12 @@
         Route::get('project-agencies/agencies/by-project/{id}', [ProjectAgencyController::class,'showAgenciesByProjectId']);
         Route::get('project-agencies/agencies/by-project-name/{name}', [ProjectAgencyController::class,'showAgenciesByProjectName']);
 
+    });
+      
+        // API Routes para Programs
+        Route::get('programs', [ProgramController::class, 'index']);
+        Route::post('programs', [ProgramController::class, 'store']);
+        Route::get('programs/search', [ProgramController::class, 'search']);
+        Route::get('programs/{id}', [ProgramController::class, 'show']);
+        Route::put('programs/{id}', [ProgramController::class, 'update']);
     });

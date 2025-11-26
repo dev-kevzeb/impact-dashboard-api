@@ -88,6 +88,10 @@ class CurrencyController extends Controller
             );
 
         } catch (RuntimeException $e) {
+            // Si el error es de duplicado, retornar como error de validación (422)
+            if (str_contains($e->getMessage(), 'Ya existe')) {
+                return ApiResponse::validationError(['code' => [$e->getMessage()]]);
+            }
             return ApiResponse::error($e->getMessage(), 400);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return ApiResponse::validationError($e->errors());
@@ -114,6 +118,10 @@ class CurrencyController extends Controller
             );
 
         } catch (RuntimeException $e) {
+            // Si el error es de duplicado, retornar como error de validación (422)
+            if (str_contains($e->getMessage(), 'Ya existe')) {
+                return ApiResponse::validationError(['code' => [$e->getMessage()]]);
+            }
             return ApiResponse::error($e->getMessage(), 400);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return ApiResponse::validationError($e->errors());
