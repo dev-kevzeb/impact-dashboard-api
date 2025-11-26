@@ -10,6 +10,17 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use RuntimeException;
 
+/**
+ * @OA\Schema(
+ *     schema="Kpa",
+ *     type="object",
+ *     title="KPA (Key Priority Area)",
+ *     description="Áreas Clave Prioritarias que definen los focos estratégicos de los programas y proyectos",
+ *     @OA\Property(property="id", type="integer", example=1, description="ID único del KPA"),
+ *     @OA\Property(property="name", type="string", example="Educación de Calidad", description="Nombre del área prioritaria"),
+ *     @OA\Property(property="implementation", type="number", format="float", example=75.5, description="Porcentaje de implementación (0-100)")
+ * )
+ */
 class KpaController extends Controller
 {
     private KpaService $kpaService;
@@ -20,7 +31,38 @@ class KpaController extends Controller
     }
 
     /**
-     * Listar todos los KPAs
+     * @OA\Get(
+     *     path="/kpas",
+     *     tags={"KPAs"},
+     *     summary="Listar todos los KPAs",
+     *     description="Obtiene la lista completa de Áreas Clave Prioritarias (Key Priority Areas) con su nivel de implementación",
+     *     @OA\Response(
+     *         response=200,
+     *         description="Lista obtenida exitosamente",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Lista de KPAs obtenida exitosamente"),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="object",
+     *                 @OA\Property(
+     *                     property="kpas",
+     *                     type="array",
+     *                     @OA\Items(ref="#/components/schemas/Kpa")
+     *                 ),
+     *                 @OA\Property(property="total", type="integer", example=6, description="Total de KPAs registrados")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Error interno del servidor",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Error interno del servidor")
+     *         )
+     *     )
+     * )
      */
     public function index(): JsonResponse
     {
@@ -43,7 +85,40 @@ class KpaController extends Controller
     }
 
     /**
-     * Mostrar un KPA específico
+     * @OA\Get(
+     *     path="/kpas/{id}",
+     *     tags={"KPAs"},
+     *     summary="Obtener un KPA específico",
+     *     description="Obtiene la información detallada de un Área Clave Prioritaria por su ID",
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="ID del KPA a obtener",
+     *         @OA\Schema(type="integer", example=1)
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="KPA encontrado",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="KPA encontrado"),
+     *             @OA\Property(property="data", ref="#/components/schemas/Kpa")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="KPA no encontrado",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="KPA no encontrado")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Error interno del servidor"
+     *     )
+     * )
      */
     public function show(int $id): JsonResponse
     {
@@ -63,7 +138,66 @@ class KpaController extends Controller
     }
 
     /**
-     * Crear un nuevo KPA
+     * @OA\Post(
+     *     path="/kpas",
+     *     tags={"KPAs"},
+     *     summary="Crear nuevo KPA",
+     *     description="Registra una nueva Área Clave Prioritaria con su porcentaje de implementación inicial.",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\MediaType(
+     *             mediaType="application/json",
+     *             @OA\Schema(
+     *                 required={"name", "implementation"},
+     *                 @OA\Property(property="name", type="string", maxLength=255, example="Salud y Bienestar", description="Nombre del área prioritaria (requerido)"),
+     *                 @OA\Property(property="implementation", type="number", format="float", example=50.0, description="Porcentaje de implementación inicial (0-100, requerido)")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="KPA creado exitosamente",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="KPA creado exitosamente"),
+     *             @OA\Property(property="data", ref="#/components/schemas/Kpa")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Error de validación de dominio",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="el nombre debe tener al menos 2 caracteres")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Error de validación técnica",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Error de validación"),
+     *             @OA\Property(
+     *                 property="errors",
+     *                 type="object",
+     *                 @OA\Property(
+     *                     property="name",
+     *                     type="array",
+     *                     @OA\Items(type="string", example="El campo name es obligatorio.")
+     *                 ),
+     *                 @OA\Property(
+     *                     property="implementation",
+     *                     type="array",
+     *                     @OA\Items(type="string", example="El campo implementation debe ser numérico.")
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Error interno del servidor"
+     *     )
+     * )
      */
     public function store(Request $request): JsonResponse
     {
@@ -92,7 +226,72 @@ class KpaController extends Controller
     }
 
     /**
-     * Actualizar un KPA existente
+     * @OA\Put(
+     *     path="/kpas/{id}",
+     *     tags={"KPAs"},
+     *     summary="Actualizar KPA existente",
+     *     description="Actualiza la información de un Área Clave Prioritaria, incluyendo su porcentaje de implementación.",
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="ID del KPA a actualizar",
+     *         @OA\Schema(type="integer", example=1)
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\MediaType(
+     *             mediaType="application/json",
+     *             @OA\Schema(
+     *                 required={"name", "implementation"},
+     *                 @OA\Property(property="name", type="string", maxLength=255, example="Educación de Calidad e Inclusiva", description="Nombre actualizado del área prioritaria"),
+     *                 @OA\Property(property="implementation", type="number", format="float", example=85.5, description="Porcentaje de implementación actualizado (0-100)")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="KPA actualizado exitosamente",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="KPA actualizado exitosamente"),
+     *             @OA\Property(property="data", ref="#/components/schemas/Kpa")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Error de validación de dominio"
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="KPA no encontrado",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="KPA no encontrado")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Error de validación técnica",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Error de validación"),
+     *             @OA\Property(
+     *                 property="errors",
+     *                 type="object",
+     *                 @OA\Property(
+     *                     property="implementation",
+     *                     type="array",
+     *                     @OA\Items(type="string", example="El campo implementation debe ser numérico.")
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Error interno del servidor"
+     *     )
+     * )
      */
     public function update(Request $request, int $id): JsonResponse
     {
@@ -123,7 +322,57 @@ class KpaController extends Controller
     }
 
     /**
-     * Buscar KPA por nombre
+     * @OA\Get(
+     *     path="/kpas/search",
+     *     tags={"KPAs"},
+     *     summary="Buscar KPA por nombre",
+     *     description="Busca un Área Clave Prioritaria específica por su nombre (búsqueda exacta, case-insensitive)",
+     *     @OA\Parameter(
+     *         name="name",
+     *         in="query",
+     *         required=true,
+     *         description="Nombre del KPA a buscar",
+     *         @OA\Schema(type="string", example="Educación de Calidad")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="KPA encontrado",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="KPA encontrado"),
+     *             @OA\Property(property="data", ref="#/components/schemas/Kpa")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="KPA no encontrado",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="KPA no encontrado")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Error de validación",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Error de validación"),
+     *             @OA\Property(
+     *                 property="errors",
+     *                 type="object",
+     *                 @OA\Property(
+     *                     property="name",
+     *                     type="array",
+     *                     @OA\Items(type="string", example="El campo name es obligatorio.")
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Error interno del servidor"
+     *     )
+     * )
      */
     public function search(Request $request): JsonResponse
     {
