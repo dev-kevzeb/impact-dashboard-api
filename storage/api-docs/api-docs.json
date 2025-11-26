@@ -101,14 +101,7 @@
                                 "required": [
                                     "name",
                                     "description",
-                                    "banner_img",
-                                    "start_date",
-                                    "end_date",
-                                    "contact_id",
-                                    "beneficiary_id",
-                                    "program_state_id",
-                                    "country_id",
-                                    "agency_id"
+                                    "contact_id"
                                 ],
                                 "properties": {
                                     "name": {
@@ -122,21 +115,9 @@
                                         "example": "Programa enfocado en mejorar la educación en zonas rurales mediante capacitación docente y equipamiento."
                                     },
                                     "banner_img": {
-                                        "description": "Imagen banner del programa (JPG, PNG, GIF, WEBP - máx 2MB)",
+                                        "description": "Imagen banner del programa (OPCIONAL - JPG, PNG, GIF, WEBP - máx 2MB)",
                                         "type": "string",
                                         "format": "binary"
-                                    },
-                                    "start_date": {
-                                        "description": "Fecha de inicio (YYYY-MM-DD)",
-                                        "type": "string",
-                                        "format": "date",
-                                        "example": "2025-01-15"
-                                    },
-                                    "end_date": {
-                                        "description": "Fecha de fin (YYYY-MM-DD, máx 20 años desde inicio)",
-                                        "type": "string",
-                                        "format": "date",
-                                        "example": "2027-12-31"
                                     },
                                     "program_url": {
                                         "description": "URL del sitio web del programa (opcional)",
@@ -149,23 +130,8 @@
                                         "type": "integer",
                                         "example": 1
                                     },
-                                    "beneficiary_id": {
-                                        "description": "ID del beneficiario principal",
-                                        "type": "integer",
-                                        "example": 2
-                                    },
                                     "program_state_id": {
-                                        "description": "ID del estado del programa",
-                                        "type": "integer",
-                                        "example": 1
-                                    },
-                                    "country_id": {
-                                        "description": "ID del país donde opera",
-                                        "type": "integer",
-                                        "example": 1
-                                    },
-                                    "agency_id": {
-                                        "description": "ID de la agencia ejecutora",
+                                        "description": "ID del estado (IGNORADO: siempre se crea como Inactivo)",
                                         "type": "integer",
                                         "example": 1
                                     },
@@ -179,17 +145,6 @@
                                             2,
                                             4,
                                             13
-                                        ]
-                                    },
-                                    "donor_ids[]": {
-                                        "description": "Array de IDs de Donors (opcional). Usar: donor_ids[0]=1, donor_ids[1]=3",
-                                        "type": "array",
-                                        "items": {
-                                            "type": "integer"
-                                        },
-                                        "example": [
-                                            1,
-                                            3
                                         ]
                                     }
                                 },
@@ -363,6 +318,26 @@
                                 }
                             }
                         }
+                    },
+                    "500": {
+                        "description": "Error interno del servidor",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Error en la búsqueda"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -430,6 +405,26 @@
                                 }
                             }
                         }
+                    },
+                    "500": {
+                        "description": "Error interno del servidor",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Error al obtener el programa"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     }
                 }
             },
@@ -460,13 +455,8 @@
                                 "required": [
                                     "name",
                                     "description",
-                                    "start_date",
-                                    "end_date",
                                     "contact_id",
-                                    "beneficiary_id",
-                                    "program_state_id",
-                                    "country_id",
-                                    "agency_id"
+                                    "program_state_id"
                                 ],
                                 "properties": {
                                     "_method": {
@@ -489,16 +479,6 @@
                                         "type": "string",
                                         "format": "binary"
                                     },
-                                    "start_date": {
-                                        "type": "string",
-                                        "format": "date",
-                                        "example": "2025-06-01"
-                                    },
-                                    "end_date": {
-                                        "type": "string",
-                                        "format": "date",
-                                        "example": "2030-12-31"
-                                    },
                                     "program_url": {
                                         "type": "string",
                                         "format": "url",
@@ -508,19 +488,7 @@
                                         "type": "integer",
                                         "example": 3
                                     },
-                                    "beneficiary_id": {
-                                        "type": "integer",
-                                        "example": 4
-                                    },
                                     "program_state_id": {
-                                        "type": "integer",
-                                        "example": 2
-                                    },
-                                    "country_id": {
-                                        "type": "integer",
-                                        "example": 5
-                                    },
-                                    "agency_id": {
                                         "type": "integer",
                                         "example": 2
                                     },
@@ -530,14 +498,6 @@
                                         "items": {
                                             "type": "integer",
                                             "example": 1
-                                        }
-                                    },
-                                    "donor_ids": {
-                                        "description": "IDs de donantes (reemplaza los existentes)",
-                                        "type": "array",
-                                        "items": {
-                                            "type": "integer",
-                                            "example": 3
                                         }
                                     }
                                 },
@@ -578,6 +538,26 @@
                     },
                     "422": {
                         "description": "Error de validación técnica"
+                    },
+                    "500": {
+                        "description": "Error interno del servidor",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Error al actualizar el programa"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -605,21 +585,10 @@
                         "example": "Programa enfocado en mejorar la educación en zonas rurales"
                     },
                     "banner_img": {
-                        "description": "Path de la imagen banner",
+                        "description": "Path de la imagen banner (opcional)",
                         "type": "string",
-                        "example": "program_banners/1731884521_banner.jpg"
-                    },
-                    "start_date": {
-                        "description": "Fecha de inicio",
-                        "type": "string",
-                        "format": "date",
-                        "example": "2025-01-15"
-                    },
-                    "end_date": {
-                        "description": "Fecha de fin",
-                        "type": "string",
-                        "format": "date",
-                        "example": "2027-12-31"
+                        "example": "program_banners/1731884521_banner.jpg",
+                        "nullable": true
                     },
                     "program_url": {
                         "description": "URL del sitio web del programa",
@@ -629,30 +598,14 @@
                     "contact": {
                         "$ref": "#/components/schemas/Contact"
                     },
-                    "beneficiary": {
-                        "$ref": "#/components/schemas/Beneficiary"
-                    },
                     "program_state": {
                         "$ref": "#/components/schemas/ProgramState"
-                    },
-                    "country": {
-                        "$ref": "#/components/schemas/Country"
-                    },
-                    "agency": {
-                        "$ref": "#/components/schemas/Agency"
                     },
                     "sdgs": {
                         "description": "Objetivos de Desarrollo Sostenible asociados",
                         "type": "array",
                         "items": {
                             "$ref": "#/components/schemas/SDG"
-                        }
-                    },
-                    "donors": {
-                        "description": "Donantes que financian el programa",
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/Donor"
                         }
                     }
                 },
@@ -665,9 +618,17 @@
                         "type": "integer",
                         "example": 1
                     },
-                    "name": {
+                    "first_name": {
                         "type": "string",
-                        "example": "Juan Pérez"
+                        "example": "Juan"
+                    },
+                    "last_name": {
+                        "type": "string",
+                        "example": "Pérez"
+                    },
+                    "title": {
+                        "type": "string",
+                        "example": "Director"
                     },
                     "email": {
                         "type": "string",
@@ -675,21 +636,7 @@
                     },
                     "phone": {
                         "type": "string",
-                        "example": "+506 8888-8888"
-                    }
-                },
-                "type": "object"
-            },
-            "Beneficiary": {
-                "title": "Beneficiary",
-                "properties": {
-                    "id": {
-                        "type": "integer",
-                        "example": 2
-                    },
-                    "name": {
-                        "type": "string",
-                        "example": "Comunidades Rurales de América Latina"
+                        "example": "+591 77123456"
                     }
                 },
                 "type": "object"
@@ -702,65 +649,9 @@
                         "example": 1
                     },
                     "name": {
+                        "description": "Posibles valores: Inactivo, Activo, Finalizado",
                         "type": "string",
-                        "example": "Activo"
-                    }
-                },
-                "type": "object"
-            },
-            "Country": {
-                "title": "Country",
-                "properties": {
-                    "id": {
-                        "type": "integer",
-                        "example": 1
-                    },
-                    "name": {
-                        "type": "string",
-                        "example": "Costa Rica"
-                    },
-                    "currency": {
-                        "properties": {
-                            "id": {
-                                "type": "integer",
-                                "example": 1
-                            },
-                            "name": {
-                                "type": "string",
-                                "example": "Colón Costarricense"
-                            },
-                            "code": {
-                                "type": "string",
-                                "example": "CRC"
-                            },
-                            "symbol": {
-                                "type": "string",
-                                "example": "₡"
-                            }
-                        },
-                        "type": "object"
-                    }
-                },
-                "type": "object"
-            },
-            "Agency": {
-                "title": "Agency",
-                "properties": {
-                    "id": {
-                        "type": "integer",
-                        "example": 1
-                    },
-                    "name": {
-                        "type": "string",
-                        "example": "UNICEF"
-                    },
-                    "url": {
-                        "type": "string",
-                        "example": "https://www.unicef.org"
-                    },
-                    "is_approved": {
-                        "type": "boolean",
-                        "example": true
+                        "example": "Inactivo"
                     }
                 },
                 "type": "object"
@@ -777,28 +668,13 @@
                         "type": "string",
                         "example": "Educación de Calidad"
                     },
-                    "image": {
+                    "description": {
                         "type": "string",
-                        "example": "sdg_images/sdg4.png"
+                        "example": "Garantizar una educación inclusiva, equitativa y de calidad"
                     },
-                    "filename": {
+                    "color_hex": {
                         "type": "string",
-                        "example": "sdg4.png"
-                    }
-                },
-                "type": "object"
-            },
-            "Donor": {
-                "title": "Donor",
-                "description": "Donante financiador",
-                "properties": {
-                    "id": {
-                        "type": "integer",
-                        "example": 1
-                    },
-                    "name": {
-                        "type": "string",
-                        "example": "Banco Mundial"
+                        "example": "#C5192D"
                     }
                 },
                 "type": "object"

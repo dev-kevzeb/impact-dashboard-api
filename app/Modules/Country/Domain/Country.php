@@ -79,13 +79,4 @@ class Country extends Model
         // definimos la relacion 1:1 con Currency
         return $this->belongsTo(Currency::class, 'currency_id');
     }
-
-    /**
-     * Relación 1:N con Program
-     * Un país puede tener múltiples programas
-     */
-    public function programs()
-    {
-        return $this->hasMany(\App\Modules\Program\Domain\Program::class, 'country_id');
-    }
 }
