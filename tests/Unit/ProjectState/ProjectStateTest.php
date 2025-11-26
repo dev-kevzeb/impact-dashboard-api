@@ -2,9 +2,9 @@
 
 namespace Tests\Unit;
 
-use App\Models\ProjectState;
+use App\Modules\ProjectState\Domain\ProjectState;
 use PHPUnit\Framework\TestCase;
-use InvalidArgumentException;
+use RuntimeException;
 
 class ProjectStateTest extends TestCase
 {
@@ -19,19 +19,15 @@ class ProjectStateTest extends TestCase
         }
     }
 
-    
-
-
-
     public function test_project_state_name_cannot_be_empty()
     {
         $this->shouldThrowAndAssert(
             function () {
                 ProjectState::at("");
             },
-            InvalidArgumentException::class,
+            RuntimeException::class,
             function ($exception) {
-                $this->assertEquals(ProjectState::$ERROR_STATE_EMPTY, $exception->getMessage());
+                $this->assertEquals(ProjectState::$ERROR_NAME_EMPTY, $exception->getMessage());
             }
         );
     }
@@ -42,9 +38,9 @@ class ProjectStateTest extends TestCase
             function () {
                 ProjectState::at("   ");
             },
-            InvalidArgumentException::class,
+            RuntimeException::class,
             function ($exception) {
-                $this->assertEquals(ProjectState::$ERROR_STATE_EMPTY, $exception->getMessage());
+                $this->assertEquals(ProjectState::$ERROR_NAME_EMPTY, $exception->getMessage());
             }
         );
     }
@@ -55,9 +51,9 @@ class ProjectStateTest extends TestCase
             function () {
                 ProjectState::at("A");
             },
-            InvalidArgumentException::class,
+            RuntimeException::class,
             function ($exception) {
-                $this->assertEquals(ProjectState::$ERROR_STATE_MIN_LENGTH, $exception->getMessage());
+                $this->assertEquals(ProjectState::$ERROR_NAME_MIN_LENGTH, $exception->getMessage());
             }
         );
     }
@@ -68,13 +64,12 @@ class ProjectStateTest extends TestCase
             function () {
                 ProjectState::at("AB");
             },
-            InvalidArgumentException::class,
+            RuntimeException::class,
             function ($exception) {
-                $this->assertEquals(ProjectState::$ERROR_STATE_MIN_LENGTH, $exception->getMessage());
+                $this->assertEquals(ProjectState::$ERROR_NAME_MIN_LENGTH, $exception->getMessage());
             }
         );
     }
-
 
     public function test_project_state_can_be_created_with_valid_data()
     {
@@ -124,20 +119,17 @@ class ProjectStateTest extends TestCase
         $this->assertEquals("Ejecución", $projectState->getName());
     }
 
-
-
-
     public function test_project_state_name_too_long_throws_exception()
     {
-        $longState = str_repeat("A", 101); // 101 caracteres
+        $longName = str_repeat("A", 101); // 101 caracteres
         
         $this->shouldThrowAndAssert(
-            function () use ($longState) {
-                ProjectState::at($longState);
+            function () use ($longName) {
+                ProjectState::at($longName);
             },
-            InvalidArgumentException::class,
+            RuntimeException::class,
             function ($exception) {
-                $this->assertEquals(ProjectState::$ERROR_STATE_MAX_LENGTH, $exception->getMessage());
+                $this->assertEquals(ProjectState::$ERROR_NAME_MAX_LENGTH, $exception->getMessage());
             }
         );
     }
@@ -148,5 +140,4 @@ class ProjectStateTest extends TestCase
         
         $this->assertEquals("Estado Trimmed", $projectState->getName());
     }
-
 }

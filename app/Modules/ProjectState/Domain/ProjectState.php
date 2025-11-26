@@ -2,48 +2,45 @@
 
 namespace App\Modules\ProjectState\Domain;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use RuntimeException;
 
 class ProjectState extends Model
 {
+    use HasFactory;
 
     protected $table = 'project_state';
     protected $fillable = ['state'];
-    // Constantes de mensajes de error
-    public static $ERROR_STATE_INVALID_TYPE = 'El estado del proyecto no es valido';
-    public static $ERROR_STATE_EMPTY = 'el nombre del estado del proyecto no debe ir vacio';  
-    public static $ERROR_STATE_MIN_LENGTH = 'el nombre del estado del proyecto debe tener al menos 3 caracteres';
-    public static $ERROR_STATE_MAX_LENGTH = 'el nombre del estado del proyecto no debe exceder 100 caracteres';
-    
-  
-    
-    public static function at($state): ProjectState
+
+    // Error constants in Spanish
+    public static $ERROR_NAME_EMPTY = 'el nombre del estado del proyecto no debe ir vacío';
+    public static $ERROR_NAME_MIN_LENGTH = 'el nombre del estado del proyecto debe tener al menos 3 caracteres';
+    public static $ERROR_NAME_MAX_LENGTH = 'el nombre del estado del proyecto no debe exceder 100 caracteres';
+
+    // Factory method with domain validation
+    public static function at(string $name): ProjectState
     {
-        if(!self::isString($state)){
-            throw new \InvalidArgumentException(self::$ERROR_STATE_INVALID_TYPE);
+        if (empty(trim($name))) {
+            throw new RuntimeException(self::$ERROR_NAME_EMPTY);
         }
-        if(empty(trim($state))){
-            throw new \InvalidArgumentException(self::$ERROR_STATE_EMPTY);
+        if (strlen(trim($name)) < 3) {
+            throw new RuntimeException(self::$ERROR_NAME_MIN_LENGTH);
         }
-        if(strlen(trim($state)) < 3){
-            throw new \InvalidArgumentException(self::$ERROR_STATE_MIN_LENGTH);
+        if (strlen(trim($name)) > 100) {
+            throw new RuntimeException(self::$ERROR_NAME_MAX_LENGTH);
         }
-        if(strlen(trim($state)) > 100){
-            throw new \InvalidArgumentException(self::$ERROR_STATE_MAX_LENGTH);
-        }
-        $state = trim($state);
-        $state = mb_strtolower($state);
-        return new self(['state' => trim($state)]);
+        return new ProjectState(['state' => trim($name)]);
     }
 
-    // getters
-    public function getName(): string
+    public function getState(): string
     {
-        return $this->name;
+        return $this->state;
     }
-    public static function isString($value):bool
+
+    // Laravel Factory integration (required for testing)
+    protected static function newFactory()
     {
-        return is_string($value);
+        return \Database\Factories\ProjectStateFactory::new();
     }
 }

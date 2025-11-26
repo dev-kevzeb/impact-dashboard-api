@@ -16,6 +16,7 @@
     use App\Modules\Donor\Controller\DonorController;
     use App\Modules\Beneficiary\Controller\BeneficiaryController;
     use App\Modules\ProgramState\Controller\ProgramStateController;
+    use App\Modules\Program\Controller\ProgramController;
 
     use App\Modules\Sdg\Controller\SdgController;
     use App\Modules\ProjectState\Controller\ProjectStateController;
@@ -163,5 +164,11 @@
 
         Route::get('project-indicators/indicators/by-project/{id}', [ProjectIndicatorController::class,'showIndicatorsByProjectId']);
         Route::get('project-indicators/indicators/by-project-name/{name}', [ProjectIndicatorController::class,'showIndicatorsByProjectName']);
-
+      
+        // API Routes para Programs
+        Route::get('programs', [ProgramController::class, 'index']);
+        Route::post('programs', [ProgramController::class, 'store']);
+        Route::get('programs/search', [ProgramController::class, 'search']);
+        Route::get('programs/{id}', [ProgramController::class, 'show']);
+        Route::put('programs/{id}', [ProgramController::class, 'update']);
     });
