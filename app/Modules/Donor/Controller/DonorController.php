@@ -71,7 +71,7 @@ class DonorController extends Controller
         try {
             $validated = $request->validated();
 
-            $donor = $this->donorService->createDonor($validated['name']);
+            $donor = $this->donorService->createDonor($validated['name'], $validated['contribution'], $validated['project_id']);
 
             return ApiResponse::created(
                 'Donante creado exitosamente',
@@ -94,7 +94,7 @@ class DonorController extends Controller
         try {
             $validated = $request->validated();
 
-            $donor = $this->donorService->updateDonor($id, $validated['name']);
+            $donor = $this->donorService->updateDonor($id, $validated['name'], $validated['contribution'], $validated['project_id']);
 
             return ApiResponse::success(
                 'Donante actualizado exitosamente',

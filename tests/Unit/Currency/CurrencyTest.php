@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Unit;
+namespace Tests\Unit\Currency;
 
 use Tests\TestCase;
 use App\Modules\Currency\Domain\Currency;
