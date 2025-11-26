@@ -5,6 +5,7 @@
     use App\Modules\Measure\Controller\MeasureController;
     use App\Modules\Project\Controller\ProjectController;
     use App\Modules\ProjectAgency\Controller\ProjectAgencyController;
+    use App\Modules\ProjectIndicator\Controller\ProjectIndicatorController;
     use Illuminate\Http\Request;
     use Illuminate\Support\Facades\Route;
     use App\Models\User;
@@ -152,5 +153,15 @@
         
         Route::get('project-agencies/agencies/by-project/{id}', [ProjectAgencyController::class,'showAgenciesByProjectId']);
         Route::get('project-agencies/agencies/by-project-name/{name}', [ProjectAgencyController::class,'showAgenciesByProjectName']);
+
+        // Listar todas las relaciones proyecto-indicador
+        Route::get('project-indicators', [ProjectIndicatorController::class,'index']);
+        Route::post('project-indicators', [ProjectIndicatorController::class,'createProjectIndicator']);
+        Route::delete('project-indicators', [ProjectIndicatorController::class,'deleteProjectIndicator']);
+        
+        Route::get('project-indicators/projects/by-indicator/{id}', [ProjectIndicatorController::class,'showProjectsByIndicatorId']);
+
+        Route::get('project-indicators/indicators/by-project/{id}', [ProjectIndicatorController::class,'showIndicatorsByProjectId']);
+        Route::get('project-indicators/indicators/by-project-name/{name}', [ProjectIndicatorController::class,'showIndicatorsByProjectName']);
 
     });

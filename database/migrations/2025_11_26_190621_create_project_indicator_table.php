@@ -11,24 +11,21 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('project_agency', function (Blueprint $table) {
+        Schema::create('project_indicator', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('project_id');
-            $table->unsignedBigInteger('agency_id');
+            $table->unsignedBigInteger('indicator_id');
             $table->timestamps();
 
             $table->foreign('project_id')->references('id')->on('project')->onDelete('cascade');
-            $table->foreign('agency_id')->references('id')->on('agency')->onDelete('cascade');
+            $table->foreign('indicator_id')->references('id')->on('indicator')->onDelete('cascade');
 
-            $table->unique(['project_id','agency_id']);
+            $table->unique(['project_id','indicator_id']);
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
-        Schema::dropIfExists('project_agency');
+        Schema::dropIfExists('project_indicator');
     }
 };

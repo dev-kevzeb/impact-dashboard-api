@@ -126,7 +126,7 @@ class Project extends Model
 
     public function indicators()
     {
-        return $this->belongsToMany(Indicator::class, 'project_agency', 'project_id', 'indicator_id');
+        return $this->belongsToMany(Indicator::class, 'project_indicator', 'project_id', 'indicator_id');
     }
 
     // Getters
