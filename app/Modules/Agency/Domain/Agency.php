@@ -6,7 +6,6 @@ use App\Modules\Project\Domain\Project;
 use App\Modules\ProjectAgency\Domain\ProjectAgency;
 use Illuminate\Database\Eloquent\Model;
 use RuntimeException;
-use App\Modules\Program\Domain\Program;
 
 class Agency extends Model
 {

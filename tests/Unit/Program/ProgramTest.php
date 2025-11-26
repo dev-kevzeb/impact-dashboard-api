@@ -4,33 +4,19 @@ namespace Tests\Unit\Program;
 
 use PHPUnit\Framework\TestCase;
 use App\Modules\Program\Domain\Program;
-use App\Modules\Country\Domain\Country;
-use App\Modules\Currency\Domain\Currency;
-use App\Modules\Agency\Domain\Agency;
 use App\Modules\ProgramState\Domain\ProgramState;
-use App\Modules\Beneficiary\Domain\Beneficiary;
-use App\Modules\Donor\Domain\Donor;
-use App\Modules\Sdg\Domain\Sdg;
 use App\Modules\Contact\Domain\Contact;
 use RuntimeException;
 
 
 class ProgramTest extends TestCase
 {
-    private Country $validCountry;
-    private Agency $validAgency;
-    private Beneficiary $validBeneficiary;
     private ProgramState $validProgramState;
     private Contact $validContact;
-    private Currency $validCurrency;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->validCurrency = Currency::at("USD");
-        $this->validCountry = Country::at("Costa Rica", $this->validCurrency);
-        $this->validAgency = Agency::at("UNICEF", "https://www.unicef.org", true);
-        $this->validBeneficiary = Beneficiary::at("Comunidades Rurales");
         $this->validProgramState = ProgramState::at("Activo");
         $this->validContact = Contact::at("Juan", "Pérez", "Director", "juan@example.com", "+50688888888");
     }
@@ -41,22 +27,15 @@ class ProgramTest extends TestCase
             "Programa de Educación Rural 2025",
             "Programa enfocado en mejorar la educación en zonas rurales mediante capacitación docente",
             "program_banners/banner.jpg",
-            "2025-01-15",
-            "2027-12-31",
             "https://www.programa-educacion.org",
             $this->validContact,
-            $this->validBeneficiary,
-            $this->validProgramState,
-            $this->validCountry,
-            $this->validAgency
+            $this->validProgramState
         );
 
         $this->assertInstanceOf(Program::class, $program);
         $this->assertEquals("Programa de Educación Rural 2025", $program->name);
         $this->assertEquals("Programa enfocado en mejorar la educación en zonas rurales mediante capacitación docente", $program->description);
         $this->assertEquals("program_banners/banner.jpg", $program->banner_img);
-        $this->assertEquals("2025-01-15", $program->start_date);
-        $this->assertEquals("2027-12-31", $program->end_date);
         $this->assertEquals("https://www.programa-educacion.org", $program->program_url);
     }
 
@@ -66,14 +45,9 @@ class ProgramTest extends TestCase
             "ABC",  // 3 caracteres (mínimo)
             "Descripción válida con más de 10 caracteres",
             "banner.jpg",
-            "2025-01-01",
-            "2025-12-31",
             "https://example.com",
             $this->validContact,
-            $this->validBeneficiary,
-            $this->validProgramState,
-            $this->validCountry,
-            $this->validAgency
+            $this->validProgramState
         );
 
         $this->assertEquals("ABC", $program->name);
@@ -85,36 +59,27 @@ class ProgramTest extends TestCase
             "Programa Test",
             "1234567890",  // 10 caracteres (mínimo)
             "banner.jpg",
-            "2025-01-01",
-            "2025-12-31",
             "",
             $this->validContact,
-            $this->validBeneficiary,
-            $this->validProgramState,
-            $this->validCountry,
-            $this->validAgency
+            $this->validProgramState
         );
 
         $this->assertEquals("1234567890", $program->description);
     }
 
-    public function test_can_create_program_with_maximum_duration_20_years(): void
+    public function test_can_create_program_with_null_banner_img(): void
     {
         $program = Program::at(
-            "Programa Largo Plazo",
-            "Programa de desarrollo con duración máxima permitida",
-            "banner.jpg",
-            "2025-01-01",
-            "2044-12-31",  // Justo 20 años menos 1 día
+            "Programa Sin Banner",
+            "Programa de desarrollo sin imagen de banner",
+            null,  // banner_img es nullable
             "",
             $this->validContact,
-            $this->validBeneficiary,
-            $this->validProgramState,
-            $this->validCountry,
-            $this->validAgency
+            $this->validProgramState
         );
 
         $this->assertInstanceOf(Program::class, $program);
+        $this->assertNull($program->banner_img);
     }
 
     public function test_trims_whitespace_from_inputs(): void
@@ -123,21 +88,14 @@ class ProgramTest extends TestCase
             "  Programa con espacios  ",
             "  Descripción con espacios al inicio y final  ",
             "  banner.jpg  ",
-            "  2025-01-01  ",
-            "  2025-12-31  ",
             "  https://example.com  ",
             $this->validContact,
-            $this->validBeneficiary,
-            $this->validProgramState,
-            $this->validCountry,
-            $this->validAgency
+            $this->validProgramState
         );
 
         $this->assertEquals("Programa con espacios", $program->name);
         $this->assertEquals("Descripción con espacios al inicio y final", $program->description);
         $this->assertEquals("banner.jpg", $program->banner_img);
-        $this->assertEquals("2025-01-01", $program->start_date);
-        $this->assertEquals("2025-12-31", $program->end_date);
         $this->assertEquals("https://example.com", $program->program_url);
     }
 
@@ -147,14 +105,9 @@ class ProgramTest extends TestCase
             "Programa Test",
             "Descripción válida del programa",
             "banner.jpg",
-            "2025-01-01",
-            "2025-12-31",
             "",  // URL vacía es permitida
             $this->validContact,
-            $this->validBeneficiary,
-            $this->validProgramState,
-            $this->validCountry,
-            $this->validAgency
+            $this->validProgramState
         );
 
         $this->assertEquals("", $program->program_url);
@@ -169,14 +122,9 @@ class ProgramTest extends TestCase
             "",  // Nombre vacío
             "Descripción válida del programa",
             "banner.jpg",
-            "2025-01-01",
-            "2025-12-31",
             "https://example.com",
             $this->validContact,
-            $this->validBeneficiary,
-            $this->validProgramState,
-            $this->validCountry,
-            $this->validAgency
+            $this->validProgramState
         );
     }
 
@@ -189,14 +137,9 @@ class ProgramTest extends TestCase
             "   ",  // Solo espacios
             "Descripción válida del programa",
             "banner.jpg",
-            "2025-01-01",
-            "2025-12-31",
             "https://example.com",
             $this->validContact,
-            $this->validBeneficiary,
-            $this->validProgramState,
-            $this->validCountry,
-            $this->validAgency
+            $this->validProgramState
         );
     }
 
@@ -209,14 +152,9 @@ class ProgramTest extends TestCase
             "AB",  // 2 caracteres (mínimo es 3)
             "Descripción válida del programa",
             "banner.jpg",
-            "2025-01-01",
-            "2025-12-31",
             "https://example.com",
             $this->validContact,
-            $this->validBeneficiary,
-            $this->validProgramState,
-            $this->validCountry,
-            $this->validAgency
+            $this->validProgramState
         );
     }
 
@@ -229,14 +167,9 @@ class ProgramTest extends TestCase
             "  A  ",  // 1 carácter después de trim
             "Descripción válida del programa",
             "banner.jpg",
-            "2025-01-01",
-            "2025-12-31",
             "https://example.com",
             $this->validContact,
-            $this->validBeneficiary,
-            $this->validProgramState,
-            $this->validCountry,
-            $this->validAgency
+            $this->validProgramState
         );
     }
 
@@ -249,14 +182,9 @@ class ProgramTest extends TestCase
             "Programa Válido",
             "",  // Descripción vacía
             "banner.jpg",
-            "2025-01-01",
-            "2025-12-31",
             "https://example.com",
             $this->validContact,
-            $this->validBeneficiary,
-            $this->validProgramState,
-            $this->validCountry,
-            $this->validAgency
+            $this->validProgramState
         );
     }
 
@@ -269,14 +197,9 @@ class ProgramTest extends TestCase
             "Programa Válido",
             "     ",  // Solo espacios
             "banner.jpg",
-            "2025-01-01",
-            "2025-12-31",
             "https://example.com",
             $this->validContact,
-            $this->validBeneficiary,
-            $this->validProgramState,
-            $this->validCountry,
-            $this->validAgency
+            $this->validProgramState
         );
     }
 
@@ -289,14 +212,9 @@ class ProgramTest extends TestCase
             "Programa Válido",
             "123456789",  // 9 caracteres (mínimo es 10)
             "banner.jpg",
-            "2025-01-01",
-            "2025-12-31",
             "https://example.com",
             $this->validContact,
-            $this->validBeneficiary,
-            $this->validProgramState,
-            $this->validCountry,
-            $this->validAgency
+            $this->validProgramState
         );
     }
 
@@ -309,74 +227,24 @@ class ProgramTest extends TestCase
             "Programa Válido",
             "  ABC  ",  // 3 caracteres después de trim (mínimo es 10)
             "banner.jpg",
-            "2025-01-01",
-            "2025-12-31",
             "https://example.com",
             $this->validContact,
-            $this->validBeneficiary,
-            $this->validProgramState,
-            $this->validCountry,
-            $this->validAgency
+            $this->validProgramState
         );
     }
 
-    public function test_throws_exception_when_end_date_is_before_start_date(): void
-    {
-        $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage(Program::$ERROR_END_DATE_BEFORE_START);
-
-        Program::at(
-            "Programa Inválido",
-            "Descripción válida del programa",
-            "banner.jpg",
-            "2025-12-31",
-            "2025-01-01",  // Fecha fin antes de inicio
-            "https://example.com",
-            $this->validContact,
-            $this->validBeneficiary,
-            $this->validProgramState,
-            $this->validCountry,
-            $this->validAgency
-        );
-    }
-
-    public function test_can_create_program_when_end_date_equals_start_date(): void
+    public function test_can_create_program_with_whitespace_in_banner_img(): void
     {
         $program = Program::at(
-            "Programa Un Día",
+            "Programa Test",
             "Descripción válida del programa",
-            "banner.jpg",
-            "2025-01-01",
-            "2025-01-01",  // Misma fecha - válido según la lógica actual
+            "  banner_image.jpg  ",  // Con espacios
             "https://example.com",
             $this->validContact,
-            $this->validBeneficiary,
-            $this->validProgramState,
-            $this->validCountry,
-            $this->validAgency
+            $this->validProgramState
         );
 
-        $this->assertInstanceOf(Program::class, $program);
-    }
-
-    public function test_throws_exception_when_duration_exceeds_20_years(): void
-    {
-        $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage(Program::$ERROR_DURATION_TOO_LONG);
-
-        Program::at(
-            "Programa Muy Largo",
-            "Descripción válida del programa con duración excesiva",
-            "banner.jpg",
-            "2025-01-01",
-            "2046-01-01",  // 21 años (excede el máximo)
-            "https://example.com",
-            $this->validContact,
-            $this->validBeneficiary,
-            $this->validProgramState,
-            $this->validCountry,
-            $this->validAgency
-        );
+        $this->assertEquals("banner_image.jpg", $program->banner_img);
     }
 
     public function test_throws_type_error_when_contact_is_not_instance_of_contact(): void
@@ -388,34 +256,9 @@ class ProgramTest extends TestCase
             "Programa Test",
             "Descripción válida del programa",
             "banner.jpg",
-            "2025-01-01",
-            "2025-12-31",
             "https://example.com",
-            new \stdClass(),  
-            $this->validBeneficiary,
-            $this->validProgramState,
-            $this->validCountry,
-            $this->validAgency
-        );
-    }
-
-    public function test_throws_type_error_when_beneficiary_is_not_instance_of_beneficiary(): void
-    {
-        $this->expectException(\TypeError::class);
-        $this->expectExceptionMessageMatches('/Beneficiary.*stdClass/');
-
-        Program::at(
-            "Programa Test",
-            "Descripción válida del programa",
-            "banner.jpg",
-            "2025-01-01",
-            "2025-12-31",
-            "https://example.com",
-            $this->validContact,
-            new \stdClass(),  
-            $this->validProgramState,
-            $this->validCountry,
-            $this->validAgency
+            new \stdClass(),
+            $this->validProgramState
         );
     }
 
@@ -428,75 +271,13 @@ class ProgramTest extends TestCase
             "Programa Test",
             "Descripción válida del programa",
             "banner.jpg",
-            "2025-01-01",
-            "2025-12-31",
             "https://example.com",
             $this->validContact,
-            $this->validBeneficiary,
-            new \stdClass(), 
-            $this->validCountry,
-            $this->validAgency
+            new \stdClass()
         );
     }
 
-    public function test_throws_type_error_when_country_is_not_instance_of_country(): void
-    {
-        $this->expectException(\TypeError::class);
-        $this->expectExceptionMessageMatches('/Country.*stdClass/');
 
-        Program::at(
-            "Programa Test",
-            "Descripción válida del programa",
-            "banner.jpg",
-            "2025-01-01",
-            "2025-12-31",
-            "https://example.com",
-            $this->validContact,
-            $this->validBeneficiary,
-            $this->validProgramState,
-            new \stdClass(), 
-            $this->validAgency
-        );
-    }
-
-    public function test_throws_type_error_when_agency_is_not_instance_of_agency(): void
-    {
-        $this->expectException(\TypeError::class);
-        $this->expectExceptionMessageMatches('/Agency.*stdClass/');
-
-        Program::at(
-            "Programa Test",
-            "Descripción válida del programa",
-            "banner.jpg",
-            "2025-01-01",
-            "2025-12-31",
-            "https://example.com",
-            $this->validContact,
-            $this->validBeneficiary,
-            $this->validProgramState,
-            $this->validCountry,
-            new \stdClass() 
-        );
-    }
-
-    public function test_can_create_program_with_exact_20_years_duration(): void
-    {
-        $program = Program::at(
-            "Programa 20 Años Exactos",
-            "Programa con duración exacta de 20 años",
-            "banner.jpg",
-            "2025-01-01",
-            "2045-01-01",  // Exactamente 20 años
-            "https://example.com",
-            $this->validContact,
-            $this->validBeneficiary,
-            $this->validProgramState,
-            $this->validCountry,
-            $this->validAgency
-        );
-
-        $this->assertInstanceOf(Program::class, $program);
-    }
 
     public function test_can_create_program_with_unicode_characters_in_name(): void
     {
@@ -504,14 +285,9 @@ class ProgramTest extends TestCase
             "Programa Educación 2025",  // Con tilde
             "Descripción válida con ñ y tildes: ñáéíóú",
             "banner.jpg",
-            "2025-01-01",
-            "2025-12-31",
             "https://example.com",
             $this->validContact,
-            $this->validBeneficiary,
-            $this->validProgramState,
-            $this->validCountry,
-            $this->validAgency
+            $this->validProgramState
         );
 
         $this->assertEquals("Programa Educación 2025", $program->name);

@@ -17,8 +17,6 @@ class ProgramResource extends JsonResource
             'name' => $this->name,
             'description' => $this->description,
             'banner_img' => $this->banner_img,
-            'start_date' => $this->start_date,
-            'end_date' => $this->end_date,
             'program_url' => $this->program_url,
             
             // Relaciones cargadas (si existen)
@@ -26,28 +24,12 @@ class ProgramResource extends JsonResource
                 return new ContactResource($this->contact);
             }),
             
-            'beneficiary' => $this->whenLoaded('beneficiary', function () {
-                return new BeneficiaryResource($this->beneficiary);
-            }),
-            
             'program_state' => $this->whenLoaded('programState', function () {
                 return new ProgramStateResource($this->programState);
             }),
             
-            'country' => $this->whenLoaded('country', function () {
-                return new CountryResource($this->country);
-            }),
-            
-            'agency' => $this->whenLoaded('agency', function () {
-                return new AgencyResource($this->agency);
-            }),
-            
             'sdgs' => $this->whenLoaded('sdgs', function () {
                 return SdgResource::collection($this->sdgs);
-            }),
-            
-            'donors' => $this->whenLoaded('donors', function () {
-                return DonorResource::collection($this->donors);
             }),
             
             'projects' => $this->whenLoaded('projects', function () {
