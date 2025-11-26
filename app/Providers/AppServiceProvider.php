@@ -15,14 +15,8 @@ class AppServiceProvider extends ServiceProvider
         );
 
         // Donor Module - Service binding
-        $this->app->bind(
-            \App\Modules\Donor\Service\DonorService::class,
-            function ($app) {
-                return new \App\Modules\Donor\Service\DonorService(
-                    $app->make(\App\Modules\Donor\Repository\DonorRepository::class)
-                );
-            }
-        );
+        $this->app->bind(\App\Modules\Donor\Service\DonorService::class);
+
 
         // Beneficiary Module - Repository binding
         $this->app->bind(

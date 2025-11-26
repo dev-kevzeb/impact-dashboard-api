@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Unit;
+namespace Tests\Unit\Sdg;
 
 use PHPUnit\Framework\TestCase;
 use App\Modules\Sdg\Domain\Sdg;

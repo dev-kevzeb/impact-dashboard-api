@@ -2,6 +2,13 @@
 
 namespace App\Models;
 
+use App\Modules\Agency\Domain\Agency;
+use App\Modules\Beneficiary\Domain\Beneficiary;
+use App\Modules\Contact\Domain\Contact;
+use App\Modules\Country\Domain\Country;
+use App\Modules\Donor\Domain\Donor;
+use App\Modules\Indicator\Domain\Indicator;
+use App\Modules\ProjectState\Domain\ProjectState;
 use RuntimeException;
 
 class Project
@@ -221,8 +228,8 @@ class Project
         if (!is_array($projectDonors)) {
             throw new RuntimeException(self::$ERROR_PROJECT_DONORS_NOT_ARRAY);
         }
-        foreach ($projectDonors as $projectDonor) {
-            if (!($projectDonor instanceof ProjectDonor)) {
+        foreach ($projectDonors as $donor) {
+            if (!($donor instanceof Donor)) {
                 throw new RuntimeException(self::$ERROR_PROJECT_DONORS_INVALID_INSTANCE);
             }
         }

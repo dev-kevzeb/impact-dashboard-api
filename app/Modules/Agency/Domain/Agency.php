@@ -2,6 +2,8 @@
 
 namespace App\Modules\Agency\Domain;
 
+use App\Modules\Project\Domain\Project;
+use App\Modules\ProjectAgency\Domain\ProjectAgency;
 use Illuminate\Database\Eloquent\Model;
 use RuntimeException;
 
@@ -82,5 +84,15 @@ class Agency extends Model
     public function isApproved(): bool
     {
         return (bool) $this->is_approved;
+    }
+
+    public function projectAgencies()
+    {
+        return $this->hasMany(ProjectAgency::class, 'agency_id', 'id');
+    }
+
+    public function projects()
+    {
+        return $this->belongsToMany(Project::class, 'project_agency', 'agency_id', 'project_id');
     }
 }

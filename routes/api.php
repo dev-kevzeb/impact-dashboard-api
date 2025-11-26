@@ -1,5 +1,6 @@
 <?php
 
+
 use App\Modules\Indicator\Controller\IndicatorController;
 use App\Modules\IndicatorType\Controller\IndicatorTypeController;
 use App\Modules\Measure\Controller\MeasureController;
@@ -20,6 +21,9 @@ use App\Modules\Contact\Controller\ContactController;
 use App\Modules\Agency\Controller\AgencyController;
 use App\Modules\CountryKpa\Controller\CountryKpaController;
 use \App\Modules\StrategicOutput\Controller\StrategicOutputController;
+use App\Modules\Project\Controller\ProjectController;
+use App\Modules\ProjectAgency\Controller\ProjectAgencyController;
+
 
 Route::prefix('v1')->group(function () {
     // API Routes para Donors
@@ -138,4 +142,21 @@ Route::prefix('v1')->group(function () {
     Route::get('programs/search', [ProgramController::class, 'search']);
     Route::get('programs/{id}', [ProgramController::class, 'show']);
     Route::put('programs/{id}', [ProgramController::class, 'update']);
+
+    // API Routes para Project
+    Route::get('projects', [ProjectController::class, 'index']);
+    Route::post('projects', [ProjectController::class, 'store']);
+    Route::get('projects/search', [ProjectController::class, 'search']);
+    Route::get('projects/{id}', [ProjectController::class, 'show']);
+    Route::put('projects/{id}', [ProjectController::class, 'update']);
+
+    // Listar todas las relaciones proyecto-agencia
+    Route::get('project-agencies', [ProjectAgencyController::class,'index']);
+    Route::post('project-agencies', [ProjectAgencyController::class,'createProjectAgency']);
+    Route::delete('project-agencies', [ProjectAgencyController::class,'deleteProjectAgency']);
+    Route::get('project-agencies/projects/by-agency/{id}', [ProjectAgencyController::class,'showProjectsByAgencyId']);
+    Route::get('project-agencies/projects/by-agency-name/{name}', [ProjectAgencyController::class, 'showProjectsByAgencyName']);
+    Route::get('project-agencies/agencies/by-project/{id}', [ProjectAgencyController::class,'showAgenciesByProjectId']);
+    Route::get('project-agencies/agencies/by-project-name/{name}', [ProjectAgencyController::class,'showAgenciesByProjectName']);
+
 });

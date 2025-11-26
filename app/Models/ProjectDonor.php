@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Modules\Donor\Domain\Donor;
 use Illuminate\Database\Eloquent\Model;
 use RuntimeException;
 

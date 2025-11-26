@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Unit;
+namespace Tests\Unit\ProgramState;
 
 use PHPUnit\Framework\TestCase;
 use App\Modules\ProgramState\Domain\ProgramState;

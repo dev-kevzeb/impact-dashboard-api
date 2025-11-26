@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Unit;
+namespace Tests\Unit\Kpa;
 
 use PHPUnit\Framework\TestCase;
 use App\Modules\Kpa\Domain\Kpa;

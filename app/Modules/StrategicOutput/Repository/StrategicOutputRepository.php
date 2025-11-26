@@ -1,5 +1,6 @@
 <?php
 namespace App\Modules\StrategicOutput\Repository;
+
 use App\Modules\StrategicOutput\Domain\StrategicOutput;
 use App\Repositories\AbstractRepository;
 use App\Repositories\RepositoryInterface;

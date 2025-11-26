@@ -24,7 +24,7 @@ class Measure extends Model
 
         if ($name === '') throw new RuntimeException(self::$ERROR_NAME_EMPTY);
         if (strlen($name) < 2) throw new RuntimeException(self::$ERROR_NAME_MIN_LENGTH);
-        if (strlen($name) > 100) throw new RuntimeException(self::$ERROR_NAME_MAX_LENGTH);
+        if (strlen($name) > 150) throw new RuntimeException(self::$ERROR_NAME_MAX_LENGTH);
 
         return new self(['name' => $name, 'strategic_output_id' => $strategicOutput->id]);
     }
