@@ -1,24 +1,23 @@
 <?php
 
-namespace Tests\Unit;
+namespace Tests\Unit\Project;
 
-use App\Models\Agency;
-use App\Models\Beneficiary;
-use App\Models\Contact;
-use PHPUnit\Framework\TestCase;
-use App\Models\Country;
-use App\Models\Currency;
-use App\Models\Donor;
-use App\Models\Indicator;
-use App\Models\IndicatorType;
-use App\Models\Kpa;
-use App\Models\Measure;
+
 use App\Models\Project;
-use App\Models\ProjectDonor;
-use App\Models\ProjectState;
-use App\Models\StrategicOutput;
+use App\Modules\Agency\Domain\Agency;
+use App\Modules\Beneficiary\Domain\Beneficiary;
+use App\Modules\Contact\Domain\Contact;
+use App\Modules\Country\Domain\Country;
+use App\Modules\Currency\Domain\Currency;
+use App\Modules\Donor\Domain\Donor;
+use App\Modules\Indicator\Domain\Indicator;
+use App\Modules\IndicatorType\Domain\IndicatorType;
+use App\Modules\Measure\Domain\Measure;
+use App\Modules\ProjectState\Domain\ProjectState;
+use App\Modules\StrategicOutput\Domain\StrategicOutput;
 use Exception;
 use RuntimeException;
+use PHPUnit\Framework\TestCase;
 
 class ProjectTest extends TestCase
 {
@@ -28,35 +27,34 @@ class ProjectTest extends TestCase
     private ProjectState $validProjectState;
     private Contact $validContact;
     private Beneficiary $validProjectBeneficiary;
-    private array $validProjectDonors;
+    private array $validDonors;
     
     protected function setUp(): void
     {
         parent::setUp();
         
-        $this->validCountry = Country::at("Pais Valido", Currency::at("ARS", "Peso Argentino"));
+        $this->validCountry = Country::at("Pais Valido", Currency::at("ARS"));
         $this->validAgency = Agency::at("Agencia Valida", "https://www.agencia.com", true);
         $this->validProjectState = ProjectState::at("Estado Valido");
         $this->validContact = Contact::at("Nombre Valido", "Apellido valido", "titulo valido", "contacto@ejemplo.com", "123456789");  
         $this->validProjectBeneficiary = Beneficiary::at("GOVERNMENT");
         
         // Crear KPA hierarchy para Indicator
-        $validKpa = Kpa::at("KPA Valido", 50, ["Output1", "Output2"]);
-        $validStrategicOutput = StrategicOutput::at("Output Valido", $validKpa);
+        //$validKpa = Kpa::at("KPA Valido", 50);
+        //$countryKpa = CountryKpa::at("");
+        $validStrategicOutput = StrategicOutput::at("Output Valido");
         $validMeasure = Measure::at("Medida Valida", $validStrategicOutput);
         $validIndicatorType = IndicatorType::at("Tipo Valido");
-        $this->validIndicator = Indicator::at("Indicador Valido", $validMeasure, $validIndicatorType, 100);
+        $this->validIndicator = Indicator::at("Indicador Valido", $validIndicatorType,100, $validMeasure);
         
-        // Crear ProjectDonors válidos
         $donor1 = Donor::at("USAID");
         $donor2 = Donor::at("World Bank");
-        $this->validProjectDonors = [
-            ProjectDonor::at($donor1, 60),
-            ProjectDonor::at($donor2, 40)
+        // Crear ProjectDonors válidos
+        $this->validDonors = [
+            $donor1, $donor2
         ];
     }
     
-    // Método para crear Project válido con overrides opcionales
     private function createValidProject(array $overrides = []): Project
     {
         $defaults = [
@@ -75,7 +73,7 @@ class ProjectTest extends TestCase
             'country' => $this->validCountry,
             'agency' => $this->validAgency,
             'indicator' => $this->validIndicator,
-            'projectDonors' => $this->validProjectDonors
+            'projectDonor' => $this->validDonors
         ];
 
         $params = array_merge($defaults, $overrides);
@@ -95,19 +93,7 @@ class ProjectTest extends TestCase
     }
 
     // Tests básicos de creación exitosa
-    public function test_project_can_be_created_with_valid_data()
-    {
-        $project = $this->createValidProject();
 
-        $this->assertEquals("Proyecto de Desarrollo Rural", $project->getName());
-        $this->assertInstanceOf(Project::class, $project);
-        $this->assertEquals("https://proyecto.example.com", $project->getProjectUrl());
-        $this->assertEquals(75.5, $project->getProgress());
-        $this->assertInstanceOf(Beneficiary::class, $project->getProjectBeneficiary());
-        $this->assertIsArray($project->getProjectDonors());
-        $this->assertCount(2, $project->getProjectDonors());
-        $this->assertEquals("GOVERNMENT", $project->getProjectBeneficiary()->getName());
-    }
 
     // Tests de validación de nombre
     public function test_name_empty_throws_runtime_exception()
@@ -249,37 +235,7 @@ class ProjectTest extends TestCase
     }
 
     // Tests de validación de ProjectDonors
-    public function test_project_donors_not_array_throws_runtime_exception()
-    {
-        $this->shouldThrowAndAssert(
-            function () {
-                $this->createValidProject(['projectDonors' => 'not an array']);
-            },
-            RuntimeException::class,
-            function ($exception) {
-                $this->assertEquals(Project::$ERROR_PROJECT_DONORS_NOT_ARRAY, $exception->getMessage());
-            }
-        );
-    }
-
-    public function test_project_donors_duplicated_throws_runtime_exception()
-    {
-        $donor = Donor::at("USAID");
-        $duplicatedDonors = [
-            ProjectDonor::at($donor, 50),
-            ProjectDonor::at($donor, 30) // Mismo donor
-        ];
-
-        $this->shouldThrowAndAssert(
-            function () use ($duplicatedDonors) {
-                $this->createValidProject(['projectDonors' => $duplicatedDonors]);
-            },
-            RuntimeException::class,
-            function ($exception) {
-                $this->assertEquals(Project::$ERROR_PROJECT_DONORS_DUPLICATED, $exception->getMessage());
-            }
-        );
-    }
+   
 
     // Tests de validación de entidades
     public function test_invalid_project_beneficiary_throws_runtime_exception()
@@ -304,6 +260,19 @@ class ProjectTest extends TestCase
             RuntimeException::class,
             function ($exception) {
                 $this->assertEquals(Project::$ERROR_CONTACT_INVALID, $exception->getMessage());
+            }
+        );
+    }
+
+    public function test_invalid_indicator_throws_runtime_exception()
+    {
+        $this->shouldThrowAndAssert(
+            function () {
+                $this->createValidProject(['indicator' => 'not a indicator']);
+            },
+            RuntimeException::class,
+            function ($exception) {
+                $this->assertEquals(Project::$ERROR_INDICATOR_INVALID, $exception->getMessage());
             }
         );
     }

@@ -1,9 +1,9 @@
 <?php
 
-namespace Tests\Unit;
+namespace Tests\Unit\Donor;
 
 use PHPUnit\Framework\TestCase;
-use App\Models\Donor;
+use \App\Modules\Donor\Domain\Donor;
 use Exception;
 use RuntimeException;
 

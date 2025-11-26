@@ -1,9 +1,9 @@
 <?php
 
-namespace Tests\Unit;
+namespace Tests\Unit\IndicatorType;
 
-use PHPUnit\Framework\TestCase;
-use App\Models\IndicatorType;
+use App\Modules\IndicatorType\Domain\IndicatorType;
+use PHPUnit\Framework\TestCase;;
 use Exception;
 use RuntimeException;
 
