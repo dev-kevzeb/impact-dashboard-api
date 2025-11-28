@@ -5,21 +5,21 @@ namespace App\Http\Resources;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class ProjectAgencyResource extends JsonResource
+class ProjectIndicatorResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
         return [
             'id' => $this->id,
             'project_id' => $this->project_id,
-            'agency_id' => $this->agency_id,
+            'indicator_id' => $this->indicator_id,
 
             'project' => new ProjectResource(
                 $this->whenLoaded('project')
             ),
 
-            'agency' => new AgencyResource(
-                $this->whenLoaded('agency')
+            'indicator' => new IndicatorResource(
+                $this->whenLoaded('indicator')
             ),
         ];
     }
@@ -28,7 +28,7 @@ class ProjectAgencyResource extends JsonResource
     {
         return [
             'meta' => [
-                'resource_type' => 'project_agency',
+                'resource_type' => 'project_indicator',
                 'version' => '1.0',
             ],
         ];
