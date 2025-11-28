@@ -12,6 +12,21 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use RuntimeException;
 
+/**
+ * @OA\Schema(
+ *     schema="Beneficiary",
+ *     type="object",
+ *     title="Beneficiary (Beneficiario)",
+ *     description="Beneficiarios o población objetivo de programas y proyectos",
+ *     @OA\Property(property="id", type="integer", example=1, description="ID único del beneficiario"),
+ *     @OA\Property(
+ *         property="name",
+ *         type="string",
+ *         example="Comunidades Rurales de Potosí",
+ *         description="Nombre del beneficiario o grupo objetivo (único, máximo 255 caracteres)"
+ *     )
+ * )
+ */
 class BeneficiaryController extends Controller
 {
     private BeneficiaryService $beneficiaryService;
@@ -22,7 +37,38 @@ class BeneficiaryController extends Controller
     }
 
     /**
-     * Listar todos los beneficiarios
+     * @OA\Get(
+     *     path="/beneficiaries",
+     *     tags={"Beneficiaries"},
+     *     summary="Listar beneficiarios",
+     *     description="Obtiene todos los beneficiarios o grupos objetivo de programas y proyectos",
+     *     @OA\Response(
+     *         response=200,
+     *         description="Lista de beneficiarios obtenida exitosamente",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Lista de beneficiarios obtenida exitosamente"),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="object",
+     *                 @OA\Property(
+     *                     property="beneficiaries",
+     *                     type="array",
+     *                     @OA\Items(ref="#/components/schemas/Beneficiary")
+     *                 ),
+     *                 @OA\Property(property="total", type="integer", example=12)
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Error interno del servidor",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Error interno del servidor")
+     *         )
+     *     )
+     * )
      */
     public function index(): JsonResponse
     {
@@ -45,7 +91,65 @@ class BeneficiaryController extends Controller
     }
 
     /**
-     * Crear un nuevo beneficiario
+     * @OA\Post(
+     *     path="/beneficiaries",
+     *     tags={"Beneficiaries"},
+     *     summary="Crear beneficiario",
+     *     description="Crea un nuevo beneficiario o grupo objetivo. El nombre debe ser único.",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\MediaType(
+     *             mediaType="application/json",
+     *             @OA\Schema(
+     *                 required={"name"},
+     *                 @OA\Property(
+     *                     property="name",
+     *                     type="string",
+     *                     example="Mujeres emprendedoras de La Paz",
+     *                     description="Nombre del beneficiario (requerido, único, máximo 255 caracteres, mínimo 2 caracteres)"
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Beneficiario creado exitosamente",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Beneficiario creado exitosamente"),
+     *             @OA\Property(property="data", ref="#/components/schemas/Beneficiary")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Error de validación de negocio",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="El nombre del beneficiario no debe ir vacío")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Error de validación técnica",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Error de validación"),
+     *             @OA\Property(
+     *                 property="errors",
+     *                 type="object",
+     *                 @OA\Property(
+     *                     property="name",
+     *                     type="array",
+     *                     @OA\Items(type="string", example="Este beneficiario ya existe en el sistema")
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Error interno del servidor"
+     *     )
+     * )
      */
     public function store(BeneficiaryRequest $request): JsonResponse
     {
@@ -74,7 +178,40 @@ class BeneficiaryController extends Controller
     }
 
     /**
-     * Mostrar un beneficiario específico
+     * @OA\Get(
+     *     path="/beneficiaries/{id}",
+     *     tags={"Beneficiaries"},
+     *     summary="Obtener beneficiario por ID",
+     *     description="Obtiene la información de un beneficiario específico",
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="ID del beneficiario",
+     *         @OA\Schema(type="integer", example=1)
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Beneficiario encontrado exitosamente",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Beneficiario encontrado"),
+     *             @OA\Property(property="data", ref="#/components/schemas/Beneficiary")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Beneficiario no encontrado",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Beneficiario no encontrado")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Error interno del servidor"
+     *     )
+     * )
      */
     public function show(int $id): JsonResponse
     {
@@ -94,7 +231,80 @@ class BeneficiaryController extends Controller
     }
 
     /**
-     * Actualizar un beneficiario existente
+     * @OA\Put(
+     *     path="/beneficiaries/{id}",
+     *     tags={"Beneficiaries"},
+     *     summary="Actualizar beneficiario",
+     *     description="Actualiza el nombre de un beneficiario existente. El nuevo nombre debe ser único.",
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="ID del beneficiario a actualizar",
+     *         @OA\Schema(type="integer", example=1)
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\MediaType(
+     *             mediaType="application/json",
+     *             @OA\Schema(
+     *                 required={"name"},
+     *                 @OA\Property(
+     *                     property="name",
+     *                     type="string",
+     *                     example="Jóvenes en situación de riesgo",
+     *                     description="Nuevo nombre del beneficiario (requerido, único, máximo 255 caracteres, mínimo 2 caracteres)"
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Beneficiario actualizado exitosamente",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Beneficiario actualizado exitosamente"),
+     *             @OA\Property(property="data", ref="#/components/schemas/Beneficiary")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Error de validación de negocio",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="El nombre debe tener al menos 2 caracteres")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Beneficiario no encontrado",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Beneficiario no encontrado")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Error de validación técnica",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Error de validación"),
+     *             @OA\Property(
+     *                 property="errors",
+     *                 type="object",
+     *                 @OA\Property(
+     *                     property="name",
+     *                     type="array",
+     *                     @OA\Items(type="string", example="Este beneficiario ya existe en el sistema")
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Error interno del servidor"
+     *     )
+     * )
      */
     public function update(BeneficiaryRequest $request, int $id): JsonResponse
     {
@@ -130,7 +340,57 @@ class BeneficiaryController extends Controller
     }
 
     /**
-     * Buscar beneficiario por nombre
+     * @OA\Get(
+     *     path="/beneficiaries/search",
+     *     tags={"Beneficiaries"},
+     *     summary="Buscar beneficiario por nombre",
+     *     description="Busca un beneficiario específico por su nombre (búsqueda exacta, case-insensitive)",
+     *     @OA\Parameter(
+     *         name="name",
+     *         in="query",
+     *         required=true,
+     *         description="Nombre del beneficiario a buscar",
+     *         @OA\Schema(type="string", example="Comunidades Rurales de Potosí")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Beneficiario encontrado exitosamente",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Beneficiario encontrado"),
+     *             @OA\Property(property="data", ref="#/components/schemas/Beneficiary")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Beneficiario no encontrado",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Beneficiario no encontrado")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Parámetro name inválido",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Error de validación"),
+     *             @OA\Property(
+     *                 property="errors",
+     *                 type="object",
+     *                 @OA\Property(
+     *                     property="name",
+     *                     type="array",
+     *                     @OA\Items(type="string", example="El campo name es obligatorio")
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Error interno del servidor"
+     *     )
+     * )
      */
     public function search(Request $request): JsonResponse
     {

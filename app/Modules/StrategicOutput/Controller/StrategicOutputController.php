@@ -9,6 +9,45 @@ use App\Http\Responses\ApiResponse;
 use Illuminate\Http\Request;
 use RuntimeException;
 
+/**
+ * @OA\Schema(
+ *     schema="StrategicOutput",
+ *     type="object",
+ *     title="Resultado Estratégico",
+ *     description="Resultados estratégicos esperados de los programas, vinculados a un Country-KPA y con medidas asociadas",
+ *     @OA\Property(property="id", type="integer", example=1, description="ID único del resultado estratégico"),
+ *     @OA\Property(property="name", type="string", example="Mejorar la calidad educativa en zonas rurales", description="Nombre del resultado estratégico (max 200 caracteres)"),
+ *     @OA\Property(property="id_ck", type="integer", example=1, description="ID de la relación Country-KPA (FK a country_kpa)"),
+ *     @OA\Property(
+ *         property="countryKpa",
+ *         type="object",
+ *         description="Relación Country-KPA asociada",
+ *         @OA\Property(property="id", type="integer", example=1),
+ *         @OA\Property(
+ *             property="country",
+ *             type="object",
+ *             @OA\Property(property="id", type="integer", example=1),
+ *             @OA\Property(property="name", type="string", example="Bolivia")
+ *         ),
+ *         @OA\Property(
+ *             property="kpa",
+ *             type="object",
+ *             @OA\Property(property="id", type="integer", example=2),
+ *             @OA\Property(property="name", type="string", example="Educación de Calidad")
+ *         )
+ *     ),
+ *     @OA\Property(
+ *         property="measures",
+ *         type="array",
+ *         description="Medidas asociadas al resultado estratégico",
+ *         @OA\Items(
+ *             type="object",
+ *             @OA\Property(property="id", type="integer", example=1),
+ *             @OA\Property(property="name", type="string", example="Número de escuelas mejoradas")
+ *         )
+ *     )
+ * )
+ */
 class StrategicOutputController extends Controller
 {
     private StrategicOutputService $strategicOutputService;
@@ -20,6 +59,40 @@ class StrategicOutputController extends Controller
         $this->measureService = $measureService;
     }
 
+    /**
+     * @OA\Get(
+     *     path="/strategic_outputs",
+     *     tags={"Strategic Outputs"},
+     *     summary="Listar todos los resultados estratégicos",
+     *     description="Obtiene la lista completa de resultados estratégicos con sus relaciones: Country-KPA, país, KPA y medidas",
+     *     @OA\Response(
+     *         response=200,
+     *         description="Lista obtenida exitosamente",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Lista de resultados estratégicos obtenida exitosamente"),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="object",
+     *                 @OA\Property(
+     *                     property="strategic_outputs",
+     *                     type="array",
+     *                     @OA\Items(ref="#/components/schemas/StrategicOutput")
+     *                 ),
+     *                 @OA\Property(property="total", type="integer", example=10, description="Total de resultados estratégicos")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Error interno del servidor",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Error interno del servidor")
+     *         )
+     *     )
+     * )
+     */
     public function index()
     {
         try {
@@ -43,6 +116,42 @@ class StrategicOutputController extends Controller
         }
     }
 
+    /**
+     * @OA\Get(
+     *     path="/strategic_outputs/{id}",
+     *     tags={"Strategic Outputs"},
+     *     summary="Obtener resultado estratégico específico",
+     *     description="Obtiene el detalle de un resultado estratégico por su ID, incluyendo Country-KPA, país, KPA y medidas",
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="ID del resultado estratégico",
+     *         @OA\Schema(type="integer", example=1)
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Resultado estratégico encontrado",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Resultado estratégico encontrado"),
+     *             @OA\Property(property="data", ref="#/components/schemas/StrategicOutput")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Resultado estratégico no encontrado",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Resultado estratégico no encontrado")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Error interno del servidor"
+     *     )
+     * )
+     */
     public function show($id)
     {
         try {
@@ -62,6 +171,68 @@ class StrategicOutputController extends Controller
         }
     }
 
+    /**
+     * @OA\Post(
+     *     path="/strategic_outputs",
+     *     tags={"Strategic Outputs"},
+     *     summary="Crear nuevo resultado estratégico",
+     *     description="Registra un nuevo resultado estratégico vinculado a un Country-KPA específico",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\MediaType(
+     *             mediaType="application/json",
+     *             @OA\Schema(
+     *                 required={"name", "id_ck"},
+     *                 @OA\Property(property="name", type="string", maxLength=200, example="Aumentar el acceso a educación secundaria", description="Nombre del resultado estratégico (requerido, max 200 caracteres)"),
+     *                 @OA\Property(property="id_ck", type="integer", example=1, description="ID de la relación Country-KPA (requerido, debe existir en country_kpa)")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Registro creado",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Registro creado"),
+     *             @OA\Property(property="data", ref="#/components/schemas/StrategicOutput")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Error de validación de dominio",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="El nombre debe tener al menos 2 caracteres")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Error de validación técnica",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Error de validación"),
+     *             @OA\Property(
+     *                 property="errors",
+     *                 type="object",
+     *                 @OA\Property(
+     *                     property="name",
+     *                     type="array",
+     *                     @OA\Items(type="string", example="El campo name es obligatorio.")
+     *                 ),
+     *                 @OA\Property(
+     *                     property="id_ck",
+     *                     type="array",
+     *                     @OA\Items(type="string", example="El campo id_ck no existe en country_kpa.")
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Error interno del servidor"
+     *     )
+     * )
+     */
     public function store(Request $request)
     {
         $request->validate([
@@ -89,6 +260,57 @@ class StrategicOutputController extends Controller
         }
     }
 
+    /**
+     * @OA\Put(
+     *     path="/strategic_outputs/{id}",
+     *     tags={"Strategic Outputs"},
+     *     summary="Actualizar resultado estratégico",
+     *     description="Actualiza un resultado estratégico existente, incluyendo su nombre y/o Country-KPA asociado",
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="ID del resultado estratégico a actualizar",
+     *         @OA\Schema(type="integer", example=1)
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\MediaType(
+     *             mediaType="application/json",
+     *             @OA\Schema(
+     *                 required={"name"},
+     *                 @OA\Property(property="name", type="string", maxLength=200, example="Mejorar la cobertura educativa en 20%", description="Nombre actualizado (requerido)"),
+     *                 @OA\Property(property="id_ck", type="integer", example=2, description="ID del Country-KPA actualizado (opcional, debe existir en country_kpa)")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Resultado estratégico actualizado exitosamente",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Resultado estratégico actualizado exitosamente"),
+     *             @OA\Property(property="data", ref="#/components/schemas/StrategicOutput")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Error de validación de dominio"
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Resultado estratégico no encontrado"
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Error de validación técnica"
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Error interno del servidor"
+     *     )
+     * )
+     */
     public function update(Request $request, $id)
     {
         $request->validate([
@@ -118,6 +340,46 @@ class StrategicOutputController extends Controller
         }
     }
 
+    /**
+     * @OA\Post(
+     *     path="/strategic_outputs/add_measure",
+     *     tags={"Strategic Outputs"},
+     *     summary="Agregar medida a resultado estratégico",
+     *     description="Asocia una nueva medida (indicador) a un resultado estratégico específico",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\MediaType(
+     *             mediaType="application/json",
+     *             @OA\Schema(
+     *                 required={"strategic_output_id", "name"},
+     *                 @OA\Property(property="strategic_output_id", type="integer", example=1, description="ID del resultado estratégico (requerido)"),
+     *                 @OA\Property(property="name", type="string", minLength=2, maxLength=100, example="Número de docentes capacitados", description="Nombre de la medida (requerido, 2-100 caracteres)")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Medida agregada exitosamente",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Medida agregada exitosamente al resultado estratégico"),
+     *             @OA\Property(property="data", ref="#/components/schemas/StrategicOutput")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Error de validación de dominio",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="El nombre de la medida debe tener al menos 2 caracteres")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Error de validación técnica"
+     *     )
+     * )
+     */
     public function addMeasure(Request $request)
     {
         try {
@@ -146,6 +408,46 @@ class StrategicOutputController extends Controller
         }
     }
 
+    /**
+     * @OA\Post(
+     *     path="/strategic_outputs/remove_measure",
+     *     tags={"Strategic Outputs"},
+     *     summary="Remover medida de resultado estratégico",
+     *     description="Elimina una medida (indicador) asociada a un resultado estratégico específico",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\MediaType(
+     *             mediaType="application/json",
+     *             @OA\Schema(
+     *                 required={"strategic_output_id", "measure_id"},
+     *                 @OA\Property(property="strategic_output_id", type="integer", example=1, description="ID del resultado estratégico (requerido)"),
+     *                 @OA\Property(property="measure_id", type="integer", example=5, description="ID de la medida a eliminar (requerido)")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Medida removida exitosamente",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Medida removida exitosamente del resultado estratégico"),
+     *             @OA\Property(property="data", ref="#/components/schemas/StrategicOutput")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Error de validación de dominio",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Resultado estratégico o medida no encontrados")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Error de validación técnica"
+     *     )
+     * )
+     */
     public function removeMeasure(Request $request)
     {
         try {
@@ -174,6 +476,55 @@ class StrategicOutputController extends Controller
             return ApiResponse::validationError($e->errors());
         }
     }
+    /**
+     * @OA\Get(
+     *     path="/strategic_outputs/search",
+     *     tags={"Strategic Outputs"},
+     *     summary="Buscar resultado estratégico por nombre",
+     *     description="Busca un resultado estratégico específico por su nombre (búsqueda exacta, case-insensitive) con relaciones completas",
+     *     @OA\Parameter(
+     *         name="name",
+     *         in="query",
+     *         required=true,
+     *         description="Nombre del resultado estratégico a buscar",
+     *         @OA\Schema(type="string", example="Mejorar la calidad educativa")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Resultado estratégico encontrado",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Resultado estratégico encontrado"),
+     *             @OA\Property(property="data", ref="#/components/schemas/StrategicOutput")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Error de validación o no encontrado",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Resultado estratégico no encontrado")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Error de validación técnica",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Error de validación"),
+     *             @OA\Property(
+     *                 property="errors",
+     *                 type="object",
+     *                 @OA\Property(
+     *                     property="name",
+     *                     type="array",
+     *                     @OA\Items(type="string", example="El campo name es obligatorio.")
+     *                 )
+     *             )
+     *         )
+     *     )
+     * )
+     */
     public function search(Request $request)
     {
         try {
