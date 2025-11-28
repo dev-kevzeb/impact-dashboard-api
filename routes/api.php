@@ -23,6 +23,7 @@ use App\Modules\CountryKpa\Controller\CountryKpaController;
 use \App\Modules\StrategicOutput\Controller\StrategicOutputController;
 use App\Modules\Project\Controller\ProjectController;
 use App\Modules\ProjectAgency\Controller\ProjectAgencyController;
+use App\Modules\ProjectIndicator\Controller\ProjectIndicatorController;
 
 
 Route::prefix('v1')->group(function () {
@@ -158,5 +159,16 @@ Route::prefix('v1')->group(function () {
     Route::get('project-agencies/projects/by-agency-name/{name}', [ProjectAgencyController::class, 'showProjectsByAgencyName']);
     Route::get('project-agencies/agencies/by-project/{id}', [ProjectAgencyController::class,'showAgenciesByProjectId']);
     Route::get('project-agencies/agencies/by-project-name/{name}', [ProjectAgencyController::class,'showAgenciesByProjectName']);
+  
+    // Listar todas las relaciones proyecto-indicador
+    Route::get('project-indicators', [ProjectIndicatorController::class,'index']);
+    Route::post('project-indicators', [ProjectIndicatorController::class,'createProjectIndicator']);
+    Route::delete('project-indicators', [ProjectIndicatorController::class,'deleteProjectIndicator']);
+        
+    Route::get('project-indicators/projects/by-indicator/{id}', [ProjectIndicatorController::class,'showProjectsByIndicatorId']);
+
+    Route::get('project-indicators/indicators/by-project/{id}', [ProjectIndicatorController::class,'showIndicatorsByProjectId']);
+    Route::get('project-indicators/indicators/by-project-name/{name}', [ProjectIndicatorController::class,'showIndicatorsByProjectName']);
+      
 
 });

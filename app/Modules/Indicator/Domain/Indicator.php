@@ -4,6 +4,7 @@ namespace App\Modules\Indicator\Domain;
 
 use App\Modules\IndicatorType\Domain\IndicatorType;
 use App\Modules\Measure\Domain\Measure;
+use App\Modules\Project\Domain\Project;
 use App\Modules\ProjectIndicator\Domain\ProjectIndicator;
 use Illuminate\Database\Eloquent\Model;
 use RuntimeException;
@@ -76,5 +77,10 @@ class  Indicator extends Model
     public function projectIndicators()
     {
         return $this->hasMany(ProjectIndicator::class,'indicator_id','id');
+    }
+
+    public function projects()
+    {
+        return $this->belongsToMany(Project::class,'project_indicator','indicator_id','project_id');
     }
 }
