@@ -15,7 +15,7 @@ use RuntimeException;
  * @OA\Schema(
  *     schema="IndicatorType",
  *     type="object",
- *     title="Tipo de Indicador",
+ *     title="IndicatorType",
  *     description="Tipos de indicadores (Cuantitativo, Cualitativo, etc.) que clasifican los indicadores de desempeño",
  *     @OA\Property(property="id", type="integer", example=1, description="ID único del tipo de indicador"),
  *     @OA\Property(property="name", type="string", example="Cuantitativo", description="Nombre del tipo de indicador (único)")

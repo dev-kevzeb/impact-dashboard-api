@@ -14,8 +14,8 @@ use RuntimeException;
  * @OA\Schema(
  *     schema="Agency",
  *     type="object",
- *     title="Agencia",
- *     description="Agencias ejecutoras o implementadoras de programas y proyectos",
+ *     title="Agency",
+ *     description="Agencias ejecutoras que implementan programas y proyectos",
  *     @OA\Property(property="id", type="integer", example=1, description="ID único de la agencia"),
  *     @OA\Property(property="name", type="string", example="UNICEF Bolivia", description="Nombre de la agencia (único)"),
  *     @OA\Property(property="url", type="string", format="url", example="https://www.unicef.org/bolivia", description="Sitio web de la agencia"),

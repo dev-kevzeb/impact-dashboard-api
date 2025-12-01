@@ -14,7 +14,7 @@ use RuntimeException;
  * @OA\Schema(
  *     schema="Kpa",
  *     type="object",
- *     title="KPA (Key Priority Area)",
+ *     title="Kpa",
  *     description="Áreas Clave Prioritarias que definen los focos estratégicos de los programas y proyectos",
  *     @OA\Property(property="id", type="integer", example=1, description="ID único del KPA"),
  *     @OA\Property(property="name", type="string", example="Educación de Calidad", description="Nombre del área prioritaria"),

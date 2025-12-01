@@ -13,7 +13,7 @@ use Illuminate\Http\Request;
  * @OA\Schema(
  *     schema="Project",
  *     type="object",
- *     title="Project (Proyecto)",
+ *     title="Project",
  *     description="Proyectos con información completa de planificación, presupuesto, progreso y relaciones",
  *     @OA\Property(property="id", type="integer", example=1, description="ID único del proyecto"),
  *     @OA\Property(

@@ -15,7 +15,7 @@ use RuntimeException;
  * @OA\Schema(
  *     schema="Donor",
  *     type="object",
- *     title="Donor (Donante)",
+ *     title="Donor",
  *     description="Donantes que financian proyectos con sus contribuciones",
  *     @OA\Property(property="id", type="integer", example=1, description="ID único del donante"),
  *     @OA\Property(

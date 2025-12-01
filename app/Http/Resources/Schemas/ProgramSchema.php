@@ -31,24 +31,6 @@ namespace App\Http\Resources\Schemas;
  * )
  * 
  * @OA\Schema(
- *     schema="Contact",
- *     title="Contact",
- *     @OA\Property(property="id", type="integer", example=1),
- *     @OA\Property(property="first_name", type="string", example="Juan"),
- *     @OA\Property(property="last_name", type="string", example="Pérez"),
- *     @OA\Property(property="title", type="string", example="Director"),
- *     @OA\Property(property="email", type="string", example="juan.perez@example.com"),
- *     @OA\Property(property="phone", type="string", example="+591 77123456")
- * )
- * 
- * @OA\Schema(
- *     schema="ProgramState",
- *     title="ProgramState",
- *     @OA\Property(property="id", type="integer", example=1),
- *     @OA\Property(property="name", type="string", example="Inactivo", description="Posibles valores: Inactivo, Activo, Finalizado")
- * )
- * 
- * @OA\Schema(
  *     schema="SDG",
  *     title="SDG",
  *     description="Objetivo de Desarrollo Sostenible (ODS)",

@@ -15,7 +15,7 @@ use RuntimeException;
  * @OA\Schema(
  *     schema="Indicator",
  *     type="object",
- *     title="Indicador",
+ *     title="Indicator",
  *     description="Indicadores de desempeño asociados a medidas, con su tipo y meta numérica",
  *     @OA\Property(property="id", type="integer", example=1, description="ID único del indicador"),
  *     @OA\Property(property="name", type="string", example="Porcentaje de cumplimiento de metas", description="Nombre del indicador"),

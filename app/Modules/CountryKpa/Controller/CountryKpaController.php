@@ -12,8 +12,8 @@ use RuntimeException;
  * @OA\Schema(
  *     schema="CountryKpa",
  *     type="object",
- *     title="Country-KPA (Relación País-Área Prioritaria)",
- *     description="Relación muchos-a-muchos entre países y sus áreas clave prioritarias (KPAs)",
+ *     title="CountryKpa",
+ *     description="Relación muchos-a-muchos entre países y áreas prioritarias clave",
  *     @OA\Property(property="id", type="integer", example=1, description="ID único de la relación"),
  *     @OA\Property(property="id_country", type="integer", example=1, description="ID del país (FK a country)"),
  *     @OA\Property(property="id_kpa", type="integer", example=2, description="ID del KPA (FK a kpa)"),

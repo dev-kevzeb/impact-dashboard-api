@@ -14,8 +14,8 @@ use RuntimeException;
  * @OA\Schema(
  *     schema="ProgramState",
  *     type="object",
- *     title="Estado de Programa",
- *     description="Estado del ciclo de vida de un programa (Inactivo, Activo, Finalizado, etc.)",
+ *     title="ProgramState",
+ *     description="Estados del ciclo de vida de programas: Inactivo, Activo, Finalizado",
  *     @OA\Property(property="id", type="integer", example=1, description="ID único del estado"),
  *     @OA\Property(property="name", type="string", example="Activo", description="Nombre del estado del programa")
  * )

@@ -14,7 +14,7 @@ use RuntimeException;
  * @OA\Schema(
  *     schema="Currency",
  *     type="object",
- *     title="Moneda",
+ *     title="Currency",
  *     description="Tipos de moneda utilizados en programas y proyectos (USD, EUR, BOB, etc.)",
  *     @OA\Property(property="id", type="integer", example=1, description="ID único de la moneda"),
  *     @OA\Property(property="code", type="string", example="USD", description="Código ISO 4217 de la moneda (3 caracteres, único)")

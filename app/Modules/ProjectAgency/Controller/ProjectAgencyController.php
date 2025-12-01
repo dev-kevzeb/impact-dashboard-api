@@ -14,7 +14,7 @@ use Illuminate\Http\Request;
  * @OA\Schema(
  *     schema="ProjectAgency",
  *     type="object",
- *     title="Project-Agency (Relación Proyecto-Agencia)",
+ *     title="ProjectAgency",
  *     description="Relación muchos-a-muchos entre proyectos y agencias ejecutoras",
  *     @OA\Property(property="id", type="integer", example=1, description="ID único de la relación"),
  *     @OA\Property(property="project_id", type="integer", example=1, description="ID del proyecto (FK a project)"),

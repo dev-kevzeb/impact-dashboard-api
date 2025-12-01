@@ -14,7 +14,7 @@ use RuntimeException;
  * @OA\Schema(
  *     schema="Country",
  *     type="object",
- *     title="País",
+ *     title="Country",
  *     description="Países donde se ejecutan programas y proyectos, con su moneda oficial",
  *     @OA\Property(property="id", type="integer", example=1, description="ID único del país"),
  *     @OA\Property(property="name", type="string", example="Bolivia", description="Nombre del país (único)"),

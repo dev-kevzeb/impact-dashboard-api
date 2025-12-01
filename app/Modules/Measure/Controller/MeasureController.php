@@ -20,7 +20,7 @@ use RuntimeException;
  * @OA\Schema(
  *     schema="Measure",
  *     type="object",
- *     title="Medida",
+ *     title="Measure",
  *     description="Medidas (indicadores de resultado) asociadas a resultados estratégicos, con sus indicadores de desempeño",
  *     @OA\Property(property="id", type="integer", example=1, description="ID único de la medida"),
  *     @OA\Property(property="name", type="string", example="Número de escuelas mejoradas", description="Nombre de la medida (2-100 caracteres)"),

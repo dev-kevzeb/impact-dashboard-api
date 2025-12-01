@@ -16,7 +16,7 @@ use RuntimeException;
  * @OA\Schema(
  *     schema="Beneficiary",
  *     type="object",
- *     title="Beneficiary (Beneficiario)",
+ *     title="Beneficiary",
  *     description="Beneficiarios o población objetivo de programas y proyectos",
  *     @OA\Property(property="id", type="integer", example=1, description="ID único del beneficiario"),
  *     @OA\Property(

@@ -13,7 +13,7 @@ use RuntimeException;
  * @OA\Schema(
  *     schema="ProjectState",
  *     type="object",
- *     title="Project State (Estado del Proyecto)",
+ *     title="ProjectState",
  *     description="Estados del ciclo de vida de un proyecto",
  *     @OA\Property(property="id", type="integer", example=1, description="ID único del estado"),
  *     @OA\Property(

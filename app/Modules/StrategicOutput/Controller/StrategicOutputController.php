@@ -13,7 +13,7 @@ use RuntimeException;
  * @OA\Schema(
  *     schema="StrategicOutput",
  *     type="object",
- *     title="Resultado Estratégico",
+ *     title="StrategicOutput",
  *     description="Resultados estratégicos esperados de los programas, vinculados a un Country-KPA y con medidas asociadas",
  *     @OA\Property(property="id", type="integer", example=1, description="ID único del resultado estratégico"),
  *     @OA\Property(property="name", type="string", example="Mejorar la calidad educativa en zonas rurales", description="Nombre del resultado estratégico (max 200 caracteres)"),
