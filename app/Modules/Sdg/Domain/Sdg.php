@@ -87,4 +87,17 @@ class Sdg extends Model
     {
         return $this->filename;
     }
+
+    // ============================================
+    // RELACIONES ELOQUENT
+    // ============================================
+
+    /**
+     * Relación M:N con Program
+     * Un SDG puede estar asociado a múltiples programas
+     */
+    public function programs()
+    {
+        return $this->belongsToMany(\App\Modules\Program\Domain\Program::class, 'program_sdg', 'sdg_id', 'program_id');
+    }
 }

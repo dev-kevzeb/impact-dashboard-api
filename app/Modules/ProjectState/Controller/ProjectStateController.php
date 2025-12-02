@@ -5,8 +5,9 @@ use App\Http\Resources\ProjectStateResource;
 use App\Modules\ProjectState\Service\ProjectStateService;
 use App\Http\Controllers\Controller;
 use App\Http\Responses\ApiResponse;
-use Illuminate\Http\Request;
-use PhpParser\Node\Stmt\TryCatch;
+use App\Http\Requests\ProjectStateRequest;
+use App\Http\Resources\ProjectStateResource;
+use Illuminate\Http\JsonResponse;
 use RuntimeException;
 
 class ProjectStateController extends Controller
@@ -18,8 +19,7 @@ class ProjectStateController extends Controller
         $this->projectStateService = $projectStateService;
     }
 
-    // Metodos a futuro
-    public function index()
+    public function index(): JsonResponse
     {
         try {
             $states = $this->projectStateService->getAllProjectStates();
@@ -33,25 +33,20 @@ class ProjectStateController extends Controller
             );
         } catch (RuntimeException $e) {
             return ApiResponse::error($e->getMessage(), 500);
-        } catch (\Exception $e) {
-            return ApiResponse::error('Error interno del servidor', 500);
         }
-        
     }
 
-    public function show($id)
+    public function show($id): JsonResponse
     {
         try {
             $state = $this->projectStateService->getProjectStateById($id);
             return ApiResponse::success(
-                'Estado encontrado',
+                'Estado del proyecto encontrado',
                 200,
                 new ProjectStateResource($state),
             );
         } catch (RuntimeException $e) {
             return ApiResponse::notFound('Estado del proyecto');
-        } catch (\Exception $e) {
-            return ApiResponse::error('Error interno del servidor', 500);
         }
     }
 
@@ -66,9 +61,10 @@ class ProjectStateController extends Controller
                 new ProjectStateResource($state)
             );
         } catch (RuntimeException $e) {
+            if (str_contains($e->getMessage(), 'Ya existe')) {
+                return ApiResponse::validationError(['state' => [$e->getMessage()]]);
+            }
             return ApiResponse::error($e->getMessage(), 400);
-        } catch (\Exception $e) {
-            return ApiResponse::error('Error interno del servidor', 500);
         }
     }
 
@@ -83,10 +79,34 @@ class ProjectStateController extends Controller
                 new ProjectStateResource($state)
             );
         } catch (RuntimeException $e) {
+            if (str_contains($e->getMessage(), 'Ya existe')) {
+                return ApiResponse::validationError(['state' => [$e->getMessage()]]);
+            }
+            if (str_contains($e->getMessage(), 'no encontrado')) {
+                return ApiResponse::notFound('Estado del proyecto');
+            }
             return ApiResponse::error($e->getMessage(), 400);
-        } catch (\Exception $e) {
-            return ApiResponse::error('Error interno del servidor', 500);
         }
     }
 
+    public function search(): JsonResponse
+    {
+        try {
+            $name = request()->query('name');
+            
+            if (!$name) {
+                return ApiResponse::error('El parámetro name es requerido', 400);
+            }
+            
+            $state = $this->projectStateService->findProjectStateByName($name);
+            
+            return ApiResponse::success(
+                'Estado del proyecto encontrado',
+                200,
+                new ProjectStateResource($state)
+            );
+        } catch (RuntimeException $e) {
+            return ApiResponse::notFound('Estado del proyecto');
+        }
+    }
 }
