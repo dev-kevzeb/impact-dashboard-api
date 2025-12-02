@@ -3,6 +3,7 @@
 namespace App\Modules\Country\Controller;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\CountryRequest;
 use App\Http\Responses\ApiResponse;
 use App\Http\Resources\CountryResource;
 use App\Modules\Country\Service\CountryService;
@@ -65,17 +66,14 @@ class CountryController extends Controller
     /**
      * Crear un nuevo país
      */
-    public function store(Request $request): JsonResponse
+    public function store(CountryRequest $request): JsonResponse
     {
         try {
-            $request->validate([
-                'name' => 'required|string',
-                'currency_id' => 'required|integer'
-            ]);
+            $validated= $request->validated();
 
             $country = $this->countryService->createCountry(
-                $request->input('name'),
-                $request->input('currency_id')
+                $validated['name'],
+                $validated['currency_id']
             );
 
             return ApiResponse::created(
@@ -97,18 +95,15 @@ class CountryController extends Controller
     /**
      * Actualizar un país existente
      */
-    public function update(Request $request, int $id): JsonResponse
+    public function update(CountryRequest $request, int $id): JsonResponse
     {
         try {
-            $request->validate([
-                'name' => 'required|string',
-                'currency_id' => 'required|integer'
-            ]);
+            $validated = $request->validated();
 
             $country = $this->countryService->updateCountry(
                 $id,
-                $request->input('name'),
-                $request->input('currency_id')
+                $validated['name'],
+                $validated['currency_id'],
             );
 
             return ApiResponse::success(

@@ -3,8 +3,10 @@
 namespace App\Modules\CountryKpa\Controller;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\CountryKpaRequest;
 use App\Http\Responses\ApiResponse;
 use Illuminate\Http\Request;
+use \Illuminate\Http\JsonResponse;
 use App\Modules\CountryKpa\Service\CountryKpaService;
 use RuntimeException;
 
@@ -17,7 +19,7 @@ class CountryKpaController extends Controller
 		$this->service = $service;
 	}
 
-	public function index(Request $request): \Illuminate\Http\JsonResponse
+	public function index(Request $request): JsonResponse
 	{
 		try {
 			if ($request->has('country')) {
@@ -33,10 +35,9 @@ class CountryKpaController extends Controller
 		}
 	}
 
-	public function show($id): \Illuminate\Http\JsonResponse
+	public function show($id): JsonResponse
 	{
 		try {
-			// Obtener por ID de la tabla country_kpa
 			$countryKpa = $this->service->getById((int)$id);
 			return ApiResponse::success('Registro obtenido', 200, $countryKpa);
 		} catch (RuntimeException $e) {
@@ -45,13 +46,15 @@ class CountryKpaController extends Controller
 			return ApiResponse::error('Error interno del servidor', 500);
 		}
 	}
-	public function store(Request $request): \Illuminate\Http\JsonResponse
+	public function store(CountryKpaRequest $request): JsonResponse
 	{
 		try {
-			$request->validate(['id_country' => 'required|integer', 'id_kpa' => 'required|integer']);
-			$data = $request->only(['id_country', 'id_kpa']);
-			$created = $this->service->create($data);
-			return ApiResponse::created('Creado exitosamente', $created);
+			$validated = $request->validated();
+
+			$created = $this->service->create($validated);
+
+			return ApiResponse::created('Relación Country-KPA creada exitosamente', $created);
+
 		} catch (\Illuminate\Validation\ValidationException $e) {
 			return ApiResponse::validationError($e->errors());
 		} catch (RuntimeException $e) {
@@ -61,23 +64,31 @@ class CountryKpaController extends Controller
 		}
 	}
 
-	public function update(Request $request, $id): \Illuminate\Http\JsonResponse
+	public function update(CountryKpaRequest $request, int $id): JsonResponse
 	{
 		try {
-			$request->validate(['id_country' => 'required|integer', 'id_kpa' => 'required|integer']);
-			$data = $request->only(['id_country', 'id_kpa']);
-			$updated = $this->service->update((int)$id, $data);
-			return ApiResponse::success('Actualizado exitosamente', 200, $updated);
+			$validated = $request->validated();
+
+			$updated = $this->service->update($id, $validated);
+
+			return ApiResponse::success(
+				'Relación Country-KPA actualizada exitosamente',
+				200,
+				$updated
+			);
 		} catch (\Illuminate\Validation\ValidationException $e) {
 			return ApiResponse::validationError($e->errors());
+
 		} catch (RuntimeException $e) {
 			return ApiResponse::error($e->getMessage(), 400);
+
 		} catch (\Exception $e) {
 			return ApiResponse::error('Error interno del servidor', 500);
 		}
 	}
 
-	public function destroy($id): \Illuminate\Http\JsonResponse
+
+	public function destroy($id): JsonResponse
 	{
 		try {
 			$deleted = $this->service->delete((int)$id);
@@ -89,5 +100,3 @@ class CountryKpaController extends Controller
 
 
 }
-
-

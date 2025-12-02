@@ -45,7 +45,9 @@ class IndicatorService
 
     public function findIndicatorByName(string $name): Indicator
     {
-        return $this->indicatorRepository->findBy('name',trim($name));
+        $indicator = $this->indicatorRepository->findByName(trim($name));
+        if (!$indicator) throw new RuntimeException("No existe el indicador");
+        return $indicator;
     }
 
     public function getAllIndicators()

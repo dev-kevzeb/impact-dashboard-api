@@ -1,6 +1,8 @@
 <?php
 namespace App\Modules\StrategicOutput\Controller;
 
+use App\Http\Requests\StrategicOutputRequest;
+use App\Http\Resources\StrategicOutputResource;
 use App\Modules\Measure\Domain\Measure;
 use App\Modules\Measure\Service\MeasureService;
 use App\Modules\StrategicOutput\Service\StrategicOutputService;
@@ -25,14 +27,13 @@ class StrategicOutputController extends Controller
         try {
             $strategicOutputs = $this->strategicOutputService->getAllStrategicOutputs();
             
-            // Cargar relaciones con country_kpa, kpa y country
-            $strategicOutputs->load(['countryKpa.country', 'countryKpa.kpa']);
-            
+            $strategicOutputs->load(['countryKpa.country', 'countryKpa.kpa', 'measures']);
+
             return ApiResponse::success(
                 'Lista de resultados estratégicos obtenida exitosamente',
                 200,
                 [
-                    'strategic_outputs' => $strategicOutputs,
+                    'strategic_outputs' => StrategicOutputResource::collection($strategicOutputs),
                     'total' => $strategicOutputs->count()
                 ]
             );
@@ -48,12 +49,12 @@ class StrategicOutputController extends Controller
         try {
             $strategicOutput = $this->strategicOutputService->getStrategicOutputById($id);
             
-            $strategicOutput->load(['countryKpa.country', 'countryKpa.kpa']);
+            $strategicOutput->load(['measures']);
             
             return ApiResponse::success(
                 'Resultado estratégico encontrado',
                 200,
-                $strategicOutput
+                new StrategicOutputResource($strategicOutput)
             );
         } catch (RuntimeException $e) {
             return ApiResponse::notFound('Resultado estratégico');
@@ -62,25 +63,21 @@ class StrategicOutputController extends Controller
         }
     }
 
-    public function store(Request $request)
+    public function store(StrategicOutputRequest $request)
     {
-        $request->validate([
-            'name' => 'required|string|max:200',
-            'id_ck' => 'required|integer|exists:country_kpa,id',
-        ]);
+        $validated = $request->validated();
 
         try {
             $strategicOutput = $this->strategicOutputService->createStrategicOutput(
-                $request->input('name'),
-                $request->input('id_ck')
+                $validated['name'],
+                $validated['id_ck']
             );
             
-            $strategicOutput->load(['countryKpa.country', 'countryKpa.kpa']);
+            $strategicOutput->load(['countryKpa.country', 'countryKpa.kpa', 'measures']);
             
-            return ApiResponse::success(
-                'Registro creado',
-                201,
-                $strategicOutput
+            return ApiResponse::created(
+                'Resultado estratégico creado exitosamente',
+                new StrategicOutputResource($strategicOutput)
             );
         } catch (RuntimeException $e) {
             return ApiResponse::error($e->getMessage(), 400);
@@ -89,27 +86,23 @@ class StrategicOutputController extends Controller
         }
     }
 
-    public function update(Request $request, $id)
+    public function update(StrategicOutputRequest $request, $id)
     {
-        $request->validate([
-            'name' => 'required|string|max:200',
-            'id_ck' => 'sometimes|integer|exists:country_kpa,id',
-        ]);
+        $validated = $request->validated();
 
         try {
             $strategicOutput = $this->strategicOutputService->updateStrategicOutput(
                 $id,
-                $request->input('name'),
-                $request->input('id_ck')
+                $validated['name'],
+                $validated['id_ck'] ?? null
             );
             
-            // Cargar relaciones con country_kpa, kpa y country
-            $strategicOutput->load(['countryKpa.country', 'countryKpa.kpa']);
+            $strategicOutput->load(['countryKpa.country', 'countryKpa.kpa', 'measures']);
             
             return ApiResponse::success(
                 'Resultado estratégico actualizado exitosamente',
                 200,
-                $strategicOutput
+                new StrategicOutputResource($strategicOutput)
             );
         } catch (RuntimeException $e) {
             return ApiResponse::error($e->getMessage(), 400);
@@ -158,6 +151,8 @@ class StrategicOutputController extends Controller
                 ->getStrategicOutputById($request->input('strategic_output_id'));
 
             $measure = $this->measureService->getMeasureById($request->input('measure_id'));
+            if ($measure->strategic_output_id !== $strategicOutput->id) throw new RuntimeException('La medida no pertenece a este resultado estratégico');
+
             $measure->delete();
 
             $strategicOutput->load('measures');
@@ -189,7 +184,7 @@ class StrategicOutputController extends Controller
             return ApiResponse::success(
                 'Resultado estratégico encontrado',
                 200,
-                $strategicOutput
+                new StrategicOutputResource($strategicOutput)
             );
 
         } catch (RuntimeException $e) {

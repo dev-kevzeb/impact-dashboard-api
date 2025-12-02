@@ -2,11 +2,15 @@
 
 namespace App\Modules\Currency\Domain;
 
+use Database\Factories\CurrencyFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use RuntimeException;
 
 class Currency extends Model
 {
+
+    use HasFactory;
     protected $table = 'currency';
     protected $fillable = ['code'];
     
@@ -15,6 +19,11 @@ class Currency extends Model
     public static $ERROR_CODE_LENGTH = 'el código de moneda debe tener exactamente 3 caracteres';
     public static $ERROR_CODE_FORMAT = 'el código de moneda debe contener solo letras (sin números ni símbolos)';
     public static $ERROR_CODE_INVALID = 'el código de moneda debe ser un código ISO 4217 válido';
+
+    protected static function newFactory()
+    {
+        return CurrencyFactory::new();
+    }
     
     // Lista de códigos ISO 4217 válidos
     private static array $validCodes = [

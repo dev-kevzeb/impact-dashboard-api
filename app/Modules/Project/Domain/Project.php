@@ -10,10 +10,13 @@ use App\Modules\Indicator\Domain\Indicator;
 use App\Modules\ProjectAgency\Domain\ProjectAgency;
 use App\Modules\ProjectIndicator\Domain\ProjectIndicator;
 use App\Modules\ProjectState\Domain\ProjectState;
+use Database\Factories\ProjectFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Project extends Model
 {
+    use HasFactory;
     protected $table = "project";
     protected $fillable = ['name','description', 'project_url', 'start_date', 'end_date', 'progress', 'comments', 'project_budget', 'contact_id', 'beneficiary_id', 'project_state_id'];
     protected $appends = ['donors_count', 'indicators_count', 'agencies_count'];
@@ -43,8 +46,12 @@ class Project extends Model
     public static $ERROR_PROJECT_DONORS_INVALID_INSTANCE = 'todos los donantes deben ser instancias de ProjectDonor';
     public static $ERROR_PROJECT_DONORS_DUPLICATED = 'no se permiten donantes duplicados en el proyecto';
 
+    public static function newFactory()
+    {
+        return ProjectFactory::new();
+    }
     public static function at($name, $description, $projectUrl, $startDate, $endDate, $progress, $comments, $projectBudget, $contact, $projectBeneficiary, $projectState): Project {
-        // Validaciones del nombre
+    
         if (empty(trim($name))) throw new \RuntimeException(self::$ERROR_NAME_EMPTY);
         if (strlen(trim($name)) < 3) throw new \RuntimeException(self::$ERROR_NAME_MIN_LENGTH);
         if (strlen(trim($name)) > 255) throw new \RuntimeException(self::$ERROR_NAME_MAX_LENGTH);
@@ -216,5 +223,18 @@ class Project extends Model
         return $dateTime && $dateTime->format('Y-m-d') === $date;
     }
 
+    public function getDonorsCountAttribute(): int
+    {
+        return $this->donors()->count();
+    }
+
+    public function getIndicatorsCountAttribute(): int
+    {
+        return $this->donors()->count();
+    }
+    public function getAgenciesCountAttribute(): int
+    {
+        return $this->donors()->count();
+    }
     
 }

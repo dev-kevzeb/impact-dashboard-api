@@ -3,6 +3,7 @@
 namespace App\Modules\Currency\Controller;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\CurrencyRequest;
 use App\Http\Responses\ApiResponse;
 use App\Http\Resources\CurrencyResource;
 use App\Modules\Currency\Service\CurrencyService;
@@ -65,22 +66,11 @@ class CurrencyController extends Controller
     /**
      * Crear una nueva moneda
      */
-    public function store(Request $request): JsonResponse
+    public function store(CurrencyRequest $request): JsonResponse
     {
         try {
-            // Solo validar que el code esté presente
-            $request->validate([
-                'code' => 'required|string'
-            ]);
-
-            $currency = $this->currencyService->currencyExists($request->input('code'));
-
-            //$currency = $this->currencyService->create($request->input('code'));
-
-            if(!empty($currency)) {
-                throw new RuntimeException("Ya existe una moneda con el código: {$request->input('code')}");
-            }
-            $currency = $this->currencyService->createCurrency($request->input('code'));
+            $validated = $request->validated();
+            $currency = $this->currencyService->createCurrency($validated['code']);
 
             return ApiResponse::created(
                 'Moneda creada exitosamente',
@@ -101,15 +91,12 @@ class CurrencyController extends Controller
     /**
      * Actualizar una moneda existente
      */
-    public function update(Request $request, int $id): JsonResponse
+    public function update(CurrencyRequest $request, int $id): JsonResponse
     {
         try {
-            // Solo validar que el code esté presente
-            $request->validate([
-                'code' => 'required|string'
-            ]);
+            $validated = $request->validated();
 
-            $currency = $this->currencyService->updateCurrency($id, $request->input('code'));
+            $currency = $this->currencyService->updateCurrency($id, $validated['code']);
 
             return ApiResponse::success(
                 'Moneda actualizada exitosamente',

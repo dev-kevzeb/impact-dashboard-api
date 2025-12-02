@@ -16,7 +16,7 @@ class ProjectStateRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'state' => 'required|string|max:100',
+            'state' => 'required|string|min:3|max:100',
         ];
     }
 
@@ -24,8 +24,9 @@ class ProjectStateRequest extends FormRequest
     {
         return [
             'state.required' => 'El estado del proyecto es obligatorio.',
-            'state.string' => 'El estado debe ser una cadena de texto.',
-            'state.max' => 'El estado no debe exceder :max caracteres.',
+            'state.string'   => 'El estado del proyecto debe ser un texto válido.',
+            'state.min'      => 'El estado del proyecto debe tener al menos 3 caracteres.',
+            'state.max'      => 'El estado del proyecto no debe exceder los 100 caracteres.',
         ];
     }
 

@@ -1,6 +1,7 @@
 <?php
 namespace App\Modules\ProjectState\Controller;
-
+use App\Http\Requests\ProjectStateRequest;
+use App\Http\Resources\ProjectStateResource;
 use App\Modules\ProjectState\Service\ProjectStateService;
 use App\Http\Controllers\Controller;
 use App\Http\Responses\ApiResponse;
@@ -25,7 +26,10 @@ class ProjectStateController extends Controller
             return ApiResponse::success(
                 'Lista de estados obtenida exitosamente',
                 200,
-                ProjectStateResource::collection($states)
+                [
+                    'project_states' => ProjectStateResource::collection($states),
+                    'total' => $states->count()
+                ]
             );
         } catch (RuntimeException $e) {
             return ApiResponse::error($e->getMessage(), 500);
@@ -39,21 +43,21 @@ class ProjectStateController extends Controller
             return ApiResponse::success(
                 'Estado del proyecto encontrado',
                 200,
-                new ProjectStateResource($state)
+                new ProjectStateResource($state),
             );
         } catch (RuntimeException $e) {
             return ApiResponse::notFound('Estado del proyecto');
         }
     }
 
-    public function store(ProjectStateRequest $request): JsonResponse
+    public function store(ProjectStateRequest $request)
     {
         try {
             $validated = $request->validated();
             $state = $this->projectStateService->createProjectState($validated['state']);
-            
-            return ApiResponse::created(
+            return ApiResponse::success(
                 'Estado del proyecto creado exitosamente',
+                201,
                 new ProjectStateResource($state)
             );
         } catch (RuntimeException $e) {
@@ -64,12 +68,11 @@ class ProjectStateController extends Controller
         }
     }
 
-    public function update(ProjectStateRequest $request, $id): JsonResponse
+    public function update(ProjectStateRequest $request, $id)
     {
         try {
             $validated = $request->validated();
             $state = $this->projectStateService->updateProjectState($id, $validated['state']);
-            
             return ApiResponse::success(
                 'Estado del proyecto actualizado exitosamente',
                 200,

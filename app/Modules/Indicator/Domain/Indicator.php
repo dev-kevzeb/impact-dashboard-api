@@ -6,11 +6,14 @@ use App\Modules\IndicatorType\Domain\IndicatorType;
 use App\Modules\Measure\Domain\Measure;
 use App\Modules\Project\Domain\Project;
 use App\Modules\ProjectIndicator\Domain\ProjectIndicator;
+use Database\Factories\IndicatorFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use RuntimeException;
 
 class  Indicator extends Model
 {
+    use HasFactory;
     // Tabla asociada
     protected $table = 'indicator';
 
@@ -25,7 +28,10 @@ class  Indicator extends Model
     public static $ERROR_TARGET_INVALID = 'el target del indicador debe ser un número positivo';
     public static $ERROR_MEASURE_REQUIRED = 'la meta debe ser una instancia de Measure';
 
-
+    public static function newFactory()
+    {
+        return IndicatorFactory::new();
+    }
     public function __construct(array $attributes = [])
     {
         parent::__construct($attributes);
