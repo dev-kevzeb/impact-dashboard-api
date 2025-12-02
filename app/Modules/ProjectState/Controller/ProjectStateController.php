@@ -1,5 +1,7 @@
 <?php
 namespace App\Modules\ProjectState\Controller;
+use App\Http\Requests\ProjectStateRequest;
+use App\Http\Resources\ProjectStateResource;
 use App\Modules\ProjectState\Service\ProjectStateService;
 use App\Http\Controllers\Controller;
 use App\Http\Responses\ApiResponse;
@@ -25,7 +27,7 @@ class ProjectStateController extends Controller
                 'Lista de estados obtenida exitosamente',
                 200,
                 [
-                    'project_states' => $states,
+                    'project_states' => ProjectStateResource::collection($states),
                     'total' => $states->count()
                 ]
             );
@@ -44,7 +46,7 @@ class ProjectStateController extends Controller
             return ApiResponse::success(
                 'Estado encontrado',
                 200,
-                $state
+                new ProjectStateResource($state),
             );
         } catch (RuntimeException $e) {
             return ApiResponse::notFound('Estado del proyecto');
@@ -53,18 +55,15 @@ class ProjectStateController extends Controller
         }
     }
 
-    public function store(Request $request)
+    public function store(ProjectStateRequest $request)
     {
-        $request->validate([
-            'state' => 'required|string|max:255',
-        ]);
-
         try {
-            $state = $this->projectStateService->createProjectState($request->input('state'));
+            $validated = $request->validated();
+            $state = $this->projectStateService->createProjectState($validated['state']);
             return ApiResponse::success(
                 'Estado del proyecto creado exitosamente',
                 201,
-                $state
+                new ProjectStateResource($state)
             );
         } catch (RuntimeException $e) {
             return ApiResponse::error($e->getMessage(), 400);
@@ -73,18 +72,15 @@ class ProjectStateController extends Controller
         }
     }
 
-    public function update(Request $request, $id)
+    public function update(ProjectStateRequest $request, $id)
     {
-        $request->validate([
-            'state' => 'required|string|max:255',
-        ]);
-
         try {
-            $state = $this->projectStateService->updateProjectState($id, $request->input('state'));
+            $validated = $request->validated();
+            $state = $this->projectStateService->updateProjectState($id, $validated['state']);
             return ApiResponse::success(
                 'Estado del proyecto actualizado exitosamente',
                 200,
-                $state
+                new ProjectStateResource($state)
             );
         } catch (RuntimeException $e) {
             return ApiResponse::error($e->getMessage(), 400);

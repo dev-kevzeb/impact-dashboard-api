@@ -2,6 +2,7 @@
 namespace App\Modules\Contact\Controller;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ContactRequest;
 use App\Http\Responses\ApiResponse;
 use App\Http\Resources\ContactResource;
 use App\Modules\Contact\Service\ContactService;
@@ -65,23 +66,16 @@ class ContactController extends Controller
     /**
      * Crear un nuevo contacto
      */
-    public function store(Request $request): JsonResponse
+    public function store(ContactRequest $request): JsonResponse
     {
         try {
-            $request->validate([
-                'first_name' => 'required|string',
-                'last_name' => 'required|string',
-                'title' => 'required|string',
-                'email' => 'required|email',
-                'phone' => 'required|string',
-            ]);
-
+            $validated = $request->validated();
             $contact = $this->contactService->createContact(
-                $request->input('first_name'),
-                $request->input('last_name'),
-                $request->input('title'),
-                $request->input('email'),
-                $request->input('phone')
+                $validated['first_name'],
+                $validated['last_name'],
+                $validated['title'],
+                $validated['email'],
+                $validated['phone']
             );
 
             return ApiResponse::created(
@@ -100,24 +94,17 @@ class ContactController extends Controller
     /**
      * Actualizar un contacto existente
      */
-    public function update(Request $request, int $id): JsonResponse
+    public function update(ContactRequest $request, int $id): JsonResponse
     {
         try {
-            $request->validate([
-                'first_name' => 'required|string',
-                'last_name' => 'required|string',
-                'title' => 'required|string',
-                'email' => 'required|email',
-                'phone' => 'required|string',
-            ]);
-
+            $validated = $request->validated();
             $contact = $this->contactService->updateContact(
                 $id,
-                $request->input('first_name'),
-                $request->input('last_name'),
-                $request->input('title'),
-                $request->input('email'),
-                $request->input('phone')
+                $validated['first_name'],
+                $validated['last_name'],
+                $validated['title'],
+                $validated['email'],
+                $validated['phone']
             );
 
             return ApiResponse::success(

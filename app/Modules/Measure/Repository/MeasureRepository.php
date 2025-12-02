@@ -12,4 +12,12 @@ class MeasureRepository extends AbstractRepository implements RepositoryInterfac
     {
         parent::__construct($measure);
     }
+    public function findByName(string $name): ?Measure
+    {
+        $normalized = strtolower(trim($name));
+
+        return $this->model
+            ->whereRaw('LOWER(name) LIKE ?', ['%' . $normalized . '%'])
+            ->first();
+    }
 }

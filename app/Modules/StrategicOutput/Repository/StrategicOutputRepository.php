@@ -15,13 +15,19 @@ class StrategicOutputRepository extends AbstractRepository implements Repository
 
     public function findByName(string $name): ?StrategicOutput
     {
-        $normalized = mb_convert_case(preg_replace('/\s+/', ' ', trim($name)), MB_CASE_TITLE, "UTF-8");
-        return $this->model->whereRaw('LOWER(name) = LOWER(?)', [$normalized])->first();
+        $normalized = strtolower(trim($name));
+
+        return $this->model
+            ->whereRaw('LOWER(name) LIKE ?', ['%' . $normalized . '%'])
+            ->first();
     }
 
     public function existsByName(string $name): bool
     {
-        $normalized = mb_convert_case(preg_replace('/\s+/', ' ', trim($name)), MB_CASE_TITLE, "UTF-8");
-        return $this->model->whereRaw('LOWER(name) = LOWER(?)', [$normalized])->exists();
+        
+        $normalized = preg_replace('/\s+/', ' ', trim($name));
+        $normalized = strtolower($normalized);
+
+        return $this->model->whereRaw('LOWER(name) = ?', [$normalized])->exists();
     }
 }

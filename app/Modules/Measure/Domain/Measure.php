@@ -3,11 +3,15 @@ namespace App\Modules\Measure\Domain;
 
 use App\Modules\Indicator\Domain\Indicator;
 use App\Modules\StrategicOutput\Domain\StrategicOutput;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Database\Factories\MeasureFactory;
+
 use RuntimeException;
 
 class Measure extends Model
 {
+    use HasFactory;
     protected $table = 'measure';
     protected $fillable = ['name', 'strategic_output_id'];
     protected $appends = ['indicators_count'];
@@ -17,6 +21,11 @@ class Measure extends Model
     public static $ERROR_NAME_MAX_LENGTH = 'el nombre del Measure no debe exceder 150 caracteres';
     public static $ERROR_INDICATORS_DUPLICATED = 'no se permiten indicadores duplicados en la medida';
     public static $ERROR_INDICATOR_NOT_FOUND = 'el indicador especificado no existe en esta medida';
+
+    public static function newFactory()
+    {
+        return MeasureFactory::new();
+    }
 
     public static function at(string $name, StrategicOutput $strategicOutput): self
     {

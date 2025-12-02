@@ -28,7 +28,7 @@ class IndicatorTypeController extends Controller
                 "Lista de tipos de indicator obtenida exitosamente",
                 200,
                 [
-                    'indicatorTypes' => IndicatorTypeResource::collection($indicatorTypes),
+                    'indicator_types' => IndicatorTypeResource::collection($indicatorTypes),
                     'total' => $indicatorTypes->count(),
                 ]
             );
@@ -78,7 +78,7 @@ class IndicatorTypeController extends Controller
             $indicatorType = $this->indicatorTypeService->updateIndicatorType($id, $validated['name']);
 
             return ApiResponse::success(
-                'Tipo de indicator actualizado exitosamente',
+                'Tipo de indicador actualizado exitosamente',
                 200,
                 new IndicatorTypeResource($indicatorType),
             );

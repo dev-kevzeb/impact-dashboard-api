@@ -9,4 +9,9 @@ class ContactRepository extends AbstractRepository implements RepositoryInterfac
     {
         parent::__construct($model);
     }
+
+    public function findOneBy(string $field, mixed $value)
+    {
+        return $this->model->where($field, $value)->first();
+    }
 }

@@ -3,6 +3,7 @@
 namespace App\Modules\Indicator\Controller;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\IndicatorRequest;
 use App\Http\Resources\IndicatorResource;
 use App\Http\Responses\ApiResponse;
 
@@ -57,21 +58,16 @@ class IndicatorController extends Controller
         }
     }
 
-    public function store(Request $request): JsonResponse
+    public function store(IndicatorRequest $request): JsonResponse
     {
         try{
-            $request->validate([
-                'name' => 'required|string',
-                'target'=>'required|numeric',
-                'type_id' => 'required|integer',
-                'measure_id' => 'required|integer'
-            ]);
+            $validated = $request->validated();
 
             $indicator = $this->indicatorService->createIndicator(
-                $request->input('name'),
-                $request->input('target'),
-                $request->input('type_id'),
-                $request->input('measure_id'),
+                $validated['name'],
+                $validated['target'],
+                $validated['type_id'],
+                $validated['measure_id'],
             );
 
             return ApiResponse::created(
@@ -86,22 +82,17 @@ class IndicatorController extends Controller
         }
     }
 
-    public function update(Request $request, int $id): JsonResponse
+    public function update(IndicatorRequest $request, int $id): JsonResponse
     {
         try{
-            $request->validate([
-                'name' => 'required|string',
-                'target'=>'required|numeric',
-                'type_id' => 'required|integer',
-                'measure_id' => 'required|integer'
-            ]);
+            $validated = $request->validated();
 
             $indicator = $this->indicatorService->updateIndicator(
                 $id,
-                $request->input('name'),
-                $request->input('target'),
-                $request->input('type_id'),
-                $request->input('measure_id'),
+                $validated['name'],
+                $validated['target'],
+                $validated['type_id'],
+                $validated['measure_id'],
             );
 
             return ApiResponse::success(

@@ -41,7 +41,7 @@ class MeasureService
 
      public function findMeasureByName(string $name): Measure
     {
-        $measure = $this->measureRepository->findBy('name', trim($name));
+        $measure = $this->measureRepository->findByName( trim($name));
 
         if (!$measure) {throw new RuntimeException("No se encontró ninguna measure con nombre: {$name}"); }
         return $measure;
@@ -81,7 +81,7 @@ class MeasureService
     public function addIndicatorToMeasure(int $measureId, $indicator): void
     {
         $measure = $this->getMeasureById($measureId);
-        if (!$measure) throw new \RuntimeException("La medida con id {$measure} no existe.");
+        if (!$measure) throw new RuntimeException("La medida con id {$measure} no existe.");
 
         $measure->addIndicator($indicator);
     }

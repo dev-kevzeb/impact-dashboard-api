@@ -20,6 +20,7 @@ class IndicatorTypeRequest extends FormRequest
             'name' => [
                 'required',
                 'string',
+                'min:2',
                 'max:255',
                 Rule::unique('indicator_type', 'name')->ignore($indicatorTypeId),
             ],
@@ -32,7 +33,8 @@ class IndicatorTypeRequest extends FormRequest
             'name.required'=> 'el nombre del tipo de indicador no debe ir vacio',
             'name.min' => 'el nombre del tipo de indicador debe tener al menos 2 caracteres',
             'name.max' => 'el nombre del tipo de indicador no debe exceder 100 caracteres',
-
+            'name.unique' => 'Ya existe un tipo de indicador con ese nombre',
+            'name.string' => 'El nombre debe ser una cadena de texto',
         ];
     }
 

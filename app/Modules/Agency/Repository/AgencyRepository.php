@@ -23,4 +23,13 @@ class AgencyRepository extends AbstractRepository implements RepositoryInterface
     {
         parent::__construct($model);
     }
+
+    public function findByName(string $name): ?Agency
+    {
+        $normalized = strtolower(trim($name));
+
+        return $this->model
+            ->whereRaw('LOWER(name) LIKE ?', ['%' . $normalized . '%'])
+            ->first();
+    }
 }

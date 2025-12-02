@@ -3,6 +3,7 @@
 namespace App\Modules\Agency\Controller;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\AgencyRequest;
 use App\Http\Responses\ApiResponse;
 use App\Http\Resources\AgencyResource;
 use App\Modules\Agency\Service\AgencyService;
@@ -65,20 +66,16 @@ class AgencyController extends Controller
     /**
      * Crear una nueva agencia
      */
-    public function store(Request $request): JsonResponse
+    public function store(AgencyRequest $request): JsonResponse
     {
         try {
             // Validar campos requeridos
-            $request->validate([
-                'name' => 'required|string',
-                'url' => 'required|string',
-                'is_approved' => 'required|boolean'
-            ]);
+            $validated = $request->validated();
 
             $agency = $this->agencyService->createAgency(
-                $request->input('name'),
-                $request->input('url'),
-                $request->input('is_approved')
+                $validated['name'],
+                $validated['url'],
+                $validated['is_approved']
             );
 
             return ApiResponse::created(
@@ -96,21 +93,17 @@ class AgencyController extends Controller
     /**
      * Actualizar una agencia existente
      */
-    public function update(Request $request, int $id): JsonResponse
+    public function update(AgencyRequest $request, int $id): JsonResponse
     {
         try {
             // Validar campos requeridos
-            $request->validate([
-                'name' => 'required|string',
-                'url' => 'required|string',
-                'is_approved' => 'required|boolean'
-            ]);
+            $validated =$request->validated();
 
             $agency = $this->agencyService->updateAgency(
                 $id,
-                $request->input('name'),
-                $request->input('url'),
-                $request->input('is_approved')
+                $validated['name'],
+                $validated['url'],
+                $validated['is_approved']
             );
 
             return ApiResponse::success(

@@ -4,12 +4,15 @@ namespace App\Modules\Agency\Domain;
 
 use App\Modules\Project\Domain\Project;
 use App\Modules\ProjectAgency\Domain\ProjectAgency;
+use Database\Factories\AgencyFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use RuntimeException;
 use App\Modules\Program\Domain\Program;
 
 class Agency extends Model
 {
+    use HasFactory;
     protected $table = 'agency';
     protected $fillable = ['name', 'url', 'is_approved'];
     
@@ -22,6 +25,10 @@ class Agency extends Model
     public static $ERROR_URL_INVALID_PROTOCOL = 'la URL de la agencia debe usar protocolo HTTP o HTTPS';
     public static $ERROR_APPROVED_NOT_BOOLEAN = 'el estado de aprobación debe ser un valor booleano';
     
+    public static function newFactory()
+    {
+        return AgencyFactory::new();
+    }
     public function __construct(array $attributes = [])
     {
         parent::__construct($attributes);
