@@ -15,7 +15,7 @@ use RuntimeException;
  * @OA\Schema(
  *     schema="Contact",
  *     type="object",
- *     title="Contacto",
+ *     title="Contact",
  *     description="Persona de contacto responsable de programas o proyectos",
  *     @OA\Property(property="id", type="integer", example=1, description="ID único del contacto"),
  *     @OA\Property(property="first_name", type="string", example="Juan", description="Nombre(s) del contacto"),

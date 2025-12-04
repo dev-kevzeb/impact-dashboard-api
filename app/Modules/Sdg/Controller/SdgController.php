@@ -14,7 +14,7 @@ use RuntimeException;
  * @OA\Schema(
  *     schema="Sdg",
  *     type="object",
- *     title="SDG (Objetivo de Desarrollo Sostenible)",
+ *     title="Sdg",
  *     description="Modelo de Objetivo de Desarrollo Sostenible de la ONU",
  *     @OA\Property(property="id", type="integer", example=1, description="ID único del SDG"),
  *     @OA\Property(property="image", type="string", example="sdg_images/1732567890_sdg-01.png", description="Ruta de almacenamiento de la imagen"),
