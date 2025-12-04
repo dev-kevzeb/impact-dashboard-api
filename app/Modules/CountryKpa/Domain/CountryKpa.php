@@ -3,12 +3,15 @@
 namespace App\Modules\CountryKpa\Domain;
 
 use App\Modules\StrategicOutput\Domain\StrategicOutput;
+use Database\Factories\CountryKpaFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Modules\Country\Domain\Country;
 use App\Modules\Kpa\Domain\Kpa;
 
 class CountryKpa extends Model
 {
+    use HasFactory;
     protected $table = 'country_kpa';
     protected $fillable = ['id_country', 'id_kpa'];
     protected $appends = ['strategic_outputs_count'];
@@ -17,6 +20,11 @@ class CountryKpa extends Model
     public static $ERROR_STRATEGIC_OUTPUT_DUPLICATED = 'no se permiten medidas duplicadas en el resultado estratégico';
     public static $ERROR_STRATEGIC_OUTPUT_INVALID_INSTANCE = 'la medida debe ser una instancia de Measure';
     public static $ERROR_STRATEGIC_OUTPUT_NOT_FOUND = 'la medida especificada no existe en este resultado estratégico';
+
+    public static function newFactory()
+    {
+        return CountryKpaFactory::new();
+    }
 
     public function country()
     {

@@ -2,11 +2,14 @@
 
 namespace App\Modules\Contact\Domain;
 
+use Database\Factories\ContactFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use RuntimeException;
 
 class Contact extends Model
 {
+    use HasFactory;
     // tabla asociada para el orm eloquent
     protected $table = 'contact';
     // atributos asignables
@@ -31,6 +34,11 @@ class Contact extends Model
     public static $ERROR_PHONE_INVALID_FORMAT = 'el formato del teléfono no es válido - use formato internacional';
     public static $ERROR_PHONE_TOO_SHORT = 'el teléfono debe tener al menos 7 dígitos';
     public static $ERROR_PHONE_TOO_LONG = 'el teléfono no debe exceder 15 dígitos';
+
+    public static function newFactory()
+    {
+        return ContactFactory::new();
+    }
 
     public static function at(string $firstName, string $lastName, string $title, string $email, string $phone = ""): Contact
     {

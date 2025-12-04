@@ -7,16 +7,21 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class ProjectStateResource extends JsonResource
 {
-    /**
-     * Transform the resource into an array.
-     *
-     * @return array<string, mixed>
-     */
     public function toArray(Request $request): array
     {
         return [
-            'id' => $this->id,
+            'id'    => $this->id,
             'state' => $this->state,
+        ];
+    }
+
+    public function with(Request $request): array
+    {
+        return [
+            'meta' => [
+                'resource_type' => 'project_state',
+                'version' => '1.0',
+            ],
         ];
     }
 }

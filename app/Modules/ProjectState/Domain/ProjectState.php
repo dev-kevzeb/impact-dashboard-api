@@ -2,6 +2,7 @@
 
 namespace App\Modules\ProjectState\Domain;
 
+use Database\Factories\ProjectStateFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use RuntimeException;
@@ -12,14 +13,18 @@ class ProjectState extends Model
 
     protected $table = 'project_state';
     protected $fillable = ['state'];
-
-    // Error constants in Spanish
-    public static $ERROR_NAME_EMPTY = 'el nombre del estado del proyecto no debe ir vacío';
-    public static $ERROR_NAME_MIN_LENGTH = 'el nombre del estado del proyecto debe tener al menos 3 caracteres';
-    public static $ERROR_NAME_MAX_LENGTH = 'el nombre del estado del proyecto no debe exceder 100 caracteres';
-
-    // Factory method with domain validation
-    public static function at(string $name): ProjectState
+    // Constantes de mensajes de error
+    public static $ERROR_STATE_INVALID_TYPE = 'El estado del proyecto no es valido';
+    public static $ERROR_STATE_EMPTY = 'el nombre del estado del proyecto no debe ir vacio';  
+    public static $ERROR_STATE_MIN_LENGTH = 'el estado del proyecto debe tener al menos 3 caracteres';
+    public static $ERROR_STATE_MAX_LENGTH = 'el nombre del estado del proyecto no debe exceder 100 caracteres';
+    
+    public static function newFactory()
+    {
+        return ProjectStateFactory::new();
+    }
+    
+    public static function at($state): ProjectState
     {
         if (empty(trim($name))) {
             throw new RuntimeException(self::$ERROR_NAME_EMPTY);

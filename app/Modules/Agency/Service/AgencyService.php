@@ -35,13 +35,17 @@ class AgencyService
 
     public function findAgencyByName(string $name): Agency
     {
-        return $this->agencyRepository->findBy('name', $name);
+        $agency = $this->agencyRepository->findByName($name);
+        if (!$agency) throw new RuntimeException("No se encontro la agencia");
+        return $agency;
     }
 
-    public function getAllAgencies()
+    public function getAllAgencies(int $perPage = 10)
     {
-        return $this->agencyRepository->getAll();
+        return $this->agencyRepository->paginate($perPage);
     }
+
+
 
     public function updateAgency(int $id, string $name, string $url, bool $isApproved): Agency
     {

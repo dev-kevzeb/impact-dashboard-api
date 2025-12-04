@@ -4,12 +4,15 @@ namespace App\Modules\StrategicOutput\Domain;
 
 
 use App\Modules\Measure\Domain\Measure;
+use Database\Factories\StrategicOutputFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use \App\Modules\CountryKpa\Domain\CountryKpa;
 use RuntimeException;
 
 class StrategicOutput extends Model
 {
+    use HasFactory;
     protected $table = 'strategic_output';
     protected $fillable = ['name', 'id_ck'];
     protected $appends = ['measures_count'];
@@ -21,6 +24,11 @@ class StrategicOutput extends Model
     public static $ERROR_MEASURES_DUPLICATED = 'no se permiten medidas duplicadas en el resultado estratégico';
     public static $ERROR_MEASURE_INVALID_INSTANCE = 'la medida debe ser una instancia de Measure';
     public static $ERROR_MEASURE_NOT_FOUND = 'la medida especificada no existe en este resultado estratégico';
+
+    public static function newFactory()
+    {
+        return StrategicOutputFactory::new();
+    }
     
     public static function at(string $name): StrategicOutput  
     {

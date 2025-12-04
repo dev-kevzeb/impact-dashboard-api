@@ -5,6 +5,7 @@ namespace App\Repositories;
 use App\Repositories\RepositoryInterface;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Pagination\LengthAwarePaginator;
 use RuntimeException;
 
 abstract class AbstractRepository implements RepositoryInterface
@@ -118,6 +119,22 @@ abstract class AbstractRepository implements RepositoryInterface
             );
         }
     }
+
+    /**
+     * @return LengthAwarePaginator<int, T>
+     */
+
+    public function paginate(int $perPage = 10)
+    {
+        try {
+            return $this->model->paginate($perPage);
+        } catch (\Exception $e) {
+            throw new RuntimeException(
+                "Error al paginar: " . $e->getMessage()
+            );
+        }
+    }
+
 
     /**
      * Contar entidades

@@ -5,11 +5,14 @@ namespace App\Modules\Country\Domain;
 use App\Modules\Currency\Domain\Currency;
 use App\Modules\Kpa\Domain\Kpa;
 
+use Database\Factories\CountryFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use RuntimeException;
 
 class Country extends Model
 {
+    use HasFactory;
     protected $table = 'country';
     protected $fillable = ['name', 'currency_id'];
 
@@ -19,6 +22,11 @@ class Country extends Model
     public static $ERROR_NAME_TOO_LONG = 'el nombre del país no debe exceder 100 caracteres';
     public static $ERROR_NAME_INVALID_CHARACTERS = 'el nombre del país contiene caracteres no válidos';
     public static $ERROR_CURRENCY_INVALID = 'la moneda debe ser una instancia de Currency';
+
+    public static function newFactory()
+    {
+        return CountryFactory::new();
+    }
     
     public static function at($name, $currency): Country
     {

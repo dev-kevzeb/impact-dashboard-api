@@ -16,9 +16,8 @@ class IndicatorTypeService
     }
     public function createIndicatorType(string $name): IndicatorType
     {
-        if($this->indicatorTypeRepository->existsByName(trim($name))) {
-            throw new RuntimeException("Ya existe un tipo de indicador con el nombre {$name}");
-        }
+        if($this->indicatorTypeRepository->existsByName(trim($name))) throw new RuntimeException("Ya existe un tipo de indicador con ese nombre");
+
         $indicatorType = IndicatorType::at($name);
         $this->indicatorTypeRepository->save( $indicatorType);
         return $indicatorType;

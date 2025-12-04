@@ -3,6 +3,7 @@
 namespace App\Modules\Agency\Controller;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\AgencyRequest;
 use App\Http\Responses\ApiResponse;
 use App\Http\Resources\AgencyResource;
 use App\Modules\Agency\Service\AgencyService;
@@ -65,19 +66,24 @@ class AgencyController extends Controller
      *     )
      * )
      */
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
         try {
-            $agencies = $this->agencyService->getAllAgencies();
+            $perPage = (int) $request->get("per_page", 10);
+
+            $agencies = $this->agencyService->getAllAgencies($perPage);
             
             return ApiResponse::success(
-                'Lista de agencias obtenida exitosamente',
+                'Agencies paginated list successfully uploaded',
                 200,
                 [
                     'agencies' => AgencyResource::collection($agencies),
-                    'total' => $agencies->count()
+                    'total' => $agencies->count(),
+                    'per_page' => $agencies->perPage(),
+                    'current_page' => $agencies->currentPage(),
+                    'last_page' => $agencies->lastPage(),
                 ]
-            );
+            );  
         } catch (RuntimeException $e) {
             return ApiResponse::error($e->getMessage(), 500);
         } catch (\Exception $e) {
@@ -202,24 +208,19 @@ class AgencyController extends Controller
      *     )
      * )
      */
-    public function store(Request $request): JsonResponse
+    public function store(AgencyRequest $request): JsonResponse
     {
         try {
-            // Validar campos requeridos
-            $request->validate([
-                'name' => 'required|string',
-                'url' => 'required|string',
-                'is_approved' => 'required|boolean'
-            ]);
+            $validated = $request->validated();
 
             $agency = $this->agencyService->createAgency(
-                $request->input('name'),
-                $request->input('url'),
-                $request->input('is_approved')
+                $validated['name'],
+                $validated['url'],
+                $validated['is_approved']
             );
 
             return ApiResponse::created(
-                'Agencia creada exitosamente',
+                'Agency successfully created',
                 new AgencyResource($agency)
             );
 
@@ -295,25 +296,21 @@ class AgencyController extends Controller
      *     )
      * )
      */
-    public function update(Request $request, int $id): JsonResponse
+    public function update(AgencyRequest $request, int $id): JsonResponse
     {
         try {
             // Validar campos requeridos
-            $request->validate([
-                'name' => 'required|string',
-                'url' => 'required|string',
-                'is_approved' => 'required|boolean'
-            ]);
+            $validated =$request->validated();
 
             $agency = $this->agencyService->updateAgency(
                 $id,
-                $request->input('name'),
-                $request->input('url'),
-                $request->input('is_approved')
+                $validated['name'],
+                $validated['url'],
+                $validated['is_approved']
             );
 
             return ApiResponse::success(
-                'Agencia actualizada exitosamente',
+                'Agency successfully updated',
                 200,
                 new AgencyResource($agency)
             );

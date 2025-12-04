@@ -2,12 +2,15 @@
 
 namespace App\Modules\Kpa\Domain;
 use \App\Modules\Country\Domain\Country;
+use Database\Factories\KpaFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use RuntimeException;
 
 class Kpa extends Model
 {
 
+    use HasFactory;
     protected $table = 'kpa';
     protected $fillable = ['name', 'implementation'];
 
@@ -22,6 +25,11 @@ class Kpa extends Model
     public function __construct(array $attributes = [])
     {
         parent::__construct($attributes);
+    }
+
+    public static function newFactory()
+    {
+        return KpaFactory::new();
     }
     
     public static function at(string $name, mixed $implementation): Kpa

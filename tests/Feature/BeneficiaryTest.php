@@ -11,11 +11,11 @@ class BeneficiaryTest extends TestCase
     use RefreshDatabase;
 
     private const BASE_URL = '/api/v1/beneficiaries';
-    private const ERROR_REQUIRED = 'El nombre del beneficiario es obligatorio.';
-    private const ERROR_UNIQUE = 'Este beneficiario ya existe en el sistema.';
-    private const ERROR_MIN_LENGTH = 'el nombre del beneficiario debe tener al menos 2 caracteres';
-    private const ERROR_MAX_LENGTH = 'El nombre no debe exceder 255 caracteres.';
-    private const ERROR_STRING = 'El nombre debe ser una cadena de texto.';
+    private const ERROR_REQUIRED = 'el nombre del beneficiario es obligatorio.';
+    private const ERROR_UNIQUE = 'este beneficiario ya existe en el sistema.';
+    private const ERROR_MIN_LENGTH = 'El nombre del beneficiario debe tener al menos 2 caracteres.';
+    private const ERROR_MAX_LENGTH = 'el nombre no debe exceder 255 caracteres.';
+    private const ERROR_STRING = 'el nombre debe ser una cadena de texto.';
 
     /**
      * Test: GET /api/v1/beneficiaries
@@ -91,9 +91,9 @@ class BeneficiaryTest extends TestCase
 
         $response = $this->postJson(self::BASE_URL, $data);
 
-        $response->assertStatus(400)
-                 ->assertJson(['success' => false])
-                 ->assertJsonPath('message', self::ERROR_MIN_LENGTH);
+        $response->assertStatus(422)
+                 ->assertJsonValidationErrors(['name'])
+                 ->assertJsonPath('errors.name.0', self::ERROR_MIN_LENGTH);
     }
 
     /**

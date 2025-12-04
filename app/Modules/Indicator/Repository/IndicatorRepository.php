@@ -12,5 +12,14 @@ class IndicatorRepository extends AbstractRepository implements RepositoryInterf
     {
         parent::__construct($model);
     }
+
+    public function findByName(string $name): ? Indicator
+    {
+        $normalized = strtolower(trim($name));
+
+        return $this->model
+            ->whereRaw('LOWER(name) LIKE ?', ['%' . $normalized . '%'])
+            ->first();
+    }
 }
 

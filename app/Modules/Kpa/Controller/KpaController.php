@@ -3,6 +3,7 @@
 namespace App\Modules\Kpa\Controller;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\KpaRequest;
 use App\Http\Responses\ApiResponse;
 use App\Http\Resources\KpaResource;
 use App\Modules\Kpa\Service\KpaService;
@@ -199,18 +200,15 @@ class KpaController extends Controller
      *     )
      * )
      */
-    public function store(Request $request): JsonResponse
+    public function store(KpaRequest $request): JsonResponse
     {
         try {
             // Validar que los campos estén presentes
-            $request->validate([
-                'name' => 'required|string',
-                'implementation' => 'required|numeric'
-            ]);
+            $validated = $request->validated();
 
             $kpa = $this->kpaService->createKpa(
-                $request->input('name'),
-                (float) $request->input('implementation')
+                $validated['name'],
+                (float) $validated['implementation']
             );
 
             return ApiResponse::created(
@@ -293,19 +291,16 @@ class KpaController extends Controller
      *     )
      * )
      */
-    public function update(Request $request, int $id): JsonResponse
+    public function update(KpaRequest $request, int $id): JsonResponse
     {
         try {
             // Validar que los campos estén presentes
-            $request->validate([
-                'name' => 'required|string',
-                'implementation' => 'required|numeric'
-            ]);
+            $validated = $request->validated();
 
             $kpa = $this->kpaService->updateKpa(
                 $id,
-                $request->input('name'),
-                (float) $request->input('implementation')
+                $validated['name'],
+                (float) $validated['implementation']
             );
 
             return ApiResponse::success(

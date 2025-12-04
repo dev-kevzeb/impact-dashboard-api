@@ -12,4 +12,17 @@ class ProjectRepository extends AbstractRepository implements RepositoryInterfac
     {
         parent::__construct($model);
     }
+    public function findByName(string $name): ? P
+    {
+        $normalized = strtolower(trim($name));
+
+        return $this->model
+            ->whereRaw('LOWER(name) LIKE ?', ['%' . $normalized . '%'])
+            ->first();
+    }
+
+    public function findOneBy(string $field, mixed $value)
+    {
+        return $this->model->where($field, $value)->first();
+    }
 }

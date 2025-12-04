@@ -3,6 +3,7 @@
 namespace App\Modules\Measure\Controller;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\MeasureRequest;
 use App\Http\Resources\MeasureResource;
 
 use App\Http\Responses\ApiResponse;
@@ -305,17 +306,14 @@ class MeasureController extends Controller
      *     )
      * )
      */
-    public function store(Request $request)
+    public function store(MeasureRequest $request)
     {
         try {
-            $request->validate([
-                'name' => 'required|string|min:2|max:100',
-                'strategic_output_id'=> 'required|integer',
-            ]);
+            $validated = $request->validated();
 
             $measure = $this->measureService->createMeasure(
-                $request->input('name'),
-                $request->input('strategic_output_id'),
+                $validated['name'],
+                $validated['strategic_output_id'],
                 );
 
 
@@ -330,7 +328,6 @@ class MeasureController extends Controller
             return ApiResponse::error('Error interno del servidor', 500);
         }
     }
-
 
     /**
      * @OA\Put(
@@ -375,15 +372,13 @@ class MeasureController extends Controller
      *     )
      * )
      */
-    public function update(Request $request, int $id)
+    public function update(MeasureRequest $request, int $id)
     {
         try {
-            $request->validate([
-                'name' => 'required|string|min:2|max:100',
-                'strategic_output_id'=> 'required|integer',
-            ]);
 
-            $measure = $this->measureService->updateMeasure($id, $request->input('name'), $request->input('strategic_output_id'));
+            $validated = $request->validated();
+
+            $measure = $this->measureService->updateMeasure($id, $validated['name'], $validated['strategic_output_id']);
 
             return ApiResponse::success(
                 'Medida actualziada exitosamente',
@@ -569,7 +564,7 @@ class MeasureController extends Controller
         $indicator = $this->indicatorService->getIndicatorById($request->input('indicator_id'));
         $this->measureService->removeIndicatorFromMeasure($request->input('measure_id'), $indicator);
         
-        $measure = $this->measureService->findMeasureByName($request->input('measure_id'));
+        $measure = $this->measureService->getMeasureById($request->input('measure_id'));
 
         return ApiResponse::success(
             'Indicador removido exitosamente',
