@@ -53,7 +53,7 @@ class AgencyTest extends TestCase
         $response = $this->postJson(self::BASE_URL, $data);
 
         $response->assertCreated()
-            ->assertJsonPath('message', 'Agencia creada exitosamente')
+            ->assertJsonPath('message', 'Agency successfully created')
             ->assertJsonStructure([
                 'data' => ['id', 'name', 'url', 'is_approved']
             ]);
@@ -117,7 +117,7 @@ class AgencyTest extends TestCase
         ]);
 
         $response->assertOk()
-            ->assertJsonPath('message', 'Agencia actualizada exitosamente');
+            ->assertJsonPath('message', 'Agency successfully updated');
 
         $this->assertDatabaseHas('agency', [
             'id' => $agency->id,

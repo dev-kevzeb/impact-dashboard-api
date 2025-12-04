@@ -23,19 +23,24 @@ class AgencyController extends Controller
     /**
      * Listar todas las agencias
      */
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
         try {
-            $agencies = $this->agencyService->getAllAgencies();
+            $perPage = (int) $request->get("per_page", 10);
+
+            $agencies = $this->agencyService->getAllAgencies($perPage);
             
             return ApiResponse::success(
-                'Lista de agencias obtenida exitosamente',
+                'Agencies paginated list successfully uploaded',
                 200,
                 [
                     'agencies' => AgencyResource::collection($agencies),
-                    'total' => $agencies->count()
+                    'total' => $agencies->count(),
+                    'per_page' => $agencies->perPage(),
+                    'current_page' => $agencies->currentPage(),
+                    'last_page' => $agencies->lastPage(),
                 ]
-            );
+            );  
         } catch (RuntimeException $e) {
             return ApiResponse::error($e->getMessage(), 500);
         } catch (\Exception $e) {
@@ -69,7 +74,6 @@ class AgencyController extends Controller
     public function store(AgencyRequest $request): JsonResponse
     {
         try {
-            // Validar campos requeridos
             $validated = $request->validated();
 
             $agency = $this->agencyService->createAgency(
@@ -79,7 +83,7 @@ class AgencyController extends Controller
             );
 
             return ApiResponse::created(
-                'Agencia creada exitosamente',
+                'Agency successfully created',
                 new AgencyResource($agency)
             );
 
@@ -107,7 +111,7 @@ class AgencyController extends Controller
             );
 
             return ApiResponse::success(
-                'Agencia actualizada exitosamente',
+                'Agency successfully updated',
                 200,
                 new AgencyResource($agency)
             );

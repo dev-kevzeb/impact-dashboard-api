@@ -40,10 +40,12 @@ class AgencyService
         return $agency;
     }
 
-    public function getAllAgencies()
+    public function getAllAgencies(int $perPage = 10)
     {
-        return $this->agencyRepository->getAll();
+        return $this->agencyRepository->paginate($perPage);
     }
+
+
 
     public function updateAgency(int $id, string $name, string $url, bool $isApproved): Agency
     {
