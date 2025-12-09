@@ -154,8 +154,7 @@ ALTER TABLE contact
     ALTER COLUMN    id              SET DEFAULT nextval('contact_seq'),
     ALTER COLUMN    created_at      SET DEFAULT CURRENT_TIMESTAMP,
     ALTER COLUMN    updated_at      SET DEFAULT CURRENT_TIMESTAMP,
-    ADD CONSTRAINT  pk_contact       PRIMARY KEY(id),
-    ADD CONSTRAINT  uq_contact_email UNIQUE(email);
+    ADD CONSTRAINT  pk_contact       PRIMARY KEY(id);
 
 /*==============================================================*/
 /* Table: Program                                               */

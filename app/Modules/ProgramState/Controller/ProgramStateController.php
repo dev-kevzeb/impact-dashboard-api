@@ -63,16 +63,21 @@ class ProgramStateController extends Controller
      *     )
      * )
      */
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
         try {
-            $states = $this->programStateService->getAllProgramStates();
+            $perPage = (int) $request->get("per_page", 10);
+            $states = $this->programStateService->getAllProgramStates($perPage);
+            
             return ApiResponse::success(
-                'Lista de estados obtenida exitosamente',
+                'Program states paginated list successfully uploaded',
                 200,
                 [
                     'program_states' => ProgramStateResource::collection($states),
-                    'total' => $states->count()
+                    'total' => $states->count(),
+                    'per_page' => $states->perPage(),
+                    'current_page' => $states->currentPage(),
+                    'last_page' => $states->lastPage(),
                 ]
             );
         } catch (RuntimeException $e) {

@@ -41,4 +41,10 @@ interface RepositoryInterface
      * @return bool
      */
     public function exists(string $field, mixed $value): bool;
+
+    /**
+     * @param int $perPage Número de registros por página (default: 10)
+     * @return \Illuminate\Pagination\LengthAwarePaginator
+     */
+    public function paginate(int $perPage = 10);
 }

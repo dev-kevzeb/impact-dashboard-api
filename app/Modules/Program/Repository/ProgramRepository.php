@@ -40,6 +40,24 @@ class ProgramRepository extends AbstractRepository
     }
     
     /**
+     * Obtener programas paginados con todas sus relaciones cargadas
+     * 
+     * @param int $perPage Número de registros por página
+     * @return \Illuminate\Pagination\LengthAwarePaginator
+     */
+    public function paginateWithRelations(int $perPage = 10)
+    {
+        return $this->model
+            ->with([
+                'contact',
+                'programState',
+                'sdgs'
+                // 'projects' // TODO: Descomentar cuando el módulo Project exista
+            ])
+            ->paginate($perPage);
+    }
+    
+    /**
      * Buscar programa por ID con todas sus relaciones
      * 
      * @param int $id
