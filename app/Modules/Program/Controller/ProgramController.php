@@ -50,16 +50,21 @@ class ProgramController extends Controller
      *     )
      * )
      */
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
         try {
-            $programs = $this->programService->getAllPrograms();
+            $perPage = (int) $request->get("per_page", 10);
+            $programs = $this->programService->getAllPrograms($perPage);
+            
             return ApiResponse::success(
-                'Lista de programas obtenida exitosamente',
+                'Programs paginated list successfully uploaded',
                 200,
                 [
                     'programs' => ProgramResource::collection($programs),
-                    'total' => $programs->count()
+                    'total' => $programs->count(),
+                    'per_page' => $programs->perPage(),
+                    'current_page' => $programs->currentPage(),
+                    'last_page' => $programs->lastPage(),
                 ]
             );
         } catch (\Exception $e) {
@@ -148,7 +153,7 @@ class ProgramController extends Controller
                 $validated['description'],
                 $path,  // Path guardado en storage
                 $validated['program_url'] ?? '',
-                $validated['contact_id'],
+                $validated['contact'],
                 $validated['sdg_ids'] ?? []
             );
 
@@ -377,7 +382,7 @@ class ProgramController extends Controller
                 $validated['description'],
                 $bannerPath,
                 $validated['program_url'] ?? '',
-                $validated['contact_id'],
+                $validated['contact'],
                 $validated['program_state_id'],
                 $validated['sdg_ids'] ?? []
             );

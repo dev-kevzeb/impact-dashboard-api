@@ -36,7 +36,7 @@ class ProgramService
         string $description,
         ?string $bannerImg,
         string $programUrl,
-        int $contactId,
+        array $contactPayload,
         array $sdgIds = []
     ): Program {
         // Validar duplicados
@@ -44,12 +44,28 @@ class ProgramService
             throw new RuntimeException("Ya existe un programa con el nombre: {$name}");
         }
 
+        // Manejar Contact (nuevo o existente)
+        if (!empty($contactPayload['id'])) {
+            // Caso 1: Contact existente
+            $contact = $this->contactRepository->findById($contactPayload['id']);
+            if (!$contact) {
+                throw new RuntimeException("El contacto con id {$contactPayload['id']} no existe.");
+            }
+        } else {
+            // Caso 2: Crear nuevo Contact
+            $contact = \App\Modules\Contact\Domain\Contact::at(
+                $contactPayload['first_name'],
+                $contactPayload['last_name'],
+                $contactPayload['title'],
+                $contactPayload['email'],
+                $contactPayload['phone'] ?? ''
+            );
+            $this->contactRepository->save($contact);
+        }
+
         // Forzar estado "Inactivo" al crear (regla de negocio)
         // Solo cambiará a "Activo" cuando tenga proyectos asociados
         $inactiveState = $this->programStateRepository->findBy('name', 'Inactivo');
-
-        // Validar Contact
-        $contact = $this->contactRepository->findById($contactId);
 
         // Validar SDGs si existen
         if (!empty($sdgIds)) {
@@ -91,11 +107,13 @@ class ProgramService
     }
 
     /**
-     * Obtener todos los programas
+     * Obtener todos los programas con paginación
+     * @param int $perPage Número de registros por página (default: 10)
+     * @return \Illuminate\Pagination\LengthAwarePaginator
      */
-    public function getAllPrograms()
+    public function getAllPrograms(int $perPage = 10)
     {
-        return $this->programRepository->getAllWithRelations();
+        return $this->programRepository->paginateWithRelations($perPage);
     }
 
     /**
@@ -107,7 +125,7 @@ class ProgramService
         string $description,
         ?string $bannerImg,
         string $programUrl,
-        int $contactId,
+        array $contactPayload,
         int $programStateId,
         array $sdgIds = []
     ): Program {
@@ -120,16 +138,56 @@ class ProgramService
             throw new RuntimeException("Ya existe un programa con el nombre: {$name}");
         }
 
-        // Validar entidades relacionadas
-        $this->validateRelatedEntities(
-            $contactId,
-            $programStateId,
-            $sdgIds
-        );
+        // Manejar Contact (nuevo, existente o actualizar)
+        if (!empty($contactPayload['id'])) {
+            // Caso 1: Contact existente - buscar
+            $contact = $this->contactRepository->findById($contactPayload['id']);
+            if (!$contact) {
+                throw new RuntimeException("El contacto con id {$contactPayload['id']} no existe.");
+            }
+            
+            // Si vienen datos adicionales, ACTUALIZAR el contact
+            if (isset($contactPayload['first_name']) && isset($contactPayload['last_name']) 
+                && isset($contactPayload['title']) && isset($contactPayload['email'])) {
+                
+                $updatedContact = \App\Modules\Contact\Domain\Contact::at(
+                    $contactPayload['first_name'],
+                    $contactPayload['last_name'],
+                    $contactPayload['title'],
+                    $contactPayload['email'],
+                    $contactPayload['phone'] ?? ''
+                );
+                
+                $contact->first_name = $updatedContact->first_name;
+                $contact->last_name = $updatedContact->last_name;
+                $contact->title = $updatedContact->title;
+                $contact->email = $updatedContact->email;
+                $contact->phone = $updatedContact->phone;
+                
+                $this->contactRepository->save($contact);
+            }
+            // Si solo viene 'id', no actualiza nada (reutiliza contact as-is)
+        } else {
+            // Caso 2: Crear nuevo Contact
+            $contact = \App\Modules\Contact\Domain\Contact::at(
+                $contactPayload['first_name'],
+                $contactPayload['last_name'],
+                $contactPayload['title'],
+                $contactPayload['email'],
+                $contactPayload['phone'] ?? ''
+            );
+            $this->contactRepository->save($contact);
+        }
 
-        // Obtener objetos de las entidades relacionadas
-        $contact = $this->contactRepository->findById($contactId);
+        // Validar ProgramState
         $programState = $this->programStateRepository->findById($programStateId);
+
+        // Validar SDGs
+        if (!empty($sdgIds)) {
+            foreach ($sdgIds as $sdgId) {
+                $this->sdgRepository->findById($sdgId);
+            }
+        }
 
         // Validar datos con factory method (sin guardar)
         Program::at(
@@ -146,7 +204,7 @@ class ProgramService
         $program->description = trim($description);
         $program->banner_img = $bannerImg ? trim($bannerImg) : $program->banner_img;
         $program->program_url = trim($programUrl);
-        $program->contact_id = $contactId;
+        $program->contact_id = $contact->id;
         $program->program_state_id = $programStateId;
         
         // Guardar cambios
@@ -166,23 +224,4 @@ class ProgramService
         return $this->programRepository->findBy('name', $name);
     }
 
-    /**
-     * Validar que existan todas las entidades relacionadas
-     */
-    private function validateRelatedEntities(
-        int $contactId,
-        int $programStateId,
-        array $sdgIds
-    ): void {
-        // Validar Contact
-        $this->contactRepository->findById($contactId);
-
-        // Validar ProgramState
-        $this->programStateRepository->findById($programStateId);
-
-        // Validar SDGs
-        foreach ($sdgIds as $sdgId) {
-            $this->sdgRepository->findById($sdgId);
-        }
-    }
 }

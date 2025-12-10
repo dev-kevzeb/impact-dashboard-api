@@ -64,16 +64,21 @@ class SdgController extends Controller
      *     )
      * )
      */
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
         try {
-            $sdgs = $this->sdgService->getAllSdgs();
+            $perPage = (int) $request->get("per_page", 10);
+            $sdgs = $this->sdgService->getAllSdgs($perPage);
+            
             return ApiResponse::success(
-                'Lista de SDGs obtenida exitosamente',
+                'SDGs paginated list successfully uploaded',
                 200,
                 [
                     'sdgs' => SdgResource::collection($sdgs),
-                    'total' => $sdgs->count()
+                    'total' => $sdgs->count(),
+                    'per_page' => $sdgs->perPage(),
+                    'current_page' => $sdgs->currentPage(),
+                    'last_page' => $sdgs->lastPage(),
                 ]
             );
         } catch (RuntimeException $e) {

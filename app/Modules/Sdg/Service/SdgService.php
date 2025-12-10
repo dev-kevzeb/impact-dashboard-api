@@ -60,12 +60,13 @@ class SdgService
     }
 
     /**
-     * Listar todos los SDGs
-     * @return \Illuminate\Database\Eloquent\Collection
+     * Listar todos los SDGs con paginación
+     * @param int $perPage Número de registros por página (default: 10)
+     * @return \Illuminate\Pagination\LengthAwarePaginator
      */
-    public function getAllSdgs()
+    public function getAllSdgs(int $perPage = 10)
     {
-        return $this->sdgRepository->getAll();
+        return $this->sdgRepository->paginate($perPage);
     }
 
     /**

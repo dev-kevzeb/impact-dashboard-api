@@ -11,14 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('contact', function (Blueprint $table) {
-            $table->id();
-            $table->string('first_name');
-            $table->string('last_name');
-            $table->string('title');
-            $table->string('email');
-            $table->string('phone');
-            $table->timestamps();
+        Schema::table('contact', function (Blueprint $table) {
+            $table->dropUnique('contact_email_unique');
         });
     }
 
@@ -27,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('contact');
+        Schema::table('contact', function (Blueprint $table) {
+            $table->unique('email', 'contact_email_unique');
+        });
     }
 };
