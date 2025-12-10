@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Http\Requests\Traits\ValidatesNestedContact;
 use App\Http\Responses\ApiResponse;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
@@ -9,6 +10,8 @@ use Illuminate\Validation\Rule;
 
 class ProgramRequest extends FormRequest
 {
+    use ValidatesNestedContact;
+
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -26,7 +29,7 @@ class ProgramRequest extends FormRequest
     {
         $programId = $this->route('id');
         
-        return [
+        return array_merge([
             'name' => [
                 'required',
                 'string',
@@ -36,19 +39,12 @@ class ProgramRequest extends FormRequest
             'description' => 'required|string|max:2000',
             'banner_img' => 'nullable|image|mimes:jpg,jpeg,png,gif,webp|max:2048',
             'program_url' => 'nullable|string|url|regex:/^https?:\/\//',
-            'contact' => 'required|array',
-            'contact.id' => 'nullable|integer|exists:contact,id',
-            'contact.first_name' => 'required_without:contact.id|string|min:2|max:50',
-            'contact.last_name' => 'required_without:contact.id|string|min:2|max:50',
-            'contact.title' => 'required_without:contact.id|string|min:2|max:100',
-            'contact.email' => 'required_without:contact.id|email|max:254',
-            'contact.phone' => 'nullable|string|max:20',
             'program_state_id' => $this->isMethod('PUT') 
                 ? 'required|integer|min:1|exists:program_state,id'
                 : 'nullable|integer|min:1|exists:program_state,id',
             'sdg_ids' => 'nullable|array',
             'sdg_ids.*' => 'integer|min:1|exists:sdg,id',
-        ];
+        ], $this->contactRules());
     }
 
     /**
@@ -58,7 +54,7 @@ class ProgramRequest extends FormRequest
      */
     public function messages(): array
     {
-        return [
+        return array_merge([
             'name.required' => 'El nombre del programa es obligatorio.',
             'name.string' => 'El nombre debe ser una cadena de texto.',
             'name.max' => 'El nombre del programa no debe exceder 255 caracteres.',
@@ -70,27 +66,11 @@ class ProgramRequest extends FormRequest
             'banner_img.max' => 'La imagen no debe exceder 2MB.',
             'program_url.url' => 'La URL del programa debe ser válida.',
             'program_url.regex' => 'La URL del programa debe usar protocolo HTTP o HTTPS.',
-            'contact.required' => 'Los datos del contacto son obligatorios.',
-            'contact.array' => 'Los datos del contacto deben ser un objeto.',
-            'contact.id.exists' => 'El contacto seleccionado no existe.',
-            'contact.first_name.required_without' => 'El nombre del contacto es obligatorio.',
-            'contact.first_name.min' => 'El nombre debe tener al menos 2 caracteres.',
-            'contact.first_name.max' => 'El nombre no debe exceder 50 caracteres.',
-            'contact.last_name.required_without' => 'El apellido del contacto es obligatorio.',
-            'contact.last_name.min' => 'El apellido debe tener al menos 2 caracteres.',
-            'contact.last_name.max' => 'El apellido no debe exceder 50 caracteres.',
-            'contact.title.required_without' => 'El título del contacto es obligatorio.',
-            'contact.title.min' => 'El título debe tener al menos 2 caracteres.',
-            'contact.title.max' => 'El título no debe exceder 100 caracteres.',
-            'contact.email.required_without' => 'El email del contacto es obligatorio.',
-            'contact.email.email' => 'El email debe tener un formato válido.',
-            'contact.email.max' => 'El email no debe exceder 254 caracteres.',
-            'contact.phone.max' => 'El teléfono no debe exceder 20 caracteres.',
             'program_state_id.required' => 'El ID del estado es obligatorio (solo en actualización).',
             'program_state_id.exists' => 'El estado seleccionado no existe.',
             'sdg_ids.array' => 'Los SDGs deben ser un array.',
             'sdg_ids.*.exists' => 'Uno o más SDGs seleccionados no existen.',
-        ];
+        ], $this->contactMessages());
     }
 
     /**
