@@ -18,7 +18,7 @@ class KpaService
     public function createKpa(string $name, float $implementation): Kpa
     {
         if ($this->kpaRepository->exists('name', trim($name))) {
-            throw new RuntimeException("Ya existe un KPA con el nombre: {$name}");
+            throw new RuntimeException("A KPA already exists with the name: {$name}");
         }
 
         $kpa = Kpa::at($name, $implementation);
@@ -38,9 +38,9 @@ class KpaService
         return $this->kpaRepository->findBy('name', $name);
     }
 
-    public function getAllKpas()
+    public function getAllKpas(int $perPage = 10)
     {
-        return $this->kpaRepository->getAll();
+        return $this->kpaRepository->paginate($perPage);
     }
 
     public function updateKpa(int $id, string $name, float $implementation): Kpa

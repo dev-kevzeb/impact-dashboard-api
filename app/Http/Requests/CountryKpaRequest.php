@@ -40,15 +40,15 @@ class CountryKpaRequest extends FormRequest
 public function messages(): array
 {
     return [
-        'id_country.required' => 'el país es obligatorio',
-        'id_country.integer'  => 'el país debe ser un ID numérico',
-        'id_country.exists'   => 'el país especificado no existe',
+        'id_country.required' => 'Country is required',
+        'id_country.integer'  => 'Country must be a numeric ID',
+        'id_country.exists'   => 'the specified country does not exist',
 
-        'id_kpa.required' => 'el KPA es obligatorio',
-        'id_kpa.integer'  => 'el KPA debe ser un ID numérico',
-        'id_kpa.exists'   => 'el KPA especificado no existe',
+        'id_kpa.required' => 'KPA is mandatory',
+        'id_kpa.integer'  => 'The KPA must be a numeric ID',
+        'id_kpa.exists'   => 'The specified KPA does not exist',
 
-        'id_country.unique' => 'este país ya está asociado con este KPA',
+        'id_country.unique' => 'The Country is already associated with the KPA',
     ];
 }
 

@@ -18,7 +18,7 @@ class AgencyService
     public function createAgency(string $name, string $url, bool $isApproved): Agency
     {
         if ($this->agencyRepository->exists('name', trim($name))) {
-            throw new RuntimeException("Ya existe una agencia con el nombre: {$name}");
+            throw new RuntimeException("There is already an agency with the name {$name}");
         }
 
         $agency = Agency::at($name, $url, $isApproved);
@@ -36,7 +36,7 @@ class AgencyService
     public function findAgencyByName(string $name): Agency
     {
         $agency = $this->agencyRepository->findByName($name);
-        if (!$agency) throw new RuntimeException("No se encontro la agencia");
+        if (!$agency) throw new RuntimeException("The agency was not found");
         return $agency;
     }
 
@@ -54,7 +54,7 @@ class AgencyService
         try {
             $existingAgency = $this->agencyRepository->findBy('name', trim($name));
             if ($existingAgency && $existingAgency->id !== $id) {
-                throw new RuntimeException("Ya existe otra agencia con el nombre: {$name}");
+                throw new RuntimeException("There is already an agency with the name {$name}");
             }
         } catch (RuntimeException $e) {
             if (!str_contains($e->getMessage(), 'no encontrado')) {

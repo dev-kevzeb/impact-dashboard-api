@@ -19,4 +19,9 @@ class CurrencyRepository extends AbstractRepository implements RepositoryInterfa
         return $this->model->where($field, $value)->exists();
     }
 
+    public function findByCode(string $code)
+    {
+        return $this->model->where("code", $code)->first();
+    }
+
 }

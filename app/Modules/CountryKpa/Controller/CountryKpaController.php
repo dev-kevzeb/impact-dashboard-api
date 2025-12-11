@@ -46,6 +46,19 @@ class CountryKpaController extends Controller
 			return ApiResponse::error('Error interno del servidor', 500);
 		}
 	}
+
+	public function showForCountry($id): JsonResponse
+	{
+		try {
+			$countryKpa = $this->service->getCountryKpasByCountryId((int)$id);
+			return ApiResponse::success('Registro obtenido', 200, $countryKpa);
+		} catch (RuntimeException $e) {
+			return ApiResponse::notFound('CountryKpa');
+		} catch (\Exception $e) {
+			return ApiResponse::error('Error interno del servidor', 500);
+		}
+	}
+
 	public function store(CountryKpaRequest $request): JsonResponse
 	{
 		try {
@@ -53,7 +66,7 @@ class CountryKpaController extends Controller
 
 			$created = $this->service->create($validated);
 
-			return ApiResponse::created('Relación Country-KPA creada exitosamente', $created);
+			return ApiResponse::created('Country-KPA relationship successfully created', $created);
 
 		} catch (\Illuminate\Validation\ValidationException $e) {
 			return ApiResponse::validationError($e->errors());
@@ -72,7 +85,7 @@ class CountryKpaController extends Controller
 			$updated = $this->service->update($id, $validated);
 
 			return ApiResponse::success(
-				'Relación Country-KPA actualizada exitosamente',
+				'Country-KPA relationship successfully updated',
 				200,
 				$updated
 			);

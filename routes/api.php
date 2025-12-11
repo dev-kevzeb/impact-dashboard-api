@@ -72,6 +72,7 @@
         Route::get('country-kpas', [CountryKpaController::class, 'index']);
         Route::post('country-kpas', [CountryKpaController::class, 'store']);
         Route::get('country-kpas/{id}', [CountryKpaController::class, 'show']);
+        Route::get('country-kpas/country/{id}', [CountryKpaController::class, 'showForCountry']);
         Route::put('country-kpas/{id}', [CountryKpaController::class, 'update']);
         Route::delete('country-kpas/{id}', [CountryKpaController::class, 'destroy']);
 
@@ -121,6 +122,7 @@
         Route::put('measures/{id}', [MeasureController::class, 'update']);
         Route::get('measures/search', [MeasureController::class, 'search']);
         Route::get('measures/{id}', [MeasureController::class, 'show']);
+        Route::get('measures/strategic-output/{id}', [MeasureController::class,'listByStrategicOutput']);
         Route::post('measures-indicators', [MeasureController::class, 'addIndicator']);
         Route::get('measures-indicators/{id}', [MeasureController::class, 'showWithIndicators']);
         Route::get('measures/{id}/indicators/{name}', [MeasureController::class, 'getIndicatorByName']);
@@ -132,6 +134,7 @@
         Route::get('strategic-outputs/search', [StrategicOutputController::class, 'search']);
         Route::get('strategic-outputs/{id}', [StrategicOutputController::class, 'show']);
         Route::put('strategic-outputs/{id}', [StrategicOutputController::class, 'update']);
+        Route::get('strategic-outputs/country-kpa/{id}', [StrategicOutputController::class,'showByCountryKpa']);
         Route::post('strategic-outputs-measures', [StrategicOutputController::class, 'addMeasure']);
         Route::post('strategic-outputs/remove-measure', [StrategicOutputController::class, 'removeMeasure']);
 

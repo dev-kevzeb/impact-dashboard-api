@@ -26,7 +26,6 @@ class StrategicOutputController extends Controller
     {
         try {
             $strategicOutputs = $this->strategicOutputService->getAllStrategicOutputs();
-            
             $strategicOutputs->load(['countryKpa.country', 'countryKpa.kpa', 'measures']);
 
             return ApiResponse::success(
@@ -62,6 +61,22 @@ class StrategicOutputController extends Controller
             return ApiResponse::error('Error interno del servidor', 500);
         }
     }
+
+    public function showByCountryKpa($id)
+    {
+        try {
+            $strategicOutputs = $this->strategicOutputService->getByCountryKpaId($id);
+
+            return ApiResponse::success(
+                'Resultados estratégicos para CountryKpa obtenidos correctamente',
+                200,
+                StrategicOutputResource::collection($strategicOutputs)
+            );
+        } catch (\Exception $e) {
+            return ApiResponse::error('Error interno del servidor', 500);
+        }
+    }
+
 
     public function store(StrategicOutputRequest $request)
     {

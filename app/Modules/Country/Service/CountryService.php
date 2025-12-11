@@ -4,6 +4,7 @@ namespace App\Modules\Country\Service;
 
 use App\Modules\Country\Domain\Country;
 use App\Modules\Country\Repository\CountryRepository;
+use App\Modules\Currency\Domain\Currency;
 use App\Modules\Currency\Repository\CurrencyRepository;
 use RuntimeException;
 
@@ -20,15 +21,67 @@ class CountryService
         $this->currencyRepository = $currencyRepository;
     }
 
-    public function createCountry(string $name, int $currencyId): Country
+    public function createCountry(string $name, $currency): Country
     {
-        if ($this->countryRepository->exists('name', trim($name))) {
-            throw new RuntimeException("Ya existe un país con el nombre: {$name}");
+        $name = trim($name);
+        $currencyCode = strtoupper(trim($currency['code']));
+
+        if ($this->countryRepository->existsByName($name)) {
+            throw new RuntimeException("The country {$name} already exists");
         }
 
-        $currency = $this->currencyRepository->findById($currencyId);
-        
+        if (!empty($currency['id'])) {
+            $currency = $this->currencyRepository->findById($currency['id']);
+            if (!$currency) {
+                throw new RuntimeException("The specified currency does not exist");
+            }
+        } else {
+            $currency = $this->currencyRepository->findByCode($currencyCode);
+            if ($currency == null) {
+                $currency = Currency::at($currencyCode); 
+                $this->currencyRepository->save($currency);
+            }
+        }
+
         $country = Country::at($name, $currency);
+        $this->countryRepository->save($country);
+        return $country;
+
+    }
+
+    public function updateCountry(int $id, string $name, $currency): Country
+    {
+        $country = $this->countryRepository->findById($id);
+
+        try {
+            $existingCountry = $this->countryRepository->findBy('name', trim($name));
+            if ($existingCountry && $existingCountry->id !== $id) {
+                throw new RuntimeException("The country {$name} already exists");
+            }
+        } catch (RuntimeException $e) {
+            if (!str_contains($e->getMessage(), 'no encontrado')) {
+                throw $e; 
+            }
+        }
+
+        $currencyCode = strtoupper(trim($currency['code']));
+
+        if (!empty($currency['id'])) {
+            $currency = $this->currencyRepository->findById($currency['id']);
+            if (!$currency) {
+                throw new RuntimeException("The specified currency does not exist");
+            }
+        } else {
+            $currency = $this->currencyRepository->findByCode($currencyCode);
+            if ($currency == null) {
+                $currency = Currency::at($currencyCode); 
+                $this->currencyRepository->save($currency);
+            }
+        }
+
+        $updatedCountry = Country::at($name, $currency);
+        $country->name = $updatedCountry->name;
+        $country->currency_id = $updatedCountry->currency_id;
         
         $this->countryRepository->save($country);
         
@@ -45,36 +98,12 @@ class CountryService
         return $this->countryRepository->findBy('name', trim($name));
     }
 
-    public function getAllCountries()
+    public function getAllCountries(int $perPage = 10)
     {
-        return $this->countryRepository->getAll();
+        return $this->countryRepository->paginate($perPage);
     }
 
-    public function updateCountry(int $id, string $name, int $currencyId): Country
-    {
-        $country = $this->countryRepository->findById($id);
-
-        try {
-            $existingCountry = $this->countryRepository->findBy('name', trim($name));
-            if ($existingCountry && $existingCountry->id !== $id) {
-                throw new RuntimeException("Ya existe otro país con el nombre: {$name}");
-            }
-        } catch (RuntimeException $e) {
-            if (!str_contains($e->getMessage(), 'no encontrado')) {
-                throw $e; 
-            }
-        }
-
-        $currency = $this->currencyRepository->findById($currencyId);
-        
-        $updatedCountry = Country::at($name, $currency);
-        $country->name = $updatedCountry->name;
-        $country->currency_id = $updatedCountry->currency_id;
-        
-        $this->countryRepository->save($country);
-        
-        return $country;
-    }
+    
 
     public function countryExists(string $name): bool
     {
