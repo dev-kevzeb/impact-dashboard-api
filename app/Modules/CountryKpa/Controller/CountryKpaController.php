@@ -148,19 +148,7 @@ class CountryKpaController extends Controller
 			return ApiResponse::error('Error interno del servidor', 500);
 		}
 	}
-
-	public function showForCountry($id): JsonResponse
-	{
-		try {
-			$countryKpa = $this->service->getCountryKpasByCountryId((int)$id);
-			return ApiResponse::success('Registro obtenido', 200, $countryKpa);
-		} catch (RuntimeException $e) {
-			return ApiResponse::notFound('CountryKpa');
-		} catch (\Exception $e) {
-			return ApiResponse::error('Error interno del servidor', 500);
-		}
-	}
-
+    
 	public function store(CountryKpaRequest $request): JsonResponse
 	{
 		try {
@@ -295,5 +283,15 @@ class CountryKpaController extends Controller
 		}
 	}
 
-
+    public function showForCountry($id): JsonResponse
+	{
+		try {
+			$countryKpa = $this->service->getCountryKpasByCountryId((int)$id);
+			return ApiResponse::success('Registro obtenido', 200, $countryKpa);
+		} catch (RuntimeException $e) {
+			return ApiResponse::notFound('CountryKpa');
+		} catch (\Exception $e) {
+			return ApiResponse::error('Error interno del servidor', 500);
+		}
+	}
 }
