@@ -105,7 +105,24 @@ class MeasureController extends Controller
         } catch (\Exception $e) {
             return ApiResponse::error('Error interno del servidor', 500);
         }
-        
+    }
+
+    public function listByStrategicOutput(int $id)
+    {
+        try {
+            $measures = $this->measureService->getMeasuresByStrategicOutputId($id);
+
+            return ApiResponse::success(
+                'Medidas obtenidas correctamente',
+                200,
+                MeasureResource::collection($measures)
+            );
+
+        } catch (RuntimeException $e) {
+            return ApiResponse::error($e->getMessage(), 400);
+        } catch (\Exception $e) {
+            return ApiResponse::error('Error interno del servidor', 500);
+        }
     }
 
     /**

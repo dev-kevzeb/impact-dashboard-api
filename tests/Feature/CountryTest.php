@@ -13,13 +13,13 @@ class CountryTest extends TestCase
 
     private const BASE_URL = '/api/v1/countries';
 
-    private const ERROR_NAME_EMPTY = 'el nombre del país no debe ir vacio';
-    private const ERROR_NAME_TOO_SHORT = 'el nombre del país debe tener al menos 2 caracteres';
-    private const ERROR_NAME_TOO_LONG = 'el nombre del país no debe exceder 100 caracteres';
-    private const ERROR_NAME_INVALID_CHARACTERS = 'el nombre del país contiene caracteres no válidos';
-    private const ERROR_NAME_UNIQUE = 'Ya existe un país con ese nombre';
-
-    private const ERROR_CURRENCY_REQUIRED = 'la moneda es obligatoria';
+    private const ERROR_NAME_EMPTY = 'The Country name is required';
+    private const ERROR_NAME_TOO_SHORT = 'The country name must be at least 2 characters';
+    private const ERROR_NAME_TOO_LONG = 'The country name must not exceed 100 characters';
+    private const ERROR_NAME_INVALID_CHARACTERS = 'The country name contains invalid characters';
+    private const ERROR_NAME_UNIQUE = 'A country with that name already exists';
+    private const ERROR_CURRENCY_REQUIRED = 'The Currency is required';
+    private const ERROR_CURRENCY_DOES_NOT_EXIST = 'The selected currency does not exist';
     private const ERROR_CURRENCY_INVALID = 'la moneda debe ser una instancia de Currency';
 
     /** LISTAR */
@@ -51,7 +51,10 @@ class CountryTest extends TestCase
 
         $data = [
             'name' => 'Bolivia',
-            'currency_id' => $currency->id,
+            'currency' => [
+                'id' => $currency->id,
+                'code' => $currency->code,
+            ],
         ];
 
         $response = $this->postJson(self::BASE_URL, $data);
@@ -59,7 +62,33 @@ class CountryTest extends TestCase
         $response->assertCreated()
                  ->assertJson([
                      'success' => true,
-                     'message' => 'País creado exitosamente'
+                     'message' => 'Country successfully created'
+                 ]);
+
+        $this->assertDatabaseHas('country', [
+            'name' => 'Bolivia',
+            'currency_id' => $currency->id
+        ]);
+    }
+
+    /** CREAR VÁLIDO CON NUEVA MONEDA */
+    public function test_can_create_country_with_new_currency(): void
+    {
+        $currency = Currency::factory()->create();
+
+        $data = [
+            'name' => 'Bolivia',
+            'currency' => [
+                'code' => $currency->code,
+            ],
+        ];
+
+        $response = $this->postJson(self::BASE_URL, $data);
+
+        $response->assertCreated()
+                 ->assertJson([
+                     'success' => true,
+                     'message' => 'Country successfully created'
                  ]);
 
         $this->assertDatabaseHas('country', [
@@ -74,7 +103,9 @@ class CountryTest extends TestCase
         $currency = Currency::factory()->create();
 
         $response = $this->postJson(self::BASE_URL, [
-            'currency_id' => $currency->id
+            'currency' => [
+                'code' => $currency->code,
+            ],
         ]);
 
         $response->assertStatus(422)
@@ -130,8 +161,11 @@ class CountryTest extends TestCase
         $currency = Currency::factory()->create();
 
         $response = $this->postJson(self::BASE_URL, [
-            'name' => '   República de Bolivia   ',
-            'currency_id' => $currency->id
+            'name' => '   República    de Bolivia   ',
+            'currency' => [
+                'id' => $currency->id,
+                'code' => $currency->code,
+            ],
         ]);
 
         $response->assertCreated();
@@ -142,28 +176,26 @@ class CountryTest extends TestCase
     }
 
     /** CURRENCY REQUIRED */
-    public function test_currency_id_is_required(): void
-    {
-        $response = $this->postJson(self::BASE_URL, [
-            'name' => 'Bolivia'
-        ]);
-
-        $response->assertStatus(422)
-                 ->assertJsonValidationErrors(['currency_id'])
-                 ->assertJsonPath('errors.currency_id.0', self::ERROR_CURRENCY_REQUIRED);
-    }
-
-    /** CURRENCY MUST EXIST */
     public function test_currency_must_exist(): void
     {
+        $currency = Currency::factory()->create(['code' => 'USD']);
+
         $response = $this->postJson(self::BASE_URL, [
             'name' => 'Bolivia',
-            'currency_id' => 999
+            'currency' => [
+                'id' => 9999,
+                'code' => 'USD'
+            ],
         ]);
 
         $response->assertStatus(422)
-                 ->assertJsonValidationErrors(['currency_id'])
-                 ->assertJsonPath('errors.currency_id.0', self::ERROR_CURRENCY_INVALID);
+                ->assertJson([
+                    'errors' => [
+                        'currency.id' => [
+                            self::ERROR_CURRENCY_DOES_NOT_EXIST
+                        ]
+                    ]
+                ]);
     }
 
     /** NAME UNIQUE */
@@ -204,17 +236,57 @@ class CountryTest extends TestCase
 
         $response = $this->putJson(self::BASE_URL . "/{$country->id}", [
             'name' => 'Nuevo País',
-            'currency_id' => $currency->id
+            'currency' => [
+                'id' => $currency->id,
+                'code' => $currency->code,
+            ],
         ]);
 
         $response->assertOk()
-                 ->assertJson(['message' => 'País actualizado exitosamente']);
+                 ->assertJson(['message' => 'Country successfully uploaded']);
 
         $this->assertDatabaseHas('country', [
             'id' => $country->id,
             'name' => 'Nuevo País',
             'currency_id' => $currency->id,
         ]);
+    }
+
+    public function test_currency_must_exist_when_update(): void
+    {
+        $country = Country::factory()->create(['name' => 'Chile']);
+
+        $response = $this->putJson(self::BASE_URL. "/{$country->id}", [
+            'name' => 'Bolivia',
+            'currency' => [
+                'id' => 9999,
+                'code' => 'USD'
+            ],
+        ]);
+
+        $response->assertStatus(422)
+                ->assertJson([
+                    'errors' => [
+                        'currency.id' => [
+                            self::ERROR_CURRENCY_DOES_NOT_EXIST
+                        ]
+                    ]
+                ]);
+    }
+
+    public function test_currency_can_be_new_if_dont_have_id(): void
+    {
+        $country = Country::factory()->create(['name' => 'Chile']);
+
+        $response = $this->putJson(self::BASE_URL. "/{$country->id}", [
+            'name' => 'Bolivia',
+            'currency' => [
+                'code' => 'USD'
+            ],
+        ]);
+
+        $response->assertOk()
+                 ->assertJson(['message' => 'Country successfully uploaded']);
     }
 
     /** UPDATE NAME UNIQUE */
@@ -240,7 +312,7 @@ class CountryTest extends TestCase
 
         $response = $this->putJson(self::BASE_URL . "/{$country->id}", [
             'name' => '   Bolivia   ',
-            'currency_id' => $currency->id
+            'currency' => $currency
         ]);
 
         $response->assertOk();

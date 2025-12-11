@@ -45,6 +45,12 @@ class StrategicOutputService{
         return $strategicOutput;
     }
 
+    public function getByCountryKpaId(int $id)
+    {
+        return $this->strategicOutputRepository->getByCountryKpa($id);
+    }
+
+
     public function updateStrategicOutput(int $id, string $name, ?int $idCk = null): StrategicOutput
     {
         $strategicOutput = $this->getStrategicOutputById($id);

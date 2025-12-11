@@ -30,4 +30,13 @@ class StrategicOutputRepository extends AbstractRepository implements Repository
 
         return $this->model->whereRaw('LOWER(name) = ?', [$normalized])->exists();
     }
+
+    public function getByCountryKpa(int $id)
+    {
+        return $this->model
+            ->where('id_ck', $id)
+            ->with('measures')
+            ->get();
+    }
+
 }

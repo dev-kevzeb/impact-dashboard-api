@@ -65,7 +65,7 @@ class ApiResponse
     {
         return response()->json([
             'success' => false,
-            'message' => "{$resource} no encontrado"
+            'message' => "{$resource} not Found"
         ], 404);
     }
 

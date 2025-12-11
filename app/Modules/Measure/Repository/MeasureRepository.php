@@ -20,4 +20,10 @@ class MeasureRepository extends AbstractRepository implements RepositoryInterfac
             ->whereRaw('LOWER(name) LIKE ?', ['%' . $normalized . '%'])
             ->first();
     }
+
+    public function getByStrategicOutput(int $strategicOutputId)
+    {
+        return $this->model->where('strategic_output_id', $strategicOutputId)->get();
+    }
+
 }

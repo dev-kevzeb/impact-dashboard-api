@@ -40,14 +40,17 @@ class CountryKpaRepository extends Model
         ->get();
 
     if ($countryKpas->isEmpty()) {
-        throw new \RuntimeException("No se encontró el país con ID: {$countryId}");
+        throw new RuntimeException("No se encontró el país con ID: {$countryId}");
     }
     $country = $countryKpas->first()->country;
 
-    $kpas = $countryKpas->map(function ($item) {
+    $kpas = $countryKpas->map(function ($item	) {
         return [
+			'id_ck' => $item->id,
+			'id_kpa' => $item->kpa->id,
             'name' => $item->kpa->name,
             'implementation' => floatval($item->kpa->implementation),
+			'strategic_outputs_count' => $item->strategic_outputs_count,
         ];
     })->unique('name')->values()->all();
 
@@ -57,7 +60,7 @@ class CountryKpaRepository extends Model
             'name' => $country->name,
             'currency_id' => $country->currency_id,
         ],
-        'kpas' => $kpas,
+        'kpas' => $kpas, 
     ];
 	}
 	public function create(array $data): object
@@ -72,8 +75,6 @@ class CountryKpaRepository extends Model
 			// echo "salida: " . json_encode($existing);
 			if($existing){	
 				throw new RuntimeException("La relación CountryKpa ya existe para id_country: {$id_country} e id_kpa: {$id_kpa}");
-			}else{
-				echo "No existing CountryKpa found. Proceeding to create.\n";	
 			}
 
 			return $this->model->create($data);

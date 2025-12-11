@@ -13,6 +13,17 @@ class AgencyRequest extends FormRequest
         return true;
     }
 
+    protected function prepareForValidation()
+    {
+        if ($this->has('name')) {
+            $name = trim($this->input('name'));
+            $name = preg_replace('/\s+/', ' ', $name);
+            $this->merge([
+                'name' => $name
+            ]);
+        }
+    }
+
     public function rules(): array
     {
         return [
@@ -40,16 +51,16 @@ class AgencyRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'name.required' => 'el nombre de la agencia no debe ir vacio',
-            'name.min'      => 'el nombre de la agencia debe tener al menos 2 caracteres',
-            'name.max'      => 'el nombre de la agencia no debe exceder 100 caracteres',
+            'name.required' => 'The agency name should not be empty',
+            'name.min'      => 'Agency name must be at least 2 characters',
+            'name.max'      => 'Agency name must not exceed 100 characters',
 
-            'url.required' => 'la URL de la agencia no debe ir vacia',
-            'url.url'      => 'la URL de la agencia debe tener un formato válido',
-            'url.regex'    => 'la URL de la agencia debe usar protocolo HTTP o HTTPS',
+            'url.required' => 'The agency URL should not be empty',
+            'url.url'      => 'Agency URL must be in valid format',
+            'url.regex'    => 'The agency URL must use HTTP or HTTPS protocol',
 
-            'is_approved.required' => 'el estado de aprobación es obligatorio',
-            'is_approved.boolean'  => 'el estado de aprobación debe ser un valor booleano',
+            'is_approved.required' => 'Approval status is required',
+            'is_approved.boolean'  => 'Approval status must be a boolean value',
         ];
     }
 

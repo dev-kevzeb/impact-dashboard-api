@@ -99,7 +99,6 @@ class StrategicOutputController extends Controller
     {
         try {
             $strategicOutputs = $this->strategicOutputService->getAllStrategicOutputs();
-            
             $strategicOutputs->load(['countryKpa.country', 'countryKpa.kpa', 'measures']);
 
             return ApiResponse::success(
@@ -172,69 +171,22 @@ class StrategicOutputController extends Controller
         }
     }
 
+    public function showByCountryKpa($id)
+    {
+        try {
+            $strategicOutputs = $this->strategicOutputService->getByCountryKpaId($id);
 
-    /**
-     * @OA\Post(
-     *     path="/strategic_outputs",
-     *     tags={"Strategic Outputs"},
-     *     summary="Crear nuevo resultado estratégico",
-     *     description="Registra un nuevo resultado estratégico vinculado a un Country-KPA específico",
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\MediaType(
-     *             mediaType="application/json",
-     *             @OA\Schema(
-     *                 required={"name", "id_ck"},
-     *                 @OA\Property(property="name", type="string", maxLength=200, example="Aumentar el acceso a educación secundaria", description="Nombre del resultado estratégico (requerido, max 200 caracteres)"),
-     *                 @OA\Property(property="id_ck", type="integer", example=1, description="ID de la relación Country-KPA (requerido, debe existir en country_kpa)")
-     *             )
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=201,
-     *         description="Registro creado",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="Registro creado"),
-     *             @OA\Property(property="data", ref="#/components/schemas/StrategicOutput")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=400,
-     *         description="Error de validación de dominio",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="El nombre debe tener al menos 2 caracteres")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=422,
-     *         description="Error de validación técnica",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Error de validación"),
-     *             @OA\Property(
-     *                 property="errors",
-     *                 type="object",
-     *                 @OA\Property(
-     *                     property="name",
-     *                     type="array",
-     *                     @OA\Items(type="string", example="El campo name es obligatorio.")
-     *                 ),
-     *                 @OA\Property(
-     *                     property="id_ck",
-     *                     type="array",
-     *                     @OA\Items(type="string", example="El campo id_ck no existe en country_kpa.")
-     *                 )
-     *             )
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=500,
-     *         description="Error interno del servidor"
-     *     )
-     * )
-     */
+            return ApiResponse::success(
+                'Resultados estratégicos para CountryKpa obtenidos correctamente',
+                200,
+                StrategicOutputResource::collection($strategicOutputs)
+            );
+        } catch (\Exception $e) {
+            return ApiResponse::error('Error interno del servidor', 500);
+        }
+    }
+
+
     public function store(StrategicOutputRequest $request)
     {
         $validated = $request->validated();
