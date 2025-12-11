@@ -11,6 +11,16 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use RuntimeException;
 
+/**
+ * @OA\Schema(
+ *     schema="Currency",
+ *     type="object",
+ *     title="Currency",
+ *     description="Tipos de moneda utilizados en programas y proyectos (USD, EUR, BOB, etc.)",
+ *     @OA\Property(property="id", type="integer", example=1, description="ID único de la moneda"),
+ *     @OA\Property(property="code", type="string", example="USD", description="Código ISO 4217 de la moneda (3 caracteres, único)")
+ * )
+ */
 class CurrencyController extends Controller
 {
     private CurrencyService $currencyService;
@@ -21,7 +31,38 @@ class CurrencyController extends Controller
     }
 
     /**
-     * Listar todas las monedas
+     * @OA\Get(
+     *     path="/currencies",
+     *     tags={"Currencies"},
+     *     summary="Listar todas las monedas",
+     *     description="Obtiene la lista completa de tipos de moneda disponibles en el sistema (USD, EUR, BOB, etc.)",
+     *     @OA\Response(
+     *         response=200,
+     *         description="Lista obtenida exitosamente",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Lista de monedas obtenida exitosamente"),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="object",
+     *                 @OA\Property(
+     *                     property="currencies",
+     *                     type="array",
+     *                     @OA\Items(ref="#/components/schemas/Currency")
+     *                 ),
+     *                 @OA\Property(property="total", type="integer", example=5, description="Total de monedas registradas")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Error interno del servidor",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Error interno del servidor")
+     *         )
+     *     )
+     * )
      */
     public function index(): JsonResponse
     {
@@ -44,7 +85,40 @@ class CurrencyController extends Controller
     }
 
     /**
-     * Mostrar una moneda específica
+     * @OA\Get(
+     *     path="/currencies/{id}",
+     *     tags={"Currencies"},
+     *     summary="Obtener una moneda específica",
+     *     description="Obtiene la información detallada de un tipo de moneda por su ID",
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="ID de la moneda a obtener",
+     *         @OA\Schema(type="integer", example=1)
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Moneda encontrada",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Moneda encontrada"),
+     *             @OA\Property(property="data", ref="#/components/schemas/Currency")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Moneda no encontrada",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Moneda no encontrado")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Error interno del servidor"
+     *     )
+     * )
      */
     public function show(int $id): JsonResponse
     {
@@ -64,7 +138,60 @@ class CurrencyController extends Controller
     }
 
     /**
-     * Crear una nueva moneda
+     * @OA\Post(
+     *     path="/currencies",
+     *     tags={"Currencies"},
+     *     summary="Crear nueva moneda",
+     *     description="Registra un nuevo tipo de moneda. El código debe ser único en el sistema (generalmente código ISO 4217 de 3 caracteres).",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\MediaType(
+     *             mediaType="application/json",
+     *             @OA\Schema(
+     *                 required={"code"},
+     *                 @OA\Property(property="code", type="string", maxLength=3, example="EUR", description="Código ISO 4217 de la moneda (requerido, 3 caracteres, único)")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Moneda creada exitosamente",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Moneda creada exitosamente"),
+     *             @OA\Property(property="data", ref="#/components/schemas/Currency")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Error de validación de dominio",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="el código debe tener al menos 2 caracteres")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Error de validación técnica",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Error de validación"),
+     *             @OA\Property(
+     *                 property="errors",
+     *                 type="object",
+     *                 @OA\Property(
+     *                     property="code",
+     *                     type="array",
+     *                     @OA\Items(type="string", example="Ya existe una moneda con el código: EUR")
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Error interno del servidor"
+     *     )
+     * )
      */
     public function store(CurrencyRequest $request): JsonResponse
     {
@@ -78,6 +205,10 @@ class CurrencyController extends Controller
             );
 
         } catch (RuntimeException $e) {
+            // Si el error es de duplicado, retornar como error de validación (422)
+            if (str_contains($e->getMessage(), 'Ya existe')) {
+                return ApiResponse::validationError(['code' => [$e->getMessage()]]);
+            }
             return ApiResponse::error($e->getMessage(), 400);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return ApiResponse::validationError($e->errors());
@@ -85,7 +216,71 @@ class CurrencyController extends Controller
     }
 
     /**
-     * Actualizar una moneda existente
+     * @OA\Put(
+     *     path="/currencies/{id}",
+     *     tags={"Currencies"},
+     *     summary="Actualizar moneda existente",
+     *     description="Actualiza el código de un tipo de moneda. El código debe ser único en el sistema.",
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="ID de la moneda a actualizar",
+     *         @OA\Schema(type="integer", example=1)
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\MediaType(
+     *             mediaType="application/json",
+     *             @OA\Schema(
+     *                 required={"code"},
+     *                 @OA\Property(property="code", type="string", maxLength=3, example="GBP", description="Código ISO 4217 actualizado (debe ser único)")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Moneda actualizada exitosamente",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Moneda actualizada exitosamente"),
+     *             @OA\Property(property="data", ref="#/components/schemas/Currency")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Error de validación de dominio"
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Moneda no encontrada",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Moneda no encontrado")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Error de validación técnica",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Error de validación"),
+     *             @OA\Property(
+     *                 property="errors",
+     *                 type="object",
+     *                 @OA\Property(
+     *                     property="code",
+     *                     type="array",
+     *                     @OA\Items(type="string", example="Ya existe una moneda con el código: GBP")
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Error interno del servidor"
+     *     )
+     * )
      */
     public function update(CurrencyRequest $request, int $id): JsonResponse
     {
@@ -101,6 +296,10 @@ class CurrencyController extends Controller
             );
 
         } catch (RuntimeException $e) {
+            // Si el error es de duplicado, retornar como error de validación (422)
+            if (str_contains($e->getMessage(), 'Ya existe')) {
+                return ApiResponse::validationError(['code' => [$e->getMessage()]]);
+            }
             return ApiResponse::error($e->getMessage(), 400);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return ApiResponse::validationError($e->errors());
@@ -108,7 +307,57 @@ class CurrencyController extends Controller
     }
 
     /**
-     * Buscar moneda por código
+     * @OA\Get(
+     *     path="/currencies/search",
+     *     tags={"Currencies"},
+     *     summary="Buscar moneda por código",
+     *     description="Busca un tipo de moneda específico por su código ISO 4217 (búsqueda exacta, case-insensitive)",
+     *     @OA\Parameter(
+     *         name="code",
+     *         in="query",
+     *         required=true,
+     *         description="Código de la moneda a buscar",
+     *         @OA\Schema(type="string", example="USD")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Moneda encontrada",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Moneda encontrada"),
+     *             @OA\Property(property="data", ref="#/components/schemas/Currency")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Moneda no encontrada",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Moneda no encontrado")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Error de validación",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Error de validación"),
+     *             @OA\Property(
+     *                 property="errors",
+     *                 type="object",
+     *                 @OA\Property(
+     *                     property="code",
+     *                     type="array",
+     *                     @OA\Items(type="string", example="El campo code es obligatorio.")
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Error interno del servidor"
+     *     )
+     * )
      */
     public function search(Request $request): JsonResponse
     {

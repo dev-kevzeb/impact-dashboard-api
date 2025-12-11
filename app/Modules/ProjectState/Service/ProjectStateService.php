@@ -15,36 +15,44 @@ class ProjectStateService {
     {
         return $this->projectStateRepository->getAll();
     }
+
     public function createProjectState(string $state): ProjectState
     {
-        if($this->projectStateRepository->exists('state', trim($state))){
-            throw new \RuntimeException("El estado del proyecto ya existe: {$state}");
+        // Validar duplicados
+        if ($this->projectStateRepository->exists('state', trim($state))) {
+            throw new \RuntimeException("Ya existe un estado del proyecto con el nombre: {$state}");
         }
+
         $projectState = ProjectState::at($state);
         $this->projectStateRepository->save($projectState);
         return $projectState;
     }
+
     public function getProjectStateById(int $id): ProjectState
     {   
-        $projectState = $this->projectStateRepository->findById($id);
-        if(!$projectState){
-            throw new \RuntimeException("El estado del proyecto con id {$id} no existe.");
+        return $this->projectStateRepository->findById($id);
+    }
+
+    public function updateProjectState(int $id, string $state): ProjectState
+    {
+        $projectState = $this->getProjectStateById($id);
+        
+        // Validar duplicados (excepto el mismo registro)
+        $existing = $this->projectStateRepository->exists('state', trim($state));
+        if ($existing && strtolower(trim($projectState->state)) !== strtolower(trim($state))) {
+            throw new \RuntimeException("Ya existe un estado del proyecto con el nombre: {$state}");
         }
+        
+        $updated = ProjectState::at($state);
+        $projectState->state = $updated->state;
+        $this->projectStateRepository->save($projectState);
+        
         return $projectState;
     }
-   public function updateProjectState(int $id, string $state): ProjectState
-{
-    $projectState = $this->getProjectStateById($id);
-    if(!$projectState){
-        throw new \RuntimeException("El estado del proyecto con id {$id} no existe.");
+
+    public function findProjectStateByName(string $state): ProjectState
+    {
+        return $this->projectStateRepository->findBy('state', $state);
     }
-    $existing = $this->projectStateRepository->findByState(trim($state));
-    if($existing && $existing->id !== $id){
-        throw new \RuntimeException("El estado del proyecto ya existe: {$state}");
-    }
-    $projectState->update(['state' => $state]);
-    $this->projectStateRepository->save($projectState);
-    return $projectState;
-}   
 
 }
