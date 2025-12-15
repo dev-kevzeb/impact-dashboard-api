@@ -25,6 +25,7 @@ use App\Modules\Project\Controller\ProjectController;
 use App\Modules\ProjectAgency\Controller\ProjectAgencyController;
 use App\Modules\ProjectIndicator\Controller\ProjectIndicatorController;
 use App\Modules\UserRole\Controller\UserRoleController;
+use App\Modules\UserState\Controller\UserStateController;
 
 
 Route::prefix('v1')->group(function () {
@@ -177,6 +178,12 @@ Route::prefix('v1')->group(function () {
 
     Route::get('project-indicators/indicators/by-project/{id}', [ProjectIndicatorController::class,'showIndicatorsByProjectId']);
     Route::get('project-indicators/indicators/by-project-name/{name}', [ProjectIndicatorController::class,'showIndicatorsByProjectName']);
-      
+
+    // UserState routes (5 REST endpoints)
+    Route::get('user_states', [UserStateController::class, 'index']);
+    Route::post('user_states', [UserStateController::class, 'store']);
+    Route::get('user_states/search', [UserStateController::class, 'search']);
+    Route::get('user_states/{id}', [UserStateController::class, 'show']);
+    Route::put('user_states/{id}', [UserStateController::class, 'update']);
 
 });
