@@ -5,7 +5,7 @@ namespace App\Http\Requests;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class UserRoleRequest extends FormRequest
+class RoleRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -23,7 +23,7 @@ class UserRoleRequest extends FormRequest
     public function rules(): array
     {
         // Get the user role ID from route if updating
-        $userRoleId = $this->route('id');
+        $roleId = $this->route('id');
 
         return [
             'name' => [
@@ -31,7 +31,7 @@ class UserRoleRequest extends FormRequest
                 'string',
                 'min:2',
                 'max:50',
-                Rule::unique('user_role', 'name')->ignore($userRoleId)
+                Rule::unique('role', 'name')->ignore($roleId)
             ]
         ];
     }

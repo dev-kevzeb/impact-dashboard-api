@@ -1,16 +1,16 @@
 <?php
 
-namespace App\Modules\UserRole\Domain;
+namespace App\Modules\Role\Domain;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use RuntimeException;
 
-class UserRole extends Model
+class Role extends Model
 {
     use HasFactory;
 
-    protected $table = 'user_role';
+    protected $table = 'role';
     protected $fillable = ['name'];
 
     // Error constants in Spanish
@@ -22,10 +22,10 @@ class UserRole extends Model
      * Factory method with domain validation
      *
      * @param string $name
-     * @return UserRole
+     * @return Role
      * @throws RuntimeException
      */
-    public static function at(string $name): UserRole
+    public static function at(string $name): Role
     {
         $trimmedName = trim($name);
 
@@ -41,7 +41,7 @@ class UserRole extends Model
             throw new RuntimeException(self::$ERROR_NAME_MAX_LENGTH);
         }
 
-        return new UserRole(['name' => $trimmedName]);
+        return new Role(['name' => $trimmedName]);
     }
 
     /**
@@ -87,10 +87,10 @@ class UserRole extends Model
     /**
      * Laravel Factory integration
      *
-     * @return \Database\Factories\UserRoleFactory
+     * @return \Database\Factories\RoleFactory
      */
     protected static function newFactory()
     {
-        return \Database\Factories\UserRoleFactory::new();
+        return \Database\Factories\RoleFactory::new();
     }
 }

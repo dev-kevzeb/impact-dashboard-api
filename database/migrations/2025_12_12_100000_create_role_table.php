@@ -14,10 +14,10 @@ return new class extends Migration
     {
         // Create sequence only for PostgreSQL
         if (DB::getDriverName() === 'pgsql') {
-            DB::statement('CREATE SEQUENCE user_role_seq');
+            DB::statement('CREATE SEQUENCE role_seq');
         }
 
-        Schema::create('user_role', function (Blueprint $table) {
+        Schema::create('role', function (Blueprint $table) {
             if (DB::getDriverName() === 'pgsql') {
                 $table->bigInteger('id')->primary();
             } else {
@@ -31,7 +31,7 @@ return new class extends Migration
 
         // Set default value for id using sequence (PostgreSQL only)
         if (DB::getDriverName() === 'pgsql') {
-            DB::statement("ALTER TABLE user_role ALTER COLUMN id SET DEFAULT nextval('user_role_seq')");
+            DB::statement("ALTER TABLE role ALTER COLUMN id SET DEFAULT nextval('role_seq')");
         }
     }
 
@@ -40,10 +40,10 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('user_role');
+        Schema::dropIfExists('role');
         
         if (DB::getDriverName() === 'pgsql') {
-            DB::statement('DROP SEQUENCE IF EXISTS user_role_seq');
+            DB::statement('DROP SEQUENCE IF EXISTS role_seq');
         }
     }
 };
