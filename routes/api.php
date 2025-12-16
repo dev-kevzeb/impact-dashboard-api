@@ -25,6 +25,8 @@ use App\Modules\Project\Controller\ProjectController;
 use App\Modules\ProjectAgency\Controller\ProjectAgencyController;
 use App\Modules\ProjectIndicator\Controller\ProjectIndicatorController;
 use App\Modules\Role\Controller\RoleController;
+use App\Modules\UserState\Controller\UserStateController;
+
 
 
 Route::prefix('v1')->group(function () {
@@ -70,12 +72,19 @@ Route::prefix('v1')->group(function () {
     Route::get('kpas/{id}', [KpaController::class, 'show']);
     Route::put('kpas/{id}', [KpaController::class, 'update']);
 
-    // API Routes para UserRoles
+    // API Routes para Roles
     Route::get('roles', [RoleController::class, 'index']);
     Route::post('roles', [RoleController::class, 'store']);
     Route::get('roles/search', [RoleController::class, 'search']);
     Route::get('roles/{id}', [RoleController::class, 'show']);
     Route::put('roles/{id}', [RoleController::class, 'update']);
+
+    // API Routes para UserState 
+    Route::get('user_states', [UserStateController::class, 'index']);
+    Route::post('user_states', [UserStateController::class, 'store']);
+    Route::get('user_states/search', [UserStateController::class, 'search']);
+    Route::get('user_states/{id}', [UserStateController::class, 'show']);
+    Route::put('user_states/{id}', [UserStateController::class, 'update']);
 
     // API Routes para Country-Kpas
     Route::get('country-kpas', [CountryKpaController::class, 'index']);
@@ -286,4 +295,6 @@ Route::prefix('v1')->group(function () {
 
     Route::get('project-indicators/indicators/by-project/{id}', [ProjectIndicatorController::class,'showIndicatorsByProjectId']);
     Route::get('project-indicators/indicators/by-project-name/{name}', [ProjectIndicatorController::class,'showIndicatorsByProjectName']);
+
+
 });
