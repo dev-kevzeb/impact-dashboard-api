@@ -15,10 +15,10 @@ class Currency extends Model
     protected $fillable = ['code'];
     
     // Constantes de mensajes de error
-    public static $ERROR_CODE_EMPTY = 'el código de moneda no debe ir vacío';
-    public static $ERROR_CODE_LENGTH = 'el código de moneda debe tener exactamente 3 caracteres';
-    public static $ERROR_CODE_FORMAT = 'el código de moneda debe contener solo letras (sin números ni símbolos)';
-    public static $ERROR_CODE_INVALID = 'el código de moneda debe ser un código ISO 4217 válido';
+    public static $ERROR_CODE_EMPTY = 'The currency code should not be empty';
+    public static $ERROR_CODE_LENGTH = 'Currency code must be exactly 3 characters';
+    public static $ERROR_CODE_FORMAT = 'Currency code must contain only letters (no numbers or symbols)';
+    public static $ERROR_CODE_INVALID = 'The currency code must be a valid ISO 4217 code';
 
     protected static function newFactory()
     {

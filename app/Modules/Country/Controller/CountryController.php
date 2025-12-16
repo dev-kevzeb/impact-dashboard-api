@@ -71,17 +71,22 @@ class CountryController extends Controller
      *     )
      * )
      */
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
         try {
-            $countries = $this->countryService->getAllCountries();
+            $perPage = (int) $request->get("per_page", 10);
+
+            $countries = $this->countryService->getAllCountries($perPage);
             
             return ApiResponse::success(
-                'Lista de países obtenida exitosamente',
+                'Countries paginated list successfully uploaded',
                 200,
                 [
                     'countries' => CountryResource::collection($countries),
-                    'total' => $countries->count()
+                    'total' => $countries->count(),
+                    'per_page' => $countries->perPage(),
+                    'current_page' => $countries->currentPage(),
+                    'last_page' => $countries->lastPage(),
                 ]
             );
         } catch (RuntimeException $e) {
@@ -211,13 +216,10 @@ class CountryController extends Controller
         try {
             $validated= $request->validated();
 
-            $country = $this->countryService->createCountry(
-                $validated['name'],
-                $validated['currency_id']
-            );
+            $country = $this->countryService->createCountry($validated['name'], $validated['currency']);
 
             return ApiResponse::created(
-                'País creado exitosamente',
+                'Country successfully created',
                 new CountryResource($country)
             );
 
@@ -308,11 +310,11 @@ class CountryController extends Controller
             $country = $this->countryService->updateCountry(
                 $id,
                 $validated['name'],
-                $validated['currency_id'],
+                $validated['currency'],
             );
 
             return ApiResponse::success(
-                'País actualizado exitosamente',
+                'Country successfully uploaded',
                 200,
                 new CountryResource($country)
             );

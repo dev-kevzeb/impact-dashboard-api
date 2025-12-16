@@ -148,69 +148,7 @@ class CountryKpaController extends Controller
 			return ApiResponse::error('Error interno del servidor', 500);
 		}
 	}
-
-	/**
-	 * @OA\Post(
-	 *     path="/country_kpas",
-	 *     tags={"Country-KPAs"},
-	 *     summary="Crear nueva relación Country-KPA",
-	 *     description="Asocia un KPA (Key Priority Area) a un país específico",
-	 *     @OA\RequestBody(
-	 *         required=true,
-	 *         @OA\MediaType(
-	 *             mediaType="application/json",
-	 *             @OA\Schema(
-	 *                 required={"id_country", "id_kpa"},
-	 *                 @OA\Property(property="id_country", type="integer", example=1, description="ID del país (debe existir en country)"),
-	 *                 @OA\Property(property="id_kpa", type="integer", example=2, description="ID del KPA (debe existir en kpa)")
-	 *             )
-	 *         )
-	 *     ),
-	 *     @OA\Response(
-	 *         response=201,
-	 *         description="Creado exitosamente",
-	 *         @OA\JsonContent(
-	 *             @OA\Property(property="success", type="boolean", example=true),
-	 *             @OA\Property(property="message", type="string", example="Creado exitosamente"),
-	 *             @OA\Property(property="data", ref="#/components/schemas/CountryKpa")
-	 *         )
-	 *     ),
-	 *     @OA\Response(
-	 *         response=400,
-	 *         description="Error de validación de dominio (FK inválidas)",
-	 *         @OA\JsonContent(
-	 *             @OA\Property(property="success", type="boolean", example=false),
-	 *             @OA\Property(property="message", type="string", example="El país o KPA no existen")
-	 *         )
-	 *     ),
-	 *     @OA\Response(
-	 *         response=422,
-	 *         description="Error de validación técnica",
-	 *         @OA\JsonContent(
-	 *             @OA\Property(property="success", type="boolean", example=false),
-	 *             @OA\Property(property="message", type="string", example="Error de validación"),
-	 *             @OA\Property(
-	 *                 property="errors",
-	 *                 type="object",
-	 *                 @OA\Property(
-	 *                     property="id_country",
-	 *                     type="array",
-	 *                     @OA\Items(type="string", example="El campo id_country es obligatorio.")
-	 *                 ),
-	 *                 @OA\Property(
-	 *                     property="id_kpa",
-	 *                     type="array",
-	 *                     @OA\Items(type="string", example="El campo id_kpa es obligatorio.")
-	 *                 )
-	 *             )
-	 *         )
-	 *     ),
-	 *     @OA\Response(
-	 *         response=500,
-	 *         description="Error interno del servidor"
-	 *     )
-	 * )
-	 */
+    
 	public function store(CountryKpaRequest $request): JsonResponse
 	{
 		try {
@@ -218,7 +156,7 @@ class CountryKpaController extends Controller
 
 			$created = $this->service->create($validated);
 
-			return ApiResponse::created('Relación Country-KPA creada exitosamente', $created);
+			return ApiResponse::created('Country-KPA relationship successfully created', $created);
 
 		} catch (\Illuminate\Validation\ValidationException $e) {
 			return ApiResponse::validationError($e->errors());
@@ -288,7 +226,7 @@ class CountryKpaController extends Controller
 			$updated = $this->service->update($id, $validated);
 
 			return ApiResponse::success(
-				'Relación Country-KPA actualizada exitosamente',
+				'Country-KPA relationship successfully updated',
 				200,
 				$updated
 			);
@@ -345,5 +283,15 @@ class CountryKpaController extends Controller
 		}
 	}
 
-
+    public function showForCountry($id): JsonResponse
+	{
+		try {
+			$countryKpa = $this->service->getCountryKpasByCountryId((int)$id);
+			return ApiResponse::success('Registro obtenido', 200, $countryKpa);
+		} catch (RuntimeException $e) {
+			return ApiResponse::notFound('CountryKpa');
+		} catch (\Exception $e) {
+			return ApiResponse::error('Error interno del servidor', 500);
+		}
+	}
 }

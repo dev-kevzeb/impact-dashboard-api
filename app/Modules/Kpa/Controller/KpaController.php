@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\KpaRequest;
 use App\Http\Responses\ApiResponse;
 use App\Http\Resources\KpaResource;
+use App\Modules\Kpa\Domain\Kpa;
 use App\Modules\Kpa\Service\KpaService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -65,17 +66,27 @@ class KpaController extends Controller
      *     )
      * )
      */
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
         try {
-            $kpas = $this->kpaService->getAllKpas();
+            $search = $request->get("search");
+            $perPage = (int) $request->get("per_page", 10);
+
+            $query = Kpa::query();
+
+            if( $search ) $query->where("name","like","%". $search ."%");
+
+            $kpas = $query->paginate($perPage);
             
             return ApiResponse::success(
                 'Lista de KPAs obtenida exitosamente',
                 200,
                 [
                     'kpas' => KpaResource::collection($kpas),
-                    'total' => $kpas->count()
+                    'total' => $kpas->count(),
+                    'per_page' => $kpas->perPage(),
+                    'current_page' => $kpas->currentPage(),
+                    'last_page' => $kpas->lastPage(),
                 ]
             );
         } catch (RuntimeException $e) {
