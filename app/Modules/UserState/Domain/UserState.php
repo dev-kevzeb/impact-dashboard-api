@@ -44,26 +44,26 @@ class UserState extends Model
         return new UserState(['name' => $trimmedName]);
     }
 
-    // Getters
+    /**
+     * Get the name of the user state
+     *
+     * @return string
+     */
     public function getName(): string
     {
         return $this->name;
     }
 
-    // Helper methods for common states
-    public function isActive(): bool
+    /**
+     * Check if the user state matches the given name (case-insensitive comparison)
+     * Método genérico y escalable para verificar estados sin hardcodear nombres
+     *
+     * @param string $stateName Nombre del estado a comparar
+     * @return bool True si el estado coincide, false en caso contrario
+     */
+    public function hasState(string $stateName): bool
     {
-        return strtolower($this->name) === 'active';
-    }
-
-    public function isInactive(): bool
-    {
-        return strtolower($this->name) === 'inactive';
-    }
-
-    public function isSuspended(): bool
-    {
-        return strtolower($this->name) === 'suspended';
+        return strtolower(trim($this->name)) === strtolower(trim($stateName));
     }
 
     /**

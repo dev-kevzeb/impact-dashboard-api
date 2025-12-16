@@ -24,7 +24,7 @@ use \App\Modules\StrategicOutput\Controller\StrategicOutputController;
 use App\Modules\Project\Controller\ProjectController;
 use App\Modules\ProjectAgency\Controller\ProjectAgencyController;
 use App\Modules\ProjectIndicator\Controller\ProjectIndicatorController;
-use App\Modules\UserRole\Controller\RoleController;
+use App\Modules\Role\Controller\RoleController;
 use App\Modules\UserState\Controller\UserStateController;
 
 

@@ -246,30 +246,48 @@ class UserStateTest extends TestCase
 
     // ==================== HELPER METHOD TESTS ====================
 
-    public function test_helper_method_is_active(): void
+    public function test_has_state_method_active(): void
     {
         $activeState = UserState::factory()->create(['name' => 'active']);
         $inactiveState = UserState::factory()->create(['name' => 'inactive']);
 
-        $this->assertTrue($activeState->isActive());
-        $this->assertFalse($inactiveState->isActive());
+        $this->assertTrue($activeState->hasState('active'));
+        $this->assertFalse($inactiveState->hasState('active'));
     }
 
-    public function test_helper_method_is_inactive(): void
+    public function test_has_state_method_inactive(): void
     {
         $inactiveState = UserState::factory()->create(['name' => 'inactive']);
         $activeState = UserState::factory()->create(['name' => 'active']);
 
-        $this->assertTrue($inactiveState->isInactive());
-        $this->assertFalse($activeState->isInactive());
+        $this->assertTrue($inactiveState->hasState('inactive'));
+        $this->assertFalse($activeState->hasState('inactive'));
     }
 
-    public function test_helper_method_is_suspended(): void
+    public function test_has_state_method_suspended(): void
     {
         $suspendedState = UserState::factory()->create(['name' => 'suspended']);
         $activeState = UserState::factory()->create(['name' => 'active']);
 
-        $this->assertTrue($suspendedState->isSuspended());
-        $this->assertFalse($activeState->isSuspended());
+        $this->assertTrue($suspendedState->hasState('suspended'));
+        $this->assertFalse($activeState->hasState('suspended'));
+    }
+
+    public function test_has_state_is_case_insensitive(): void
+    {
+        $state = UserState::factory()->create(['name' => 'active']);
+
+        $this->assertTrue($state->hasState('ACTIVE'));
+        $this->assertTrue($state->hasState('Active'));
+        $this->assertTrue($state->hasState('active'));
+    }
+
+    public function test_has_state_handles_whitespace(): void
+    {
+        $state = UserState::factory()->create(['name' => 'active']);
+
+        $this->assertTrue($state->hasState('  active  '));
+        $this->assertTrue($state->hasState('active '));
+        $this->assertTrue($state->hasState(' active'));
     }
 }
