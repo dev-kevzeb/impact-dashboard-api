@@ -24,6 +24,7 @@ use \App\Modules\StrategicOutput\Controller\StrategicOutputController;
 use App\Modules\Project\Controller\ProjectController;
 use App\Modules\ProjectAgency\Controller\ProjectAgencyController;
 use App\Modules\ProjectIndicator\Controller\ProjectIndicatorController;
+use App\Modules\Role\Controller\RoleController;
 
 
 Route::prefix('v1')->group(function () {
@@ -68,6 +69,13 @@ Route::prefix('v1')->group(function () {
     Route::get('kpas/search', [KpaController::class, 'search']);
     Route::get('kpas/{id}', [KpaController::class, 'show']);
     Route::put('kpas/{id}', [KpaController::class, 'update']);
+
+    // API Routes para UserRoles
+    Route::get('roles', [RoleController::class, 'index']);
+    Route::post('roles', [RoleController::class, 'store']);
+    Route::get('roles/search', [RoleController::class, 'search']);
+    Route::get('roles/{id}', [RoleController::class, 'show']);
+    Route::put('roles/{id}', [RoleController::class, 'update']);
 
     // API Routes para Country-Kpas
     Route::get('country-kpas', [CountryKpaController::class, 'index']);

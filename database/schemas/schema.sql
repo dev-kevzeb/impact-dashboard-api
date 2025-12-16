@@ -11,6 +11,24 @@ CREATE SEQUENCE contact_seq;
 CREATE SEQUENCE program_seq;
 CREATE SEQUENCE program_sdg_seq;
 CREATE SEQUENCE program_donor_seq;
+CREATE SEQUENCE role_seq;
+
+/*==============================================================*/
+/* Table: Role                                                  */
+/*==============================================================*/
+CREATE TABLE role (
+    id              BIGINT          NOT NULL,
+    name            VARCHAR(50)     NOT NULL,
+    created_at      TIMESTAMP       NOT NULL,
+    updated_at      TIMESTAMP       NOT NULL
+);
+
+ALTER TABLE role
+    ALTER COLUMN    id              SET DEFAULT nextval('role_seq'),
+    ALTER COLUMN    created_at      SET DEFAULT CURRENT_TIMESTAMP,
+    ALTER COLUMN    updated_at      SET DEFAULT CURRENT_TIMESTAMP,
+    ADD CONSTRAINT  pk_role       PRIMARY KEY(id),
+    ADD CONSTRAINT  uq_role_name  UNIQUE(name);
 
 /*==============================================================*/
 /* Table: Donor                                                 */
