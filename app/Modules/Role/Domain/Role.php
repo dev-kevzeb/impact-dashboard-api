@@ -55,33 +55,15 @@ class Role extends Model
     }
 
     /**
-     * Check if role is admin
+     * Check if the role matches the given name (case-insensitive comparison)
+     * Método genérico y escalable para verificar roles sin hardcodear nombres
      *
-     * @return bool
+     * @param string $roleName Nombre del rol a comparar
+     * @return bool True si el rol coincide, false en caso contrario
      */
-    public function isAdmin(): bool
+    public function hasRole(string $roleName): bool
     {
-        return $this->name === 'admin';
-    }
-
-    /**
-     * Check if role is country manager
-     *
-     * @return bool
-     */
-    public function isCountryManager(): bool
-    {
-        return $this->name === 'country_manager';
-    }
-
-    /**
-     * Check if role is project manager
-     *
-     * @return bool
-     */
-    public function isProjectManager(): bool
-    {
-        return $this->name === 'project_manager';
+        return strtolower(trim($this->name)) === strtolower(trim($roleName));
     }
 
     /**
