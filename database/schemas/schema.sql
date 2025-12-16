@@ -11,25 +11,26 @@ CREATE SEQUENCE contact_seq;
 CREATE SEQUENCE program_seq;
 CREATE SEQUENCE program_sdg_seq;
 CREATE SEQUENCE program_donor_seq;
-CREATE SEQUENCE user_role_seq;
+CREATE SEQUENCE role_seq;
 CREATE SEQUENCE user_state_seq;
 
+
 /*==============================================================*/
-/* Table: UserRole                                              */
+/* Table: Role                                                  */
 /*==============================================================*/
-CREATE TABLE user_role (
+CREATE TABLE role (
     id              BIGINT          NOT NULL,
     name            VARCHAR(50)     NOT NULL,
     created_at      TIMESTAMP       NOT NULL,
     updated_at      TIMESTAMP       NOT NULL
 );
 
-ALTER TABLE user_role
-    ALTER COLUMN    id              SET DEFAULT nextval('user_role_seq'),
+ALTER TABLE role
+    ALTER COLUMN    id              SET DEFAULT nextval('role_seq'),
     ALTER COLUMN    created_at      SET DEFAULT CURRENT_TIMESTAMP,
     ALTER COLUMN    updated_at      SET DEFAULT CURRENT_TIMESTAMP,
-    ADD CONSTRAINT  pk_user_role       PRIMARY KEY(id),
-    ADD CONSTRAINT  uq_user_role_name  UNIQUE(name);
+    ADD CONSTRAINT  pk_role       PRIMARY KEY(id),
+    ADD CONSTRAINT  uq_role_name  UNIQUE(name);
 
 /*==============================================================*/
 /* Table: UserState                                             */

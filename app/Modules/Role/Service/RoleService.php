@@ -1,16 +1,16 @@
 <?php
 
-namespace App\Modules\UserRole\Service;
+namespace App\Modules\Role\Service;
 
-use App\Modules\UserRole\Domain\UserRole;
-use App\Modules\UserRole\Repository\UserRoleRepository;
+use App\Modules\Role\Domain\Role;
+use App\Modules\Role\Repository\RoleRepository;
 use RuntimeException;
 
-class UserRoleService
+class RoleService
 {
-    private UserRoleRepository $repository;
+    private RoleRepository $repository;
 
-    public function __construct(UserRoleRepository $repository)
+    public function __construct(RoleRepository $repository)
     {
         $this->repository = $repository;
     }
@@ -19,15 +19,15 @@ class UserRoleService
      * Create a new user role
      *
      * @param string $name
-     * @return UserRole
+     * @return Role
      * @throws RuntimeException
      */
-    public function createUserRole(string $name): UserRole
+    public function createRole(string $name): Role
     {
-        $userRole = UserRole::at($name);
-        $this->repository->save($userRole);
+        $Role = Role::at($name);
+        $this->repository->save($Role);
 
-        return $userRole;
+        return $Role;
     }
 
     /**
@@ -35,28 +35,28 @@ class UserRoleService
      *
      * @param int $id
      * @param string $name
-     * @return UserRole
+     * @return Role
      * @throws RuntimeException
      */
-    public function updateUserRole(int $id, string $name): UserRole
+    public function updateRole(int $id, string $name): Role
     {
-        $userRole = $this->repository->findById($id);
+        $Role = $this->repository->findById($id);
 
-        $updated = UserRole::at($name);
-        $userRole->name = $updated->name;
-        $this->repository->save($userRole);
+        $updated = Role::at($name);
+        $Role->name = $updated->name;
+        $this->repository->save($Role);
 
-        return $userRole;
+        return $Role;
     }
 
     /**
      * Find a user role by name
      *
      * @param string $name
-     * @return UserRole
+     * @return Role
      * @throws RuntimeException
      */
-    public function findUserRoleByName(string $name): UserRole
+    public function findRoleByName(string $name): Role
     {
         return $this->repository->findBy('name', $name);
     }
@@ -66,7 +66,7 @@ class UserRoleService
      *
      * @return \Illuminate\Database\Eloquent\Collection
      */
-    public function getAllUserRoles()
+    public function getAllRoles()
     {
         return $this->repository->getAll();
     }
@@ -75,10 +75,10 @@ class UserRoleService
      * Find user role by ID
      *
      * @param int $id
-     * @return UserRole
+     * @return Role
      * @throws RuntimeException
      */
-    public function findUserRoleById(int $id): UserRole
+    public function findRoleById(int $id): Role
     {
         return $this->repository->findById($id);
     }
@@ -89,11 +89,11 @@ class UserRoleService
      * @param string $searchTerm
      * @return \Illuminate\Database\Eloquent\Collection
      */
-    public function searchUserRoles(string $searchTerm)
+    public function searchRoles(string $searchTerm)
     {
         // Buscar roles que contengan el término de búsqueda (case-insensitive)
         // Acceso directo al modelo Eloquent para hacer consultas personalizadas
-        $model = \App\Modules\UserRole\Domain\UserRole::query();
+        $model = \App\Modules\Role\Domain\Role::query();
         
         return $model->whereRaw("LOWER(name) LIKE LOWER(?)", ['%' . trim($searchTerm) . '%'])
                      ->get();

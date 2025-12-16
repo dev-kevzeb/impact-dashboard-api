@@ -2,20 +2,20 @@
 
 namespace Tests\Feature;
 
-use App\Modules\UserRole\Domain\UserRole;
+use App\Modules\Role\Domain\Role;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-class UserRoleTest extends TestCase
+class RoleTest extends TestCase
 {
     use RefreshDatabase;
 
-    private const BASE_URL = '/api/v1/user_roles';
+    private const BASE_URL = '/api/v1/roles';
 
     /**
      * Test: Can create a user role
      */
-    public function test_can_create_user_role(): void
+    public function test_can_create_role(): void
     {
         $response = $this->postJson(self::BASE_URL, [
             'name' => 'super_admin'
@@ -29,15 +29,15 @@ class UserRoleTest extends TestCase
                 'data' => ['id', 'name', 'created_at', 'updated_at']
             ]);
 
-        $this->assertDatabaseHas('user_role', ['name' => 'super_admin']);
+        $this->assertDatabaseHas('role', ['name' => 'super_admin']);
     }
 
     /**
      * Test: Cannot create user role with duplicate name
      */
-    public function test_cannot_create_duplicate_user_role(): void
+    public function test_cannot_create_duplicate_role(): void
     {
-        UserRole::factory()->create(['name' => 'admin']);
+        Role::factory()->create(['name' => 'admin']);
 
         $response = $this->postJson(self::BASE_URL, [
             'name' => 'admin'
@@ -74,9 +74,9 @@ class UserRoleTest extends TestCase
     /**
      * Test: Can get all user roles
      */
-    public function test_can_get_all_user_roles(): void
+    public function test_can_get_all_roles(): void
     {
-        UserRole::factory()->count(3)->create();
+        Role::factory()->count(3)->create();
 
         $response = $this->getJson(self::BASE_URL);
 
@@ -88,17 +88,17 @@ class UserRoleTest extends TestCase
     /**
      * Test: Can get a specific user role by ID
      */
-    public function test_can_get_user_role_by_id(): void
+    public function test_can_get_role_by_id(): void
     {
-        $userRole = UserRole::factory()->create(['name' => 'editor']);
+        $role = Role::factory()->create(['name' => 'editor']);
 
-        $response = $this->getJson(self::BASE_URL . '/' . $userRole->id);
+        $response = $this->getJson(self::BASE_URL . '/' . $role->id);
 
         $response->assertOk()
             ->assertJson([
                 'success' => true,
                 'data' => [
-                    'id' => $userRole->id,
+                    'id' => $role->id,
                     'name' => 'editor'
                 ]
             ]);
@@ -107,7 +107,7 @@ class UserRoleTest extends TestCase
     /**
      * Test: Returns 404 when user role not found
      */
-    public function test_returns_404_when_user_role_not_found(): void
+    public function test_returns_404_when_role_not_found(): void
     {
         $response = $this->getJson(self::BASE_URL . '/999');
 
@@ -117,11 +117,11 @@ class UserRoleTest extends TestCase
     /**
      * Test: Can update a user role
      */
-    public function test_can_update_user_role(): void
+    public function test_can_update_role(): void
     {
-        $userRole = UserRole::factory()->create(['name' => 'old_role']);
+        $role = Role::factory()->create(['name' => 'old_role']);
 
-        $response = $this->putJson(self::BASE_URL . '/' . $userRole->id, [
+        $response = $this->putJson(self::BASE_URL . '/' . $role->id, [
             'name' => 'new_role'
         ]);
 
@@ -131,8 +131,8 @@ class UserRoleTest extends TestCase
                 'data' => ['name' => 'new_role']
             ]);
 
-        $this->assertDatabaseHas('user_role', ['name' => 'new_role']);
-        $this->assertDatabaseMissing('user_role', ['name' => 'old_role']);
+        $this->assertDatabaseHas('role', ['name' => 'new_role']);
+        $this->assertDatabaseMissing('role', ['name' => 'old_role']);
     }
 
     /**
@@ -140,10 +140,10 @@ class UserRoleTest extends TestCase
      */
     public function test_cannot_update_to_duplicate_name(): void
     {
-        UserRole::factory()->create(['name' => 'admin']);
-        $userRole = UserRole::factory()->create(['name' => 'editor']);
+        Role::factory()->create(['name' => 'admin']);
+        $role = Role::factory()->create(['name' => 'editor']);
 
-        $response = $this->putJson(self::BASE_URL . '/' . $userRole->id, [
+        $response = $this->putJson(self::BASE_URL . '/' . $role->id, [
             'name' => 'admin'
         ]);
 
@@ -154,11 +154,11 @@ class UserRoleTest extends TestCase
     /**
      * Test: Can search user roles by name
      */
-    public function test_can_search_user_roles(): void
+    public function test_can_search_roles(): void
     {
-        UserRole::factory()->create(['name' => 'admin']);
-        UserRole::factory()->create(['name' => 'country_manager']);
-        UserRole::factory()->create(['name' => 'project_manager']);
+        Role::factory()->create(['name' => 'admin']);
+        Role::factory()->create(['name' => 'country_manager']);
+        Role::factory()->create(['name' => 'project_manager']);
 
         $response = $this->getJson(self::BASE_URL . '/search?q=manager');
 
@@ -203,6 +203,6 @@ class UserRoleTest extends TestCase
 
         $response->assertCreated();
 
-        $this->assertDatabaseHas('user_role', ['name' => 'viewer']);
+        $this->assertDatabaseHas('role', ['name' => 'viewer']);
     }
 }

@@ -2,15 +2,15 @@
 
 namespace Database\Factories;
 
-use App\Modules\UserRole\Domain\UserRole;
+use App\Modules\Role\Domain\Role;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
  * @extends Factory<UserRole>
  */
-class UserRoleFactory extends Factory
+class RoleFactory extends Factory
 {
-    protected $model = UserRole::class;
+    protected $model = Role::class;
 
     public function definition(): array
     {
