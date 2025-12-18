@@ -1,0 +1,110 @@
+<?php
+
+namespace App\Modules\Program\Repository;
+
+use App\Repositories\AbstractRepository;
+use App\Modules\Program\Domain\Program;
+
+/**
+ * Repository para Program
+ * 
+ * @extends AbstractRepository<Program>
+ */
+class ProgramRepository extends AbstractRepository
+{
+    /**
+     * Constructor
+     * 
+     * @param Program $model Instancia del modelo Program
+     */
+    public function __construct(Program $model)
+    {
+        parent::__construct($model);
+    }
+    
+    /**
+     * Obtener programas con todas sus relaciones cargadas
+     * 
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public function getAllWithRelations()
+    {
+        return $this->model
+            ->with([
+                'contact',
+                'programState',
+                'sdgs'
+                // 'projects' // TODO: Descomentar cuando el módulo Project exista
+            ])
+            ->get();
+    }
+    
+    /**
+     * Obtener programas paginados con todas sus relaciones cargadas
+     * 
+     * @param int $perPage Número de registros por página
+     * @return \Illuminate\Pagination\LengthAwarePaginator
+     */
+    public function paginateWithRelations(int $perPage = 10)
+    {
+        return $this->model
+            ->with([
+                'contact',
+                'programState',
+                'sdgs'
+                // 'projects' // TODO: Descomentar cuando el módulo Project exista
+            ])
+            ->paginate($perPage);
+    }
+    
+    /**
+     * Buscar programa por ID con todas sus relaciones
+     * 
+     * @param int $id
+     * @return Program
+     * @throws \RuntimeException Si no se encuentra
+     */
+    public function findByIdWithRelations(int $id): Program
+    {
+        $program = $this->model
+            ->with([
+                'contact',
+                'programState',
+                'sdgs'
+                // 'projects' // TODO: Descomentar cuando el módulo Project exista
+            ])
+            ->find($id);
+            
+        if (!$program) {
+            throw new \RuntimeException("Programa con ID {$id} no encontrado");
+        }
+        
+        return $program;
+    }
+    
+    /**
+     * Sincronizar SDGs del programa
+     * 
+     * @param Program $program
+     * @param array $sdgIds Array de IDs de SDGs
+     * @return void
+     */
+    public function syncSdgs(Program $program, array $sdgIds): void
+    {
+        $program->sdgs()->sync($sdgIds);
+    }
+    
+    /**
+     * Obtener programas por estado
+     * 
+     * @param int $programStateId
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public function findByProgramState(int $programStateId)
+    {
+        return $this->model
+            ->where('program_state_id', $programStateId)
+            ->with(['contact', 'programState', 'sdgs'])
+            ->get();
+    }
+}

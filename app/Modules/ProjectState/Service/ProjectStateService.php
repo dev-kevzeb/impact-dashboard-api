@@ -15,36 +15,43 @@ class ProjectStateService {
     {
         return $this->projectStateRepository->getAll();
     }
+
     public function createProjectState(string $state): ProjectState
     {
         if($this->projectStateRepository->exists('state', trim($state))){
             throw new \RuntimeException("The project state already exists: {$state}");
         }
+
         $projectState = ProjectState::at($state);
         $this->projectStateRepository->save($projectState);
         return $projectState;
     }
+
     public function getProjectStateById(int $id): ProjectState
     {   
         $projectState = $this->projectStateRepository->findById($id);
+        if(!$projectState) throw new \RuntimeException("The project status with id {$id} does not exist.");
+        return $this->projectStateRepository->findById($id);
+    }
+
+   public function updateProjectState(int $id, string $state): ProjectState
+    {
+        $projectState = $this->getProjectStateById($id);
         if(!$projectState){
             throw new \RuntimeException("The project status with id {$id} does not exist.");
         }
+        $existing = $this->projectStateRepository->findByState(trim($state));
+        if($existing && $existing->id !== $id){
+            throw new \RuntimeException("The project state already exists: {$state}");
+        }
+        $projectState->update(['state' => $state]);
+        $this->projectStateRepository->save($projectState);
         return $projectState;
+    }   
+
+    public function findProjectStateByName(string $state): ProjectState
+    {
+        return $this->projectStateRepository->findBy('state', $state);
     }
-   public function updateProjectState(int $id, string $state): ProjectState
-{
-    $projectState = $this->getProjectStateById($id);
-    if(!$projectState){
-        throw new \RuntimeException("The project status with id {$id} does not exist.");
-    }
-    $existing = $this->projectStateRepository->findByState(trim($state));
-    if($existing && $existing->id !== $id){
-        throw new \RuntimeException("The project state already exists: {$state}");
-    }
-    $projectState->update(['state' => $state]);
-    $this->projectStateRepository->save($projectState);
-    return $projectState;
-}   
 
 }

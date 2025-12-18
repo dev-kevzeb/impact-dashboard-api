@@ -137,4 +137,17 @@ class Contact extends Model
     {
         return !empty($this->phone);
     }
+
+    // ============================================
+    // RELACIONES ELOQUENT
+    // ============================================
+
+    /**
+     * Relación 1:N con Program
+     * Un contacto puede estar asociado a múltiples programas
+     */
+    public function programs()
+    {
+        return $this->hasMany(\App\Modules\Program\Domain\Program::class, 'contact_id');
+    }
 }

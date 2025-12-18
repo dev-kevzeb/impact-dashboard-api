@@ -36,9 +36,9 @@ class ProgramStateService
         return $this->programStateRepository->findBy('name', $name);
     }
 
-    public function getAllProgramStates()
+    public function getAllProgramStates(int $perPage = 10)
     {
-        return $this->programStateRepository->getAll();
+        return $this->programStateRepository->paginate($perPage);
     }
 
     public function updateProgramState(int $id, string $name): ProgramState

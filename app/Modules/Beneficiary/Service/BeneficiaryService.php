@@ -17,6 +17,11 @@ class BeneficiaryService
 
     public function createBeneficiary(string $name): Beneficiary
     {
+        // Validar duplicados antes de crear
+        if ($this->beneficiaryRepository->exists('name', trim($name))) {
+            throw new RuntimeException("Ya existe un beneficiario con el nombre: {$name}");
+        }
+        
         $beneficiary = Beneficiary::at($name);
         
         $this->beneficiaryRepository->save($beneficiary);
@@ -42,6 +47,13 @@ class BeneficiaryService
     public function updateBeneficiary(int $id, string $name): Beneficiary
     {
         $beneficiary = $this->beneficiaryRepository->findById($id);
+        
+        // Validar duplicados (excepto el mismo registro)
+        $existing = $this->beneficiaryRepository->exists('name', trim($name));
+        if ($existing && strtolower(trim($beneficiary->name)) !== strtolower(trim($name))) {
+            throw new RuntimeException("Ya existe un beneficiario con el nombre: {$name}");
+        }
+        
         $updatedBeneficiary = Beneficiary::at($name);
         $beneficiary->name = $updatedBeneficiary->name;
         

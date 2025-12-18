@@ -8,7 +8,6 @@ use Database\Factories\AgencyFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use RuntimeException;
-use App\Modules\Program\Domain\Program;
 
 class Agency extends Model
 {

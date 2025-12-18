@@ -26,30 +26,26 @@ class ProjectState extends Model
     
     public static function at($state): ProjectState
     {
-        if(!self::isString($state)){
-            throw new \InvalidArgumentException(self::$ERROR_STATE_INVALID_TYPE);
+        if (empty(trim($name))) {
+            throw new RuntimeException(self::$ERROR_NAME_EMPTY);
         }
-        if(empty(trim($state))){
-            throw new \InvalidArgumentException(self::$ERROR_STATE_EMPTY);
+        if (strlen(trim($name)) < 3) {
+            throw new RuntimeException(self::$ERROR_NAME_MIN_LENGTH);
         }
-        if(strlen(trim($state)) < 3){
-            throw new \InvalidArgumentException(self::$ERROR_STATE_MIN_LENGTH);
+        if (strlen(trim($name)) > 100) {
+            throw new RuntimeException(self::$ERROR_NAME_MAX_LENGTH);
         }
-        if(strlen(trim($state)) > 100){
-            throw new \InvalidArgumentException(self::$ERROR_STATE_MAX_LENGTH);
-        }
-        $state = trim($state);
-        $state = mb_strtolower($state);
-        return new self(['state' => trim($state)]);
+        return new ProjectState(['state' => trim($name)]);
     }
 
-    // getters
-    public function getName(): string
+    public function getState(): string
     {
-        return $this->name;
+        return $this->state;
     }
-    public static function isString($value):bool
+
+    // Laravel Factory integration (required for testing)
+    protected static function newFactory()
     {
-        return is_string($value);
+        return \Database\Factories\ProjectStateFactory::new();
     }
 }
