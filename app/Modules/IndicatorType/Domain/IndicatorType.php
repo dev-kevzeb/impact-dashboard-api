@@ -13,9 +13,9 @@ class IndicatorType extends Model
     protected $table = 'indicator_type';
     protected $fillable = ['name'];
 
-    public static $ERROR_NAME_EMPTY = 'el nombre del tipo de indicador no debe ir vacio';
-    public static $ERROR_NAME_MIN_LENGTH = 'el nombre del tipo de indicador debe tener al menos 2 caracteres';
-    public static $ERROR_NAME_MAX_LENGTH = 'el nombre del tipo de indicador no debe exceder 100 caracteres';
+    public static $ERROR_NAME_EMPTY = 'The indicator type name must not be empty';
+    public static $ERROR_NAME_MIN_LENGTH = 'The indicator type name must have at least 2 characters';
+    public static $ERROR_NAME_MAX_LENGTH = 'The indicator type name must not exceed 100 characters';
 
 
     protected static function newFactory()

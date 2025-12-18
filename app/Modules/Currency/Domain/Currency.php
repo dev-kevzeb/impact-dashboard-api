@@ -14,7 +14,6 @@ class Currency extends Model
     protected $table = 'currency';
     protected $fillable = ['code'];
     
-    // Constantes de mensajes de error
     public static $ERROR_CODE_EMPTY = 'The currency code should not be empty';
     public static $ERROR_CODE_LENGTH = 'Currency code must be exactly 3 characters';
     public static $ERROR_CODE_FORMAT = 'Currency code must contain only letters (no numbers or symbols)';
@@ -25,7 +24,6 @@ class Currency extends Model
         return CurrencyFactory::new();
     }
     
-    // Lista de códigos ISO 4217 válidos
     private static array $validCodes = [
         'USD', 'EUR', 'GBP', 'JPY', 'CHF', 'CAD', 'AUD', 'CNY', 'BOB', 
         'BRL', 'ARS', 'PEN', 'CLP', 'COP', 'UYU', 'PYG', 'VES', 'CRC', 
@@ -46,24 +44,12 @@ class Currency extends Model
     
     public static function at(string $code): Currency
     {
-        if (empty(trim($code))) {
-            throw new RuntimeException(self::$ERROR_CODE_EMPTY);
-        }
-        
+        if (empty(trim($code))) throw new RuntimeException(self::$ERROR_CODE_EMPTY);
         $trimmedCode = strtoupper(trim($code));
         
-        if (strlen($trimmedCode) !== 3) {
-            throw new RuntimeException(self::$ERROR_CODE_LENGTH);
-        }
-        
-        // Validar que solo contenga letras (no números ni símbolos)
-        if (!ctype_alpha($trimmedCode)) {
-            throw new RuntimeException(self::$ERROR_CODE_FORMAT);
-        }
-        
-        if (!in_array($trimmedCode, self::$validCodes, true)) {
-            throw new RuntimeException(self::$ERROR_CODE_INVALID);
-        }
+        if (strlen($trimmedCode) !== 3) throw new RuntimeException(self::$ERROR_CODE_LENGTH);
+        if (!ctype_alpha($trimmedCode))  throw new RuntimeException(self::$ERROR_CODE_FORMAT);
+        if (!in_array($trimmedCode, self::$validCodes, true)) throw new RuntimeException(self::$ERROR_CODE_INVALID);
         
         return new Currency(['code' => $trimmedCode]);
     }

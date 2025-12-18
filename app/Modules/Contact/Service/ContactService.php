@@ -12,6 +12,10 @@ class ContactService {
     }
     public function createContact(string $firstName, string $lastName, string $title, string $email, string $phone): Contact
     {
+        if($this->contactRepository->exists('email', trim($email))){
+            throw new \RuntimeException("There is already a contact with the email: {$email}");
+        }
+
         $contact = Contact::at($firstName, $lastName, $title, $email, $phone);
         $this->contactRepository->save($contact);
         return $contact;
@@ -33,11 +37,15 @@ class ContactService {
         string $email, 
         string $phone = ""
     ): Contact {
-        // Obtener el modelo existente
         $contact = $this->contactRepository->findById($id);
-
-        // Validar y normalizar con Contact::at
         $validated = Contact::at($firstName, $lastName, $title, $email, $phone);
+        try {
+            $existing = $this->contactRepository->findBy('email', $validated->email);
+            if ($existing && $existing->id !== $contact->id) throw new \RuntimeException("There is already another contact with the email: {$validated->email}");
+            
+        } catch (\RuntimeException $e) {
+            if (stripos($e->getMessage(), 'not found') === false) throw $e;
+        }
 
         $contact->fill($validated->toArray());
         $this->contactRepository->save($contact);

@@ -14,13 +14,12 @@ class Kpa extends Model
     protected $table = 'kpa';
     protected $fillable = ['name', 'implementation'];
 
+    public static $ERROR_NAME_EMPTY = 'The KPA name must not be empty';
+    public static $ERROR_NAME_MIN_LENGTH = 'The KPA name must have at least 2 characters';
+    public static $ERROR_NAME_MAX_LENGTH = 'The KPA name must not exceed 100 characters';
 
-    // Constantes de mensajes de error
-    public static $ERROR_NAME_EMPTY = 'el nombre del KPA no debe ir vacio';
-    public static $ERROR_NAME_MIN_LENGTH = 'el nombre del KPA debe tener al menos 2 caracteres';
-    public static $ERROR_NAME_MAX_LENGTH = 'el nombre del KPA no debe exceder 100 caracteres';
-    public static $ERROR_IMPLEMENTATION_NOT_NUMERIC = 'la implementación del KPA debe ser un número';
-    public static $ERROR_IMPLEMENTATION_OUT_OF_RANGE = 'la implementación del KPA debe estar entre 0 y 100';
+    public static $ERROR_IMPLEMENTATION_NOT_NUMERIC = 'The KPA implementation must be a number';
+    public static $ERROR_IMPLEMENTATION_OUT_OF_RANGE = 'The KPA implementation must be between 0 and 100';
 
     public function __construct(array $attributes = [])
     {

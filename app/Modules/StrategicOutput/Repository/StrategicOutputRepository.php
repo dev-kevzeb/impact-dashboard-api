@@ -22,13 +22,14 @@ class StrategicOutputRepository extends AbstractRepository implements Repository
             ->first();
     }
 
-    public function existsByName(string $name): bool
+    public function existsByNameAndCountryKpa(string $name, int $id_ck): bool
     {
-        
-        $normalized = preg_replace('/\s+/', ' ', trim($name));
-        $normalized = strtolower($normalized);
+        $normalized = strtolower(preg_replace('/\s+/', ' ', trim($name)));
 
-        return $this->model->whereRaw('LOWER(name) = ?', [$normalized])->exists();
+        return $this->model
+            ->whereRaw('LOWER(name) = ?', [$normalized])
+            ->where('id_ck', $id_ck)
+            ->exists();
     }
 
     public function getByCountryKpa(int $id)

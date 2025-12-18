@@ -21,7 +21,7 @@ class DonorService
     public function createDonor(string $name, $contribution, $project_id): Donor
     {
         $project = $this->projectRepository->findById($project_id);
-        if(empty($project)) throw new RuntimeException("No se encontró el proyecto con id {$project_id}.");
+        if(empty($project)) throw new RuntimeException("Project with id not found: {$project_id}.");
         
         $donor = Donor::at($name, $contribution, $project);
         
@@ -48,10 +48,10 @@ class DonorService
     public function updateDonor(int $id, string $name, $contribution, $project_id): Donor
     {
         $donor = $this->donorRepository->findById($id);
-        if(empty($donor)) throw new RuntimeException("No se encontró el donandorcon id {$id}.");
+        if(empty($donor)) throw new RuntimeException("The donor with id was not found: {$id}.");
 
         $project = $this->projectRepository->findById($project_id);
-        if(empty($project)) throw new RuntimeException("No se encontró el proyecto con id {$project_id}.");
+        if(empty($project)) throw new RuntimeException("Project with id not found: {$project_id}.");
 
         $updatedDonor = Donor::at($name, $contribution, $project);
         $donor->name = $updatedDonor->name;

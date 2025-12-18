@@ -27,10 +27,7 @@ class CountryKpaRepository extends Model
 	{
 		$countryKpa = $this->model->with(['country','kpa'])->find($id);
 		
-		if (!$countryKpa) {
-			throw new RuntimeException("No se encontró CountryKpa con ID: {$id}");
-		}
-		
+		if (!$countryKpa) throw new RuntimeException("CountryKpa with ID not found:{$id}");
 		return $countryKpa->makeHidden(['id_country','id_kpa']);
 	}
 	public function getCountryKpasByCountryId(int $countryId)
@@ -40,7 +37,7 @@ class CountryKpaRepository extends Model
         ->get();
 
     if ($countryKpas->isEmpty()) {
-        throw new RuntimeException("No se encontró el país con ID: {$countryId}");
+        throw new RuntimeException("Country with ID not found:: {$countryId}");
     }
     $country = $countryKpas->first()->country;
 
@@ -65,22 +62,20 @@ class CountryKpaRepository extends Model
 	}
 	public function create(array $data): object
 	{
-		try {
-			// echo "Entrada: " . json_encode($data);			
+		try {			
 			$id_country = $data['id_country'];
 			$id_kpa = $data['id_kpa'];	
 			$existing = $this->model->where('id_country', $id_country)
 				->where('id_kpa', $id_kpa)
 				->first();
-			// echo "salida: " . json_encode($existing);
 			if($existing){	
-				throw new RuntimeException("La relación CountryKpa ya existe para id_country: {$id_country} e id_kpa: {$id_kpa}");
+				throw new RuntimeException("The CountryKpa relationship already exists for id_country: {$id_country} and id_kpa: {$id_kpa}");
 			}
 
 			return $this->model->create($data);
 			
 		} catch (\Exception $e) {
-			throw new RuntimeException('Error al crear CountryKpa: ' . $e->getMessage());
+			throw new RuntimeException('Error creating CountryKpa: ' . $e->getMessage());
 		}
 	}
 
@@ -91,26 +86,22 @@ class CountryKpaRepository extends Model
 			
 			$id_country = $data['id_country'];
 			$id_kpa = $data['id_kpa'];
-			
-			// Verificar que no exista otra relación con el mismo country_id y kpa_id (excepto el registro actual)
 			$existing = $this->model->where('id_country', $id_country)
 				->where('id_kpa', $id_kpa)
 				->where('id', '!=', $id)
 				->first();
 			
 			if ($existing) {
-				throw new RuntimeException("La relación CountryKpa ya existe para id_country: {$id_country} e id_kpa: {$id_kpa}");
+				throw new RuntimeException("The CountryKpa relationship already exists for id_country: {$id_country} and id_kpa: {$id_kpa}");
 			}
 			
 			$countryKpa->update($data);
 			return $countryKpa->fresh();
 			
 		} catch (\Exception $e) {
-			throw new RuntimeException('Error al actualizar CountryKpa: ' . $e->getMessage());
+			throw new RuntimeException('Error updating CountryKpa: ' . $e->getMessage());
 		}
 	}
-
-
 }
 
 

@@ -231,6 +231,18 @@ Route::prefix('v1')->group(function () {
     Route::get('agencies/{id}', [AgencyController::class, 'show']);
     Route::put('agencies/{id}', [AgencyController::class, 'update']);
 
+    // API Routes para ProjectStates
+    Route::get('project-states', [ProjectStateController::class, 'index']);
+    Route::post('project-states', [ProjectStateController::class, 'store']);
+    Route::get('project-states/{id}', [ProjectStateController::class, 'show']);
+    Route::put('project-states/{id}', [ProjectStateController::class, 'update']);
+    
+    // API Routes para SDG
+    Route::get('sdgs', [SdgController::class, 'index']);
+    Route::post('sdgs', [SdgController::class, 'store']);
+    Route::get('sdgs/search', [SdgController::class, 'search']);
+    Route::get('sdgs/{id}', [SdgController::class, 'show']);
+    Route::put('sdgs/{id}', [SdgController::class, 'update']);
     // API Routes para Indicator Type
     Route::get('indicator-types', [IndicatorTypeController::class, 'index']);
     Route::post('indicator-types', [IndicatorTypeController::class, 'store']);

@@ -57,7 +57,7 @@ class AgencyService
                 throw new RuntimeException("There is already an agency with the name {$name}");
             }
         } catch (RuntimeException $e) {
-            if (!str_contains($e->getMessage(), 'no encontrado')) {
+            if (!str_contains($e->getMessage(), 'not Found')) {
                 throw $e; 
             }
         }
