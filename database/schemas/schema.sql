@@ -13,6 +13,7 @@ CREATE SEQUENCE program_sdg_seq;
 CREATE SEQUENCE program_donor_seq;
 CREATE SEQUENCE role_seq;
 CREATE SEQUENCE user_state_seq;
+CREATE SEQUENCE user_seq;
 
 
 /*==============================================================*/
@@ -48,6 +49,29 @@ ALTER TABLE user_state
     ALTER COLUMN    updated_at      SET DEFAULT CURRENT_TIMESTAMP,
     ADD CONSTRAINT  pk_user_state       PRIMARY KEY(id),
     ADD CONSTRAINT  uq_user_state_name  UNIQUE(name);
+
+/*==============================================================*/
+/* Table: User                                                  */
+/*==============================================================*/
+CREATE TABLE "user" (
+    id              BIGINT          NOT NULL,
+    name            VARCHAR(255)    NOT NULL,
+    email           VARCHAR(255)    NOT NULL,
+    password        VARCHAR(255)    NOT NULL,
+    role_id         BIGINT          NOT NULL,
+    user_state_id   BIGINT          NOT NULL,
+    created_at      TIMESTAMP       NOT NULL,
+    updated_at      TIMESTAMP       NOT NULL
+);
+
+ALTER TABLE "user"
+    ALTER COLUMN    id              SET DEFAULT nextval('user_seq'),
+    ALTER COLUMN    created_at      SET DEFAULT CURRENT_TIMESTAMP,
+    ALTER COLUMN    updated_at      SET DEFAULT CURRENT_TIMESTAMP,
+    ADD CONSTRAINT  pk_user         PRIMARY KEY(id),
+    ADD CONSTRAINT  uq_user_email   UNIQUE(email),
+    ADD CONSTRAINT  fk_user_role    FOREIGN KEY(role_id) REFERENCES role(id),
+    ADD CONSTRAINT  fk_user_user_state FOREIGN KEY(user_state_id) REFERENCES user_state(id);
 
 /*==============================================================*/
 /* Table: Donor                                                 */

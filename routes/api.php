@@ -26,6 +26,7 @@ use App\Modules\ProjectAgency\Controller\ProjectAgencyController;
 use App\Modules\ProjectIndicator\Controller\ProjectIndicatorController;
 use App\Modules\Role\Controller\RoleController;
 use App\Modules\UserState\Controller\UserStateController;
+use App\Modules\User\Controller\UserController;
 
 
 
@@ -296,5 +297,11 @@ Route::prefix('v1')->group(function () {
     Route::get('project-indicators/indicators/by-project/{id}', [ProjectIndicatorController::class,'showIndicatorsByProjectId']);
     Route::get('project-indicators/indicators/by-project-name/{name}', [ProjectIndicatorController::class,'showIndicatorsByProjectName']);
 
+    // API Routes para Users
+    Route::get('users', [UserController::class, 'index']);
+    Route::post('users', [UserController::class, 'store']);
+    Route::get('users/search', [UserController::class, 'search']);
+    Route::get('users/{id}', [UserController::class, 'show']);
+    Route::put('users/{id}', [UserController::class, 'update']);
 
 });
