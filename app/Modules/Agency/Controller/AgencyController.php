@@ -20,9 +20,6 @@ class AgencyController extends Controller
         $this->agencyService = $agencyService;
     }
 
-    /**
-     * Listar todas las agencias
-     */
     public function index(Request $request): JsonResponse
     {
         try {
@@ -44,33 +41,28 @@ class AgencyController extends Controller
         } catch (RuntimeException $e) {
             return ApiResponse::error($e->getMessage(), 500);
         } catch (\Exception $e) {
-            return ApiResponse::error('Error interno del servidor', 500);
+            return ApiResponse::error('Internal server error', 500);
         }
     }
 
-    /**
-     * Mostrar una agencia específica
-     */
+
     public function show(int $id): JsonResponse
     {
         try {
             $agency = $this->agencyService->getAgencyById($id);
 
             return ApiResponse::success(
-                'Agencia encontrada',
+                'Agency Found',
                 200,
                 new AgencyResource($agency)
             );
         } catch (RuntimeException $e) {
-            return ApiResponse::notFound('Agencia');
+            return ApiResponse::notFound('Agency');
         } catch (\Exception $e) {
-            return ApiResponse::error('Error interno del servidor', 500);
+            return ApiResponse::error('Internal server error', 500);
         }
     }
 
-    /**
-     * Crear una nueva agencia
-     */
     public function store(AgencyRequest $request): JsonResponse
     {
         try {
@@ -83,7 +75,7 @@ class AgencyController extends Controller
             );
 
             return ApiResponse::created(
-                'Agency successfully created',
+                'Agency created successfully',
                 new AgencyResource($agency)
             );
 
@@ -94,13 +86,9 @@ class AgencyController extends Controller
         }
     }
 
-    /**
-     * Actualizar una agencia existente
-     */
     public function update(AgencyRequest $request, int $id): JsonResponse
     {
         try {
-            // Validar campos requeridos
             $validated =$request->validated();
 
             $agency = $this->agencyService->updateAgency(
@@ -111,7 +99,7 @@ class AgencyController extends Controller
             );
 
             return ApiResponse::success(
-                'Agency successfully updated',
+                'Agency updated successfully',
                 200,
                 new AgencyResource($agency)
             );
@@ -123,9 +111,7 @@ class AgencyController extends Controller
         }
     }
 
-    /**
-     * Buscar agencia por nombre
-     */
+
     public function search(Request $request): JsonResponse
     {
         try {
@@ -136,17 +122,17 @@ class AgencyController extends Controller
             $agency = $this->agencyService->findAgencyByName($request->input('name'));
 
             return ApiResponse::success(
-                'Agencia encontrada',
+                'Agency found',
                 200,
                 new AgencyResource($agency)
             );
 
         } catch (RuntimeException $e) {
-            return ApiResponse::notFound('Agencia');
+            return ApiResponse::notFound('Agency');
         } catch (\Illuminate\Validation\ValidationException $e) {
             return ApiResponse::validationError($e->errors());
         } catch (\Exception $e) {
-            return ApiResponse::error('Error interno del servidor', 500);
+            return ApiResponse::error('Internal server error', 500);
         }
     }
 }

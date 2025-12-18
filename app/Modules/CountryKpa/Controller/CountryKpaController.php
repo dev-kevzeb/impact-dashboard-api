@@ -25,11 +25,11 @@ class CountryKpaController extends Controller
 			if ($request->has('country')) {
 				$countryId = (int) $request->query('country');
 				$countryWithKpas = $this->service->getCountryKpasByCountryId($countryId);
-				return ApiResponse::success('KPAs del pais obtenidos', 200, $countryWithKpas);
+				return ApiResponse::success('Country KPAs obtained', 200, $countryWithKpas);
 			}
 			
 			$items = $this->service->getAll();
-			return ApiResponse::success('Lista obtenida', 200, ['items' => $items, 'total' => count($items)]);
+			return ApiResponse::success('Obtained list', 200, ['items' => $items, 'total' => count($items)]);
 		} catch (RuntimeException $e) {
 			return ApiResponse::error($e->getMessage(), 500);
 		}
@@ -39,11 +39,11 @@ class CountryKpaController extends Controller
 	{
 		try {
 			$countryKpa = $this->service->getById((int)$id);
-			return ApiResponse::success('Registro obtenido', 200, $countryKpa);
+			return ApiResponse::success('Registration obtained', 200, $countryKpa);
 		} catch (RuntimeException $e) {
 			return ApiResponse::notFound('CountryKpa');
 		} catch (\Exception $e) {
-			return ApiResponse::error('Error interno del servidor', 500);
+			return ApiResponse::error('Internal server error', 500);
 		}
 	}
 
@@ -51,11 +51,11 @@ class CountryKpaController extends Controller
 	{
 		try {
 			$countryKpa = $this->service->getCountryKpasByCountryId((int)$id);
-			return ApiResponse::success('Registro obtenido', 200, $countryKpa);
+			return ApiResponse::success('Registration obtained', 200, $countryKpa);
 		} catch (RuntimeException $e) {
 			return ApiResponse::notFound('CountryKpa');
 		} catch (\Exception $e) {
-			return ApiResponse::error('Error interno del servidor', 500);
+			return ApiResponse::error('Internal server error', 500);
 		}
 	}
 
@@ -66,14 +66,14 @@ class CountryKpaController extends Controller
 
 			$created = $this->service->create($validated);
 
-			return ApiResponse::created('Country-KPA relationship successfully created', $created);
+			return ApiResponse::created('Country-KPA relationship created successfully', $created);
 
 		} catch (\Illuminate\Validation\ValidationException $e) {
 			return ApiResponse::validationError($e->errors());
 		} catch (RuntimeException $e) {
 			return ApiResponse::error($e->getMessage(), 400);
 		} catch (\Exception $e) {
-			return ApiResponse::error('Error interno del servidor', 500);
+			return ApiResponse::error('Internal server error', 500);
 		}
 	}
 
@@ -85,7 +85,7 @@ class CountryKpaController extends Controller
 			$updated = $this->service->update($id, $validated);
 
 			return ApiResponse::success(
-				'Country-KPA relationship successfully updated',
+				'Country-KPA relationship updated successfully',
 				200,
 				$updated
 			);
@@ -96,7 +96,7 @@ class CountryKpaController extends Controller
 			return ApiResponse::error($e->getMessage(), 400);
 
 		} catch (\Exception $e) {
-			return ApiResponse::error('Error interno del servidor', 500);
+			return ApiResponse::error('Internal server error', 500);
 		}
 	}
 
@@ -105,7 +105,7 @@ class CountryKpaController extends Controller
 	{
 		try {
 			$deleted = $this->service->delete((int)$id);
-			return ApiResponse::success('Eliminado', 200, $deleted);
+			return ApiResponse::success('Deleted', 200, $deleted);
 		} catch (RuntimeException $e) {
 			return ApiResponse::error($e->getMessage(), 500);
 		}

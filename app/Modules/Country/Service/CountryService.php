@@ -59,7 +59,7 @@ class CountryService
                 throw new RuntimeException("The country {$name} already exists");
             }
         } catch (RuntimeException $e) {
-            if (!str_contains($e->getMessage(), 'no encontrado')) {
+            if (!str_contains($e->getMessage(), 'not found')) {
                 throw $e; 
             }
         }
@@ -102,8 +102,6 @@ class CountryService
     {
         return $this->countryRepository->paginate($perPage);
     }
-
-    
 
     public function countryExists(string $name): bool
     {

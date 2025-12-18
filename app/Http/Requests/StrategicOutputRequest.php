@@ -24,7 +24,6 @@ class StrategicOutputRequest extends FormRequest
                 'string',
                 'min:2', 
                 'max:200',
-                Rule::unique('strategic_output', 'name')->ignore($outputId),
             ],
 
             'id_ck' => [
@@ -38,17 +37,14 @@ class StrategicOutputRequest extends FormRequest
     public function messages(): array
     {
         return [
-            // NAME
-            'name.required' => 'el nombre del resultado estratégico no debe ir vacío',
-            'name.min'      => 'el nombre del resultado estratégico debe tener al menos 3 caracteres',
-            'name.max'      => 'el nombre del resultado estratégico no debe exceder 200 caracteres',
-            'name.unique'   => 'ya existe un resultado estratégico con este nombre',
-            'name.string'   => 'el nombre del resultado estratégico debe ser una cadena de texto',
+            'name.required' => 'The name of the strategic result should not be empty',
+            'name.min'      => 'The name of the strategic result must be at least 3 characters',
+            'name.max'      => 'The name of the strategic result should not exceed 200 characters',
+            'name.string'   => 'The name of the strategic result must be a text string',
 
-            // COUNTRY KPA (FK)
-            'id_ck.required' => 'el id_ck es obligatorio',
-            'id_ck.integer'  => 'el id_ck debe ser un ID numérico válido',
-            'id_ck.exists'   => 'el country_kpa especificado no existe',
+            'id_ck.required' => 'id_ck is required',
+            'id_ck.integer'  => 'The id_ck must be a valid numeric ID',
+            'id_ck.exists'   => 'the specified country_kpa does not exist',
         ];
     }
 

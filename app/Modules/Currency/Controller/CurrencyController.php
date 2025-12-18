@@ -20,16 +20,13 @@ class CurrencyController extends Controller
         $this->currencyService = $currencyService;
     }
 
-    /**
-     * Listar todas las monedas
-     */
     public function index(): JsonResponse
     {
         try {
             $currencies = $this->currencyService->getAllCurrencies();
             
             return ApiResponse::success(
-                'Lista de monedas obtenida exitosamente',
+                'Currency List Successfully Obtained',
                 200,
                 [
                     'currencies' => CurrencyResource::collection($currencies),
@@ -39,33 +36,27 @@ class CurrencyController extends Controller
         } catch (RuntimeException $e) {
             return ApiResponse::error($e->getMessage(), 500);
         } catch (\Exception $e) {
-            return ApiResponse::error('Error interno del servidor', 500);
+            return ApiResponse::error('Internal server error', 500);
         }
     }
 
-    /**
-     * Mostrar una moneda específica
-     */
     public function show(int $id): JsonResponse
     {
         try {
             $currency = $this->currencyService->getCurrencyById($id);
 
             return ApiResponse::success(
-                'Moneda encontrada',
+                'Currency found',
                 200,
                 new CurrencyResource($currency)
             );
         } catch (RuntimeException $e) {
-            return ApiResponse::notFound('Moneda');
+            return ApiResponse::notFound('Currency');
         } catch (\Exception $e) {
-            return ApiResponse::error('Error interno del servidor', 500);
+            return ApiResponse::error('Internal server error', 500);
         }
     }
 
-    /**
-     * Crear una nueva moneda
-     */
     public function store(CurrencyRequest $request): JsonResponse
     {
         try {
@@ -73,7 +64,7 @@ class CurrencyController extends Controller
             $currency = $this->currencyService->createCurrency($validated['code']);
 
             return ApiResponse::created(
-                'Moneda creada exitosamente',
+                'Currency created successfully',
                 new CurrencyResource($currency)
             );
 
@@ -84,9 +75,6 @@ class CurrencyController extends Controller
         }
     }
 
-    /**
-     * Actualizar una moneda existente
-     */
     public function update(CurrencyRequest $request, int $id): JsonResponse
     {
         try {
@@ -95,7 +83,7 @@ class CurrencyController extends Controller
             $currency = $this->currencyService->updateCurrency($id, $validated['code']);
 
             return ApiResponse::success(
-                'Moneda actualizada exitosamente',
+                'Currency uploaded successfully',
                 200,
                 new CurrencyResource($currency)
             );
@@ -107,9 +95,6 @@ class CurrencyController extends Controller
         }
     }
 
-    /**
-     * Buscar moneda por código
-     */
     public function search(Request $request): JsonResponse
     {
         try {
@@ -120,17 +105,17 @@ class CurrencyController extends Controller
             $currency = $this->currencyService->findCurrencyByCode($request->input('code'));
 
             return ApiResponse::success(
-                'Moneda encontrada',
+                'Currency found',
                 200,
                 new CurrencyResource($currency)
             );
 
         } catch (RuntimeException $e) {
-            return ApiResponse::notFound('Moneda');
+            return ApiResponse::notFound('Currency');
         } catch (\Illuminate\Validation\ValidationException $e) {
             return ApiResponse::validationError($e->errors());
         } catch (\Exception $e) {
-            return ApiResponse::error('Error interno del servidor', 500);
+            return ApiResponse::error('Internal server error', 500);
         }
     }
 }

@@ -12,9 +12,8 @@ class ContactService {
     }
     public function createContact(string $firstName, string $lastName, string $title, string $email, string $phone): Contact
     {
-        // Verificar si ya existe un contacto con el mismo email
         if($this->contactRepository->exists('email', trim($email))){
-            throw new \RuntimeException("Ya existe un contacto con el email: {$email}");
+            throw new \RuntimeException("There is already a contact with the email: {$email}");
         }
 
         $contact = Contact::at($firstName, $lastName, $title, $email, $phone);
@@ -38,23 +37,14 @@ class ContactService {
         string $email, 
         string $phone = ""
     ): Contact {
-        // Obtener el modelo existente
         $contact = $this->contactRepository->findById($id);
-
-        // Validar y normalizar con Contact::at
         $validated = Contact::at($firstName, $lastName, $title, $email, $phone);
-
-        // Comprobar duplicado de email (si existe y no es este contacto)
         try {
             $existing = $this->contactRepository->findBy('email', $validated->email);
-            if ($existing && $existing->id !== $contact->id) {
-                throw new \RuntimeException("Ya existe otro contacto con el email: {$validated->email}");
-            }
+            if ($existing && $existing->id !== $contact->id) throw new \RuntimeException("There is already another contact with the email: {$validated->email}");
+            
         } catch (\RuntimeException $e) {
-            // findBy lanza RuntimeException cuando no encuentra la entidad; ignorar ese caso
-            if (stripos($e->getMessage(), 'no encontrado') === false) {
-                throw $e;
-            }
+            if (stripos($e->getMessage(), 'not found') === false) throw $e;
         }
 
         $contact->fill($validated->toArray());

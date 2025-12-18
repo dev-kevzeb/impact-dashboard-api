@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\IndicatorTypeRequest;
 use App\Http\Resources\IndicatorTypeResource;
 use App\Http\Responses\ApiResponse;
+use App\Modules\IndicatorType\Domain\IndicatorType;
 use App\Modules\IndicatorType\Service\IndicatorTypeService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
@@ -20,16 +21,25 @@ class IndicatorTypeController extends Controller
         $this->indicatorTypeService = $indicatorTypeService;
     }
 
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
         try{
-            $indicatorTypes = $this->indicatorTypeService->getAllIndicatorTypes();
+            $search = $request->get("search");
+            $perPage = (int) $request->get("per_page", 10);
+        
+            $query = IndicatorType::query();
+            if( $search ) $query->where("name","like","%". $search ."%");
+            $indicatorTypes = $query->paginate($perPage);
+
             return ApiResponse::success(
-                "Lista de tipos de indicator obtenida exitosamente",
+                "Indicator Types paginated list successfully uploaded",
                 200,
                 [
                     'indicator_types' => IndicatorTypeResource::collection($indicatorTypes),
                     'total' => $indicatorTypes->count(),
+                    'per_page' => $indicatorTypes->perPage(),
+                    'current_page' => $indicatorTypes->currentPage(),
+                    'last_page' => $indicatorTypes->lastPage(),
                 ]
             );
         } catch(RuntimeException $exception) {
@@ -45,7 +55,7 @@ class IndicatorTypeController extends Controller
             $validated = $request->validated();
             $indicatorType = $this->indicatorTypeService->createIndicatorType($validated['name']);
             return ApiResponse::created(
-                'Tipo de indicador creado exitosamente',
+                'Indicator Type created successfully',
                 new IndicatorTypeResource($indicatorType),
 
             );
@@ -59,12 +69,12 @@ class IndicatorTypeController extends Controller
         try{
             $indicatorType = $this->indicatorTypeService->getIndicatorTypeById($id);
             return ApiResponse::success(
-                'Tipo de indicador encontrado',
+                'Indicator Type found',
                 200, 
                 new IndicatorTypeResource($indicatorType),
             );
         } catch(RuntimeException $exception) {
-            return ApiResponse::notFound('Tipo de indicador');
+            return ApiResponse::notFound('Indicator Type');
         } catch(\Exception $exception) {
             return ApiResponse::error($exception->getMessage(),400);
         }
@@ -78,12 +88,12 @@ class IndicatorTypeController extends Controller
             $indicatorType = $this->indicatorTypeService->updateIndicatorType($id, $validated['name']);
 
             return ApiResponse::success(
-                'Tipo de indicador actualizado exitosamente',
+                'Indicator Type uploaded successfully',
                 200,
                 new IndicatorTypeResource($indicatorType),
             );
         }catch(RuntimeException $exception) {
-            return ApiResponse::notFound('Tipo de indicador');
+            return ApiResponse::notFound('Indicator Type');
         } catch(\Exception $exception) {
             return ApiResponse::error($exception->getMessage(),400);
         }
@@ -99,12 +109,12 @@ class IndicatorTypeController extends Controller
             $indicatorType = $this->indicatorTypeService->findIndicatorTypeByName($request->input('name'));
 
             return ApiResponse::success(
-                'Tipo de indicador encontrado',
+                'Indicator Type found',
                 200,
                 new IndicatorTypeResource($indicatorType),
             );
         } catch(RuntimeException $exception) {
-            return ApiResponse::notFound('Tipo de Indicador');
+            return ApiResponse::notFound('Indicator Type');
         } catch (\Illuminate\Validation\ValidationException $e) {
             return ApiResponse::validationError($e->errors());
         } catch(\Exception $exception) {

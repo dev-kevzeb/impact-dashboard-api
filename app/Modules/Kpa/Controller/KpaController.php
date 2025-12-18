@@ -21,9 +21,6 @@ class KpaController extends Controller
         $this->kpaService = $kpaService;
     }
 
-    /**
-     * Listar todos los KPAs
-     */
     public function index(Request $request): JsonResponse
     {
         try {
@@ -37,7 +34,7 @@ class KpaController extends Controller
             $kpas = $query->paginate($perPage);
             
             return ApiResponse::success(
-                'Lista de KPAs obtenida exitosamente',
+                'KPAs paginated list successfully uploaded',
                 200,
                 [
                     'kpas' => KpaResource::collection($kpas),
@@ -50,37 +47,30 @@ class KpaController extends Controller
         } catch (RuntimeException $e) {
             return ApiResponse::error($e->getMessage(), 500);
         } catch (\Exception $e) {
-            return ApiResponse::error('Error interno del servidor', 500);
+            return ApiResponse::error('Internal server error', 500);
         }
     }
 
-    /**
-     * Mostrar un KPA específico
-     */
     public function show(int $id): JsonResponse
     {
         try {
             $kpa = $this->kpaService->getKpaById($id);
 
             return ApiResponse::success(
-                'KPA encontrado',
+                'KPA found',
                 200,
                 new KpaResource($kpa)
             );
         } catch (RuntimeException $e) {
             return ApiResponse::notFound('KPA');
         } catch (\Exception $e) {
-            return ApiResponse::error('Error interno del servidor', 500);
+            return ApiResponse::error('Internal server error', 500);
         }
     }
 
-    /**
-     * Crear un nuevo KPA
-     */
     public function store(KpaRequest $request): JsonResponse
     {
         try {
-            // Validar que los campos estén presentes
             $validated = $request->validated();
 
             $kpa = $this->kpaService->createKpa(
@@ -89,7 +79,7 @@ class KpaController extends Controller
             );
 
             return ApiResponse::created(
-                'KPA creado exitosamente',
+                'KPA created successfully',
                 new KpaResource($kpa)
             );
 
@@ -100,13 +90,10 @@ class KpaController extends Controller
         }
     }
 
-    /**
-     * Actualizar un KPA existente
-     */
+
     public function update(KpaRequest $request, int $id): JsonResponse
     {
         try {
-            // Validar que los campos estén presentes
             $validated = $request->validated();
 
             $kpa = $this->kpaService->updateKpa(
@@ -116,7 +103,7 @@ class KpaController extends Controller
             );
 
             return ApiResponse::success(
-                'KPA actualizado exitosamente',
+                'KPA uploaded successfully',
                 200,
                 new KpaResource($kpa)
             );
@@ -128,9 +115,6 @@ class KpaController extends Controller
         }
     }
 
-    /**
-     * Buscar KPA por nombre
-     */
     public function search(Request $request): JsonResponse
     {
         try {
@@ -141,7 +125,7 @@ class KpaController extends Controller
             $kpa = $this->kpaService->findKpaByName($request->input('name'));
 
             return ApiResponse::success(
-                'KPA encontrado',
+                'KPA found',
                 200,
                 new KpaResource($kpa)
             );
@@ -151,7 +135,7 @@ class KpaController extends Controller
         } catch (\Illuminate\Validation\ValidationException $e) {
             return ApiResponse::validationError($e->errors());
         } catch (\Exception $e) {
-            return ApiResponse::error('Error interno del servidor', 500);
+            return ApiResponse::error('Internal server error', 500);
         }
     }
 }

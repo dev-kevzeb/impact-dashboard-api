@@ -35,14 +35,14 @@ class MeasureRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'name.required' => 'el nombre de la medida no debe ir vacio',
-            'name.string'   => 'el nombre de la medida debe ser una cadena de texto',
-            'name.min'      => 'el nombre de la medida debe tener al menos 2 caracteres',
-            'name.max'      => 'el nombre de la medida no debe exceder 150 caracteres',
+            'name.required' => 'The name of the measure should not be empty',
+            'name.string'   => 'The measure name must be a text string',
+            'name.min'      => 'Measure name must be at least 2 characters',
+            'name.max'      => 'The measure name must not exceed 150 characters',
 
-            'strategic_output_id.required' => 'el resultado estratégico es obligatorio',
-            'strategic_output_id.integer'  => 'el resultado estratégico debe ser un ID numérico',
-            'strategic_output_id.exists'   => 'el resultado estratégico especificado no existe',
+            'strategic_output_id.required' => 'The strategic result is mandatory',
+            'strategic_output_id.integer'  => 'The strategic result must be a numeric ID',
+            'strategic_output_id.exists'   => 'The specified strategic result does not exist',
         ];
     }
 

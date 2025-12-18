@@ -84,10 +84,10 @@
         Route::put('contacts/{id}', [ContactController::class, 'update']);
 
         // API Routes para ProjectStates
-        Route::get('project_states', [ProjectStateController::class, 'index']);
-        Route::post('project_states', [ProjectStateController::class, 'store']);
-        Route::get('project_states/{id}', [ProjectStateController::class, 'show']);
-        Route::put('project_states/{id}', [ProjectStateController::class, 'update']);
+        Route::get('project-states', [ProjectStateController::class, 'index']);
+        Route::post('project-states', [ProjectStateController::class, 'store']);
+        Route::get('project-states/{id}', [ProjectStateController::class, 'show']);
+        Route::put('project-states/{id}', [ProjectStateController::class, 'update']);
         // API Routes para SDG
         Route::get('sdgs', [SdgController::class, 'index']);
         Route::post('sdgs', [SdgController::class, 'store']);

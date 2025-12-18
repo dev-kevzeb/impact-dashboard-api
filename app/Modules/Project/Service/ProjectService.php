@@ -37,20 +37,16 @@ class ProjectService
     public function findProjectById(int $id)
     {
         $project = $this->projectRepository->findById($id);
-        if (!$project) {
-            throw new \RuntimeException("El proyecto con id {$id} no existe.");
-        }
-
+        if (!$project) throw new \RuntimeException("The project with id {$id} does not exist.");
+        
         return $project;
     }
 
     public function getProjectByName(string $name)
     {
         $project = $this->projectRepository->findByName($name);
-        if (!$project) {
-            throw new \RuntimeException("El proyecto con nombre {$name} no existe.");
-        }
-
+        if (!$project) throw new \RuntimeException("The project with name {$name} does not exist.");
+        
         return $project;
     }
 
@@ -71,13 +67,13 @@ class ProjectService
         if (!empty($contactPayload['id'])) {
             
             $contact = $this->contactRepository->findById($contactPayload['id']);
-            if (!$contact) throw new \RuntimeException("El contacto con id {$contactPayload['id']} no existe.");
+            if (!$contact) throw new \RuntimeException("The contact with id {$contactPayload['id']} does not exist.");
             
         } else {
 
             $existingContact = $this->contactRepository->findOneBy('email', $contactPayload['email']);
 
-            if ($existingContact) throw new \RuntimeException("Ya existe un contacto registrado con el email {$contactPayload['email']}.");
+            if ($existingContact) throw new \RuntimeException("There is already a contact registered with the email {$contactPayload['email']}.");
 
             $contact = Contact::at(
                 $contactPayload['first_name'],
@@ -91,10 +87,10 @@ class ProjectService
         }
 
         $beneficiary = $this->beneficiaryRepository->findById($beneficiaryId);
-        if (!$beneficiary) throw new \RuntimeException("El beneficiario con id {$beneficiaryId} no existe.");
+        if (!$beneficiary) throw new \RuntimeException("The beneficiary with id {$beneficiaryId} does not exist.");
 
         $projectState = $this->projectStateRepository->findById($projectStateId);
-        if (!$projectState) throw new \RuntimeException("El estado del proyecto con id {$projectStateId} no existe.");
+        if (!$projectState) throw new \RuntimeException("The project state with id {$projectStateId} does not exist.");
         
         $project = Project::at(
             $name,
@@ -122,10 +118,7 @@ class ProjectService
         if (!empty($contactPayload['id'])) {
 
             $contact = $this->contactRepository->findById($contactPayload['id']);
-            if (!$contact) {
-                throw new \RuntimeException("El contacto con id {$contactPayload['id']} no existe.");
-            }
-
+            if (!$contact) throw new \RuntimeException("Contact with id {$contactPayload['id']} does not exist.");
         } else {
 
             $contact = $project->contact;
@@ -140,10 +133,10 @@ class ProjectService
 
 
         $beneficiary = $this->beneficiaryRepository->findById($beneficiaryId);
-        if (!$beneficiary) throw new \RuntimeException("El beneficiario con id {$beneficiaryId} no existe.");
+        if (!$beneficiary) throw new \RuntimeException("The beneficiary with id {$beneficiaryId} does not exist.");
         
         $projectState = $this->projectStateRepository->findById($projectStateId);
-        if (!$projectState) throw new \RuntimeException("El estado del proyecto con id {$projectStateId} no existe.");
+        if (!$projectState) throw new \RuntimeException("The project state with id {$projectStateId} does not exist.");
 
         $project->name = $name;
         $project->description = $description;

@@ -27,7 +27,7 @@ class IndicatorController extends Controller
             $indicators = $this->indicatorService->getAllIndicators();
 
             return ApiResponse::success(
-                'Lista de Indicadores obtenida exitosamente',
+                'List of Indicators successfully obtained',
                 200,
                 [
                     'indicators' => IndicatorResource::collection($indicators),
@@ -37,7 +37,7 @@ class IndicatorController extends Controller
         }  catch (RuntimeException $e) {
             return ApiResponse::error($e->getMessage(), 500);
         } catch (\Exception $e) {
-            return ApiResponse::error('Error interno del servidor', 500);
+            return ApiResponse::error('Internal server error', 500);
         }
     }
 
@@ -47,14 +47,14 @@ class IndicatorController extends Controller
             $indicator = $this->indicatorService->getIndicatorById($id);
 
             return ApiResponse::success(
-                'Indicador encontrado',
+                'Indicator found',
                 200,
                 new IndicatorResource($indicator)
             );
         } catch (RuntimeException $e) {
-            return ApiResponse::notFound('Indicador');
+            return ApiResponse::notFound('Indicator');
         } catch (\Exception $e) {
-            return ApiResponse::error('Error interno del servidor', 500);
+            return ApiResponse::error('Internal server error', 500);
         }
     }
 
@@ -71,7 +71,7 @@ class IndicatorController extends Controller
             );
 
             return ApiResponse::created(
-                'Indicador creado exitosamente',
+                'Indicator created successfully',
                 new IndicatorResource($indicator)
             );
 
@@ -96,7 +96,7 @@ class IndicatorController extends Controller
             );
 
             return ApiResponse::success(
-                    'Indicador actualizado exitosamente',
+                    'Indicator uploaded successfully',
                     200,
                     new IndicatorResource($indicator)
                 );
@@ -115,19 +115,19 @@ class IndicatorController extends Controller
                 'name' => 'required|string|min:1'
             ]);
 
-            $indicador = $this->indicatorService->findIndicatorByName($request->input('name'));
+            $indicator = $this->indicatorService->findIndicatorByName($request->input('name'));
 
             return ApiResponse::success(
-                'Indicador encontrado',
+                'Indicator found',
                 200,
-                new IndicatorResource($indicador)
+                new IndicatorResource($indicator)
             );
         }catch (RuntimeException $e) {
-            return ApiResponse::notFound('Indicador');
+            return ApiResponse::notFound('Indicator');
         } catch (\Illuminate\Validation\ValidationException $e) {
             return ApiResponse::validationError($e->errors());
         } catch (\Exception $e) {
-            return ApiResponse::error('Error interno del servidor', 500);
+            return ApiResponse::error('Internal server error', 500);
         }
     }
 }

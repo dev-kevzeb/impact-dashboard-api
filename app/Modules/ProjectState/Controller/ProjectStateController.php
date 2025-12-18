@@ -2,11 +2,11 @@
 namespace App\Modules\ProjectState\Controller;
 use App\Http\Requests\ProjectStateRequest;
 use App\Http\Resources\ProjectStateResource;
+use App\Modules\ProjectState\Domain\ProjectState;
 use App\Modules\ProjectState\Service\ProjectStateService;
 use App\Http\Controllers\Controller;
 use App\Http\Responses\ApiResponse;
 use Illuminate\Http\Request;
-use PhpParser\Node\Stmt\TryCatch;
 use RuntimeException;
 
 class ProjectStateController extends Controller
@@ -18,25 +18,32 @@ class ProjectStateController extends Controller
         $this->projectStateService = $projectStateService;
     }
 
-    // Metodos a futuro
-    public function index()
+    public function index(Request $request)
     {
         try {
-            $states = $this->projectStateService->getAllProjectStates();
+            $search = $request->get("search");
+            $perPage = (int) $request->get("per_page", 10);
+
+            $query = ProjectState::query();
+            if( $search ) $query->where("state","like","%". $search ."%");
+            $states = $query->paginate($perPage);
+
             return ApiResponse::success(
-                'Lista de estados obtenida exitosamente',
+                'Project States list successfully obtained',
                 200,
                 [
                     'project_states' => ProjectStateResource::collection($states),
-                    'total' => $states->count()
+                    'total' => $states->count(),
+                    'per_page' => $states->perPage(),
+                    'current_page' => $states->currentPage(),
+                    'last_page' => $states->lastPage(),
                 ]
             );
         } catch (RuntimeException $e) {
             return ApiResponse::error($e->getMessage(), 500);
         } catch (\Exception $e) {
-            return ApiResponse::error('Error interno del servidor', 500);
-        }
-        
+            return ApiResponse::error('Internal server error', 500);
+        } 
     }
 
     public function show($id)
@@ -44,14 +51,14 @@ class ProjectStateController extends Controller
         try {
             $state = $this->projectStateService->getProjectStateById($id);
             return ApiResponse::success(
-                'Estado encontrado',
+                'Project State found',
                 200,
                 new ProjectStateResource($state),
             );
         } catch (RuntimeException $e) {
-            return ApiResponse::notFound('Estado del proyecto');
+            return ApiResponse::notFound('Project State');
         } catch (\Exception $e) {
-            return ApiResponse::error('Error interno del servidor', 500);
+            return ApiResponse::error('Internal server error', 500);
         }
     }
 
@@ -61,14 +68,14 @@ class ProjectStateController extends Controller
             $validated = $request->validated();
             $state = $this->projectStateService->createProjectState($validated['state']);
             return ApiResponse::success(
-                'Estado del proyecto creado exitosamente',
+                'Project State created successfully',
                 201,
                 new ProjectStateResource($state)
             );
         } catch (RuntimeException $e) {
             return ApiResponse::error($e->getMessage(), 400);
         } catch (\Exception $e) {
-            return ApiResponse::error('Error interno del servidor', 500);
+            return ApiResponse::error('Internal server error', 500);
         }
     }
 
@@ -78,14 +85,14 @@ class ProjectStateController extends Controller
             $validated = $request->validated();
             $state = $this->projectStateService->updateProjectState($id, $validated['state']);
             return ApiResponse::success(
-                'Estado del proyecto actualizado exitosamente',
+                'Project State uploaded successfully',
                 200,
                 new ProjectStateResource($state)
             );
         } catch (RuntimeException $e) {
             return ApiResponse::error($e->getMessage(), 400);
         } catch (\Exception $e) {
-            return ApiResponse::error('Error interno del servidor', 500);
+            return ApiResponse::error('Internal server error', 500);
         }
     }
 

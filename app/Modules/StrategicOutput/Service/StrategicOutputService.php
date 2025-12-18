@@ -21,14 +21,14 @@ class StrategicOutputService{
     public function getStrategicOutputById(int $id): StrategicOutput
     {
         $strategicOutput = $this->strategicOutputRepository->findById($id);
-        if (!$strategicOutput) throw new \RuntimeException("El resultado estratégico con id {$id} no existe.");
+        if (!$strategicOutput) throw new \RuntimeException("The strategic result with id {$id} does not exist");
         return $strategicOutput;
     }
 
     public function findStrategicOutputByName(string $name): StrategicOutput
     {
         $strategicOutput = $this->strategicOutputRepository->findByName($name);
-        if (!$strategicOutput) throw new \RuntimeException("El resultado estratégico con nombre {$name} no existe.");
+        if (!$strategicOutput) throw new \RuntimeException("Strategic result with name {$name} does not exist");
         
         return $strategicOutput;
     }
@@ -36,7 +36,7 @@ class StrategicOutputService{
     public function createStrategicOutput(string $name, int $idCk): StrategicOutput
     {
         $normalizedName = mb_convert_case(preg_replace('/\s+/', ' ', trim($name)), MB_CASE_TITLE, "UTF-8");
-        if ($this->strategicOutputRepository->existsByName($normalizedName)) throw new \RuntimeException("El StrategicOutput ya existe: {$normalizedName}");
+        if ($this->strategicOutputRepository->existsByNameAndCountryKpa($normalizedName, $idCk)) throw new \RuntimeException("StrategicOutput with name {$normalizedName} already exists assigned in the Kpa");
         
         $strategicOutput = StrategicOutput::at($name);
         $strategicOutput->id_ck = $idCk;
@@ -54,13 +54,12 @@ class StrategicOutputService{
     public function updateStrategicOutput(int $id, string $name, ?int $idCk = null): StrategicOutput
     {
         $strategicOutput = $this->getStrategicOutputById($id);
-        if (!$strategicOutput) throw new \RuntimeException("El StrategicOutput con id {$id} no existe.");
+        if (!$strategicOutput) throw new \RuntimeException("The StrategicOutput with id {$id} does not exist");
 
-        // Normalizar para comparar duplicados
         $normalizedName = mb_convert_case(preg_replace('/\s+/', ' ', trim($name)), MB_CASE_TITLE, "UTF-8");
-        $existing = $this->strategicOutputRepository->findByName($normalizedName);
+        $existing = $this->strategicOutputRepository->existsByNameAndCountryKpa($normalizedName, $idCk);
         
-        if ($existing && $existing->id !== $id) throw new \RuntimeException("El StrategicOutput ya existe: {$normalizedName}");
+        if ($existing && $existing->id !== $id) throw new \RuntimeException("StrategicOutput with name {$normalizedName} already exists assigned in the Kpa");
 
         $dataToUpdate = ['name' => $normalizedName];
 
@@ -76,7 +75,7 @@ class StrategicOutputService{
     public function addMeasureToStrategicOutput(int $strategicOutputId, $measure)
     {
         $strategicOutput = $this->getStrategicOutputById($strategicOutputId);
-        if (!$strategicOutput) throw new \RuntimeException("El resultado estratégico con id {$strategicOutputId} no existe.");
+        if (!$strategicOutput) throw new \RuntimeException("Strategic output with id {$strategicOutputId} does not exist");
 
         $strategicOutput->addMeasure($measure);
     }
@@ -86,6 +85,6 @@ class StrategicOutputService{
         $strategicOutputId = $this->getStrategicOutputById($strategicOutputId);
         $removed = $strategicOutputId->removeMeasure($measure->getName());
 
-        if (!$removed) throw new \RuntimeException("El indicador especificado no existe en esta medida");
+        if (!$removed) throw new \RuntimeException("The specified indicator does not exist in this measure");
     }
 }

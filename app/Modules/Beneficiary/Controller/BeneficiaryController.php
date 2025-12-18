@@ -20,16 +20,13 @@ class BeneficiaryController extends Controller
         $this->beneficiaryService = $beneficiaryService;
     }
 
-    /**
-     * Listar todos los beneficiarios
-     */
     public function index(): JsonResponse
     {
         try {
             $beneficiaries = $this->beneficiaryService->getAllBeneficiaries();
             
             return ApiResponse::success(
-                'Lista de beneficiarios obtenida exitosamente',
+                'Beneficiary list successfully obtained',
                 200,
                 [
                     'beneficiaries' => BeneficiaryResource::collection($beneficiaries),
@@ -39,13 +36,10 @@ class BeneficiaryController extends Controller
         } catch (RuntimeException $e) {
             return ApiResponse::error($e->getMessage(), 500);
         } catch (\Exception $e) {
-            return ApiResponse::error('Error interno del servidor', 500);
+            return ApiResponse::error('Internal server error', 500);
         }
     }
 
-    /**
-     * Crear un nuevo beneficiario
-     */
     public function store(BeneficiaryRequest $request): JsonResponse
     {
         try {
@@ -54,7 +48,7 @@ class BeneficiaryController extends Controller
             $beneficiary = $this->beneficiaryService->createBeneficiary($validated['name']);
 
             return ApiResponse::created(
-                'Beneficiario creado exitosamente',
+                'Beneficiary created successfully',
                 new BeneficiaryResource($beneficiary)
             );
         } catch (RuntimeException $e) {
@@ -62,29 +56,23 @@ class BeneficiaryController extends Controller
         }
     }
 
-    /**
-     * Mostrar un beneficiario específico
-     */
     public function show(int $id): JsonResponse
     {
         try {
             $beneficiary = $this->beneficiaryService->getBeneficiaryById($id);
 
             return ApiResponse::success(
-                'Beneficiario encontrado',
+                'Beneficiary found',
                 200,
                 new BeneficiaryResource($beneficiary)
             );
         } catch (RuntimeException $e) {
-            return ApiResponse::notFound('Beneficiario');
+            return ApiResponse::notFound('Beneficiary');
         } catch (\Exception $e) {
-            return ApiResponse::error('Error interno del servidor', 500);
+            return ApiResponse::error('Internal server error', 500);
         }
     }
 
-    /**
-     * Actualizar un beneficiario existente
-     */
     public function update(BeneficiaryRequest $request, int $id): JsonResponse
     {
         try {
@@ -93,24 +81,19 @@ class BeneficiaryController extends Controller
             $beneficiary = $this->beneficiaryService->updateBeneficiary($id, $validated['name']);
 
             return ApiResponse::success(
-                'Beneficiario actualizado exitosamente',
+                'Beneficiary uploaded successfully',
                 200,
                 new BeneficiaryResource($beneficiary)
             );
 
         } catch (RuntimeException $e) {
-            // Si el mensaje indica que no se encontró, retornar 404
-            if (str_contains($e->getMessage(), 'no encontrado')) {
-                return ApiResponse::notFound('Beneficiario');
+            if (str_contains($e->getMessage(), 'Not found')) {
+                return ApiResponse::notFound('Beneficiary');
             }
-            // Otros errores de negocio retornan 400
             return ApiResponse::error($e->getMessage(), 400);
         }
     }
 
-    /**
-     * Buscar beneficiario por nombre
-     */
     public function search(Request $request): JsonResponse
     {
         try {
@@ -121,17 +104,17 @@ class BeneficiaryController extends Controller
             $beneficiary = $this->beneficiaryService->findBeneficiaryByName($request->input('name'));
 
             return ApiResponse::success(
-                'Beneficiario encontrado',
+                'Beneficiary found',
                 200,
                 new BeneficiaryResource($beneficiary)
             );
 
         } catch (RuntimeException $e) {
-            return ApiResponse::notFound('Beneficiario');
+            return ApiResponse::notFound('Beneficiary');
         } catch (\Illuminate\Validation\ValidationException $e) {
             return ApiResponse::validationError($e->errors());
         } catch (\Exception $e) {
-            return ApiResponse::error('Error interno del servidor', 500);
+            return ApiResponse::error('Internal server error', 500);
         }
     }
 }

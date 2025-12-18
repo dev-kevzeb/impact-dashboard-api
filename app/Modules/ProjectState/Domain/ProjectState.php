@@ -13,11 +13,11 @@ class ProjectState extends Model
 
     protected $table = 'project_state';
     protected $fillable = ['state'];
-    // Constantes de mensajes de error
-    public static $ERROR_STATE_INVALID_TYPE = 'El estado del proyecto no es valido';
-    public static $ERROR_STATE_EMPTY = 'el nombre del estado del proyecto no debe ir vacio';  
-    public static $ERROR_STATE_MIN_LENGTH = 'el estado del proyecto debe tener al menos 3 caracteres';
-    public static $ERROR_STATE_MAX_LENGTH = 'el nombre del estado del proyecto no debe exceder 100 caracteres';
+
+    public static $ERROR_STATE_INVALID_TYPE = 'Project state is invalid';
+    public static $ERROR_STATE_EMPTY = 'The project state name should not be empty';  
+    public static $ERROR_STATE_MIN_LENGTH = 'Project state must be at least 3 characters';
+    public static $ERROR_STATE_MAX_LENGTH = 'project state name must not exceed 100 characters';
     
     public static function newFactory()
     {

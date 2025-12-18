@@ -20,9 +20,6 @@ class CountryController extends Controller
         $this->countryService = $countryService;
     }
 
-    /**
-     * Listar todos los países
-     */
     public function index(Request $request): JsonResponse
     {
         try {
@@ -44,33 +41,28 @@ class CountryController extends Controller
         } catch (RuntimeException $e) {
             return ApiResponse::error($e->getMessage(), 500);
         } catch (\Exception $e) {
-            return ApiResponse::error('Error interno del servidor', 500);
+            return ApiResponse::error('Internal server error', 500);
         }
     }
 
-    /**
-     * Mostrar un país específico
-     */
+
     public function show(int $id): JsonResponse
     {
         try {
             $country = $this->countryService->getCountryById($id);
 
             return ApiResponse::success(
-                'País encontrado',
+                'Country found',
                 200,
                 new CountryResource($country)
             );
         } catch (RuntimeException $e) {
-            return ApiResponse::notFound('País');
+            return ApiResponse::notFound('Country');
         } catch (\Exception $e) {
-            return ApiResponse::error('Error interno del servidor', 500);
+            return ApiResponse::error('Internal server error', 500);
         }
     }
 
-    /**
-     * Crear un nuevo país
-     */
     public function store(CountryRequest $request): JsonResponse
     {
         try {
@@ -79,7 +71,7 @@ class CountryController extends Controller
             $country = $this->countryService->createCountry($validated['name'], $validated['currency']);
 
             return ApiResponse::created(
-                'Country successfully created',
+                'Country created successfully',
                 new CountryResource($country)
             );
 
@@ -90,9 +82,6 @@ class CountryController extends Controller
         }
     }
 
-    /**
-     * Actualizar un país existente
-     */
     public function update(CountryRequest $request, int $id): JsonResponse
     {
         try {
@@ -105,7 +94,7 @@ class CountryController extends Controller
             );
 
             return ApiResponse::success(
-                'Country successfully uploaded',
+                'Country uploaded successfully',
                 200,
                 new CountryResource($country)
             );
@@ -117,9 +106,6 @@ class CountryController extends Controller
         }
     }
 
-    /**
-     * Buscar país por nombre
-     */
     public function search(Request $request): JsonResponse
     {
         try {
@@ -130,17 +116,17 @@ class CountryController extends Controller
             $country = $this->countryService->findCountryByName($request->input('name'));
 
             return ApiResponse::success(
-                'País encontrado',
+                'Country found',
                 200,
                 new CountryResource($country)
             );
 
         } catch (RuntimeException $e) {
-            return ApiResponse::notFound('País');
+            return ApiResponse::notFound('Country');
         } catch (\Illuminate\Validation\ValidationException $e) {
             return ApiResponse::validationError($e->errors());
         } catch (\Exception $e) {
-            return ApiResponse::error('Error interno del servidor', 500);
+            return ApiResponse::error('Internal server error', 500);
         }
     }
 }

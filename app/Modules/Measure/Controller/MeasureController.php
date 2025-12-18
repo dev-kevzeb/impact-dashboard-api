@@ -36,7 +36,7 @@ class MeasureController extends Controller
             $measure = $this->measureService->getAllMeasures();
 
             return ApiResponse::success(
-                'Lista de medidas obtenida exitosamente',
+                'List of measure successfully obtained',
                 200,
                 [
                     'measures' => MeasureResource::collection($measure),
@@ -46,7 +46,7 @@ class MeasureController extends Controller
         } catch (RuntimeException $e) {
             return ApiResponse::error($e->getMessage(), 500);
         } catch (\Exception $e) {
-            return ApiResponse::error('Error interno del servidor', 500);
+            return ApiResponse::error('Internal Server Error', 500);
         }
     }
 
@@ -56,7 +56,7 @@ class MeasureController extends Controller
             $measures = $this->measureService->getMeasuresByStrategicOutputId($id);
 
             return ApiResponse::success(
-                'Medidas obtenidas correctamente',
+                'Measure obtained correctly',
                 200,
                 MeasureResource::collection($measures)
             );
@@ -64,7 +64,7 @@ class MeasureController extends Controller
         } catch (RuntimeException $e) {
             return ApiResponse::error($e->getMessage(), 400);
         } catch (\Exception $e) {
-            return ApiResponse::error('Error interno del servidor', 500);
+            return ApiResponse::error('Internal Server Error', 500);
         }
     }
 
@@ -74,14 +74,14 @@ class MeasureController extends Controller
             $measure = $this->measureService->getMeasureById($id);
 
             return ApiResponse::success(
-                'Medida encontrada',
+                'Measure found',
                 200,
                 new MeasureResource($measure)
             );
         } catch (RuntimeException $e) {
-            return ApiResponse::notFound('Medida');
+            return ApiResponse::notFound('Measure');
         } catch (\Exception $e) {
-            return ApiResponse::error('Error interno del servidor', 500);
+            return ApiResponse::error('Internal server error', 500);
         }
     }
 
@@ -93,14 +93,14 @@ class MeasureController extends Controller
             $measure->load('indicators');
 
             return ApiResponse::success(
-                'Medida con sus indicadores recuperada exitosamente',
+                'Measure with its indicators successfully recovered',
                 200,
                 new MeasureResource($measure)
             );
         } catch (RuntimeException $e) {
-            return ApiResponse::notFound('Medida');
+            return ApiResponse::notFound('Measure');
         } catch (\Exception $e) {
-            return ApiResponse::error('Error interno del servidor', 500);
+            return ApiResponse::error('Internal server error', 500);
         }
     }
 
@@ -111,14 +111,14 @@ class MeasureController extends Controller
             $measure->load('indicators');
 
             return ApiResponse::success(
-                'Lista de medidas con sus indicadores recuperada exitosamente',
+                'List of measures with their indicators successfully recovered',
                 200,
                 new MeasureResource($measure)
             );
         } catch (RuntimeException $e) {
-            return ApiResponse::notFound('Medida');
+            return ApiResponse::notFound('Measure');
         } catch (\Exception $e) {
-            return ApiResponse::error('Error interno del servidor', 500);
+            return ApiResponse::error('Internal server Error', 500);
         }
     }
 
@@ -134,14 +134,14 @@ class MeasureController extends Controller
 
 
             return ApiResponse::created(
-                'Medida creada exitosamente',
+                'Measure created successfully',
                 new MeasureResource($measure)
             );
 
         } catch (RuntimeException $e) {
-            return ApiResponse::notFound('Medida');
+            return ApiResponse::notFound('Measure');
         } catch (\Exception $e) {
-            return ApiResponse::error('Error interno del servidor', 500);
+            return ApiResponse::error('Internal server error', 500);
         }
     }
 
@@ -155,7 +155,7 @@ class MeasureController extends Controller
             $measure = $this->measureService->updateMeasure($id, $validated['name'], $validated['strategic_output_id']);
 
             return ApiResponse::success(
-                'Medida actualziada exitosamente',
+                'Measure uploaded successfully',
                 200,
                 new MeasureResource($measure)
             );
@@ -173,7 +173,7 @@ class MeasureController extends Controller
             $indicator = $this->measureService->getIndicatorOfMeasureByName($id, $indicatorName);
 
             return ApiResponse::success(
-                'Indicador encontrado exitosamente',
+                'Indicator found successfully',
                 200,
                 ['indicator' => $indicator]
             );
@@ -203,7 +203,7 @@ class MeasureController extends Controller
             $measure->load('indicators');
 
             return ApiResponse::success(
-                'Indicador agregado exitosamente a la medida',
+                'Indicator successfully added to the measure',
                 200,
                 new MeasureResource($measure)
             );
@@ -228,7 +228,7 @@ class MeasureController extends Controller
         $measure = $this->measureService->getMeasureById($request->input('measure_id'));
 
         return ApiResponse::success(
-            'Indicador removido exitosamente',
+            'Indicator successfully removed',
             200,
             new MeasureResource($measure)
         );
@@ -244,7 +244,7 @@ class MeasureController extends Controller
             $measure = $this->measureService->findMeasureByName($request->input('name'));
 
             return ApiResponse::success(
-                'Medida encontrada',
+                'Measure found',
                 200,
                 ['measure' => new MeasureResource($measure)]
             );

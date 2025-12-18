@@ -20,16 +20,13 @@ class ContactController extends Controller
         $this->contactService = $contactService;
     }
 
-    /**
-     * Listar todos los contactos
-     */
     public function index(): JsonResponse
     {
         try {
             $contacts = $this->contactService->getAllContacts();
             
             return ApiResponse::success(
-                'Lista de contactos obtenida exitosamente',
+                'Contact list successfully obtained',
                 200,
                 [
                     'contacts' => ContactResource::collection($contacts),
@@ -39,33 +36,27 @@ class ContactController extends Controller
         } catch (RuntimeException $e) {
             return ApiResponse::error($e->getMessage(), 500);
         } catch (\Exception $e) {
-            return ApiResponse::error('Error interno del servidor', 500);
+            return ApiResponse::error('Internal server error', 500);
         }
     }
 
-    /**
-     * Mostrar un contacto específico
-     */
     public function show(int $id): JsonResponse
     {
         try {
             $contact = $this->contactService->getContactById($id);
 
             return ApiResponse::success(
-                'Contacto encontrado',
+                'Contact found',
                 200,
                 new ContactResource($contact)
             );
         } catch (RuntimeException $e) {
             return ApiResponse::notFound('Contact');
         } catch (\Exception $e) {
-            return ApiResponse::error('Error interno del servidor', 500);
+            return ApiResponse::error('Internal server error', 500);
         }
     }
 
-    /**
-     * Crear un nuevo contacto
-     */
     public function store(ContactRequest $request): JsonResponse
     {
         try {
@@ -79,7 +70,7 @@ class ContactController extends Controller
             );
 
             return ApiResponse::created(
-                'Contacto creado exitosamente',
+                'Contact created successfully',
                 new ContactResource($contact)
             );
         } catch (ValidationException $e) {
@@ -87,13 +78,10 @@ class ContactController extends Controller
         } catch (RuntimeException $e) {
             return ApiResponse::error($e->getMessage(), 400);
         } catch (\Exception $e) {
-            return ApiResponse::error('Error interno del servidor', 500);
+            return ApiResponse::error('Internal server error', 500);
         }
     }
 
-    /**
-     * Actualizar un contacto existente
-     */
     public function update(ContactRequest $request, int $id): JsonResponse
     {
         try {
@@ -108,25 +96,22 @@ class ContactController extends Controller
             );
 
             return ApiResponse::success(
-                'Contacto actualizado exitosamente',
+                'Contact uploaded successfully',
                 200,
                 new ContactResource($contact)
             );
         } catch (ValidationException $e) {
             return ApiResponse::validationError($e->errors());
         } catch (RuntimeException $e) {
-            if (stripos($e->getMessage(), 'no encontrado') !== false) {
+            if (stripos($e->getMessage(), 'not found') !== false) {
                 return ApiResponse::notFound('Contact');
             }
             return ApiResponse::error($e->getMessage(), 400);
         } catch (\Exception $e) {
-            return ApiResponse::error('Error interno del servidor', 500);
+            return ApiResponse::error('Internal server error', 500);
         }
     }
 
-    /**
-     * Buscar contacto por email
-     */
     public function search(Request $request): JsonResponse
     {
         try {
@@ -137,7 +122,7 @@ class ContactController extends Controller
             $contact = $this->contactService->findContactByEmail($request->input('email'));
 
             return ApiResponse::success(
-                'Contacto encontrado',
+                'Contact found',
                 200,
                 new ContactResource($contact)
             );
@@ -146,7 +131,7 @@ class ContactController extends Controller
         } catch (RuntimeException $e) {
             return ApiResponse::notFound('Contact');
         } catch (\Exception $e) {
-            return ApiResponse::error('Error interno del servidor', 500);
+            return ApiResponse::error('Internal server error', 500);
         }
     }
 }
