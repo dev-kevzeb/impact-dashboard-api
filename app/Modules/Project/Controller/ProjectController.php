@@ -144,7 +144,7 @@ class ProjectController extends Controller
             $projects->load("donors");
 
             return ApiResponse::success(
-                'Lista de proyectos obtenida exitosamente',
+                'Project list successfully obtained',
                 200,
                 [
                     'projects' => ProjectResource::collection($projects),
@@ -154,7 +154,7 @@ class ProjectController extends Controller
         } catch (\RuntimeException $e) {
             return ApiResponse::error($e->getMessage(), 500);
         } catch (\Exception $e) {
-            return ApiResponse::error('Error interno del servidor', 500);
+            return ApiResponse::error('Internal server error', 500);
         }
     }
 
@@ -200,14 +200,14 @@ class ProjectController extends Controller
             $project = $this->projectService->findProjectById($id);
 
             return ApiResponse::success(
-                'Proyecto encontrado',
+                'Project Found',
                 200,
                 new ProjectResource($project)
             );
         } catch (\RuntimeException $e) {
-            return ApiResponse::notFound('Proyecto');
+            return ApiResponse::notFound('Project');
         } catch (\Exception $e) {
-            return ApiResponse::error('Error interno del servidor', 500);
+            return ApiResponse::error('Internal server error', 500);
         }
     }
 
@@ -288,7 +288,7 @@ class ProjectController extends Controller
             );
 
             return ApiResponse::created(
-                'Proyecto creado exitosamente',
+                'Project created successfully',
                 new ProjectResource($project)
             );
 
@@ -297,7 +297,7 @@ class ProjectController extends Controller
             return ApiResponse::error($e->getMessage(), 400);
         } catch (\Exception $e) {
             dd($e);
-            return ApiResponse::error("Error interno del servidor", 500);
+            return ApiResponse::error("Internal server error", 500);
         }
     }
 
@@ -391,7 +391,7 @@ class ProjectController extends Controller
             );
 
             return ApiResponse::success(
-                'Proyecto actualizado exitosamente',
+                'Project uploaded successfully',
                 200,
                 new ProjectResource($project)
             );
@@ -399,7 +399,7 @@ class ProjectController extends Controller
         } catch (\RuntimeException $e) {
             return ApiResponse::error($e->getMessage(), 400);
         } catch (\Exception $e) {
-            return ApiResponse::error("Error interno del servidor", 500);
+            return ApiResponse::error("Internal server error", 500);
         }
     }
 
@@ -466,7 +466,7 @@ class ProjectController extends Controller
             $project = $this->projectService->getProjectByName($request->input('name'));
 
             return ApiResponse::success(
-                'Proyecto encontrado',
+                'Project found',
                 200,
                 new ProjectResource($project)
             );
@@ -475,7 +475,7 @@ class ProjectController extends Controller
         } catch (\Illuminate\Validation\ValidationException $e) {
             return ApiResponse::validationError($e->errors());
         } catch (\Exception $e) {
-            return ApiResponse::error('Error interno del servidor', 500);
+            return ApiResponse::error('Internal server error', 500);
         }
     }
 }

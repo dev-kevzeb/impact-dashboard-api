@@ -20,7 +20,7 @@ class CurrencyService
         $normalizedCode = strtoupper(trim($code));
         
         if ($this->currencyRepository->exists('code', $normalizedCode)) {
-            throw new RuntimeException("Ya existe una moneda con el código: {$normalizedCode}");
+            throw new RuntimeException("There is already a coin with the code: {$normalizedCode}");
         }
 
         $currency = Currency::at($code);
@@ -54,10 +54,10 @@ class CurrencyService
         try {
             $existingCurrency = $this->currencyRepository->findBy('code', $normalizedCode);
             if ($existingCurrency && $existingCurrency->id !== $id) {
-                throw new RuntimeException("Ya existe otra moneda con el código: {$normalizedCode}");
+                throw new RuntimeException("There is already another currency with the code: {$normalizedCode}");
             }
         } catch (RuntimeException $e) {
-            if (!str_contains($e->getMessage(), 'no encontrado')) {
+            if (!str_contains($e->getMessage(), 'Not found')) {
                 throw $e; 
             }
         }

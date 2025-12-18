@@ -92,9 +92,10 @@ class CountryController extends Controller
         } catch (RuntimeException $e) {
             return ApiResponse::error($e->getMessage(), 500);
         } catch (\Exception $e) {
-            return ApiResponse::error('Error interno del servidor', 500);
+            return ApiResponse::error('Internal server error', 500);
         }
     }
+
 
     /**
      * @OA\Get(
@@ -138,14 +139,14 @@ class CountryController extends Controller
             $country = $this->countryService->getCountryById($id);
 
             return ApiResponse::success(
-                'País encontrado',
+                'Country found',
                 200,
                 new CountryResource($country)
             );
         } catch (RuntimeException $e) {
-            return ApiResponse::notFound('País');
+            return ApiResponse::notFound('Country');
         } catch (\Exception $e) {
-            return ApiResponse::error('Error interno del servidor', 500);
+            return ApiResponse::error('Internal server error', 500);
         }
     }
 
@@ -219,7 +220,7 @@ class CountryController extends Controller
             $country = $this->countryService->createCountry($validated['name'], $validated['currency']);
 
             return ApiResponse::created(
-                'Country successfully created',
+                'Country created successfully',
                 new CountryResource($country)
             );
 
@@ -314,7 +315,7 @@ class CountryController extends Controller
             );
 
             return ApiResponse::success(
-                'Country successfully uploaded',
+                'Country uploaded successfully',
                 200,
                 new CountryResource($country)
             );
@@ -393,17 +394,17 @@ class CountryController extends Controller
             $country = $this->countryService->findCountryByName($request->input('name'));
 
             return ApiResponse::success(
-                'País encontrado',
+                'Country found',
                 200,
                 new CountryResource($country)
             );
 
         } catch (RuntimeException $e) {
-            return ApiResponse::notFound('País');
+            return ApiResponse::notFound('Country');
         } catch (\Illuminate\Validation\ValidationException $e) {
             return ApiResponse::validationError($e->errors());
         } catch (\Exception $e) {
-            return ApiResponse::error('Error interno del servidor', 500);
+            return ApiResponse::error('Internal server error', 500);
         }
     }
 }

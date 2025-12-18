@@ -17,9 +17,9 @@ class CountryKpa extends Model
     protected $appends = ['strategic_outputs_count'];
     public $timestamps = false;
 
-    public static $ERROR_STRATEGIC_OUTPUT_DUPLICATED = 'no se permiten medidas duplicadas en el resultado estratégico';
-    public static $ERROR_STRATEGIC_OUTPUT_INVALID_INSTANCE = 'la medida debe ser una instancia de Measure';
-    public static $ERROR_STRATEGIC_OUTPUT_NOT_FOUND = 'la medida especificada no existe en este resultado estratégico';
+    public static $ERROR_STRATEGIC_OUTPUT_DUPLICATED = 'Duplicate measures are not allowed in the strategic output';
+    public static $ERROR_STRATEGIC_OUTPUT_INVALID_INSTANCE = 'The measure must be an instance of Measure';
+    public static $ERROR_STRATEGIC_OUTPUT_NOT_FOUND = 'The specified measure does not exist in this strategic output';
 
     public static function newFactory()
     {
@@ -36,12 +36,12 @@ class CountryKpa extends Model
         return $this->belongsTo(Kpa::class, 'id_kpa');
     }
 
-    public function addStrategicOutput($strageticOutput)
+    public function addStrategicOutput($strategicOutput)
     {
-        if(!($strageticOutput instanceof StrategicOutput)) throw new \RuntimeException(self::$ERROR_STRATEGIC_OUTPUT_INVALID_INSTANCE);
-        if($this->hasStrategicOutputWithName($strageticOutput->getName())) throw new \RuntimeException(self::$ERROR_STRATEGIC_OUTPUT_DUPLICATED);
+        if(!($strategicOutput instanceof StrategicOutput)) throw new \RuntimeException(self::$ERROR_STRATEGIC_OUTPUT_INVALID_INSTANCE);
+        if($this->hasStrategicOutputWithName($strategicOutput->getName())) throw new \RuntimeException(self::$ERROR_STRATEGIC_OUTPUT_DUPLICATED);
 
-        $this->strategicOutputs()->save($strageticOutput);
+        $this->strategicOutputs()->save($strategicOutput);
     }
 
     public function removeStrategicOutput(string $strategicOutputName): bool

@@ -13,13 +13,15 @@ class Donor extends Model
     
     protected $table = 'donor';
     protected $fillable = ['name', 'contribution', 'project_id'];
-    
-    public static $ERROR_NAME_EMPTY = 'el nombre del donante no debe ir vacio';
-    public static $ERROR_NAME_MIN_LENGTH = 'el nombre del donante debe tener al menos 2 caracteres';
-    public static $ERROR_CONTRIBUTION_NOT_NUMERIC = 'la contribución debe ser un número';
-    public static $ERROR_CONTRIBUTION_OUT_OF_RANGE = 'la contribución debe estar entre 0 y 100';
-    public static $ERROR_PROJECT_INVALID = 'el proyecto asociado es inválido';
-    
+
+    public static $ERROR_NAME_EMPTY = 'The donor name must not be empty';
+    public static $ERROR_NAME_MIN_LENGTH = 'The donor name must have at least 2 characters';
+
+    public static $ERROR_CONTRIBUTION_NOT_NUMERIC = 'The contribution must be a number';
+    public static $ERROR_CONTRIBUTION_OUT_OF_RANGE = 'The contribution must be between 0 and 100';
+
+    public static $ERROR_PROJECT_INVALID = 'The associated project is invalid';
+
 
     protected static function newFactory()
     {

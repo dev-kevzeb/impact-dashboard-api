@@ -17,13 +17,13 @@ class StrategicOutput extends Model
     protected $fillable = ['name', 'id_ck'];
     protected $appends = ['measures_count'];
 
-    // Constantes de mensajes de error
-    public static $ERROR_NAME_EMPTY = 'el nombre del resultado estratégico no debe ir vacío';
-    public static $ERROR_NAME_MIN_LENGTH = 'el nombre del resultado estratégico debe tener al menos 3 caracteres';
-    public static $ERROR_NAME_MAX_LENGTH = 'el nombre del resultado estratégico no debe exceder 200 caracteres';
-    public static $ERROR_MEASURES_DUPLICATED = 'no se permiten medidas duplicadas en el resultado estratégico';
-    public static $ERROR_MEASURE_INVALID_INSTANCE = 'la medida debe ser una instancia de Measure';
-    public static $ERROR_MEASURE_NOT_FOUND = 'la medida especificada no existe en este resultado estratégico';
+    public static $ERROR_NAME_EMPTY = 'The strategic output name must not be empty';
+    public static $ERROR_NAME_MIN_LENGTH = 'The strategic output name must have at least 3 characters';
+    public static $ERROR_NAME_MAX_LENGTH = 'The strategic output name must not exceed 200 characters';
+
+    public static $ERROR_MEASURES_DUPLICATED = 'Duplicate measures are not allowed in the strategic output';
+    public static $ERROR_MEASURE_INVALID_INSTANCE = 'The measure must be an instance of Measure';
+    public static $ERROR_MEASURE_NOT_FOUND = 'The specified measure does not exist in this strategic output';
 
     public static function newFactory()
     {

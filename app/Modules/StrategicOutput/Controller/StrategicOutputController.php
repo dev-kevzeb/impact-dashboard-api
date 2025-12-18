@@ -102,7 +102,7 @@ class StrategicOutputController extends Controller
             $strategicOutputs->load(['countryKpa.country', 'countryKpa.kpa', 'measures']);
 
             return ApiResponse::success(
-                'Lista de resultados estratégicos obtenida exitosamente',
+                'List of strategic outputs successfully obtained',
                 200,
                 [
                     'strategic_outputs' => StrategicOutputResource::collection($strategicOutputs),
@@ -112,7 +112,7 @@ class StrategicOutputController extends Controller
         } catch (RuntimeException $e) {
             return ApiResponse::error($e->getMessage(), 500);
         } catch (\Exception $e) {
-            return ApiResponse::error('Error interno del servidor', 500);
+            return ApiResponse::error('Internal server error', 500);
         }
     }
 
@@ -160,14 +160,14 @@ class StrategicOutputController extends Controller
             $strategicOutput->load(['measures']);
             
             return ApiResponse::success(
-                'Resultado estratégico encontrado',
+                'Strategic Output found',
                 200,
                 new StrategicOutputResource($strategicOutput)
             );
         } catch (RuntimeException $e) {
-            return ApiResponse::notFound('Resultado estratégico');
+            return ApiResponse::notFound('Strategic output');
         } catch (\Exception $e) {
-            return ApiResponse::error('Error interno del servidor', 500);
+            return ApiResponse::error('Internal server error', 500);
         }
     }
 
@@ -177,12 +177,12 @@ class StrategicOutputController extends Controller
             $strategicOutputs = $this->strategicOutputService->getByCountryKpaId($id);
 
             return ApiResponse::success(
-                'Resultados estratégicos para CountryKpa obtenidos correctamente',
+                'Strategic outputs for CountryKpa obtained correctly',
                 200,
                 StrategicOutputResource::collection($strategicOutputs)
             );
         } catch (\Exception $e) {
-            return ApiResponse::error('Error interno del servidor', 500);
+            return ApiResponse::error('Internal server error', 500);statusCode: 
         }
     }
 
@@ -200,13 +200,13 @@ class StrategicOutputController extends Controller
             $strategicOutput->load(['countryKpa.country', 'countryKpa.kpa', 'measures']);
             
             return ApiResponse::created(
-                'Resultado estratégico creado exitosamente',
+                'Successfully created strategic result',
                 new StrategicOutputResource($strategicOutput)
             );
         } catch (RuntimeException $e) {
             return ApiResponse::error($e->getMessage(), 400);
         } catch (\Exception $e) {
-            return ApiResponse::error('Error interno del servidor', 500);
+            return ApiResponse::error('Internal server error', 500);
         }
     }
 
@@ -275,14 +275,14 @@ class StrategicOutputController extends Controller
             $strategicOutput->load(['countryKpa.country', 'countryKpa.kpa', 'measures']);
             
             return ApiResponse::success(
-                'Resultado estratégico actualizado exitosamente',
+                'Strategic Output uploaded successfully',
                 200,
                 new StrategicOutputResource($strategicOutput)
             );
         } catch (RuntimeException $e) {
             return ApiResponse::error($e->getMessage(), 400);
         } catch (\Exception $e) {
-            return ApiResponse::error('Error interno del servidor', 500);
+            return ApiResponse::error('Internal server error', 500);
         }
     }
 
@@ -342,7 +342,7 @@ class StrategicOutputController extends Controller
             $strategicOutput->load('measures');
 
             return ApiResponse::success(
-                'Medida agregada exitosamente al resultado estratégico',
+                'Measure successfully added to strategic output',
                 200,
                 $strategicOutput
             );
@@ -406,14 +406,14 @@ class StrategicOutputController extends Controller
                 ->getStrategicOutputById($request->input('strategic_output_id'));
 
             $measure = $this->measureService->getMeasureById($request->input('measure_id'));
-            if ($measure->strategic_output_id !== $strategicOutput->id) throw new RuntimeException('La medida no pertenece a este resultado estratégico');
+            if ($measure->strategic_output_id !== $strategicOutput->id) throw new RuntimeException('The measure does not belong to this strategic output');
 
             $measure->delete();
 
             $strategicOutput->load('measures');
 
             return ApiResponse::success(
-                'Medida removida exitosamente del resultado estratégico',
+                'Measure successfully removed from strategic output',
                 200,
                 $strategicOutput
             );
@@ -486,7 +486,7 @@ class StrategicOutputController extends Controller
             $strategicOutput->load(['countryKpa.country', 'countryKpa.kpa', 'measures']);
 
             return ApiResponse::success(
-                'Resultado estratégico encontrado',
+                'Strategic Output found',
                 200,
                 new StrategicOutputResource($strategicOutput)
             );

@@ -13,8 +13,9 @@ class Beneficiary extends Model
     protected $table = 'beneficiary';
     protected $fillable = ['name'];
     
-    public static $ERROR_NAME_EMPTY = 'el nombre del beneficiario no debe ir vacio';
-    public static $ERROR_NAME_MIN_LENGTH = 'el nombre del beneficiario debe tener al menos 2 caracteres';
+    public static $ERROR_NAME_EMPTY = 'The beneficiary name must not be empty';
+    public static $ERROR_NAME_MIN_LENGTH = 'The beneficiary name must have at least 2 characters';
+
     
     /**
      * Create a new factory instance for the model.

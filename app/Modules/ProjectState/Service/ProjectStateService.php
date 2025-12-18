@@ -18,9 +18,8 @@ class ProjectStateService {
 
     public function createProjectState(string $state): ProjectState
     {
-        // Validar duplicados
-        if ($this->projectStateRepository->exists('state', trim($state))) {
-            throw new \RuntimeException("Ya existe un estado del proyecto con el nombre: {$state}");
+        if($this->projectStateRepository->exists('state', trim($state))){
+            throw new \RuntimeException("The project state already exists: {$state}");
         }
 
         $projectState = ProjectState::at($state);
@@ -30,25 +29,25 @@ class ProjectStateService {
 
     public function getProjectStateById(int $id): ProjectState
     {   
+        $projectState = $this->projectStateRepository->findById($id);
+        if(!$projectState) throw new \RuntimeException("The project status with id {$id} does not exist.");
         return $this->projectStateRepository->findById($id);
     }
 
-    public function updateProjectState(int $id, string $state): ProjectState
+   public function updateProjectState(int $id, string $state): ProjectState
     {
         $projectState = $this->getProjectStateById($id);
-        
-        // Validar duplicados (excepto el mismo registro)
-        $existing = $this->projectStateRepository->exists('state', trim($state));
-        if ($existing && strtolower(trim($projectState->state)) !== strtolower(trim($state))) {
-            throw new \RuntimeException("Ya existe un estado del proyecto con el nombre: {$state}");
+        if(!$projectState){
+            throw new \RuntimeException("The project status with id {$id} does not exist.");
         }
-        
-        $updated = ProjectState::at($state);
-        $projectState->state = $updated->state;
+        $existing = $this->projectStateRepository->findByState(trim($state));
+        if($existing && $existing->id !== $id){
+            throw new \RuntimeException("The project state already exists: {$state}");
+        }
+        $projectState->update(['state' => $state]);
         $this->projectStateRepository->save($projectState);
-        
         return $projectState;
-    }
+    }   
 
     public function findProjectStateByName(string $state): ProjectState
     {

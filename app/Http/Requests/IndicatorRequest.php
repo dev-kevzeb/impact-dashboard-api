@@ -30,21 +30,21 @@ class IndicatorRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'name.required' => 'el nombre del indicador no debe ir vacio',
-            'name.min' => 'el nombre del indicador debe tener al menos 2 caracteres',
-            'name.max' => 'el nombre del indicador no debe exceder 200 caracteres',
+            'name.required' => 'The indicator name must not be empty.',
+            'name.min' => 'The indicator name must be at least 2 characters long.',
+            'name.max' => 'The indicator name must not exceed 200 characters.',
 
-            'target.required' => 'el target es obligatorio',
-            'target.numeric' => 'el target debe ser un número',
-            'target.gt' => 'el target del indicador debe ser un número positivo',
+            'target.required' => 'The target is required.',
+            'target.numeric' => 'The target must be a number.',
+            'target.gt' => 'The indicator target must be a positive number.',
 
-            'type_id.required' => 'el tipo de indicador es obligatorio',
-            'type_id.integer' => 'el tipo de indicador debe ser un ID numérico',
-            'type_id.exists' => 'el tipo de indicador especificado no existe',
+            'type_id.required' => 'The indicator type is required.',
+            'type_id.integer' => 'The indicator type must be a numeric ID.',
+            'type_id.exists' => 'The specified indicator type does not exist.',
 
-            'measure_id.required' => 'la medida es obligatoria',
-            'measure_id.integer' => 'la medida debe ser un ID numérico',
-            'measure_id.exists' => 'la medida especificada no existe',
+            'measure_id.required' => 'The measure is required.',
+            'measure_id.integer' => 'The measure must be a numeric ID.',
+            'measure_id.exists' => 'The specified measure does not exist.',
         ];
     }
 

@@ -88,7 +88,7 @@ class DonorController extends Controller
             $donors = $this->donorService->getAllDonors();
             
             return ApiResponse::success(
-                'Lista de donantes obtenida exitosamente',
+                'Donors list successfully obtained',
                 200,
                 [
                     'donors' => DonorResource::collection($donors),
@@ -98,7 +98,7 @@ class DonorController extends Controller
         } catch (RuntimeException $e) {
             return ApiResponse::error($e->getMessage(), 500);
         } catch (\Exception $e) {
-            return ApiResponse::error('Error interno del servidor', 500);
+            return ApiResponse::error('Internal server error', 500);
         }
     }
 
@@ -144,14 +144,14 @@ class DonorController extends Controller
             $donor = $this->donorService->getDonorById($id);
 
             return ApiResponse::success(
-                'Donante encontrado',
+                'Donor found',
                 200,
                 new DonorResource($donor)
             );
         } catch (RuntimeException $e) {
-            return ApiResponse::notFound('Donante');
+            return ApiResponse::notFound('Donor');
         } catch (\Exception $e) {
-            return ApiResponse::error('Error interno del servidor', 500);
+            return ApiResponse::error('Internal server error', 500);
         }
     }
 
@@ -247,7 +247,7 @@ class DonorController extends Controller
             $donor = $this->donorService->createDonor($validated['name'], $validated['contribution'], $validated['project_id']);
 
             return ApiResponse::created(
-                'Donante creado exitosamente',
+                'Donor created successfully',
                 new DonorResource($donor)
             );
         } catch (RuntimeException $e) {
@@ -356,14 +356,13 @@ class DonorController extends Controller
             $donor = $this->donorService->updateDonor($id, $validated['name'], $validated['contribution'], $validated['project_id']);
 
             return ApiResponse::success(
-                'Donante actualizado exitosamente',
+                'Donor uploaded successfully',
                 200,
                 new DonorResource($donor)
             );
         } catch (RuntimeException $e) {
-            // Si el error es "no encontrado", retornar 404
-            if (str_contains($e->getMessage(), 'no encontrado')) {
-                return ApiResponse::notFound('Donante');
+            if (str_contains($e->getMessage(), 'Not Found')) {
+                return ApiResponse::notFound('Donor');
             }
             // Si el error es de duplicado, retornar como error de validación (422)
             if (str_contains($e->getMessage(), 'Ya existe')) {
@@ -436,17 +435,17 @@ class DonorController extends Controller
             $donor = $this->donorService->findDonorByName($request->input('name'));
 
             return ApiResponse::success(
-                'Donante encontrado',
+                'Donor found',
                 200,
                 new DonorResource($donor)
             );
 
         } catch (RuntimeException $e) {
-            return ApiResponse::notFound('Donante');
+            return ApiResponse::notFound('Donor');
         } catch (\Illuminate\Validation\ValidationException $e) {
             return ApiResponse::validationError($e->errors());
         } catch (\Exception $e) {
-            return ApiResponse::error('Error interno del servidor', 500);
+            return ApiResponse::error('Internal server error', 500);
         }
     }
 }

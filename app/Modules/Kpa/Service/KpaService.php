@@ -50,10 +50,10 @@ class KpaService
         try {
             $existingKpa = $this->kpaRepository->findBy('name', trim($name));
             if ($existingKpa && $existingKpa->id !== $id) {
-                throw new RuntimeException("Ya existe otro KPA con el nombre: {$name}");
+                throw new RuntimeException("There is already another KPA with the name: {$name}");
             }
         } catch (RuntimeException $e) {
-            if (!str_contains($e->getMessage(), 'no encontrado')) {
+            if (!str_contains($e->getMessage(), 'Not found')) {
                 throw $e; 
             }
         }
