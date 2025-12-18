@@ -31,7 +31,6 @@ class IndicatorTypeController extends Controller
         $this->indicatorTypeService = $indicatorTypeService;
     }
 
-    public function index(Request $request): JsonResponse
     /**
      * @OA\Get(
      *     path="/indicator_types",
@@ -66,7 +65,7 @@ class IndicatorTypeController extends Controller
      *     )
      * )
      */
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
         try{
             $search = $request->get("search");
