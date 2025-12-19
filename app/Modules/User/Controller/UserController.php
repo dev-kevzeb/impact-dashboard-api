@@ -19,8 +19,8 @@ use RuntimeException;
  *     title="User",
  *     description="User model",
  *     @OA\Property(property="id", type="integer", example=1),
- *     @OA\Property(property="name", type="string", example="Juan Pérez"),
- *     @OA\Property(property="email", type="string", example="juan@example.com"),
+ *     @OA\Property(property="name", type="string", example="John Doe"),
+ *     @OA\Property(property="email", type="string", example="john@example.com"),
  *     @OA\Property(
  *         property="role",
  *         ref="#/components/schemas/Role"
@@ -61,7 +61,7 @@ class UserController extends Controller
      *         description="Successful operation",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="Usuarios obtenidos exitosamente"),
+     *             @OA\Property(property="message", type="string", example="Users retrieved successfully"),
      *             @OA\Property(
      *                 property="data",
      *                 type="object",
@@ -82,7 +82,7 @@ class UserController extends Controller
      *         description="Internal server error",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Error interno del servidor"),
+     *             @OA\Property(property="message", type="string", example="Internal server error"),
      *             @OA\Property(property="data", type="null")
      *         )
      *     )
@@ -95,7 +95,7 @@ class UserController extends Controller
             $users = $this->service->getAllUsers($perPage);
 
             return ApiResponse::success(
-                'Usuarios obtenidos exitosamente',
+                'Users retrieved successfully',
                 200,
                 [
                     'users' => UserResource::collection($users),
@@ -106,7 +106,7 @@ class UserController extends Controller
                 ]
             );
         } catch (Exception $e) {
-            return ApiResponse::error('Error interno del servidor', 500);
+            return ApiResponse::error('Internal server error', 500);
         }
     }
 
@@ -121,8 +121,8 @@ class UserController extends Controller
      *         required=true,
      *         @OA\JsonContent(
      *             required={"name", "email", "password", "role_id", "user_state_id"},
-     *             @OA\Property(property="name", type="string", example="Juan Pérez"),
-     *             @OA\Property(property="email", type="string", example="juan@example.com"),
+     *             @OA\Property(property="name", type="string", example="John Doe"),
+     *             @OA\Property(property="email", type="string", example="john@example.com"),
      *             @OA\Property(property="password", type="string", example="secret123"),
      *             @OA\Property(property="role_id", type="integer", example=1),
      *             @OA\Property(property="user_state_id", type="integer", example=1)
@@ -133,7 +133,7 @@ class UserController extends Controller
      *         description="User created successfully",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="Usuario creado exitosamente"),
+     *             @OA\Property(property="message", type="string", example="User created successfully"),
      *             @OA\Property(property="data", ref="#/components/schemas/User")
      *         )
      *     ),
@@ -142,7 +142,7 @@ class UserController extends Controller
      *         description="Business logic error",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="el nombre debe tener al menos 2 caracteres"),
+     *             @OA\Property(property="message", type="string", example="the name must be at least 2 characters"),
      *             @OA\Property(property="data", type="null")
      *         )
      *     ),
@@ -151,7 +151,7 @@ class UserController extends Controller
      *         description="Validation error",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Error de validación"),
+     *             @OA\Property(property="message", type="string", example="Validation error"),
      *             @OA\Property(
      *                 property="data",
      *                 type="object",
@@ -161,7 +161,7 @@ class UserController extends Controller
      *                     @OA\Property(
      *                         property="email",
      *                         type="array",
-     *                         @OA\Items(type="string", example="Este email ya está registrado en el sistema.")
+     *                         @OA\Items(type="string", example="This email is already registered in the system.")
      *                     )
      *                 )
      *             )
@@ -172,7 +172,7 @@ class UserController extends Controller
      *         description="Internal server error",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Error interno del servidor"),
+     *             @OA\Property(property="message", type="string", example="Internal server error"),
      *             @OA\Property(property="data", type="null")
      *         )
      *     )
@@ -194,13 +194,13 @@ class UserController extends Controller
             $user->load(['role', 'userState']);
 
             return ApiResponse::created(
-                'Usuario creado exitosamente',
+                'User created successfully',
                 new UserResource($user)
             );
         } catch (RuntimeException $e) {
             return ApiResponse::error($e->getMessage(), 400);
         } catch (Exception $e) {
-            return ApiResponse::error('Error interno del servidor', 500);
+            return ApiResponse::error('Internal server error', 500);
         }
     }
 
@@ -216,14 +216,14 @@ class UserController extends Controller
      *         in="query",
      *         description="Name to search for",
      *         required=true,
-     *         @OA\Schema(type="string", example="Juan")
+     *         @OA\Schema(type="string", example="John")
      *     ),
      *     @OA\Response(
      *         response=200,
      *         description="Successful operation",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="Usuario encontrado exitosamente"),
+     *             @OA\Property(property="message", type="string", example="User found successfully"),
      *             @OA\Property(property="data", ref="#/components/schemas/User")
      *         )
      *     ),
@@ -232,7 +232,7 @@ class UserController extends Controller
      *         description="User not found",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="No se encontró el usuario"),
+     *             @OA\Property(property="message", type="string", example="User not found"),
      *             @OA\Property(property="data", type="null")
      *         )
      *     ),
@@ -241,7 +241,7 @@ class UserController extends Controller
      *         description="Internal server error",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Error interno del servidor"),
+     *             @OA\Property(property="message", type="string", example="Internal server error"),
      *             @OA\Property(property="data", type="null")
      *         )
      *     )
@@ -253,24 +253,24 @@ class UserController extends Controller
             $name = $request->query('name');
 
             if (!$name) {
-                return ApiResponse::error('El parámetro name es requerido', 400);
+                return ApiResponse::error('The name parameter is required', 400);
             }
 
             $user = $this->service->findUserByName($name);
             $user->load(['role', 'userState']);
 
             return ApiResponse::success(
-                'Usuario encontrado exitosamente',
+                'User found successfully',
                 200,
                 new UserResource($user)
             );
         } catch (RuntimeException $e) {
-            if (str_contains(strtolower($e->getMessage()), 'no encontrado')) {
+            if (str_contains(strtolower($e->getMessage()), 'not found')) {
                 return ApiResponse::notFound($e->getMessage());
             }
             return ApiResponse::error($e->getMessage(), 400);
         } catch (Exception $e) {
-            return ApiResponse::error('Error interno del servidor', 500);
+            return ApiResponse::error('Internal server error', 500);
         }
     }
 
@@ -293,7 +293,7 @@ class UserController extends Controller
      *         description="Successful operation",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="Usuario obtenido exitosamente"),
+     *             @OA\Property(property="message", type="string", example="User retrieved successfully"),
      *             @OA\Property(property="data", ref="#/components/schemas/User")
      *         )
      *     ),
@@ -302,7 +302,7 @@ class UserController extends Controller
      *         description="User not found",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="No se encontró el usuario con id: 999"),
+     *             @OA\Property(property="message", type="string", example="User not found with id: 999"),
      *             @OA\Property(property="data", type="null")
      *         )
      *     ),
@@ -311,7 +311,7 @@ class UserController extends Controller
      *         description="Internal server error",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Error interno del servidor"),
+     *             @OA\Property(property="message", type="string", example="Internal server error"),
      *             @OA\Property(property="data", type="null")
      *         )
      *     )
@@ -323,17 +323,17 @@ class UserController extends Controller
             $user = $this->service->getUserById($id);
 
             return ApiResponse::success(
-                'Usuario obtenido exitosamente',
+                'User retrieved successfully',
                 200,
                 new UserResource($user)
             );
         } catch (RuntimeException $e) {
-            if (str_contains(strtolower($e->getMessage()), 'no encontrado')) {
+            if (str_contains(strtolower($e->getMessage()), 'not found')) {
                 return ApiResponse::notFound($e->getMessage());
             }
             return ApiResponse::error($e->getMessage(), 400);
         } catch (Exception $e) {
-            return ApiResponse::error('Error interno del servidor', 500);
+            return ApiResponse::error('Internal server error', 500);
         }
     }
 
@@ -355,8 +355,8 @@ class UserController extends Controller
      *         required=true,
      *         @OA\JsonContent(
      *             required={"name", "email", "role_id", "user_state_id"},
-     *             @OA\Property(property="name", type="string", example="Juan Pérez Actualizado"),
-     *             @OA\Property(property="email", type="string", example="juan.updated@example.com"),
+     *             @OA\Property(property="name", type="string", example="John Doe Updated"),
+     *             @OA\Property(property="email", type="string", example="john.updated@example.com"),
      *             @OA\Property(property="password", type="string", example="newpassword123", description="Optional"),
      *             @OA\Property(property="role_id", type="integer", example=2),
      *             @OA\Property(property="user_state_id", type="integer", example=1)
@@ -367,7 +367,7 @@ class UserController extends Controller
      *         description="User updated successfully",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="Usuario actualizado exitosamente"),
+     *             @OA\Property(property="message", type="string", example="User updated successfully"),
      *             @OA\Property(property="data", ref="#/components/schemas/User")
      *         )
      *     ),
@@ -376,7 +376,7 @@ class UserController extends Controller
      *         description="Business logic error",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="el email no es válido"),
+     *             @OA\Property(property="message", type="string", example="the email is not valid"),
      *             @OA\Property(property="data", type="null")
      *         )
      *     ),
@@ -385,7 +385,7 @@ class UserController extends Controller
      *         description="User not found",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="No se encontró el usuario con id: 999"),
+     *             @OA\Property(property="message", type="string", example="User not found with id: 999"),
      *             @OA\Property(property="data", type="null")
      *         )
      *     ),
@@ -394,7 +394,7 @@ class UserController extends Controller
      *         description="Validation error",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Error de validación"),
+     *             @OA\Property(property="message", type="string", example="Validation error"),
      *             @OA\Property(
      *                 property="data",
      *                 type="object",
@@ -404,7 +404,7 @@ class UserController extends Controller
      *                     @OA\Property(
      *                         property="email",
      *                         type="array",
-     *                         @OA\Items(type="string", example="Este email ya está registrado en el sistema.")
+     *                         @OA\Items(type="string", example="This email is already registered in the system.")
      *                     )
      *                 )
      *             )
@@ -415,7 +415,7 @@ class UserController extends Controller
      *         description="Internal server error",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Error interno del servidor"),
+     *             @OA\Property(property="message", type="string", example="Internal server error"),
      *             @OA\Property(property="data", type="null")
      *         )
      *     )
@@ -438,17 +438,17 @@ class UserController extends Controller
             $user->load(['role', 'userState']);
 
             return ApiResponse::success(
-                'Usuario actualizado exitosamente',
+                'User updated successfully',
                 200,
                 new UserResource($user)
             );
         } catch (RuntimeException $e) {
-            if (str_contains(strtolower($e->getMessage()), 'no encontrado')) {
+            if (str_contains(strtolower($e->getMessage()), 'not found')) {
                 return ApiResponse::notFound($e->getMessage());
             }
             return ApiResponse::error($e->getMessage(), 400);
         } catch (Exception $e) {
-            return ApiResponse::error('Error interno del servidor', 500);
+            return ApiResponse::error('Internal server error', 500);
         }
     }
 }

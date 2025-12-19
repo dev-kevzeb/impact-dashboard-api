@@ -37,18 +37,18 @@ class UserService
      */
     public function createUser(string $name, string $email, string $password, int $roleId, int $userStateId): User
     {
-        // Recuperar objetos desde repositorios
+        // Retrieve objects from repositories
         $role = $this->roleRepository->findById($roleId);
         if (!$role) {
-            throw new RuntimeException("El rol con id {$roleId} no existe.");
+            throw new RuntimeException("The role with id {$roleId} does not exist.");
         }
 
         $userState = $this->userStateRepository->findById($userStateId);
         if (!$userState) {
-            throw new RuntimeException("El user state con id {$userStateId} no existe.");
+            throw new RuntimeException("The user state with id {$userStateId} does not exist.");
         }
 
-        // Crear usuario pasando objetos completos al Domain
+        // Create user passing complete objects to Domain
         $user = User::at($name, $email, $role, $userState);
         $user->password = $password; // Will be auto-hashed by mutator
         $this->repository->save($user);
@@ -72,15 +72,15 @@ class UserService
     {
         $user = $this->repository->findById($id);
 
-        // Recuperar objetos desde repositorios
+        // Retrieve objects from repositories
         $role = $this->roleRepository->findById($roleId);
         if (!$role) {
-            throw new RuntimeException("El rol con id {$roleId} no existe.");
+            throw new RuntimeException("The role with id {$roleId} does not exist.");
         }
 
         $userState = $this->userStateRepository->findById($userStateId);
         if (!$userState) {
-            throw new RuntimeException("El user state con id {$userStateId} no existe.");
+            throw new RuntimeException("The user state with id {$userStateId} does not exist.");
         }
 
         // Re-validate domain rules with objects

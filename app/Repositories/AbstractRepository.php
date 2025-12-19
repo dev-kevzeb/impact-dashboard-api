@@ -37,7 +37,7 @@ abstract class AbstractRepository implements RepositoryInterface
             throw $e;
         } catch (\Exception $e) {
             throw new RuntimeException(
-                "Error al guardar entidad: " . $e->getMessage()
+                "Error saving entity: " . $e->getMessage()
             );
         }
     }
@@ -55,7 +55,7 @@ abstract class AbstractRepository implements RepositoryInterface
             
             if (!$entity) {
                 throw new RuntimeException(
-                    class_basename($this->model) . " no encontrado con ID: {$id}"
+                    class_basename($this->model) . " not found with ID: {$id}"
                 );
             }
             
@@ -64,7 +64,7 @@ abstract class AbstractRepository implements RepositoryInterface
             throw $e;
         } catch (\Exception $e) {
             throw new RuntimeException(
-                "Error al buscar entidad por ID {$id}: " . $e->getMessage()
+                "Error finding entity by ID {$id}: " . $e->getMessage()
             );
         }
     }
@@ -92,7 +92,7 @@ abstract class AbstractRepository implements RepositoryInterface
             
             if (!$entity) {
                 throw new RuntimeException(
-                    class_basename($this->model) . " no encontrado con {$field}={$value}"
+                    class_basename($this->model) . " not found with {$field}={$value}"
                 );
             }
             
@@ -101,7 +101,7 @@ abstract class AbstractRepository implements RepositoryInterface
             throw $e;
         } catch (\Exception $e) {
             throw new RuntimeException(
-                "Error al buscar entidad por {$field}={$value}: " . $e->getMessage()
+                "Error finding entity by {$field}={$value}: " . $e->getMessage()
             );
         }
     }

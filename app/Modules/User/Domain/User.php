@@ -18,13 +18,13 @@ class User extends Authenticatable
     protected $fillable = ['name', 'email', 'password', 'role_id', 'user_state_id'];
     protected $hidden = ['password', 'remember_token'];
 
-    // Error constants in Spanish
-    public static $ERROR_NAME_EMPTY = 'el nombre no debe ir vacío';
-    public static $ERROR_NAME_MIN_LENGTH = 'el nombre debe tener al menos 2 caracteres';
-    public static $ERROR_EMAIL_EMPTY = 'el email no debe ir vacío';
-    public static $ERROR_EMAIL_INVALID = 'el email no es válido';
-    public static $ERROR_ROLE_INVALID = 'el role debe ser una instancia de Role';
-    public static $ERROR_USER_STATE_INVALID = 'el user state debe ser una instancia de UserState';
+    // Error constants
+    public static $ERROR_NAME_EMPTY = 'the name must not be empty';
+    public static $ERROR_NAME_MIN_LENGTH = 'the name must be at least 2 characters';
+    public static $ERROR_EMAIL_EMPTY = 'the email must not be empty';
+    public static $ERROR_EMAIL_INVALID = 'the email is not valid';
+    public static $ERROR_ROLE_INVALID = 'the role must be an instance of Role';
+    public static $ERROR_USER_STATE_INVALID = 'the user state must be an instance of UserState';
 
     /**
      * Mutator: Hash password automatically when assigned

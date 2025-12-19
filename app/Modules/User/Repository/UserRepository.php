@@ -53,7 +53,7 @@ class UserRepository extends AbstractRepository
             ->find($id);
 
         if (!$user) {
-            throw new \RuntimeException("Usuario con ID {$id} no encontrado");
+            throw new \RuntimeException("User with ID {$id} not found");
         }
 
         return $user;
