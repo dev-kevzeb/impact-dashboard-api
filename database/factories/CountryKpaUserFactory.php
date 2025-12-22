@@ -4,7 +4,7 @@ namespace Database\Factories;
 
 use App\Modules\CountryKpa\Domain\CountryKpa;
 use App\Modules\CountryKpaUser\Domain\CountryKpaUser;
-use App\Modules\User\Domain\User;
+use App\Modules\UserRole\Domain\UserRole;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -23,7 +23,7 @@ class CountryKpaUserFactory extends Factory
     {
         return [
             'country_kpa_id' => CountryKpa::factory(),
-            'user_id' => User::factory(),
+            'user_role_id' => UserRole::factory(),
         ];
     }
 }

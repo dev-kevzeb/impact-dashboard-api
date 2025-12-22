@@ -6,7 +6,7 @@ use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
 
-class CountryKpaUserRequest extends FormRequest
+class UserRoleRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -24,8 +24,8 @@ class CountryKpaUserRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'country_kpa_id' => 'required|integer|exists:country_kpa,id',
-            'user_role_id' => 'required|integer|exists:user_role,id',
+            'user_id' => 'required|integer|exists:user,id',
+            'role_id' => 'required|integer|exists:role,id',
         ];
     }
 
@@ -37,13 +37,13 @@ class CountryKpaUserRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'country_kpa_id.required' => 'The CountryKpa ID is required.',
-            'country_kpa_id.integer' => 'The CountryKpa ID must be an integer.',
-            'country_kpa_id.exists' => 'The specified CountryKpa does not exist.',
-            
-            'user_role_id.required' => 'The UserRole ID is required.',
-            'user_role_id.integer' => 'The UserRole ID must be an integer.',
-            'user_role_id.exists' => 'The specified UserRole does not exist.',
+            'user_id.required' => 'The User ID is required.',
+            'user_id.integer' => 'The User ID must be an integer.',
+            'user_id.exists' => 'The specified User does not exist.',
+
+            'role_id.required' => 'The Role ID is required.',
+            'role_id.integer' => 'The Role ID must be an integer.',
+            'role_id.exists' => 'The specified Role does not exist.',
         ];
     }
 

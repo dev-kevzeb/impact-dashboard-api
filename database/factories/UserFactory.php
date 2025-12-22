@@ -3,7 +3,6 @@
 namespace Database\Factories;
 
 use App\Modules\User\Domain\User;
-use App\Modules\Role\Domain\Role;
 use App\Modules\UserState\Domain\UserState;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -25,7 +24,6 @@ class UserFactory extends Factory
             'name' => $this->faker->unique()->name(),
             'email' => $this->faker->unique()->safeEmail(),
             'password' => 'password123', // Will be auto-hashed by mutator
-            'role_id' => Role::factory(),
             'user_state_id' => UserState::factory(),
         ];
     }

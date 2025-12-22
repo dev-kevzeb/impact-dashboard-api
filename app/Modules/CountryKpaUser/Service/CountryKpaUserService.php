@@ -16,17 +16,23 @@ class CountryKpaUserService
     }
     
     /**
-     * Assign a user to a CountryKpa
+     * Assign a UserRole to a CountryKpa
      *
      * @param int $countryKpaId
-     * @param int $userId
+     * @param int $userRoleId
      * @return CountryKpaUser
+     * @throws RuntimeException
      */
-    public function assignUserToCountryKpa(int $countryKpaId, int $userId): CountryKpaUser
+    public function assignUserRoleToCountryKpa(int $countryKpaId, int $userRoleId): CountryKpaUser
     {
+        // Check if assignment already exists
+        if ($this->repository->assignmentExists($countryKpaId, $userRoleId)) {
+            throw new RuntimeException('This user role is already assigned to this CountryKpa');
+        }
+
         $assignment = new CountryKpaUser([
             'country_kpa_id' => $countryKpaId,
-            'user_id' => $userId
+            'user_role_id' => $userRoleId
         ]);
         
         $this->repository->save($assignment);
@@ -39,16 +45,21 @@ class CountryKpaUserService
      *
      * @param int $id
      * @param int $countryKpaId
-     * @param int $userId
+     * @param int $userRoleId
      * @return CountryKpaUser
      * @throws RuntimeException
      */
-    public function updateAssignment(int $id, int $countryKpaId, int $userId): CountryKpaUser
+    public function updateAssignment(int $id, int $countryKpaId, int $userRoleId): CountryKpaUser
     {
         $assignment = $this->repository->findById($id);
         
+        // Check if new combination would be duplicate (excluding current record)
+        if ($this->repository->assignmentExistsExcluding($countryKpaId, $userRoleId, $id)) {
+            throw new RuntimeException('This user role is already assigned to this CountryKpa');
+        }
+
         $assignment->country_kpa_id = $countryKpaId;
-        $assignment->user_id = $userId;
+        $assignment->user_role_id = $userRoleId;
         
         $this->repository->save($assignment);
         
@@ -65,29 +76,29 @@ class CountryKpaUserService
     public function removeAssignment(int $id): void
     {
         $assignment = $this->repository->findById($id);
-        $this->repository->delete($assignment);
+        $assignment->delete();
     }
     
     /**
-     * Get all users assigned to a specific CountryKpa
+     * Get all UserRoles assigned to a specific CountryKpa
      *
      * @param int $countryKpaId
      * @return \Illuminate\Database\Eloquent\Collection
      */
-    public function getUsersByCountryKpa(int $countryKpaId)
+    public function getUserRolesByCountryKpa(int $countryKpaId)
     {
         return $this->repository->findByCountryKpaId($countryKpaId);
     }
     
     /**
-     * Get all CountryKpas assigned to a specific User
+     * Get all CountryKpas assigned to a specific UserRole
      *
-     * @param int $userId
+     * @param int $userRoleId
      * @return \Illuminate\Database\Eloquent\Collection
      */
-    public function getCountryKpasByUser(int $userId)
+    public function getCountryKpasByUserRole(int $userRoleId)
     {
-        return $this->repository->findByUserId($userId);
+        return $this->repository->findByUserRoleId($userRoleId);
     }
     
     /**
@@ -110,7 +121,7 @@ class CountryKpaUserService
     public function getAssignmentById(int $id): CountryKpaUser
     {
         $assignment = $this->repository->findById($id);
-        $assignment->load(['countryKpa.country', 'countryKpa.kpa', 'user.role', 'user.userState']);
+        $assignment->load(['countryKpa.country', 'countryKpa.kpa', 'userRole.user.userState', 'userRole.role']);
         
         return $assignment;
     }

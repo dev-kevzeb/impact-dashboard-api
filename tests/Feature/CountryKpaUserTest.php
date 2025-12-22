@@ -8,7 +8,7 @@ use App\Modules\CountryKpaUser\Domain\CountryKpaUser;
 use App\Modules\Kpa\Domain\Kpa;
 use App\Modules\Role\Domain\Role;
 use App\Modules\User\Domain\User;
-use Database\Seeders\UserStateSeeder;
+use App\Modules\UserRole\Domain\UserRole;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -17,14 +17,6 @@ class CountryKpaUserTest extends TestCase
     use RefreshDatabase;
 
     private const BASE_URL = '/api/v1/country_kpa_users';
-    
-    protected function setUp(): void
-    {
-        parent::setUp();
-        
-        // Seed required dependencies
-        $this->seed(UserStateSeeder::class);
-    }
 
     /**
      * Test retrieving all assignments
@@ -33,11 +25,11 @@ class CountryKpaUserTest extends TestCase
     {
         // Create test data
         $countryKpa = $this->createCountryKpa();
-        $user = $this->createUser();
+        $user = $this->createUserRole();
         
         $assignment = CountryKpaUser::factory()->create([
             'country_kpa_id' => $countryKpa->id,
-            'user_id' => $user->id,
+            'user_role_id' => $user->id,
         ]);
 
         $response = $this->getJson(self::BASE_URL);
@@ -50,9 +42,11 @@ class CountryKpaUserTest extends TestCase
                              '*' => [
                                  'id',
                                  'country_kpa' => ['id', 'country', 'kpa'],
-                                 'user' => ['id', 'name', 'email', 'role'],
-                                 'assigned_at',
-                                 'updated_at'
+                                 'user_role' => [
+                                     'id',
+                                     'user' => ['id', 'name', 'email'],
+                                     'role' => ['id', 'name']
+                                 ],
                              ]
                          ],
                          'total'
@@ -62,7 +56,7 @@ class CountryKpaUserTest extends TestCase
         $this->assertDatabaseHas('country_kpa_user', [
             'id' => $assignment->id,
             'country_kpa_id' => $countryKpa->id,
-            'user_id' => $user->id,
+            'user_role_id' => $user->id,
         ]);
     }
 
@@ -73,16 +67,16 @@ class CountryKpaUserTest extends TestCase
     {
         $countryKpa1 = $this->createCountryKpa();
         $countryKpa2 = $this->createCountryKpa();
-        $user = $this->createUser();
+        $user = $this->createUserRole();
         
         CountryKpaUser::factory()->create([
             'country_kpa_id' => $countryKpa1->id,
-            'user_id' => $user->id,
+            'user_role_id' => $user->id,
         ]);
         
         CountryKpaUser::factory()->create([
             'country_kpa_id' => $countryKpa2->id,
-            'user_id' => $user->id,
+            'user_role_id' => $user->id,
         ]);
 
         $response = $this->getJson(self::BASE_URL . '?country_kpa_id=' . $countryKpa1->id);
@@ -98,20 +92,20 @@ class CountryKpaUserTest extends TestCase
     public function test_can_filter_assignments_by_user(): void
     {
         $countryKpa = $this->createCountryKpa();
-        $user1 = $this->createUser();
-        $user2 = $this->createUser();
+        $user1 = $this->createUserRole();
+        $user2 = $this->createUserRole();
         
         CountryKpaUser::factory()->create([
             'country_kpa_id' => $countryKpa->id,
-            'user_id' => $user1->id,
+            'user_role_id' => $user1->id,
         ]);
         
         CountryKpaUser::factory()->create([
             'country_kpa_id' => $countryKpa->id,
-            'user_id' => $user2->id,
+            'user_role_id' => $user2->id,
         ]);
 
-        $response = $this->getJson(self::BASE_URL . '?user_id=' . $user1->id);
+        $response = $this->getJson(self::BASE_URL . '?user_role_id=' . $user1->id);
 
         $response->assertOk()
                  ->assertJson(['success' => true])
@@ -124,11 +118,11 @@ class CountryKpaUserTest extends TestCase
     public function test_can_create_assignment(): void
     {
         $countryKpa = $this->createCountryKpa();
-        $user = $this->createUser();
+        $user = $this->createUserRole();
 
         $response = $this->postJson(self::BASE_URL, [
             'country_kpa_id' => $countryKpa->id,
-            'user_id' => $user->id,
+            'user_role_id' => $user->id,
         ]);
 
         $response->assertCreated()
@@ -137,14 +131,13 @@ class CountryKpaUserTest extends TestCase
                      'data' => [
                          'id',
                          'country_kpa' => ['id', 'country', 'kpa'],
-                         'user' => ['id', 'name', 'email'],
-                         'assigned_at'
+                         'user_role' => ['id', 'user' => ['id', 'name', 'email'], 'role' => ['id', 'name']],
                      ]
                  ]);
 
         $this->assertDatabaseHas('country_kpa_user', [
             'country_kpa_id' => $countryKpa->id,
-            'user_id' => $user->id,
+            'user_role_id' => $user->id,
         ]);
     }
 
@@ -154,23 +147,23 @@ class CountryKpaUserTest extends TestCase
     public function test_cannot_create_duplicate_assignment(): void
     {
         $countryKpa = $this->createCountryKpa();
-        $user = $this->createUser();
+        $user = $this->createUserRole();
 
         // Create first assignment
         $this->postJson(self::BASE_URL, [
             'country_kpa_id' => $countryKpa->id,
-            'user_id' => $user->id,
+            'user_role_id' => $user->id,
         ])->assertCreated();
 
         // Try to create duplicate
         $response = $this->postJson(self::BASE_URL, [
             'country_kpa_id' => $countryKpa->id,
-            'user_id' => $user->id,
+            'user_role_id' => $user->id,
         ]);
 
-        $response->assertStatus(422)
+        $response->assertStatus(400)
                  ->assertJson(['success' => false])
-                 ->assertJsonFragment(['message' => 'This user is already assigned to this CountryKpa']);
+                 ->assertJsonFragment(['message' => 'This user role is already assigned to this CountryKpa']);
     }
 
     /**
@@ -178,10 +171,10 @@ class CountryKpaUserTest extends TestCase
      */
     public function test_create_assignment_requires_country_kpa_id(): void
     {
-        $user = $this->createUser();
+        $user = $this->createUserRole();
 
         $response = $this->postJson(self::BASE_URL, [
-            'user_id' => $user->id,
+            'user_role_id' => $user->id,
         ]);
 
         $response->assertStatus(422)
@@ -192,7 +185,7 @@ class CountryKpaUserTest extends TestCase
     /**
      * Test validation for required fields
      */
-    public function test_create_assignment_requires_user_id(): void
+    public function test_create_assignment_requires_user_role_id(): void
     {
         $countryKpa = $this->createCountryKpa();
 
@@ -202,7 +195,7 @@ class CountryKpaUserTest extends TestCase
 
         $response->assertStatus(422)
                  ->assertJson(['success' => false])
-                 ->assertJsonValidationErrors(['user_id']);
+                 ->assertJsonValidationErrors(['user_role_id']);
     }
 
     /**
@@ -210,11 +203,11 @@ class CountryKpaUserTest extends TestCase
      */
     public function test_create_assignment_validates_country_kpa_exists(): void
     {
-        $user = $this->createUser();
+        $user = $this->createUserRole();
 
         $response = $this->postJson(self::BASE_URL, [
             'country_kpa_id' => 99999, // Non-existent ID
-            'user_id' => $user->id,
+            'user_role_id' => $user->id,
         ]);
 
         $response->assertStatus(422)
@@ -231,12 +224,12 @@ class CountryKpaUserTest extends TestCase
 
         $response = $this->postJson(self::BASE_URL, [
             'country_kpa_id' => $countryKpa->id,
-            'user_id' => 99999, // Non-existent ID
+            'user_role_id' => 99999, // Non-existent ID
         ]);
 
         $response->assertStatus(422)
                  ->assertJson(['success' => false])
-                 ->assertJsonValidationErrors(['user_id']);
+                 ->assertJsonValidationErrors(['user_role_id']);
     }
 
     /**
@@ -245,11 +238,11 @@ class CountryKpaUserTest extends TestCase
     public function test_can_get_assignment_by_id(): void
     {
         $countryKpa = $this->createCountryKpa();
-        $user = $this->createUser();
+        $user = $this->createUserRole();
         
         $assignment = CountryKpaUser::factory()->create([
             'country_kpa_id' => $countryKpa->id,
-            'user_id' => $user->id,
+            'user_role_id' => $user->id,
         ]);
 
         $response = $this->getJson(self::BASE_URL . '/' . $assignment->id);
@@ -261,7 +254,11 @@ class CountryKpaUserTest extends TestCase
                      'data' => [
                          'id',
                          'country_kpa' => ['id', 'country', 'kpa'],
-                         'user' => ['id', 'name', 'email', 'role'],
+                         'user_role' => [
+                             'id',
+                             'user' => ['id', 'name', 'email'],
+                             'role' => ['id', 'name']
+                         ],
                      ]
                  ]);
     }
@@ -284,17 +281,17 @@ class CountryKpaUserTest extends TestCase
     {
         $countryKpa1 = $this->createCountryKpa();
         $countryKpa2 = $this->createCountryKpa();
-        $user1 = $this->createUser();
-        $user2 = $this->createUser();
+        $user1 = $this->createUserRole();
+        $user2 = $this->createUserRole();
         
         $assignment = CountryKpaUser::factory()->create([
             'country_kpa_id' => $countryKpa1->id,
-            'user_id' => $user1->id,
+            'user_role_id' => $user1->id,
         ]);
 
         $response = $this->putJson(self::BASE_URL . '/' . $assignment->id, [
             'country_kpa_id' => $countryKpa2->id,
-            'user_id' => $user2->id,
+            'user_role_id' => $user2->id,
         ]);
 
         $response->assertOk()
@@ -304,7 +301,7 @@ class CountryKpaUserTest extends TestCase
         $this->assertDatabaseHas('country_kpa_user', [
             'id' => $assignment->id,
             'country_kpa_id' => $countryKpa2->id,
-            'user_id' => $user2->id,
+            'user_role_id' => $user2->id,
         ]);
     }
 
@@ -314,11 +311,11 @@ class CountryKpaUserTest extends TestCase
     public function test_update_nonexistent_assignment_returns_404(): void
     {
         $countryKpa = $this->createCountryKpa();
-        $user = $this->createUser();
+        $user = $this->createUserRole();
 
         $response = $this->putJson(self::BASE_URL . '/99999', [
             'country_kpa_id' => $countryKpa->id,
-            'user_id' => $user->id,
+            'user_role_id' => $user->id,
         ]);
 
         $response->assertNotFound()
@@ -331,28 +328,28 @@ class CountryKpaUserTest extends TestCase
     public function test_cannot_update_to_duplicate_combination(): void
     {
         $countryKpa = $this->createCountryKpa();
-        $user1 = $this->createUser();
-        $user2 = $this->createUser();
+        $user1 = $this->createUserRole();
+        $user2 = $this->createUserRole();
         
         // Create first assignment
         CountryKpaUser::factory()->create([
             'country_kpa_id' => $countryKpa->id,
-            'user_id' => $user1->id,
+            'user_role_id' => $user1->id,
         ]);
         
         // Create second assignment
         $assignment2 = CountryKpaUser::factory()->create([
             'country_kpa_id' => $countryKpa->id,
-            'user_id' => $user2->id,
+            'user_role_id' => $user2->id,
         ]);
 
         // Try to update second to match first
         $response = $this->putJson(self::BASE_URL . '/' . $assignment2->id, [
             'country_kpa_id' => $countryKpa->id,
-            'user_id' => $user1->id,
+            'user_role_id' => $user1->id,
         ]);
 
-        $response->assertStatus(422)
+        $response->assertStatus(400)
                  ->assertJson(['success' => false]);
     }
 
@@ -362,11 +359,11 @@ class CountryKpaUserTest extends TestCase
     public function test_can_delete_assignment(): void
     {
         $countryKpa = $this->createCountryKpa();
-        $user = $this->createUser();
+        $user = $this->createUserRole();
         
         $assignment = CountryKpaUser::factory()->create([
             'country_kpa_id' => $countryKpa->id,
-            'user_id' => $user->id,
+            'user_role_id' => $user->id,
         ]);
 
         $response = $this->deleteJson(self::BASE_URL . '/' . $assignment->id);
@@ -405,15 +402,16 @@ class CountryKpaUserTest extends TestCase
     }
 
     /**
-     * Helper: Create a test User
+     * Helper: Create a test UserRole with User and Role
      */
-    private function createUser(): User
+    private function createUserRole(): UserRole
     {
+        $user = User::factory()->create();
         $role = Role::factory()->create();
         
-        return User::factory()->create([
+        return UserRole::factory()->create([
+            'user_id' => $user->id,
             'role_id' => $role->id,
-            'user_state_id' => 1, // Active (from UserStateSeeder)
         ]);
     }
 }

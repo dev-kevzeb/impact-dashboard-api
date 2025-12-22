@@ -14,7 +14,7 @@ return new class extends Migration
     {
         // Create sequence only for PostgreSQL
         if (DB::getDriverName() === 'pgsql') {
-            DB::statement('CREATE SEQUENCE role_seq');
+            DB::statement('CREATE SEQUENCE IF NOT EXISTS role_seq');
         }
 
         Schema::create('role', function (Blueprint $table) {

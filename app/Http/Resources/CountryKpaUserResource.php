@@ -23,17 +23,19 @@ class CountryKpaUserResource extends JsonResource
                 'kpa' => $this->countryKpa->kpa?->getName() ?? 'N/A',
                 'kpa_id' => $this->countryKpa->kpa?->id,
             ],
-            'user' => [
-                'id' => $this->user->id,
-                'name' => $this->user->getName(),
-                'email' => $this->user->getEmail(),
-                'role' => $this->user->role?->getName() ?? 'N/A',
-                'role_id' => $this->user->role?->id,
-                'state' => $this->user->userState?->getName() ?? 'N/A',
-                'state_id' => $this->user->userState?->id,
+            'user_role' => [
+                'id' => $this->userRole->id,
+                'user' => [
+                    'id' => $this->userRole->user->id,
+                    'name' => $this->userRole->user->getName(),
+                    'email' => $this->userRole->user->getEmail(),
+                    'state' => $this->userRole->user->userState?->getName() ?? 'N/A',
+                ],
+                'role' => [
+                    'id' => $this->userRole->role->id,
+                    'name' => $this->userRole->role->getName(),
+                ],
             ],
-            'assigned_at' => $this->created_at?->toIso8601String(),
-            'updated_at' => $this->updated_at?->toIso8601String(),
         ];
     }
 }

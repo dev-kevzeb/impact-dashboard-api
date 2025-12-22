@@ -13,12 +13,12 @@ return new class extends Migration
     {
         Schema::create('country_kpa_user', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('country_kpa_id')->constrained('country_kpa');
-            $table->foreignId('user_id')->constrained('user');
+            $table->foreignId('country_kpa_id')->constrained('country_kpa')->onDelete('cascade');
+            $table->foreignId('user_role_id')->constrained('user_role')->onDelete('cascade');
             $table->timestamps();
             
-            // Unique constraint: a user can only be assigned once to a specific country_kpa
-            $table->unique(['country_kpa_id', 'user_id'], 'uq_country_kpa_user_combination');
+            // Unique constraint: a user_role can only be assigned once to a specific country_kpa
+            $table->unique(['country_kpa_id', 'user_role_id'], 'uq_country_kpa_user_role_combination');
         });
     }
 

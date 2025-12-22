@@ -21,6 +21,7 @@ use App\Modules\Contact\Controller\ContactController;
 use App\Modules\Agency\Controller\AgencyController;
 use App\Modules\CountryKpa\Controller\CountryKpaController;
 use App\Modules\CountryKpaUser\Controller\CountryKpaUserController;
+use App\Modules\UserRole\Controller\UserRoleController;
 use \App\Modules\StrategicOutput\Controller\StrategicOutputController;
 use App\Modules\Project\Controller\ProjectController;
 use App\Modules\ProjectAgency\Controller\ProjectAgencyController;
@@ -74,6 +75,13 @@ Route::prefix('v1')->group(function () {
     Route::get('kpas/{id}', [KpaController::class, 'show']);
     Route::put('kpas/{id}', [KpaController::class, 'update']);
 
+    // API Routes para Users
+    Route::get('users', [UserController::class, 'index']);
+    Route::post('users', [UserController::class, 'store']);
+    Route::get('users/search', [UserController::class, 'search']);
+    Route::get('users/{id}', [UserController::class, 'show']);
+    Route::put('users/{id}', [UserController::class, 'update']);
+
     // API Routes para Roles
     Route::get('roles', [RoleController::class, 'index']);
     Route::post('roles', [RoleController::class, 'store']);
@@ -87,6 +95,20 @@ Route::prefix('v1')->group(function () {
     Route::get('user_states/search', [UserStateController::class, 'search']);
     Route::get('user_states/{id}', [UserStateController::class, 'show']);
     Route::put('user_states/{id}', [UserStateController::class, 'update']);
+
+     // API Routes para CountryKpa-Users (User assignments to CountryKpas)
+    Route::get('country_kpa_users', [CountryKpaUserController::class, 'index']);
+    Route::post('country_kpa_users', [CountryKpaUserController::class, 'store']);
+    Route::get('country_kpa_users/{id}', [CountryKpaUserController::class, 'show']);
+    Route::put('country_kpa_users/{id}', [CountryKpaUserController::class, 'update']);
+    Route::delete('country_kpa_users/{id}', [CountryKpaUserController::class, 'destroy']);
+
+    // API Routes para User-Roles (Role assignments to Users)
+    Route::get('user_roles', [UserRoleController::class, 'index']);
+    Route::post('user_roles', [UserRoleController::class, 'store']);
+    Route::get('user_roles/{id}', [UserRoleController::class, 'show']);
+    Route::put('user_roles/{id}', [UserRoleController::class, 'update']);
+    Route::delete('user_roles/{id}', [UserRoleController::class, 'destroy']);
 
     // API Routes para Country-Kpas
     Route::get('country-kpas', [CountryKpaController::class, 'index']);
@@ -178,7 +200,7 @@ Route::prefix('v1')->group(function () {
     Route::get('project-agencies/projects/by-agency-name/{name}', [ProjectAgencyController::class, 'showProjectsByAgencyName']);
     Route::get('project-agencies/agencies/by-project/{id}', [ProjectAgencyController::class,'showAgenciesByProjectId']);
     Route::get('project-agencies/agencies/by-project-name/{name}', [ProjectAgencyController::class,'showAgenciesByProjectName']);
-  
+
     // Listar todas las relaciones proyecto-indicador
     Route::get('project-indicators', [ProjectIndicatorController::class,'index']);
     Route::post('project-indicators', [ProjectIndicatorController::class,'createProjectIndicator']);
@@ -205,13 +227,6 @@ Route::prefix('v1')->group(function () {
     Route::get('country-kpas/country/{id}', [CountryKpaController::class, 'showForCountry']);
     Route::put('country-kpas/{id}', [CountryKpaController::class, 'update']);
     Route::delete('country-kpas/{id}', [CountryKpaController::class, 'destroy']);
-
-    // API Routes para CountryKpa-Users (User assignments to CountryKpas)
-    Route::get('country_kpa_users', [CountryKpaUserController::class, 'index']);
-    Route::post('country_kpa_users', [CountryKpaUserController::class, 'store']);
-    Route::get('country_kpa_users/{id}', [CountryKpaUserController::class, 'show']);
-    Route::put('country_kpa_users/{id}', [CountryKpaUserController::class, 'update']);
-    Route::delete('country_kpa_users/{id}', [CountryKpaUserController::class, 'destroy']);
 
     // API Routes para Contacts
     Route::get('contacts', [ContactController::class, 'index']);
@@ -317,11 +332,5 @@ Route::prefix('v1')->group(function () {
     Route::get('project-indicators/indicators/by-project/{id}', [ProjectIndicatorController::class,'showIndicatorsByProjectId']);
     Route::get('project-indicators/indicators/by-project-name/{name}', [ProjectIndicatorController::class,'showIndicatorsByProjectName']);
 
-    // API Routes para Users
-    Route::get('users', [UserController::class, 'index']);
-    Route::post('users', [UserController::class, 'store']);
-    Route::get('users/search', [UserController::class, 'search']);
-    Route::get('users/{id}', [UserController::class, 'show']);
-    Route::put('users/{id}', [UserController::class, 'update']);
 
 });
