@@ -20,6 +20,7 @@ use App\Modules\ProjectState\Controller\ProjectStateController;
 use App\Modules\Contact\Controller\ContactController;
 use App\Modules\Agency\Controller\AgencyController;
 use App\Modules\CountryKpa\Controller\CountryKpaController;
+use App\Modules\CountryKpaUser\Controller\CountryKpaUserController;
 use \App\Modules\StrategicOutput\Controller\StrategicOutputController;
 use App\Modules\Project\Controller\ProjectController;
 use App\Modules\ProjectAgency\Controller\ProjectAgencyController;
@@ -204,6 +205,13 @@ Route::prefix('v1')->group(function () {
     Route::get('country-kpas/country/{id}', [CountryKpaController::class, 'showForCountry']);
     Route::put('country-kpas/{id}', [CountryKpaController::class, 'update']);
     Route::delete('country-kpas/{id}', [CountryKpaController::class, 'destroy']);
+
+    // API Routes para CountryKpa-Users (User assignments to CountryKpas)
+    Route::get('country_kpa_users', [CountryKpaUserController::class, 'index']);
+    Route::post('country_kpa_users', [CountryKpaUserController::class, 'store']);
+    Route::get('country_kpa_users/{id}', [CountryKpaUserController::class, 'show']);
+    Route::put('country_kpa_users/{id}', [CountryKpaUserController::class, 'update']);
+    Route::delete('country_kpa_users/{id}', [CountryKpaUserController::class, 'destroy']);
 
     // API Routes para Contacts
     Route::get('contacts', [ContactController::class, 'index']);
