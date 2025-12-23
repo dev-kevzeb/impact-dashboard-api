@@ -2,6 +2,7 @@
 
 namespace App\Modules\Program\Domain;
 
+use App\Modules\Project\Domain\Project;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use RuntimeException;
@@ -24,13 +25,16 @@ class Program extends Model
         'program_state_id'
     ];
 
+    protected $appends = ['projects_count'];
+
     // Constantes de mensajes de error (solo reglas de negocio)
-    public static $ERROR_NAME_EMPTY = 'el nombre del programa no debe ir vacío';
-    public static $ERROR_NAME_MIN_LENGTH = 'el nombre del programa debe tener al menos 3 caracteres';
-    public static $ERROR_DESCRIPTION_EMPTY = 'la descripción del programa no debe ir vacío';
-    public static $ERROR_DESCRIPTION_MIN_LENGTH = 'la descripción del programa debe tener al menos 10 caracteres';
-    public static $ERROR_CONTACT_INVALID = 'el contacto debe ser una instancia de Contact';
-    public static $ERROR_PROGRAM_STATE_INVALID = 'el estado debe ser una instancia de ProgramState';
+    public static $ERROR_NAME_EMPTY = 'The program name must not be empty';
+    public static $ERROR_NAME_MIN_LENGTH = 'The program name must be at least 3 characters long';
+    public static $ERROR_DESCRIPTION_EMPTY = 'The program description must not be empty';
+    public static $ERROR_DESCRIPTION_MIN_LENGTH = 'The program description must be at least 10 characters long';
+    public static $ERROR_CONTACT_INVALID = 'The contact must be an instance of Contact';
+    public static $ERROR_PROGRAM_STATE_INVALID = 'The state must be an instance of ProgramState';
+
 
     public function __construct(array $attributes = [])
     {
@@ -160,5 +164,15 @@ class Program extends Model
     protected static function newFactory()
     {
         return \Database\Factories\ProgramFactory::new();
+    }
+
+    public function projects()
+    {
+        return $this->hasMany(Project::class, 'program_id', 'id');
+    }
+
+    public function getProjectsCountAttribute(): int
+    {
+        return $this->projects()->count();
     }
 }
