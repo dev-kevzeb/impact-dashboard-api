@@ -16,14 +16,14 @@ class UserRoleService
     }
 
     /**
-     * Assign a role to a user
+     * Create a new assignment between User and Role
      *
      * @param int $userId
      * @param int $roleId
      * @return UserRole
      * @throws RuntimeException
      */
-    public function assignRoleToUser(int $userId, int $roleId): UserRole
+    public function createAssignment(int $userId, int $roleId): UserRole
     {
         // Check if assignment already exists
         if ($this->repository->assignmentExists($userId, $roleId)) {

@@ -35,7 +35,7 @@ class UserRepository extends AbstractRepository
     public function paginateWithRelations(int $perPage = 10)
     {
         return $this->model
-            ->with(['userState'])
+            ->with(['roles', 'userState'])
             ->paginate($perPage);
     }
 
@@ -49,7 +49,7 @@ class UserRepository extends AbstractRepository
     public function findByIdWithRelations(int $id): User
     {
         $user = $this->model
-            ->with(['userState'])
+            ->with(['roles', 'userState'])
             ->find($id);
 
         if (!$user) {

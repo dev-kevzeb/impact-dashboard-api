@@ -208,7 +208,7 @@ class UserRoleController extends Controller
         try {
             $validated = $request->validated();
 
-            $assignment = $this->service->assignRoleToUser(
+            $assignment = $this->service->createAssignment(
                 $validated['user_id'],
                 $validated['role_id']
             );

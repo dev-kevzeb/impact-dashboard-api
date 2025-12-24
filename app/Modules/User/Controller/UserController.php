@@ -191,7 +191,7 @@ class UserController extends Controller
                 $validated['user_state_id']
             );
 
-            $user->load(['userState']);
+            $user->load(['roles', 'userState']);
 
             return ApiResponse::created(
                 'User created successfully',
@@ -257,7 +257,7 @@ class UserController extends Controller
             }
 
             $user = $this->service->findUserByName($name);
-            $user->load(['userState']);
+            $user->load(['roles', 'userState']);
 
             return ApiResponse::success(
                 'User found successfully',
@@ -321,6 +321,7 @@ class UserController extends Controller
     {
         try {
             $user = $this->service->getUserById($id);
+            $user->load(['roles', 'userState']);
 
             return ApiResponse::success(
                 'User retrieved successfully',
@@ -435,7 +436,7 @@ class UserController extends Controller
                 $validated['password'] ?? null
             );
 
-            $user->load(['userState']);
+            $user->load(['roles', 'userState']);
 
             return ApiResponse::success(
                 'User updated successfully',

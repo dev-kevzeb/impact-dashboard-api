@@ -36,7 +36,7 @@ class UserTest extends TestCase
         $response->assertCreated()
             ->assertJson(['success' => true])
             ->assertJsonStructure([
-                'data' => ['id', 'name', 'email', 'role', 'userState', 'created_at', 'updated_at']
+                'data' => ['id', 'name', 'email', 'roles', 'userState', 'created_at', 'updated_at']
             ]);
 
         $this->assertDatabaseHas('user', [
@@ -53,7 +53,6 @@ class UserTest extends TestCase
     public function test_can_list_all_users(): void
     {
         User::factory()->count(3)->create([
-            'role_id' => $this->role->id,
             'user_state_id' => $this->userState->id
         ]);
 
@@ -79,7 +78,6 @@ class UserTest extends TestCase
     {
         // Crear 15 usuarios
         User::factory()->count(15)->create([
-            'role_id' => $this->role->id,
             'user_state_id' => $this->userState->id
         ]);
 
@@ -117,7 +115,6 @@ class UserTest extends TestCase
         $user = User::factory()->create([
             'name' => 'Juan Pérez',
             'email' => 'juan@example.com',
-            'role_id' => $this->role->id,
             'user_state_id' => $this->userState->id
         ]);
 
@@ -136,7 +133,6 @@ class UserTest extends TestCase
     public function test_can_update_user(): void
     {
         $user = User::factory()->create([
-            'role_id' => $this->role->id,
             'user_state_id' => $this->userState->id
         ]);
 
@@ -166,7 +162,6 @@ class UserTest extends TestCase
     public function test_can_update_user_with_new_password(): void
     {
         $user = User::factory()->create([
-            'role_id' => $this->role->id,
             'user_state_id' => $this->userState->id
         ]);
 
@@ -189,7 +184,6 @@ class UserTest extends TestCase
     {
         User::factory()->create([
             'name' => 'Maria Garcia',
-            'role_id' => $this->role->id,
             'user_state_id' => $this->userState->id
         ]);
 
@@ -257,7 +251,6 @@ class UserTest extends TestCase
     {
         User::factory()->create([
             'email' => 'duplicate@example.com',
-            'role_id' => $this->role->id,
             'user_state_id' => $this->userState->id
         ]);
 
@@ -277,7 +270,6 @@ class UserTest extends TestCase
     {
         $user = User::factory()->create([
             'email' => 'same@example.com',
-            'role_id' => $this->role->id,
             'user_state_id' => $this->userState->id
         ]);
 
@@ -386,7 +378,6 @@ class UserTest extends TestCase
     public function test_user_resource_does_not_expose_password(): void
     {
         $user = User::factory()->create([
-            'role_id' => $this->role->id,
             'user_state_id' => $this->userState->id
         ]);
 
@@ -399,7 +390,6 @@ class UserTest extends TestCase
     public function test_user_loads_relationships(): void
     {
         $user = User::factory()->create([
-            'role_id' => $this->role->id,
             'user_state_id' => $this->userState->id
         ]);
 
@@ -408,7 +398,9 @@ class UserTest extends TestCase
         $response->assertOk()
             ->assertJsonStructure([
                 'data' => [
-                    'role' => ['id', 'name'],
+                    'roles' => [
+                        '*' => ['id', 'name']
+                    ],
                     'userState' => ['id', 'name']
                 ]
             ]);

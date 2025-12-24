@@ -26,6 +26,7 @@ class CountryKpaUserRequest extends FormRequest
         return [
             'country_kpa_id' => 'required|integer|exists:country_kpa,id',
             'user_role_id' => 'required|integer|exists:user_role,id',
+            'required_role_name' => 'required|string|max:50',
         ];
     }
 
@@ -44,6 +45,10 @@ class CountryKpaUserRequest extends FormRequest
             'user_role_id.required' => 'The UserRole ID is required.',
             'user_role_id.integer' => 'The UserRole ID must be an integer.',
             'user_role_id.exists' => 'The specified UserRole does not exist.',
+            
+            'required_role_name.required' => 'The role name to validate is required.',
+            'required_role_name.string' => 'The required role name must be a string.',
+            'required_role_name.max' => 'The required role name must not exceed 50 characters.',
         ];
     }
 

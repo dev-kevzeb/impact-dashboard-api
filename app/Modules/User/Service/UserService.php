@@ -58,7 +58,7 @@ class UserService
         $this->repository->save($user);
 
         // Assign role via UserRole pivot table
-        $this->userRoleService->assignRoleToUser($user->id, $roleId);
+        $this->userRoleService->createAssignment($user->id, $roleId);
 
         return $user;
     }
@@ -119,7 +119,7 @@ class UserService
             }
             
             // Assign new role
-            $this->userRoleService->assignRoleToUser($user->id, $roleId);
+            $this->userRoleService->createAssignment($user->id, $roleId);
         }
 
         return $user;

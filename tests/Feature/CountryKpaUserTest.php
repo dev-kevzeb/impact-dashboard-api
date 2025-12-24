@@ -18,6 +18,24 @@ class CountryKpaUserTest extends TestCase
 
     private const BASE_URL = '/api/v1/country_kpa_users';
 
+    private Role $projectManagerRole;
+    private Role $countryManagerRole;
+    private Role $viewerRole;
+    private Role $auditorRole;
+    private Role $dataAnalystRole;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // Create roles once for all tests
+        $this->projectManagerRole = Role::factory()->create(['name' => 'project_manager']);
+        $this->countryManagerRole = Role::factory()->create(['name' => 'country_manager']);
+        $this->viewerRole = Role::factory()->create(['name' => 'viewer']);
+        $this->auditorRole = Role::factory()->create(['name' => 'auditor']);
+        $this->dataAnalystRole = Role::factory()->create(['name' => 'data_analyst']);
+    }
+
     /**
      * Test retrieving all assignments
      */
@@ -118,11 +136,16 @@ class CountryKpaUserTest extends TestCase
     public function test_can_create_assignment(): void
     {
         $countryKpa = $this->createCountryKpa();
-        $user = $this->createUserRole();
+        $user = User::factory()->create();
+        $userRole = UserRole::factory()->create([
+            'user_id' => $user->id,
+            'role_id' => $this->projectManagerRole->id,
+        ]);
 
         $response = $this->postJson(self::BASE_URL, [
             'country_kpa_id' => $countryKpa->id,
-            'user_role_id' => $user->id,
+            'user_role_id' => $userRole->id,
+            'required_role_name' => 'project_manager',
         ]);
 
         $response->assertCreated()
@@ -137,7 +160,7 @@ class CountryKpaUserTest extends TestCase
 
         $this->assertDatabaseHas('country_kpa_user', [
             'country_kpa_id' => $countryKpa->id,
-            'user_role_id' => $user->id,
+            'user_role_id' => $userRole->id,
         ]);
     }
 
@@ -147,18 +170,24 @@ class CountryKpaUserTest extends TestCase
     public function test_cannot_create_duplicate_assignment(): void
     {
         $countryKpa = $this->createCountryKpa();
-        $user = $this->createUserRole();
+        $user = User::factory()->create();
+        $userRole = UserRole::factory()->create([
+            'user_id' => $user->id,
+            'role_id' => $this->projectManagerRole->id,
+        ]);
 
         // Create first assignment
         $this->postJson(self::BASE_URL, [
             'country_kpa_id' => $countryKpa->id,
-            'user_role_id' => $user->id,
+            'user_role_id' => $userRole->id,
+            'required_role_name' => 'project_manager',
         ])->assertCreated();
 
         // Try to create duplicate
         $response = $this->postJson(self::BASE_URL, [
             'country_kpa_id' => $countryKpa->id,
-            'user_role_id' => $user->id,
+            'user_role_id' => $userRole->id,
+            'required_role_name' => 'project_manager',
         ]);
 
         $response->assertStatus(400)
@@ -175,6 +204,7 @@ class CountryKpaUserTest extends TestCase
 
         $response = $this->postJson(self::BASE_URL, [
             'user_role_id' => $user->id,
+            'required_role_name' => 'project_manager',
         ]);
 
         $response->assertStatus(422)
@@ -191,6 +221,7 @@ class CountryKpaUserTest extends TestCase
 
         $response = $this->postJson(self::BASE_URL, [
             'country_kpa_id' => $countryKpa->id,
+            'required_role_name' => 'project_manager',
         ]);
 
         $response->assertStatus(422)
@@ -208,6 +239,7 @@ class CountryKpaUserTest extends TestCase
         $response = $this->postJson(self::BASE_URL, [
             'country_kpa_id' => 99999, // Non-existent ID
             'user_role_id' => $user->id,
+            'required_role_name' => 'project_manager',
         ]);
 
         $response->assertStatus(422)
@@ -225,6 +257,7 @@ class CountryKpaUserTest extends TestCase
         $response = $this->postJson(self::BASE_URL, [
             'country_kpa_id' => $countryKpa->id,
             'user_role_id' => 99999, // Non-existent ID
+            'required_role_name' => 'project_manager',
         ]);
 
         $response->assertStatus(422)
@@ -281,17 +314,28 @@ class CountryKpaUserTest extends TestCase
     {
         $countryKpa1 = $this->createCountryKpa();
         $countryKpa2 = $this->createCountryKpa();
-        $user1 = $this->createUserRole();
-        $user2 = $this->createUserRole();
+        
+        $user1 = User::factory()->create();
+        $userRole1 = UserRole::factory()->create([
+            'user_id' => $user1->id,
+            'role_id' => $this->projectManagerRole->id,
+        ]);
+        
+        $user2 = User::factory()->create();
+        $userRole2 = UserRole::factory()->create([
+            'user_id' => $user2->id,
+            'role_id' => $this->countryManagerRole->id,
+        ]);
         
         $assignment = CountryKpaUser::factory()->create([
             'country_kpa_id' => $countryKpa1->id,
-            'user_role_id' => $user1->id,
+            'user_role_id' => $userRole1->id,
         ]);
 
         $response = $this->putJson(self::BASE_URL . '/' . $assignment->id, [
             'country_kpa_id' => $countryKpa2->id,
-            'user_role_id' => $user2->id,
+            'user_role_id' => $userRole2->id,
+            'required_role_name' => 'country_manager',
         ]);
 
         $response->assertOk()
@@ -301,7 +345,7 @@ class CountryKpaUserTest extends TestCase
         $this->assertDatabaseHas('country_kpa_user', [
             'id' => $assignment->id,
             'country_kpa_id' => $countryKpa2->id,
-            'user_role_id' => $user2->id,
+            'user_role_id' => $userRole2->id,
         ]);
     }
 
@@ -311,11 +355,16 @@ class CountryKpaUserTest extends TestCase
     public function test_update_nonexistent_assignment_returns_404(): void
     {
         $countryKpa = $this->createCountryKpa();
-        $user = $this->createUserRole();
+        $user = User::factory()->create();
+        $userRole = UserRole::factory()->create([
+            'user_id' => $user->id,
+            'role_id' => $this->projectManagerRole->id,
+        ]);
 
         $response = $this->putJson(self::BASE_URL . '/99999', [
             'country_kpa_id' => $countryKpa->id,
-            'user_role_id' => $user->id,
+            'user_role_id' => $userRole->id,
+            'required_role_name' => 'project_manager',
         ]);
 
         $response->assertNotFound()
@@ -328,25 +377,36 @@ class CountryKpaUserTest extends TestCase
     public function test_cannot_update_to_duplicate_combination(): void
     {
         $countryKpa = $this->createCountryKpa();
-        $user1 = $this->createUserRole();
-        $user2 = $this->createUserRole();
+        
+        $user1 = User::factory()->create();
+        $userRole1 = UserRole::factory()->create([
+            'user_id' => $user1->id,
+            'role_id' => $this->projectManagerRole->id,
+        ]);
+        
+        $user2 = User::factory()->create();
+        $userRole2 = UserRole::factory()->create([
+            'user_id' => $user2->id,
+            'role_id' => $this->projectManagerRole->id,
+        ]);
         
         // Create first assignment
         CountryKpaUser::factory()->create([
             'country_kpa_id' => $countryKpa->id,
-            'user_role_id' => $user1->id,
+            'user_role_id' => $userRole1->id,
         ]);
         
         // Create second assignment
         $assignment2 = CountryKpaUser::factory()->create([
             'country_kpa_id' => $countryKpa->id,
-            'user_role_id' => $user2->id,
+            'user_role_id' => $userRole2->id,
         ]);
 
         // Try to update second to match first
         $response = $this->putJson(self::BASE_URL . '/' . $assignment2->id, [
             'country_kpa_id' => $countryKpa->id,
-            'user_role_id' => $user1->id,
+            'user_role_id' => $userRole1->id,
+            'required_role_name' => 'project_manager',
         ]);
 
         $response->assertStatus(400)
@@ -388,6 +448,253 @@ class CountryKpaUserTest extends TestCase
     }
 
     /**
+     * Test assigning with required role validation - SUCCESS
+     */
+    public function test_can_assign_with_valid_required_role(): void
+    {
+        $countryKpa = $this->createCountryKpa();
+        $user = User::factory()->create();
+        $userRole = UserRole::factory()->create([
+            'user_id' => $user->id,
+            'role_id' => $this->projectManagerRole->id,
+        ]);
+
+        $response = $this->postJson(self::BASE_URL, [
+            'country_kpa_id' => $countryKpa->id,
+            'user_role_id' => $userRole->id,
+            'required_role_name' => 'project_manager',
+        ]);
+
+        $response->assertCreated()
+                 ->assertJson(['success' => true])
+                 ->assertJsonPath('message', 'UserRole assigned to CountryKpa successfully');
+
+        $this->assertDatabaseHas('country_kpa_user', [
+            'country_kpa_id' => $countryKpa->id,
+            'user_role_id' => $userRole->id,
+        ]);
+    }
+
+    /**
+     * Test assigning with required role validation - FAILURE (wrong role)
+     */
+    public function test_cannot_assign_with_invalid_required_role(): void
+    {
+        $countryKpa = $this->createCountryKpa();
+        $user = User::factory()->create();
+        $userRole = UserRole::factory()->create([
+            'user_id' => $user->id,
+            'role_id' => $this->dataAnalystRole->id,
+        ]);
+
+        $response = $this->postJson(self::BASE_URL, [
+            'country_kpa_id' => $countryKpa->id,
+            'user_role_id' => $userRole->id,
+            'required_role_name' => 'project_manager', // Require project_manager but user has data_analyst
+        ]);
+
+        $response->assertStatus(400)
+                 ->assertJson([
+                     'success' => false,
+                     'message' => "Only users with role 'project_manager' can be assigned to this CountryKpa",
+                 ]);
+
+        $this->assertDatabaseMissing('country_kpa_user', [
+            'country_kpa_id' => $countryKpa->id,
+            'user_role_id' => $userRole->id,
+        ]);
+    }
+
+    /**
+     * Test that required_role_name field is mandatory
+     */
+    public function test_cannot_assign_without_required_role_name(): void
+    {
+        $countryKpa = $this->createCountryKpa();
+        $userRole = $this->createUserRole();
+
+        $response = $this->postJson(self::BASE_URL, [
+            'country_kpa_id' => $countryKpa->id,
+            'user_role_id' => $userRole->id,
+            // Missing required_role_name
+        ]);
+
+        $response->assertStatus(422)
+                 ->assertJson(['success' => false])
+                 ->assertJsonValidationErrors(['required_role_name']);
+    }
+
+    /**
+     * Test assigning Country Manager role successfully
+     */
+    public function test_can_assign_country_manager_with_validation(): void
+    {
+        $countryKpa = $this->createCountryKpa();
+        $user = User::factory()->create();
+        $userRole = UserRole::factory()->create([
+            'user_id' => $user->id,
+            'role_id' => $this->countryManagerRole->id,
+        ]);
+
+        $response = $this->postJson(self::BASE_URL, [
+            'country_kpa_id' => $countryKpa->id,
+            'user_role_id' => $userRole->id,
+            'required_role_name' => 'country_manager',
+        ]);
+
+        $response->assertCreated()
+                 ->assertJson(['success' => true]);
+
+        $this->assertDatabaseHas('country_kpa_user', [
+            'country_kpa_id' => $countryKpa->id,
+            'user_role_id' => $userRole->id,
+        ]);
+    }
+
+    /**
+     * Test rejecting viewer role when project_manager is required
+     */
+    public function test_rejects_viewer_role_when_project_manager_required(): void
+    {
+        $countryKpa = $this->createCountryKpa();
+        $user = User::factory()->create();
+        $userRole = UserRole::factory()->create([
+            'user_id' => $user->id,
+            'role_id' => $this->viewerRole->id,
+        ]);
+
+        $response = $this->postJson(self::BASE_URL, [
+            'country_kpa_id' => $countryKpa->id,
+            'user_role_id' => $userRole->id,
+            'required_role_name' => 'project_manager',
+        ]);
+
+        $response->assertStatus(400)
+                 ->assertJson([
+                     'success' => false,
+                     'message' => "Only users with role 'project_manager' can be assigned to this CountryKpa",
+                 ]);
+
+        $this->assertDatabaseMissing('country_kpa_user', [
+            'country_kpa_id' => $countryKpa->id,
+            'user_role_id' => $userRole->id,
+        ]);
+    }
+
+    /**
+     * Test rejecting auditor role when country_manager is required
+     */
+    public function test_rejects_auditor_role_when_country_manager_required(): void
+    {
+        $countryKpa = $this->createCountryKpa();
+        $user = User::factory()->create();
+        $userRole = UserRole::factory()->create([
+            'user_id' => $user->id,
+            'role_id' => $this->auditorRole->id,
+        ]);
+
+        $response = $this->postJson(self::BASE_URL, [
+            'country_kpa_id' => $countryKpa->id,
+            'user_role_id' => $userRole->id,
+            'required_role_name' => 'country_manager',
+        ]);
+
+        $response->assertStatus(400)
+                 ->assertJsonFragment(['success' => false]);
+
+        $this->assertDatabaseMissing('country_kpa_user', [
+            'country_kpa_id' => $countryKpa->id,
+            'user_role_id' => $userRole->id,
+        ]);
+    }
+
+    /**
+     * Test updating with role validation - SUCCESS
+     */
+    public function test_can_update_with_valid_required_role(): void
+    {
+        $countryKpa = $this->createCountryKpa();
+        $user = User::factory()->create();
+        $userRole = UserRole::factory()->create([
+            'user_id' => $user->id,
+            'role_id' => $this->projectManagerRole->id,
+        ]);
+
+        $assignment = CountryKpaUser::factory()->create([
+            'country_kpa_id' => $countryKpa->id,
+            'user_role_id' => $this->createUserRole()->id,
+        ]);
+
+        $response = $this->putJson(self::BASE_URL . '/' . $assignment->id, [
+            'country_kpa_id' => $countryKpa->id,
+            'user_role_id' => $userRole->id,
+            'required_role_name' => 'project_manager',
+        ]);
+
+        $response->assertOk()
+                 ->assertJson(['success' => true]);
+
+        $this->assertDatabaseHas('country_kpa_user', [
+            'id' => $assignment->id,
+            'user_role_id' => $userRole->id,
+        ]);
+    }
+
+    /**
+     * Test updating with role validation - FAILURE
+     */
+    public function test_cannot_update_with_invalid_required_role(): void
+    {
+        $countryKpa = $this->createCountryKpa();
+        $user = User::factory()->create();
+        $userRole = UserRole::factory()->create([
+            'user_id' => $user->id,
+            'role_id' => $this->auditorRole->id,
+        ]);
+
+        $assignment = CountryKpaUser::factory()->create([
+            'country_kpa_id' => $countryKpa->id,
+            'user_role_id' => $this->createUserRole()->id,
+        ]);
+
+        $response = $this->putJson(self::BASE_URL . '/' . $assignment->id, [
+            'country_kpa_id' => $countryKpa->id,
+            'user_role_id' => $userRole->id,
+            'required_role_name' => 'project_manager', // Require PM but user is auditor
+        ]);
+
+        $response->assertStatus(400)
+                 ->assertJson([
+                     'success' => false,
+                     'message' => "Only users with role 'project_manager' can be assigned to this CountryKpa",
+                 ]);
+    }
+
+    /**
+     * Test update requires required_role_name field
+     */
+    public function test_update_requires_role_name_field(): void
+    {
+        $countryKpa = $this->createCountryKpa();
+        $userRole = $this->createUserRole();
+
+        $assignment = CountryKpaUser::factory()->create([
+            'country_kpa_id' => $countryKpa->id,
+            'user_role_id' => $this->createUserRole()->id,
+        ]);
+
+        $response = $this->putJson(self::BASE_URL . '/' . $assignment->id, [
+            'country_kpa_id' => $countryKpa->id,
+            'user_role_id' => $userRole->id,
+            // Missing required_role_name
+        ]);
+
+        $response->assertStatus(422)
+                 ->assertJson(['success' => false])
+                 ->assertJsonValidationErrors(['required_role_name']);
+    }
+
+    /**
      * Helper: Create a test CountryKpa
      */
     private function createCountryKpa(): CountryKpa
@@ -407,11 +714,10 @@ class CountryKpaUserTest extends TestCase
     private function createUserRole(): UserRole
     {
         $user = User::factory()->create();
-        $role = Role::factory()->create();
-        
+        // Use projectManagerRole from setUp to avoid creating duplicate roles
         return UserRole::factory()->create([
             'user_id' => $user->id,
-            'role_id' => $role->id,
+            'role_id' => $this->projectManagerRole->id,
         ]);
     }
 }
