@@ -13,9 +13,12 @@ class CountryKpaFactory extends Factory
 
     public function definition(): array
     {
+        $country = Country::factory()->create();
+        $kpa = Kpa::factory()->create();
+        
         return [
-            'id_country' => Country::factory(),
-            'id_kpa' => Kpa::factory(),
+            'id_country' => $country->id,
+            'id_kpa' => $kpa->id,
         ];
     }
 }
