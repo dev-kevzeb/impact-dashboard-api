@@ -9,6 +9,7 @@ use App\Http\Responses\ApiResponse;
 use App\Http\Resources\ProgramResource;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use RuntimeException;
 
 class ProgramController extends Controller

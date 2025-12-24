@@ -26,16 +26,16 @@ class ProjectState extends Model
     
     public static function at($state): ProjectState
     {
-        if (empty(trim($name))) {
+        if (empty(trim($state))) {
             throw new RuntimeException(self::$ERROR_NAME_EMPTY);
         }
-        if (strlen(trim($name)) < 3) {
+        if (strlen(trim($state)) < 3) {
             throw new RuntimeException(self::$ERROR_NAME_MIN_LENGTH);
         }
-        if (strlen(trim($name)) > 100) {
+        if (strlen(trim($state)) > 100) {
             throw new RuntimeException(self::$ERROR_NAME_MAX_LENGTH);
         }
-        return new ProjectState(['state' => trim($name)]);
+        return new ProjectState(['state' => trim($state)]);
     }
 
     public function getState(): string
@@ -43,9 +43,4 @@ class ProjectState extends Model
         return $this->state;
     }
 
-    // Laravel Factory integration (required for testing)
-    protected static function newFactory()
-    {
-        return \Database\Factories\ProjectStateFactory::new();
-    }
 }

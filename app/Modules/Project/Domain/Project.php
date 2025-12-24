@@ -18,7 +18,8 @@ class Project extends Model
 {
     use HasFactory;
     protected $table = "project";
-    protected $fillable = ['name','description', 'project_url', 'start_date', 'end_date', 'progress', 'comments', 'project_budget', 'contact_id', 'beneficiary_id', 'project_state_id'];
+    protected $fillable = ['name','description', 'project_url', 'start_date', 'end_date', 
+    'progress', 'comments', 'project_budget', 'contact_id', 'beneficiary_id', 'project_state_id', 'program_id'];
     protected $appends = ['donors_count', 'indicators_count', 'agencies_count'];
 
     public static $ERROR_NAME_EMPTY = 'The project name must not be empty';

@@ -31,6 +31,7 @@ return new class extends Migration
             $table->foreign('contact_id')->references('id')->on('contact');
             $table->foreign('beneficiary_id')->references('id')->on('beneficiary');
             $table->foreign('project_state_id')->references('id')->on('project_state');
+            $table->foreignId('program_id')->constrained('program')->onDelete('restrict');
             
             $table->timestamps();
         });

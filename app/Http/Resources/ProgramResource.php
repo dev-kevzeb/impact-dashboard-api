@@ -18,6 +18,7 @@ class ProgramResource extends JsonResource
             'description' => $this->description,
             'banner_img' => $this->banner_img,
             'program_url' => $this->program_url,
+            'projects_count' => $this->when(isset($this->projects_count), $this->projects_count),
             
             // Relaciones cargadas (si existen)
             'contact' => $this->whenLoaded('contact', function () {
