@@ -16,12 +16,10 @@ return new class extends Migration
             $table->string('name', 255);
             $table->string('email', 255)->unique();
             $table->string('password', 255);
-            $table->unsignedBigInteger('role_id');
             $table->unsignedBigInteger('user_state_id');
             $table->timestamps();
 
-            // Foreign keys
-            $table->foreign('role_id')->references('id')->on('role');
+            // Foreign key to user_state only (role_id removed - now handled by user_role table)
             $table->foreign('user_state_id')->references('id')->on('user_state');
         });
     }

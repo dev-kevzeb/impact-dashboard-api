@@ -14,6 +14,8 @@ CREATE SEQUENCE program_donor_seq;
 CREATE SEQUENCE role_seq;
 CREATE SEQUENCE user_state_seq;
 CREATE SEQUENCE user_seq;
+CREATE SEQUENCE user_role_seq;
+CREATE SEQUENCE country_kpa_user_seq;
 
 
 /*==============================================================*/
@@ -58,7 +60,6 @@ CREATE TABLE "user" (
     name            VARCHAR(255)    NOT NULL,
     email           VARCHAR(255)    NOT NULL,
     password        VARCHAR(255)    NOT NULL,
-    role_id         BIGINT          NOT NULL,
     user_state_id   BIGINT          NOT NULL,
     created_at      TIMESTAMP       NOT NULL,
     updated_at      TIMESTAMP       NOT NULL
@@ -70,7 +71,6 @@ ALTER TABLE "user"
     ALTER COLUMN    updated_at      SET DEFAULT CURRENT_TIMESTAMP,
     ADD CONSTRAINT  pk_user         PRIMARY KEY(id),
     ADD CONSTRAINT  uq_user_email   UNIQUE(email),
-    ADD CONSTRAINT  fk_user_role    FOREIGN KEY(role_id) REFERENCES role(id),
     ADD CONSTRAINT  fk_user_user_state FOREIGN KEY(user_state_id) REFERENCES user_state(id);
 
 /*==============================================================*/
@@ -287,4 +287,44 @@ ALTER TABLE program_donor
     ADD CONSTRAINT  uq_program_donor  UNIQUE(program_id, donor_id),
     ADD CONSTRAINT  fk_program_donor_program FOREIGN KEY (program_id) REFERENCES program(id) ON DELETE CASCADE,
     ADD CONSTRAINT  fk_program_donor_donor   FOREIGN KEY (donor_id) REFERENCES donor(id) ON DELETE CASCADE;
+
+/*==============================================================*/
+/* Table: CountryKpa_User (Pivot for UserRole assignments)      */
+/*==============================================================*/
+CREATE TABLE country_kpa_user (
+    id              BIGINT          NOT NULL,
+    country_kpa_id  BIGINT          NOT NULL,
+    user_role_id    BIGINT          NOT NULL,
+    created_at      TIMESTAMP       NOT NULL,
+    updated_at      TIMESTAMP       NOT NULL
+);
+
+ALTER TABLE country_kpa_user
+    ALTER COLUMN    id              SET DEFAULT nextval('country_kpa_user_seq'),
+    ALTER COLUMN    created_at      SET DEFAULT CURRENT_TIMESTAMP,
+    ALTER COLUMN    updated_at      SET DEFAULT CURRENT_TIMESTAMP,
+    ADD CONSTRAINT  pk_country_kpa_user  PRIMARY KEY(id),
+    ADD CONSTRAINT  uq_country_kpa_user_role_combination  UNIQUE(country_kpa_id, user_role_id),
+    ADD CONSTRAINT  fk_country_kpa_user_country_kpa FOREIGN KEY (country_kpa_id) REFERENCES country_kpa(id) ON DELETE CASCADE,
+    ADD CONSTRAINT  fk_country_kpa_user_user_role FOREIGN KEY (user_role_id) REFERENCES user_role(id) ON DELETE CASCADE;
+
+/*==============================================================*/
+/* Table: User_Role (Pivot for User-Role assignments)           */
+/*==============================================================*/
+CREATE TABLE user_role (
+    id              BIGINT          NOT NULL,
+    user_id         BIGINT          NOT NULL,
+    role_id         BIGINT          NOT NULL,
+    created_at      TIMESTAMP       NOT NULL,
+    updated_at      TIMESTAMP       NOT NULL
+);
+
+ALTER TABLE user_role
+    ALTER COLUMN    id              SET DEFAULT nextval('user_role_seq'),
+    ALTER COLUMN    created_at      SET DEFAULT CURRENT_TIMESTAMP,
+    ALTER COLUMN    updated_at      SET DEFAULT CURRENT_TIMESTAMP,
+    ADD CONSTRAINT  pk_user_role  PRIMARY KEY(id),
+    ADD CONSTRAINT  uq_user_role_combination  UNIQUE(user_id, role_id),
+    ADD CONSTRAINT  fk_user_role_user FOREIGN KEY (user_id) REFERENCES "user"(id) ON DELETE CASCADE,
+    ADD CONSTRAINT  fk_user_role_role FOREIGN KEY (role_id) REFERENCES role(id) ON DELETE CASCADE;
 

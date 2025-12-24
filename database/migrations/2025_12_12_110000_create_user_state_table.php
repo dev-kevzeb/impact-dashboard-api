@@ -10,7 +10,7 @@ return new class extends Migration
     public function up(): void
     {
         if (DB::getDriverName() === 'pgsql') {
-            DB::statement('CREATE SEQUENCE user_state_seq');
+            DB::statement('CREATE SEQUENCE IF NOT EXISTS user_state_seq');
         }
 
         Schema::create('user_state', function (Blueprint $table) {

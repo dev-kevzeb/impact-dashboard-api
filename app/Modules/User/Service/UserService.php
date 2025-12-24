@@ -6,6 +6,7 @@ use App\Modules\User\Domain\User;
 use App\Modules\User\Repository\UserRepository;
 use App\Modules\Role\Repository\RoleRepository;
 use App\Modules\UserState\Repository\UserStateRepository;
+use App\Modules\UserRole\Service\UserRoleService;
 use RuntimeException;
 
 class UserService
@@ -13,15 +14,18 @@ class UserService
     public UserRepository $repository;
     private RoleRepository $roleRepository;
     private UserStateRepository $userStateRepository;
+    private UserRoleService $userRoleService;
 
     public function __construct(
         UserRepository $repository,
         RoleRepository $roleRepository,
-        UserStateRepository $userStateRepository
+        UserStateRepository $userStateRepository,
+        UserRoleService $userRoleService
     ) {
         $this->repository = $repository;
         $this->roleRepository = $roleRepository;
         $this->userStateRepository = $userStateRepository;
+        $this->userRoleService = $userRoleService;
     }
 
     /**
@@ -37,7 +41,7 @@ class UserService
      */
     public function createUser(string $name, string $email, string $password, int $roleId, int $userStateId): User
     {
-        // Retrieve objects from repositories
+        // Validate role exists
         $role = $this->roleRepository->findById($roleId);
         if (!$role) {
             throw new RuntimeException("The role with id {$roleId} does not exist.");
@@ -48,10 +52,13 @@ class UserService
             throw new RuntimeException("The user state with id {$userStateId} does not exist.");
         }
 
-        // Create user passing complete objects to Domain
-        $user = User::at($name, $email, $role, $userState);
+        // Create user WITHOUT role (now handled via UserRole)
+        $user = User::at($name, $email, $userState);
         $user->password = $password; // Will be auto-hashed by mutator
         $this->repository->save($user);
+
+        // Assign role via UserRole pivot table
+        $this->userRoleService->assignRoleToUser($user->id, $roleId);
 
         return $user;
     }
@@ -72,7 +79,7 @@ class UserService
     {
         $user = $this->repository->findById($id);
 
-        // Retrieve objects from repositories
+        // Validate role exists
         $role = $this->roleRepository->findById($roleId);
         if (!$role) {
             throw new RuntimeException("The role with id {$roleId} does not exist.");
@@ -83,11 +90,10 @@ class UserService
             throw new RuntimeException("The user state with id {$userStateId} does not exist.");
         }
 
-        // Re-validate domain rules with objects
-        $updated = User::at($name, $email, $role, $userState);
+        // Re-validate domain rules
+        $updated = User::at($name, $email, $userState);
         $user->name = $updated->name;
         $user->email = $updated->email;
-        $user->role_id = $updated->role_id;
         $user->user_state_id = $updated->user_state_id;
 
         // Update password only if provided
@@ -96,6 +102,25 @@ class UserService
         }
 
         $this->repository->save($user);
+
+        // Update role via UserRole: remove old roles and assign new one
+        // Get current role assignments
+        $currentRoles = $this->userRoleService->getRolesByUser($user->id);
+        
+        // Check if user already has this role
+        $hasRole = $currentRoles->contains(function($userRole) use ($roleId) {
+            return $userRole->role_id === $roleId;
+        });
+
+        if (!$hasRole) {
+            // Remove all current roles
+            foreach ($currentRoles as $userRole) {
+                $this->userRoleService->removeAssignment($userRole->id);
+            }
+            
+            // Assign new role
+            $this->userRoleService->assignRoleToUser($user->id, $roleId);
+        }
 
         return $user;
     }

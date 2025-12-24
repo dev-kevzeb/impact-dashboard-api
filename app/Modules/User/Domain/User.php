@@ -6,6 +6,7 @@ use App\Modules\Role\Domain\Role;
 use App\Modules\UserState\Domain\UserState;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Support\Facades\Hash;
 use RuntimeException;
@@ -15,7 +16,7 @@ class User extends Authenticatable
     use HasFactory;
 
     protected $table = 'user';
-    protected $fillable = ['name', 'email', 'password', 'role_id', 'user_state_id'];
+    protected $fillable = ['name', 'email', 'password', 'user_state_id'];
     protected $hidden = ['password', 'remember_token'];
 
     // Error constants
@@ -23,7 +24,6 @@ class User extends Authenticatable
     public static $ERROR_NAME_MIN_LENGTH = 'the name must be at least 2 characters';
     public static $ERROR_EMAIL_EMPTY = 'the email must not be empty';
     public static $ERROR_EMAIL_INVALID = 'the email is not valid';
-    public static $ERROR_ROLE_INVALID = 'the role must be an instance of Role';
     public static $ERROR_USER_STATE_INVALID = 'the user state must be an instance of UserState';
 
     /**
@@ -36,15 +36,15 @@ class User extends Authenticatable
 
     /**
      * Factory method with domain validation
+     * Note: Role assignment is now handled via UserRole table
      *
      * @param string $name
      * @param string $email
-     * @param Role $role
      * @param UserState $userState
      * @return User
      * @throws RuntimeException
      */
-    public static function at(string $name, string $email, Role $role, UserState $userState): User
+    public static function at(string $name, string $email, UserState $userState): User
     {
         $trimmedName = trim($name);
         $trimmedEmail = trim($email);
@@ -65,10 +65,6 @@ class User extends Authenticatable
             throw new RuntimeException(self::$ERROR_EMAIL_INVALID);
         }
 
-        if (!($role instanceof Role)) {
-            throw new RuntimeException(self::$ERROR_ROLE_INVALID);
-        }
-
         if (!($userState instanceof UserState)) {
             throw new RuntimeException(self::$ERROR_USER_STATE_INVALID);
         }
@@ -76,7 +72,6 @@ class User extends Authenticatable
         return new User([
             'name' => $trimmedName,
             'email' => strtolower($trimmedEmail),
-            'role_id' => $role->id,
             'user_state_id' => $userState->id
         ]);
     }
@@ -102,13 +97,15 @@ class User extends Authenticatable
     }
 
     /**
-     * Relationship: User belongs to a Role
+     * Relationship: User has many Roles through user_role pivot table
+     * Use $user->roles to get all roles assigned to the user
      *
-     * @return BelongsTo
+     * @return BelongsToMany
      */
-    public function role(): BelongsTo
+    public function roles(): BelongsToMany
     {
-        return $this->belongsTo(Role::class);
+        return $this->belongsToMany(Role::class, 'user_role', 'user_id', 'role_id')
+                    ->withTimestamps();
     }
 
     /**
