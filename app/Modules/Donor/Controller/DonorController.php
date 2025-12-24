@@ -24,19 +24,6 @@ use RuntimeException;
  *         example="Banco Mundial",
  *         description="Nombre del donante (único, máximo 255 caracteres)"
  *     ),
- *     @OA\Property(
- *         property="contribution",
- *         type="number",
- *         format="float",
- *         example=150000.50,
- *         description="Monto de la contribución financiera"
- *     ),
- *     @OA\Property(
- *         property="project_id",
- *         type="integer",
- *         example=3,
- *         description="ID del proyecto asociado (FK a project)"
- *     )
  * )
  */
 class DonorController extends Controller
@@ -173,19 +160,7 @@ class DonorController extends Controller
      *                     example="Cooperación Alemana (GIZ)",
      *                     description="Nombre del donante (requerido, único, máximo 255 caracteres)"
      *                 ),
-     *                 @OA\Property(
-     *                     property="contribution",
-     *                     type="number",
-     *                     format="float",
-     *                     example=250000.00,
-     *                     description="Monto de la contribución financiera (requerido, debe ser mayor a 0)"
-     *                 ),
-     *                 @OA\Property(
-     *                     property="project_id",
-     *                     type="integer",
-     *                     example=5,
-     *                     description="ID del proyecto asociado (requerido, debe existir en project)"
-     *                 )
+    
      *             )
      *         )
      *     ),
@@ -220,16 +195,6 @@ class DonorController extends Controller
      *                     type="array",
      *                     @OA\Items(type="string", example="Este donante ya existe en el sistema")
      *                 ),
-     *                 @OA\Property(
-     *                     property="contribution",
-     *                     type="array",
-     *                     @OA\Items(type="string", example="La contribución es obligatoria")
-     *                 ),
-     *                 @OA\Property(
-     *                     property="project_id",
-     *                     type="array",
-     *                     @OA\Items(type="string", example="El ID del proyecto es obligatorio")
-     *                 )
      *             )
      *         )
      *     ),
@@ -244,7 +209,7 @@ class DonorController extends Controller
         try {
             $validated = $request->validated();
 
-            $donor = $this->donorService->createDonor($validated['name'], $validated['contribution'], $validated['project_id']);
+            $donor = $this->donorService->createDonor($validated['name']);
 
             return ApiResponse::created(
                 'Donor created successfully',
@@ -252,7 +217,7 @@ class DonorController extends Controller
             );
         } catch (RuntimeException $e) {
             // Si el error es de duplicado, retornar como error de validación (422)
-            if (str_contains($e->getMessage(), 'Ya existe')) {
+            if (str_contains($e->getMessage(), 'Already exists')) {
                 return ApiResponse::validationError(['name' => [$e->getMessage()]]);
             }
             return ApiResponse::error($e->getMessage(), 400);
@@ -284,19 +249,6 @@ class DonorController extends Controller
      *                     example="Unión Europea",
      *                     description="Nuevo nombre del donante (requerido, único, máximo 255 caracteres)"
      *                 ),
-     *                 @OA\Property(
-     *                     property="contribution",
-     *                     type="number",
-     *                     format="float",
-     *                     example=300000.75,
-     *                     description="Nuevo monto de contribución (requerido, debe ser mayor a 0)"
-     *                 ),
-     *                 @OA\Property(
-     *                     property="project_id",
-     *                     type="integer",
-     *                     example=7,
-     *                     description="Nuevo ID del proyecto asociado (requerido, debe existir)"
-     *                 )
      *             )
      *         )
      *     ),
@@ -353,7 +305,7 @@ class DonorController extends Controller
         try {
             $validated = $request->validated();
 
-            $donor = $this->donorService->updateDonor($id, $validated['name'], $validated['contribution'], $validated['project_id']);
+            $donor = $this->donorService->updateDonor($id, $validated['name']);
 
             return ApiResponse::success(
                 'Donor uploaded successfully',

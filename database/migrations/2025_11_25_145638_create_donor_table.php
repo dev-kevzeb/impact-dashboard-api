@@ -14,8 +14,8 @@ return new class extends Migration
         Schema::create('donor', function (Blueprint $table) {
             $table->id();
             $table->string('name', 255)->unique();
-            $table->decimal('contribution', 5, 2)->default(0);
-            $table->foreignId('project_id')->nulleable()->constrained('project');
+            //$table->decimal('contribution', 5, 2)->default(0);
+            //$table->foreignId('project_id')->nulleable()->constrained('project');
             $table->timestamps();
         });
     }
