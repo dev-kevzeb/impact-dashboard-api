@@ -9,6 +9,18 @@ use Illuminate\Validation\Rule;
 
 class DonorRequest extends FormRequest
 {
+
+    protected function prepareForValidation()
+    {
+        if ($this->has('name')) {
+            $name = trim($this->input('name'));
+            $name = preg_replace('/\s+/', ' ', $name);
+
+            $this->merge([
+                'name' => $name
+            ]);
+        }
+    }
     public function authorize(): bool
     {
         return true;
@@ -24,21 +36,9 @@ class DonorRequest extends FormRequest
                 'required',
                 'string',
                 'min:2',
+                'regex:/^[\pL\s]+$/u',
                 'max:255',
                 Rule::unique('donor', 'name')->ignore($donorId),
-            ],
-
-            'contribution' => [
-                'required',
-                'numeric',
-                'min:0',
-                'max:100',
-            ],
-
-            'project_id' => [
-                'required',
-                'integer',
-                Rule::exists('project', 'id'),
             ],
         ];
     }
@@ -46,24 +46,14 @@ class DonorRequest extends FormRequest
     public function messages(): array
     {
         return [
-            // NAME
-            'name.required' => 'El nombre del donante es obligatorio.',
-            'name.string' => 'El nombre debe ser una cadena de texto.',
-            'name.min' => 'El nombre debe tener al menos 2 caracteres.',
-            'name.max' => 'El nombre no debe exceder :max caracteres.',
-            'name.unique' => 'Este donante ya existe en el sistema.',
-
-            // CONTRIBUTION
-            'contribution.required' => 'La contribución es obligatoria.',
-            'contribution.numeric' => 'La contribución debe ser un número.',
-            'contribution.min' => 'La contribución debe ser mínimo 0.',
-            'contribution.max' => 'La contribución no debe exceder 100.',
-
-            // PROJECT_ID
-            'project_id.required' => 'El proyecto asociado es obligatorio.',
-            'project_id.integer' => 'El ID del proyecto debe ser un número entero.',
-            'project_id.exists' => 'El proyecto seleccionado no es válido.',
+            'name.required' => 'The donor name is required.',
+            'name.string' => 'The name must be a string.',
+            'name.regex' => 'The name must only contain letters and spaces.',
+            'name.min' => 'The donor name must be at least 2 characters long.',
+            'name.max' => 'The donor name must not exceed 255 characters.',
+            'name.unique' => 'This donor already exists in the system.',
         ];
+
     }
 
     /**
