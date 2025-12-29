@@ -21,6 +21,7 @@ use App\Modules\Contact\Controller\ContactController;
 use App\Modules\Agency\Controller\AgencyController;
 use App\Modules\CountryKpa\Controller\CountryKpaController;
 use App\Modules\CountryKpaUser\Controller\CountryKpaUserController;
+use App\Modules\ProgramUser\Controller\ProgramUserController;
 use App\Modules\UserRole\Controller\UserRoleController;
 use \App\Modules\StrategicOutput\Controller\StrategicOutputController;
 use App\Modules\Project\Controller\ProjectController;
@@ -109,6 +110,13 @@ Route::prefix('v1')->group(function () {
     Route::get('user_roles/{id}', [UserRoleController::class, 'show']);
     Route::put('user_roles/{id}', [UserRoleController::class, 'update']);
     Route::delete('user_roles/{id}', [UserRoleController::class, 'destroy']);
+
+    // API Routes para Program-Users (CountryKpaUser assignments to Programs)
+    Route::get('program_users', [ProgramUserController::class, 'index']);
+    Route::post('program_users', [ProgramUserController::class, 'store']);
+    Route::get('program_users/{id}', [ProgramUserController::class, 'show']);
+    Route::put('program_users/{id}', [ProgramUserController::class, 'update']);
+    Route::delete('program_users/{id}', [ProgramUserController::class, 'destroy']);
 
     // API Routes para Country-Kpas
     Route::get('country-kpas', [CountryKpaController::class, 'index']);

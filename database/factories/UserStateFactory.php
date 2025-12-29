@@ -15,14 +15,14 @@ class UserStateFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => $this->faker->unique()->randomElement([
+            'name' => $this->faker->randomElement([
                 'active',
                 'inactive',
                 'suspended',
                 'pending',
                 'blocked',
                 'archived'
-            ]),
+            ]) . ' ' . $this->faker->numberBetween(1, 100000),
         ];
     }
 }

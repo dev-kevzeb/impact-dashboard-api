@@ -16,6 +16,7 @@ CREATE SEQUENCE user_state_seq;
 CREATE SEQUENCE user_seq;
 CREATE SEQUENCE user_role_seq;
 CREATE SEQUENCE country_kpa_user_seq;
+CREATE SEQUENCE program_user_seq;
 
 
 /*==============================================================*/
@@ -307,6 +308,26 @@ ALTER TABLE country_kpa_user
     ADD CONSTRAINT  uq_country_kpa_user_role_combination  UNIQUE(country_kpa_id, user_role_id),
     ADD CONSTRAINT  fk_country_kpa_user_country_kpa FOREIGN KEY (country_kpa_id) REFERENCES country_kpa(id) ON DELETE CASCADE,
     ADD CONSTRAINT  fk_country_kpa_user_user_role FOREIGN KEY (user_role_id) REFERENCES user_role(id) ON DELETE CASCADE;
+
+/*==============================================================*/
+/* Table: ProgramUser (Pivot for Program-CountryKpaUser)        */
+/*==============================================================*/
+CREATE TABLE program_user (
+    id                      BIGINT          NOT NULL,
+    program_id              BIGINT          NOT NULL,
+    country_kpa_user_id     BIGINT          NOT NULL,
+    created_at              TIMESTAMP       NOT NULL,
+    updated_at              TIMESTAMP       NOT NULL
+);
+
+ALTER TABLE program_user
+    ALTER COLUMN    id              SET DEFAULT nextval('program_user_seq'),
+    ALTER COLUMN    created_at      SET DEFAULT CURRENT_TIMESTAMP,
+    ALTER COLUMN    updated_at      SET DEFAULT CURRENT_TIMESTAMP,
+    ADD CONSTRAINT  pk_program_user  PRIMARY KEY(id),
+    ADD CONSTRAINT  uq_program_country_kpa_user  UNIQUE(program_id, country_kpa_user_id),
+    ADD CONSTRAINT  fk_program_user_program FOREIGN KEY (program_id) REFERENCES program(id) ON DELETE CASCADE,
+    ADD CONSTRAINT  fk_program_user_country_kpa_user FOREIGN KEY (country_kpa_user_id) REFERENCES country_kpa_user(id) ON DELETE CASCADE;
 
 /*==============================================================*/
 /* Table: User_Role (Pivot for User-Role assignments)           */

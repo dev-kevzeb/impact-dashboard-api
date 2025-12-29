@@ -15,7 +15,7 @@ class RoleFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => $this->faker->unique()->randomElement([
+            'name' => $this->faker->randomElement([
                 'admin',
                 'country_manager',
                 'project_manager',
@@ -24,7 +24,7 @@ class RoleFactory extends Factory
                 'viewer',
                 'editor',
                 'super_admin'
-            ]),
+            ]) . ' ' . $this->faker->numberBetween(1, 100000),
         ];
     }
 }
