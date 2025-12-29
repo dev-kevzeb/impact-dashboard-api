@@ -152,15 +152,16 @@ class CountryKpaUserController extends Controller
      * @OA\Post(
      *     path="/api/v1/country_kpa_users",
      *     summary="Assign a user to a CountryKpa",
-     *     description="Create a new assignment between a User and a CountryKpa",
+     *     description="Create a new assignment between a User and a CountryKpa with optional role validation",
      *     operationId="createCountryKpaUserAssignment",
      *     tags={"CountryKpaUsers"},
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
-     *             required={"country_kpa_id", "user_id"},
+     *             required={"country_kpa_id", "user_role_id", "required_role_name"},
      *             @OA\Property(property="country_kpa_id", type="integer", example=5, description="CountryKpa ID"),
-     *             @OA\Property(property="user_id", type="integer", example=3, description="User ID")
+     *             @OA\Property(property="user_role_id", type="integer", example=12, description="UserRole ID"),
+     *             @OA\Property(property="required_role_name", type="string", example="project_manager", description="Role name to validate (e.g., 'project_manager', 'country_manager', 'admin'). Only UserRoles with this role can be assigned.")
      *         )
      *     ),
      *     @OA\Response(
@@ -209,9 +210,10 @@ class CountryKpaUserController extends Controller
         try {
             $validated = $request->validated();
             
-            $assignment = $this->service->assignUserRoleToCountryKpa(
+            $assignment = $this->service->createAssignment(
                 $validated['country_kpa_id'],
-                $validated['user_role_id']
+                $validated['user_role_id'],
+                $validated['required_role_name']
             );
             
             $assignment->load(['countryKpa.country', 'countryKpa.kpa', 'userRole.user.userState', 'userRole.role']);
@@ -294,7 +296,7 @@ class CountryKpaUserController extends Controller
      * @OA\Put(
      *     path="/api/v1/country_kpa_users/{id}",
      *     summary="Update an assignment",
-     *     description="Update an existing user assignment to a different CountryKpa or different user",
+     *     description="Update an existing user assignment to a different CountryKpa or different user with optional role validation",
      *     operationId="updateCountryKpaUserAssignment",
      *     tags={"CountryKpaUsers"},
      *     @OA\Parameter(
@@ -307,9 +309,10 @@ class CountryKpaUserController extends Controller
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
-     *             required={"country_kpa_id", "user_id"},
+     *             required={"country_kpa_id", "user_role_id", "required_role_name"},
      *             @OA\Property(property="country_kpa_id", type="integer", example=8, description="New CountryKpa ID"),
-     *             @OA\Property(property="user_id", type="integer", example=5, description="New User ID")
+     *             @OA\Property(property="user_role_id", type="integer", example=15, description="New UserRole ID"),
+     *             @OA\Property(property="required_role_name", type="string", example="project_manager", description="Role name to validate. Only UserRoles with this role can be assigned.")
      *         )
      *     ),
      *     @OA\Response(
@@ -370,7 +373,8 @@ class CountryKpaUserController extends Controller
             $assignment = $this->service->updateAssignment(
                 $id,
                 $validated['country_kpa_id'],
-                $validated['user_role_id']
+                $validated['user_role_id'],
+                $validated['required_role_name']
             );
             
             $assignment->load(['countryKpa.country', 'countryKpa.kpa', 'userRole.user.userState', 'userRole.role']);

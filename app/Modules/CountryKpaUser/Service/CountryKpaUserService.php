@@ -4,7 +4,9 @@ namespace App\Modules\CountryKpaUser\Service;
 
 use App\Modules\CountryKpaUser\Domain\CountryKpaUser;
 use App\Modules\CountryKpaUser\Repository\CountryKpaUserRepository;
+use App\Modules\UserRole\Domain\UserRole;
 use RuntimeException;
+
 
 class CountryKpaUserService
 {
@@ -16,18 +18,29 @@ class CountryKpaUserService
     }
     
     /**
-     * Assign a UserRole to a CountryKpa
+     * Create a new assignment between UserRole and CountryKpa
+     * Validates that the UserRole has a specific role before assignment
      *
      * @param int $countryKpaId
      * @param int $userRoleId
+     * @param string $requiredRoleName Role name to validate (e.g., 'project_manager', 'country_manager')
      * @return CountryKpaUser
      * @throws RuntimeException
      */
-    public function assignUserRoleToCountryKpa(int $countryKpaId, int $userRoleId): CountryKpaUser
+    public function createAssignment(int $countryKpaId, int $userRoleId, string $requiredRoleName): CountryKpaUser
     {
         // Check if assignment already exists
         if ($this->repository->assignmentExists($countryKpaId, $userRoleId)) {
             throw new RuntimeException('This user role is already assigned to this CountryKpa');
+        }
+        
+        // Validate role (required)
+        $userRole = UserRole::with('role')->findOrFail($userRoleId);
+        
+        if (!$userRole->role->hasRole($requiredRoleName)) {
+            throw new RuntimeException(
+                "Only users with role '{$requiredRoleName}' can be assigned to this CountryKpa"
+            );
         }
 
         $assignment = new CountryKpaUser([
@@ -41,21 +54,32 @@ class CountryKpaUserService
     }
     
     /**
-     * Update an assignment
+     * Update an existing assignment
+     * Validates that the UserRole has a specific role before update
      *
      * @param int $id
      * @param int $countryKpaId
      * @param int $userRoleId
+     * @param string $requiredRoleName Role name to validate (e.g., 'project_manager', 'country_manager')
      * @return CountryKpaUser
      * @throws RuntimeException
      */
-    public function updateAssignment(int $id, int $countryKpaId, int $userRoleId): CountryKpaUser
+    public function updateAssignment(int $id, int $countryKpaId, int $userRoleId, string $requiredRoleName): CountryKpaUser
     {
         $assignment = $this->repository->findById($id);
         
         // Check if new combination would be duplicate (excluding current record)
         if ($this->repository->assignmentExistsExcluding($countryKpaId, $userRoleId, $id)) {
             throw new RuntimeException('This user role is already assigned to this CountryKpa');
+        }
+        
+        // Validate role (required)
+        $userRole = UserRole::with('role')->findOrFail($userRoleId);
+        
+        if (!$userRole->role->hasRole($requiredRoleName)) {
+            throw new RuntimeException(
+                "Only users with role '{$requiredRoleName}' can be assigned to this CountryKpa"
+            );
         }
 
         $assignment->country_kpa_id = $countryKpaId;
