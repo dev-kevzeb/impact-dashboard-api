@@ -10,7 +10,7 @@ use RuntimeException;
 class DonorService
 {
     private DonorRepository $donorRepository;
-    private ProjectRepository $projectRepository;
+    //private ProjectRepository $projectRepository;
 
     public function __construct(DonorRepository $donorRepository, ProjectRepository $projectRepository)
     {
@@ -18,15 +18,28 @@ class DonorService
         $this->projectRepository = $projectRepository;
     }
 
-    public function createDonor(string $name, $contribution, $project_id): Donor
+    public function createDonor(string $name): Donor
     {
-        $project = $this->projectRepository->findById($project_id);
-        if(empty($project)) throw new RuntimeException("Project with id not found: {$project_id}.");
+        $donor = $this->donorRepository->findByName($name);
+        if(!empty($donor)) throw new RuntimeException("A donor with the name '{$name}' already exists.");
         
-        $donor = Donor::at($name, $contribution, $project);
+        $donor = Donor::at($name);     
+        $this->donorRepository->save($donor);
+        return $donor;
+    }
+
+    public function updateDonor(int $id, string $name): Donor
+    {        
+        $donor = $this->donorRepository->findByName($name);
+        if(!empty($donor) && $donor->id !== $id) throw new RuntimeException("A donor with the name '{$name}' already exists.");
+
+        $donor = $this->donorRepository->findById($id);
+        if(empty($donor)) throw new RuntimeException("The donor with id was not found: {$id}.");
+
+        $updatedDonor = Donor::at($name);
+        $donor->name = $updatedDonor->name;
         
         $this->donorRepository->save($donor);
-        
         return $donor;
     }
 
@@ -43,23 +56,5 @@ class DonorService
     public function getAllDonors()
     {
         return $this->donorRepository->getAll();
-    }
-
-    public function updateDonor(int $id, string $name, $contribution, $project_id): Donor
-    {
-        $donor = $this->donorRepository->findById($id);
-        if(empty($donor)) throw new RuntimeException("The donor with id was not found: {$id}.");
-
-        $project = $this->projectRepository->findById($project_id);
-        if(empty($project)) throw new RuntimeException("Project with id not found: {$project_id}.");
-
-        $updatedDonor = Donor::at($name, $contribution, $project);
-        $donor->name = $updatedDonor->name;
-        $donor->contribution = $updatedDonor->contribution;
-        $donor->project = $updatedDonor->project;
-        
-        $this->donorRepository->save($donor);
-        
-        return $donor;
     }
 }

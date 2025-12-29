@@ -13,5 +13,14 @@ class DonorRepository extends AbstractRepository implements RepositoryInterface
     {
         parent::__construct($model);
     }
+
+    public function findByName(string $name): ?Donor
+    {
+        $normalized = strtolower(trim($name));
+
+        return $this->model
+            ->whereRaw('LOWER(name) LIKE ?', ['%' . $normalized . '%'])
+            ->first();
+    }
     
 }
