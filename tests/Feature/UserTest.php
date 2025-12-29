@@ -29,7 +29,6 @@ class UserTest extends TestCase
             'name' => 'Test User',
             'email' => 'test@example.com',
             'password' => 'secret123',
-            'role_id' => $this->role->id,
             'user_state_id' => $this->userState->id
         ]);
 
@@ -48,6 +47,9 @@ class UserTest extends TestCase
         $user = User::where('email', 'test@example.com')->first();
         $this->assertNotEquals('secret123', $user->password);
         $this->assertTrue(password_verify('secret123', $user->password));
+
+        // Verify user has NO roles initially (must be assigned via UserRole)
+        $this->assertCount(0, $user->roles);
     }
 
     public function test_can_list_all_users(): void
@@ -139,7 +141,6 @@ class UserTest extends TestCase
         $response = $this->putJson(self::BASE_URL . '/' . $user->id, [
             'name' => 'Updated Name',
             'email' => 'updated@example.com',
-            'role_id' => $this->role->id,
             'user_state_id' => $this->userState->id
         ]);
 
@@ -169,7 +170,6 @@ class UserTest extends TestCase
             'name' => $user->name,
             'email' => $user->email,
             'password' => 'newpassword456',
-            'role_id' => $this->role->id,
             'user_state_id' => $this->userState->id
         ]);
 
@@ -217,7 +217,6 @@ class UserTest extends TestCase
         $response = $this->putJson(self::BASE_URL . '/999', [
             'name' => 'Test',
             'email' => 'test@example.com',
-            'role_id' => $this->role->id,
             'user_state_id' => $this->userState->id
         ]);
 
@@ -230,7 +229,7 @@ class UserTest extends TestCase
         $response = $this->postJson(self::BASE_URL, []);
 
         $response->assertStatus(422)
-            ->assertJsonValidationErrors(['name', 'email', 'password', 'role_id', 'user_state_id']);
+            ->assertJsonValidationErrors(['name', 'email', 'password', 'user_state_id']);
     }
 
     public function test_validates_email_format(): void
@@ -239,7 +238,6 @@ class UserTest extends TestCase
             'name' => 'Test User',
             'email' => 'invalid-email',
             'password' => 'secret123',
-            'role_id' => $this->role->id,
             'user_state_id' => $this->userState->id
         ]);
 
@@ -258,7 +256,6 @@ class UserTest extends TestCase
             'name' => 'Another User',
             'email' => 'duplicate@example.com',
             'password' => 'secret123',
-            'role_id' => $this->role->id,
             'user_state_id' => $this->userState->id
         ]);
 
@@ -276,7 +273,6 @@ class UserTest extends TestCase
         $response = $this->putJson(self::BASE_URL . '/' . $user->id, [
             'name' => 'Updated Name',
             'email' => 'same@example.com', // Same email
-            'role_id' => $this->role->id,
             'user_state_id' => $this->userState->id
         ]);
 
@@ -290,26 +286,11 @@ class UserTest extends TestCase
             'name' => 'Test User',
             'email' => 'test@example.com',
             'password' => '123', // Too short
-            'role_id' => $this->role->id,
             'user_state_id' => $this->userState->id
         ]);
 
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['password']);
-    }
-
-    public function test_validates_role_exists(): void
-    {
-        $response = $this->postJson(self::BASE_URL, [
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-            'password' => 'secret123',
-            'role_id' => 9999, // Non-existent
-            'user_state_id' => $this->userState->id
-        ]);
-
-        $response->assertStatus(422)
-            ->assertJsonValidationErrors(['role_id']);
     }
 
     public function test_validates_user_state_exists(): void
@@ -318,7 +299,6 @@ class UserTest extends TestCase
             'name' => 'Test User',
             'email' => 'test@example.com',
             'password' => 'secret123',
-            'role_id' => $this->role->id,
             'user_state_id' => 9999 // Non-existent
         ]);
 
@@ -332,7 +312,6 @@ class UserTest extends TestCase
             'name' => 'T', // Too short for domain validation
             'email' => 'test@example.com',
             'password' => 'secret123',
-            'role_id' => $this->role->id,
             'user_state_id' => $this->userState->id
         ]);
 
@@ -346,7 +325,6 @@ class UserTest extends TestCase
             'name' => '  Test User  ',
             'email' => '  test@example.com  ',
             'password' => 'secret123',
-            'role_id' => $this->role->id,
             'user_state_id' => $this->userState->id
         ]);
 
@@ -364,7 +342,6 @@ class UserTest extends TestCase
             'name' => 'Test User',
             'email' => 'TEST@EXAMPLE.COM',
             'password' => 'secret123',
-            'role_id' => $this->role->id,
             'user_state_id' => $this->userState->id
         ]);
 

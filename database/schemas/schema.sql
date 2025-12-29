@@ -7,10 +7,20 @@ CREATE SEQUENCE sdg_seq;
 CREATE SEQUENCE agency_seq;
 CREATE SEQUENCE currency_seq;
 CREATE SEQUENCE country_seq;
+CREATE SEQUENCE kpa_seq;
+CREATE SEQUENCE country_kpa_seq;
+CREATE SEQUENCE strategic_output_seq;
+CREATE SEQUENCE measure_seq;
+CREATE SEQUENCE indicator_type_seq;
+CREATE SEQUENCE indicator_seq;
 CREATE SEQUENCE contact_seq;
 CREATE SEQUENCE program_seq;
 CREATE SEQUENCE program_sdg_seq;
 CREATE SEQUENCE program_donor_seq;
+CREATE SEQUENCE project_state_seq;
+CREATE SEQUENCE project_seq;
+CREATE SEQUENCE project_agency_seq;
+CREATE SEQUENCE project_indicator_seq;
 CREATE SEQUENCE role_seq;
 CREATE SEQUENCE user_state_seq;
 CREATE SEQUENCE user_seq;
@@ -61,6 +71,7 @@ CREATE TABLE "user" (
     name            VARCHAR(255)    NOT NULL,
     email           VARCHAR(255)    NOT NULL,
     password        VARCHAR(255)    NOT NULL,
+    remember_token  VARCHAR(100)    NULL,
     user_state_id   BIGINT          NOT NULL,
     created_at      TIMESTAMP       NOT NULL,
     updated_at      TIMESTAMP       NOT NULL
@@ -205,7 +216,9 @@ ALTER TABLE country
 /*==============================================================*/
 CREATE TABLE contact (
     id              BIGINT          NOT NULL,
-    name            VARCHAR(255)    NOT NULL,
+    first_name      VARCHAR(255)    NOT NULL,
+    last_name       VARCHAR(255)    NOT NULL,
+    title           VARCHAR(255)    NOT NULL,
     email           VARCHAR(255)    NOT NULL,
     phone           VARCHAR(20)     NOT NULL,
     created_at      TIMESTAMP       NOT NULL,
@@ -238,15 +251,11 @@ ALTER TABLE program
     ALTER COLUMN    created_at      SET DEFAULT CURRENT_TIMESTAMP,
     ALTER COLUMN    updated_at      SET DEFAULT CURRENT_TIMESTAMP,
     ADD CONSTRAINT  pk_program      PRIMARY KEY(id),
+    ADD CONSTRAINT  uq_program_name UNIQUE(name),
     ADD CONSTRAINT  fk_program_contact         FOREIGN KEY (contact_id) REFERENCES contact(id) ON DELETE RESTRICT,
-    ADD CONSTRAINT  fk_program_beneficiary     FOREIGN KEY (beneficiary_id) REFERENCES beneficiary(id) ON DELETE RESTRICT,
-    ADD CONSTRAINT  fk_program_program_state   FOREIGN KEY (program_state_id) REFERENCES program_state(id) ON DELETE RESTRICT,
-    ADD CONSTRAINT  fk_program_country         FOREIGN KEY (country_id) REFERENCES country(id) ON DELETE RESTRICT,
-    ADD CONSTRAINT  fk_program_agency          FOREIGN KEY (agency_id) REFERENCES agency(id) ON DELETE RESTRICT;
+    ADD CONSTRAINT  fk_program_program_state   FOREIGN KEY (program_state_id) REFERENCES program_state(id) ON DELETE RESTRICT;
 
 CREATE INDEX idx_program_name ON program(name);
-CREATE INDEX idx_program_country ON program(country_id);
-CREATE INDEX idx_program_agency ON program(agency_id);
 CREATE INDEX idx_program_state ON program(program_state_id);
 
 /*==============================================================*/
@@ -349,3 +358,202 @@ ALTER TABLE user_role
     ADD CONSTRAINT  fk_user_role_user FOREIGN KEY (user_id) REFERENCES "user"(id) ON DELETE CASCADE,
     ADD CONSTRAINT  fk_user_role_role FOREIGN KEY (role_id) REFERENCES role(id) ON DELETE CASCADE;
 
+/*==============================================================*/
+/* Table: KPA (Key Priority Area)                               */
+/*==============================================================*/
+CREATE TABLE kpa (
+    id                  BIGINT          NOT NULL,
+    name                VARCHAR(100)    NOT NULL,
+    implementation      NUMERIC(5, 2)   NOT NULL DEFAULT 0,
+    created_at          TIMESTAMP       NOT NULL,
+    updated_at          TIMESTAMP       NOT NULL
+);
+
+ALTER TABLE kpa
+    ALTER COLUMN    id              SET DEFAULT nextval('kpa_seq'),
+    ALTER COLUMN    implementation  SET DEFAULT 0,
+    ALTER COLUMN    created_at      SET DEFAULT CURRENT_TIMESTAMP,
+    ALTER COLUMN    updated_at      SET DEFAULT CURRENT_TIMESTAMP,
+    ADD CONSTRAINT  pk_kpa          PRIMARY KEY(id),
+    ADD CONSTRAINT  uq_kpa_name     UNIQUE(name);
+
+/*==============================================================*/
+/* Table: CountryKpa (Pivot for Country-KPA)                    */
+/*==============================================================*/
+CREATE TABLE country_kpa (
+    id              BIGINT          NOT NULL,
+    id_country      BIGINT          NOT NULL,
+    id_kpa          BIGINT          NOT NULL
+);
+
+ALTER TABLE country_kpa
+    ALTER COLUMN    id              SET DEFAULT nextval('country_kpa_seq'),
+    ADD CONSTRAINT  pk_country_kpa  PRIMARY KEY(id),
+    ADD CONSTRAINT  uq_country_kpa  UNIQUE(id_country, id_kpa),
+    ADD CONSTRAINT  fk_country_kpa_country FOREIGN KEY (id_country) REFERENCES country(id) ON DELETE CASCADE,
+    ADD CONSTRAINT  fk_country_kpa_kpa     FOREIGN KEY (id_kpa) REFERENCES kpa(id) ON DELETE CASCADE;
+
+/*==============================================================*/
+/* Table: StrategicOutput                                       */
+/*==============================================================*/
+CREATE TABLE strategic_output (
+    id              BIGINT          NOT NULL,
+    name            VARCHAR(255)    NOT NULL,
+    id_ck           BIGINT          NOT NULL,
+    created_at      TIMESTAMP       NOT NULL,
+    updated_at      TIMESTAMP       NOT NULL
+);
+
+ALTER TABLE strategic_output
+    ALTER COLUMN    id              SET DEFAULT nextval('strategic_output_seq'),
+    ALTER COLUMN    created_at      SET DEFAULT CURRENT_TIMESTAMP,
+    ALTER COLUMN    updated_at      SET DEFAULT CURRENT_TIMESTAMP,
+    ADD CONSTRAINT  pk_strategic_output PRIMARY KEY(id),
+    ADD CONSTRAINT  fk_strategic_output_country_kpa FOREIGN KEY (id_ck) REFERENCES country_kpa(id) ON DELETE CASCADE;
+
+/*==============================================================*/
+/* Table: Measure                                               */
+/*==============================================================*/
+CREATE TABLE measure (
+    id                      BIGINT          NOT NULL,
+    name                    VARCHAR(100)    NOT NULL,
+    strategic_output_id     BIGINT          NOT NULL,
+    created_at              TIMESTAMP       NOT NULL,
+    updated_at              TIMESTAMP       NOT NULL
+);
+
+ALTER TABLE measure
+    ALTER COLUMN    id              SET DEFAULT nextval('measure_seq'),
+    ALTER COLUMN    created_at      SET DEFAULT CURRENT_TIMESTAMP,
+    ALTER COLUMN    updated_at      SET DEFAULT CURRENT_TIMESTAMP,
+    ADD CONSTRAINT  pk_measure      PRIMARY KEY(id),
+    ADD CONSTRAINT  uq_strategic_output_measure UNIQUE(strategic_output_id, name),
+    ADD CONSTRAINT  fk_measure_strategic_output FOREIGN KEY (strategic_output_id) REFERENCES strategic_output(id) ON DELETE CASCADE;
+
+/*==============================================================*/
+/* Table: IndicatorType                                         */
+/*==============================================================*/
+CREATE TABLE indicator_type (
+    id              BIGINT          NOT NULL,
+    name            VARCHAR(100)    NOT NULL,
+    created_at      TIMESTAMP       NOT NULL,
+    updated_at      TIMESTAMP       NOT NULL
+);
+
+ALTER TABLE indicator_type
+    ALTER COLUMN    id              SET DEFAULT nextval('indicator_type_seq'),
+    ALTER COLUMN    created_at      SET DEFAULT CURRENT_TIMESTAMP,
+    ALTER COLUMN    updated_at      SET DEFAULT CURRENT_TIMESTAMP,
+    ADD CONSTRAINT  pk_indicator_type       PRIMARY KEY(id),
+    ADD CONSTRAINT  uq_indicator_type_name  UNIQUE(name);
+
+/*==============================================================*/
+/* Table: Indicator                                             */
+/*==============================================================*/
+CREATE TABLE indicator (
+    id              BIGINT          NOT NULL,
+    name            VARCHAR(100)    NOT NULL,
+    target          NUMERIC         NOT NULL,
+    type_id         BIGINT          NOT NULL,
+    measure_id      BIGINT          NULL,
+    created_at      TIMESTAMP       NOT NULL,
+    updated_at      TIMESTAMP       NOT NULL
+);
+
+ALTER TABLE indicator
+    ALTER COLUMN    id              SET DEFAULT nextval('indicator_seq'),
+    ALTER COLUMN    created_at      SET DEFAULT CURRENT_TIMESTAMP,
+    ALTER COLUMN    updated_at      SET DEFAULT CURRENT_TIMESTAMP,
+    ADD CONSTRAINT  pk_indicator    PRIMARY KEY(id),
+    ADD CONSTRAINT  uq_measure_indicator UNIQUE(measure_id, name),
+    ADD CONSTRAINT  fk_indicator_type    FOREIGN KEY (type_id) REFERENCES indicator_type(id) ON DELETE RESTRICT,
+    ADD CONSTRAINT  fk_indicator_measure FOREIGN KEY (measure_id) REFERENCES measure(id) ON DELETE SET NULL;
+
+/*==============================================================*/
+/* Table: ProjectState                                          */
+/*==============================================================*/
+CREATE TABLE project_state (
+    id              BIGINT          NOT NULL,
+    state           VARCHAR(100)    NOT NULL,
+    created_at      TIMESTAMP       NOT NULL,
+    updated_at      TIMESTAMP       NOT NULL
+);
+
+ALTER TABLE project_state
+    ALTER COLUMN    id              SET DEFAULT nextval('project_state_seq'),
+    ALTER COLUMN    created_at      SET DEFAULT CURRENT_TIMESTAMP,
+    ALTER COLUMN    updated_at      SET DEFAULT CURRENT_TIMESTAMP,
+    ADD CONSTRAINT  pk_project_state        PRIMARY KEY(id),
+    ADD CONSTRAINT  uq_project_state_state  UNIQUE(state);
+
+/*==============================================================*/
+/* Table: Project                                               */
+/*==============================================================*/
+CREATE TABLE project (
+    id                  BIGINT          NOT NULL,
+    name                VARCHAR(255)    NOT NULL,
+    description         VARCHAR(2000)   NOT NULL,
+    project_url         VARCHAR(255)    NULL,
+    start_date          DATE            NOT NULL,
+    end_date            DATE            NOT NULL,
+    progress            NUMERIC(5, 2)   NOT NULL DEFAULT 0,
+    comments            VARCHAR(1000)   NULL,
+    project_budget      NUMERIC(15, 2)  NOT NULL,
+    contact_id          BIGINT          NULL,
+    beneficiary_id      BIGINT          NULL,
+    project_state_id    BIGINT          NULL,
+    program_id          BIGINT          NOT NULL,
+    created_at          TIMESTAMP       NOT NULL,
+    updated_at          TIMESTAMP       NOT NULL
+);
+
+ALTER TABLE project
+    ALTER COLUMN    id              SET DEFAULT nextval('project_seq'),
+    ALTER COLUMN    progress        SET DEFAULT 0,
+    ALTER COLUMN    created_at      SET DEFAULT CURRENT_TIMESTAMP,
+    ALTER COLUMN    updated_at      SET DEFAULT CURRENT_TIMESTAMP,
+    ADD CONSTRAINT  pk_project      PRIMARY KEY(id),
+    ADD CONSTRAINT  fk_project_contact         FOREIGN KEY (contact_id) REFERENCES contact(id) ON DELETE RESTRICT,
+    ADD CONSTRAINT  fk_project_beneficiary     FOREIGN KEY (beneficiary_id) REFERENCES beneficiary(id) ON DELETE RESTRICT,
+    ADD CONSTRAINT  fk_project_project_state   FOREIGN KEY (project_state_id) REFERENCES project_state(id) ON DELETE RESTRICT,
+    ADD CONSTRAINT  fk_project_program         FOREIGN KEY (program_id) REFERENCES program(id) ON DELETE RESTRICT;
+
+/*==============================================================*/
+/* Table: ProjectAgency (Pivot for Project-Agency)              */
+/*==============================================================*/
+CREATE TABLE project_agency (
+    id              BIGINT          NOT NULL,
+    project_id      BIGINT          NOT NULL,
+    agency_id       BIGINT          NOT NULL,
+    created_at      TIMESTAMP       NOT NULL,
+    updated_at      TIMESTAMP       NOT NULL
+);
+
+ALTER TABLE project_agency
+    ALTER COLUMN    id              SET DEFAULT nextval('project_agency_seq'),
+    ALTER COLUMN    created_at      SET DEFAULT CURRENT_TIMESTAMP,
+    ALTER COLUMN    updated_at      SET DEFAULT CURRENT_TIMESTAMP,
+    ADD CONSTRAINT  pk_project_agency  PRIMARY KEY(id),
+    ADD CONSTRAINT  uq_project_agency  UNIQUE(project_id, agency_id),
+    ADD CONSTRAINT  fk_project_agency_project FOREIGN KEY (project_id) REFERENCES project(id) ON DELETE CASCADE,
+    ADD CONSTRAINT  fk_project_agency_agency  FOREIGN KEY (agency_id) REFERENCES agency(id) ON DELETE CASCADE;
+
+/*==============================================================*/
+/* Table: ProjectIndicator (Pivot for Project-Indicator)        */
+/*==============================================================*/
+CREATE TABLE project_indicator (
+    id              BIGINT          NOT NULL,
+    project_id      BIGINT          NOT NULL,
+    indicator_id    BIGINT          NOT NULL,
+    created_at      TIMESTAMP       NOT NULL,
+    updated_at      TIMESTAMP       NOT NULL
+);
+
+ALTER TABLE project_indicator
+    ALTER COLUMN    id              SET DEFAULT nextval('project_indicator_seq'),
+    ALTER COLUMN    created_at      SET DEFAULT CURRENT_TIMESTAMP,
+    ALTER COLUMN    updated_at      SET DEFAULT CURRENT_TIMESTAMP,
+    ADD CONSTRAINT  pk_project_indicator  PRIMARY KEY(id),
+    ADD CONSTRAINT  uq_project_indicator  UNIQUE(project_id, indicator_id),
+    ADD CONSTRAINT  fk_project_indicator_project   FOREIGN KEY (project_id) REFERENCES project(id) ON DELETE CASCADE,
+    ADD CONSTRAINT  fk_project_indicator_indicator FOREIGN KEY (indicator_id) REFERENCES indicator(id) ON DELETE CASCADE;
