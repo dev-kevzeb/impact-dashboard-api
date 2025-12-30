@@ -10,19 +10,11 @@ use Illuminate\Validation\Rule;
 
 class UserRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
     public function authorize(): bool
     {
         return true;
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
-     */
     public function rules(): array
     {
         $userId = $this->route('id');
@@ -47,11 +39,6 @@ class UserRequest extends FormRequest
                 'min:6',
                 'max:255'
             ],
-            'role_id' => [
-                'required',
-                'integer',
-                'exists:role,id'
-            ],
             'user_state_id' => [
                 'required',
                 'integer',
@@ -60,11 +47,6 @@ class UserRequest extends FormRequest
         ];
     }
 
-    /**
-     * Get custom messages for validator errors.
-     *
-     * @return array<string, string>
-     */
     public function messages(): array
     {
         return [
@@ -80,22 +62,12 @@ class UserRequest extends FormRequest
             'password.string' => 'The password must be a string.',
             'password.min' => 'The password must be at least :min characters.',
             'password.max' => 'The password must not exceed :max characters.',
-            'role_id.required' => 'The user role is required.',
-            'role_id.integer' => 'The role must be an integer.',
-            'role_id.exists' => 'The selected role does not exist.',
             'user_state_id.required' => 'The user state is required.',
             'user_state_id.integer' => 'The state must be an integer.',
             'user_state_id.exists' => 'The selected state does not exist.',
         ];
     }
 
-    /**
-     * Handle a failed validation attempt.
-     *
-     * @param Validator $validator
-     * @return void
-     * @throws HttpResponseException
-     */
     protected function failedValidation(Validator $validator): void
     {
         throw new HttpResponseException(

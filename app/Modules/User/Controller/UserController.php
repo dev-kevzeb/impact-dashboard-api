@@ -114,17 +114,16 @@ class UserController extends Controller
      * @OA\Post(
      *     path="/api/v1/users",
      *     summary="Create a new user",
-     *     description="Create a new user with email, password, name, role and state",
+     *     description="Create a new user with email, password, name and state. Roles must be assigned separately via /api/v1/user_roles",
      *     operationId="createUser",
      *     tags={"Users"},
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
-     *             required={"name", "email", "password", "role_id", "user_state_id"},
+     *             required={"name", "email", "password", "user_state_id"},
      *             @OA\Property(property="name", type="string", example="John Doe"),
      *             @OA\Property(property="email", type="string", example="john@example.com"),
      *             @OA\Property(property="password", type="string", example="secret123"),
-     *             @OA\Property(property="role_id", type="integer", example=1),
      *             @OA\Property(property="user_state_id", type="integer", example=1)
      *         )
      *     ),
@@ -187,14 +186,13 @@ class UserController extends Controller
                 $validated['name'],
                 $validated['email'],
                 $validated['password'],
-                $validated['role_id'],
                 $validated['user_state_id']
             );
 
             $user->load(['roles', 'userState']);
 
             return ApiResponse::created(
-                'User created successfully',
+                'User created successfully. Use /api/v1/user_roles to assign roles.',
                 new UserResource($user)
             );
         } catch (RuntimeException $e) {
@@ -342,7 +340,7 @@ class UserController extends Controller
      * @OA\Put(
      *     path="/api/v1/users/{id}",
      *     summary="Update an existing user",
-     *     description="Update user information (password is optional)",
+     *     description="Update user information (password is optional). Roles must be updated separately via /api/v1/user_roles",
      *     operationId="updateUser",
      *     tags={"Users"},
      *     @OA\Parameter(
@@ -355,11 +353,10 @@ class UserController extends Controller
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
-     *             required={"name", "email", "role_id", "user_state_id"},
+     *             required={"name", "email", "user_state_id"},
      *             @OA\Property(property="name", type="string", example="John Doe Updated"),
      *             @OA\Property(property="email", type="string", example="john.updated@example.com"),
      *             @OA\Property(property="password", type="string", example="newpassword123", description="Optional"),
-     *             @OA\Property(property="role_id", type="integer", example=2),
      *             @OA\Property(property="user_state_id", type="integer", example=1)
      *         )
      *     ),
@@ -431,7 +428,6 @@ class UserController extends Controller
                 $id,
                 $validated['name'],
                 $validated['email'],
-                $validated['role_id'],
                 $validated['user_state_id'],
                 $validated['password'] ?? null
             );
@@ -439,7 +435,7 @@ class UserController extends Controller
             $user->load(['roles', 'userState']);
 
             return ApiResponse::success(
-                'User updated successfully',
+                'User updated successfully. Use /api/v1/user_roles to manage roles.',
                 200,
                 new UserResource($user)
             );
