@@ -4,6 +4,7 @@ namespace App\Modules\Beneficiary\Controller;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\BeneficiaryRequest;
+use App\Modules\Beneficiary\Domain\Beneficiary;
 use App\Modules\Beneficiary\Service\BeneficiaryService;
 use App\Http\Responses\ApiResponse;
 use App\Http\Resources\BeneficiaryResource;
@@ -70,17 +71,27 @@ class BeneficiaryController extends Controller
      *     )
      * )
      */
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
         try {
-            $beneficiaries = $this->beneficiaryService->getAllBeneficiaries();
+            $search = $request->get("search");
+            $perPage = (int) $request->get("per_page", 10);
+
+            $query = Beneficiary::query();
+
+            if ($search) $query->where('name', 'LIKE', '%' . $search . '%');
+
+            $beneficiaries = $query->paginate($perPage);
             
             return ApiResponse::success(
                 'Beneficiary list successfully obtained',
                 200,
                 [
                     'beneficiaries' => BeneficiaryResource::collection($beneficiaries),
-                    'total' => $beneficiaries->count()
+                    'total' => $beneficiaries->count(),
+                    'per_page' => $beneficiaries->perPage(),
+                    'current_page' => $beneficiaries->currentPage(),
+                    'last_page' => $beneficiaries->lastPage(),
                 ]
             );
         } catch (RuntimeException $e) {
