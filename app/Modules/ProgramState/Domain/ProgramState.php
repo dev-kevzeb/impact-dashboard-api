@@ -2,11 +2,14 @@
 
 namespace App\Modules\ProgramState\Domain;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use RuntimeException;
 
 class ProgramState extends Model
 {
+    use HasFactory;
+    
     protected $table = 'program_state';
     protected $fillable = ['name'];
     
@@ -38,6 +41,16 @@ class ProgramState extends Model
     public function getName(): string
     {
         return $this->name;
+    }
+
+    /**
+     * Laravel Factory integration
+     *
+     * @return \Database\Factories\ProgramStateFactory
+     */
+    protected static function newFactory()
+    {
+        return \Database\Factories\ProgramStateFactory::new();
     }
 
     // ============================================

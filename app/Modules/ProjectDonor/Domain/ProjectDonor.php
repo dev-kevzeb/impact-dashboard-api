@@ -3,9 +3,10 @@
 class ProjectDonor
 {
     // Constantes de mensajes de error
-    public static $ERROR_DONOR_INVALID = 'el donante debe ser una instancia de Donor';
-    public static $ERROR_CONTRIBUTION_NOT_NUMERIC = 'la contribución debe ser un número';
-    public static $ERROR_CONTRIBUTION_OUT_OF_RANGE = 'la contribución debe estar entre 0 y 100';
+    public static $ERROR_DONOR_INVALID = 'the donor must be an instance of Donor';
+    public static $ERROR_CONTRIBUTION_NOT_NUMERIC = 'the contribution must be a number';
+    public static $ERROR_CONTRIBUTION_OUT_OF_RANGE = 'the contribution must be between 0 and 100';
+
     
     private Donor $donor;
     private float $contribution;

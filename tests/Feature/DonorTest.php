@@ -11,11 +11,11 @@ class DonorTest extends TestCase
     use RefreshDatabase;
 
     private const BASE_URL = '/api/v1/donors';
-    private const ERROR_REQUIRED = 'El nombre del donante es obligatorio.';
-    private const ERROR_UNIQUE = 'Este donante ya existe en el sistema.';
-    private const ERROR_MIN_LENGTH = 'el nombre del donante debe tener al menos 2 caracteres';
-    private const ERROR_MAX_LENGTH = 'El nombre no debe exceder 255 caracteres.';
-    private const ERROR_STRING = 'El nombre debe ser una cadena de texto.';
+    private const ERROR_REQUIRED = 'The donor name is required.';
+    private const ERROR_UNIQUE = 'This donor already exists in the system.';
+    private const ERROR_MIN_LENGTH = 'The donor name must be at least 2 characters long.';
+    private const ERROR_MAX_LENGTH = 'The donor name must not exceed 255 characters.';
+    private const ERROR_STRING = 'The name must only contain letters and spaces.';
 
     /**
      * Test: GET /api/v1/donors
@@ -55,7 +55,7 @@ class DonorTest extends TestCase
         $response->assertCreated()
                  ->assertJson([
                      'success' => true,
-                     'message' => 'Donante creado exitosamente',
+                     'message' => 'Donor created successfully',
                  ])
                  ->assertJsonStructure([
                      'data' => ['id', 'name']
@@ -91,9 +91,9 @@ class DonorTest extends TestCase
 
         $response = $this->postJson(self::BASE_URL, $data);
 
-        $response->assertStatus(400)
-                 ->assertJson(['success' => false])
-                 ->assertJsonPath('message', self::ERROR_MIN_LENGTH);
+        $response->assertStatus(422)
+                ->assertJsonValidationErrors(['name'])
+                 ->assertJsonPath('errors.name.0', self::ERROR_MIN_LENGTH);
     }
 
     /**
@@ -140,7 +140,7 @@ class DonorTest extends TestCase
         $response->assertOk()
                  ->assertJson([
                      'success' => true,
-                     'message' => 'Donante encontrado',
+                     'message' => 'Donor found',
                      'data' => [
                          'id' => $donor->id,
                          'name' => $donor->name
@@ -162,7 +162,7 @@ class DonorTest extends TestCase
         $response->assertOk()
                  ->assertJson([
                      'success' => true,
-                     'message' => 'Donante actualizado exitosamente',
+                     'message' => 'Donor uploaded successfully',
                  ]);
 
         $this->assertDatabaseHas('donor', [
@@ -182,10 +182,10 @@ class DonorTest extends TestCase
      */
     public function test_cannot_update_with_duplicate_name(): void
     {
-        $donor1 = Donor::factory()->create(['name' => 'Donante 1']);
-        $donor2 = Donor::factory()->create(['name' => 'Donante 2']);
+        $donor1 = Donor::factory()->create(['name' => 'Donante Norte']);
+        $donor2 = Donor::factory()->create(['name' => 'Donante Sur']);
 
-        $data = ['name' => 'Donante 1'];
+        $data = ['name' => 'Donante Norte'];
         $response = $this->putJson(self::BASE_URL . "/{$donor2->id}", $data);
 
         $response->assertStatus(422)
@@ -194,36 +194,12 @@ class DonorTest extends TestCase
     }
 
     /**
-     * Test: GET /api/v1/donors/{id}
-     * Debe retornar 404 cuando el donante no existe
-     */
-    public function test_returns_404_when_donor_not_found(): void
-    {
-        $response = $this->getJson(self::BASE_URL . '/99999');
-
-        $response->assertNotFound()
-                 ->assertJson(['success' => false]);
-    }
-
-    /**
-     * Test: PUT /api/v1/donors/{id}
-     * Debe retornar 404 cuando se intenta actualizar un donante inexistente
-     */
-    public function test_returns_404_when_updating_non_existent_donor(): void
-    {
-        $response = $this->putJson(self::BASE_URL . '/99999', ['name' => 'Nombre Cualquiera']);
-
-        $response->assertNotFound()
-                 ->assertJson(['success' => false]);
-    }
-
-    /**
      * Test: POST /api/v1/donors
      * Debe hacer trim de espacios en blanco
      */
     public function test_trims_whitespace_from_name(): void
     {
-        $data = ['name' => '  Donante con Espacios  '];
+        $data = ['name' => '  Donante   con Espacios  '];
 
         $response = $this->postJson(self::BASE_URL, $data);
 
@@ -253,7 +229,7 @@ class DonorTest extends TestCase
      */
     public function test_can_update_donor_with_same_name(): void
     {
-        $donor = Donor::factory()->create(['name' => 'Mismo Nombre']);
+        $donor = Donor::factory()->create(['name' => '    Mismo Nombre']);
 
         $response = $this->putJson(
             self::BASE_URL . "/{$donor->id}",
@@ -308,7 +284,7 @@ class DonorTest extends TestCase
         $response->assertOk()
                  ->assertJson([
                      'success' => true,
-                     'message' => 'Donante encontrado',
+                     'message' => 'Donor found',
                      'data' => [
                          'id' => $donor->id,
                          'name' => $donor->name

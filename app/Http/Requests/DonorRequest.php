@@ -36,6 +36,7 @@ class DonorRequest extends FormRequest
                 'required',
                 'string',
                 'min:2',
+                'regex:/^[\pL\s]+$/u',
                 'max:255',
                 Rule::unique('donor', 'name')->ignore($donorId),
             ],
@@ -47,8 +48,9 @@ class DonorRequest extends FormRequest
         return [
             'name.required' => 'The donor name is required.',
             'name.string' => 'The name must be a string.',
-            'name.min' => 'The name must be at least 2 characters long.',
-            'name.max' => 'The name must not exceed :max characters.',
+            'name.regex' => 'The name must only contain letters and spaces.',
+            'name.min' => 'The donor name must be at least 2 characters long.',
+            'name.max' => 'The donor name must not exceed 255 characters.',
             'name.unique' => 'This donor already exists in the system.',
         ];
 

@@ -15,7 +15,7 @@ class CurrencyTest extends TestCase
     private const ERROR_CODE_EMPTY  = 'el código de moneda no debe ir vacío';
     private const ERROR_CODE_LENGTH = 'el código de moneda debe tener exactamente 3 caracteres';
     private const ERROR_CODE_FORMAT = 'el código de moneda debe contener solo letras (sin números ni símbolos)';
-    private const ERROR_CODE_INVALID = 'el código de moneda debe ser un código ISO 4217 válido';
+    private const ERROR_CODE_INVALID = 'The currency code must be a valid ISO 4217 code';
     private const ERROR_CODE_UNIQUE = 'Esta moneda ya existe en el sistema';
 
     /** LISTAR */

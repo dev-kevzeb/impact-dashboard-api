@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Responses\ApiResponse;
 use App\Http\Resources\DonorResource;
 use App\Http\Requests\DonorRequest;
+use App\Modules\Donor\Domain\Donor;
 use App\Modules\Donor\Service\DonorService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -69,17 +70,26 @@ class DonorController extends Controller
      *     )
      * )
      */
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
         try {
-            $donors = $this->donorService->getAllDonors();
+            $search = $request->get("search");
+            $perPage = (int) $request->get("per_page", 10);
+
+            $query = Donor::query();
+
+            if( $search ) $query->where("name","like","%". $search ."%");
+            $donors = $query->paginate($perPage);
             
             return ApiResponse::success(
                 'Donors list successfully obtained',
                 200,
                 [
                     'donors' => DonorResource::collection($donors),
-                    'total' => $donors->count()
+                    'total' => $donors->count(),
+                    'per_page' => $donors->perPage(),
+                    'current_page' => $donors->currentPage(),
+                    'last_page' => $donors->lastPage(),
                 ]
             );
         } catch (RuntimeException $e) {
