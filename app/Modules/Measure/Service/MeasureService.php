@@ -23,8 +23,8 @@ class MeasureService
     public function createMeasure(string $name, int $strategicOutputId): Measure
     {
         $strategicOutput = $this->strategicOutputRepository->findById($strategicOutputId);
-        if (!$strategicOutput instanceof StrategicOutput) throw new RuntimeException("El resultado estratégico con id {$strategicOutputId} no existe.");
-        
+        if (!$strategicOutput instanceof StrategicOutput) throw new RuntimeException("The strategic output with id {$strategicOutputId} does not exist.");
+
         $measure = Measure::at($name, $strategicOutput);
 
         $this->measureRepository->save($measure);
@@ -34,16 +34,20 @@ class MeasureService
     public function getMeasureById(int $id): Measure
     {
         $measure = $this->measureRepository->findById($id);
-        if (!$measure) {throw new RuntimeException("No se encontro la medida");}
+        if (!$measure) {
+            throw new RuntimeException("Measure not found");
+        }
 
         return $measure;
     }
 
-     public function findMeasureByName(string $name): Measure
+    public function findMeasureByName(string $name): Measure
     {
-        $measure = $this->measureRepository->findByName( trim($name));
+        $measure = $this->measureRepository->findByName(trim($name));
 
-        if (!$measure) {throw new RuntimeException("No se encontró ninguna measure con nombre: {$name}"); }
+        if (!$measure) {
+            throw new RuntimeException("No measure found with name: {$name}");
+        }
         return $measure;
     }
 
@@ -57,8 +61,10 @@ class MeasureService
         $measure = $this->measureRepository->findById($id);
         $strategicOutput = $this->strategicOutputRepository->findById($strategicOutputId);
 
-        if (!$measure) {throw new RuntimeException("No se encontró la medida con ID: {$id}");}
-        if (!$strategicOutput instanceof StrategicOutput) throw new RuntimeException("El resultado estratégico con id {$strategicOutputId} no existe.");
+        if (!$measure) {
+            throw new RuntimeException("Measure with ID: {$id} not found");
+        }
+        if (!$strategicOutput instanceof StrategicOutput) throw new RuntimeException("The strategic output with id {$strategicOutputId} does not exist.");
 
         $validatedMeasure = Measure::at($newName, $strategicOutput);
         $measure->name = $validatedMeasure->getName();
@@ -79,7 +85,7 @@ class MeasureService
     {
         $measure = $this->measureRepository->findById($measureId);
         if (!$measure) {
-            throw new RuntimeException("No se encontró la medida con ID: $measureId");
+            throw new RuntimeException("Measure with ID: {$id} not found");
         }
         return $measure->findIndicatorByName($indicatorName);
     }
@@ -87,7 +93,7 @@ class MeasureService
     public function addIndicatorToMeasure(int $measureId, $indicator): void
     {
         $measure = $this->getMeasureById($measureId);
-        if (!$measure) throw new RuntimeException("La medida con id {$measure} no existe.");
+        if (!$measure) throw new RuntimeException("The measure with id {$measureId} does not exist.");
 
         $measure->addIndicator($indicator);
     }
@@ -98,7 +104,7 @@ class MeasureService
         $removed = $measure->removeIndicator($indicator->getName());
 
         if (!$removed) {
-            throw new RuntimeException("El indicador especificado no existe en esta medida");
+            throw new RuntimeException("The specified indicator does not exist in this measure");
         }
     }
 }

@@ -15,15 +15,15 @@ class ProgramRepository extends AbstractRepository
     /**
      * Constructor
      * 
-     * @param Program $model Instancia del modelo Program
+     * @param Program $model Program model instance
      */
     public function __construct(Program $model)
     {
         parent::__construct($model);
     }
-    
+
     /**
-     * Obtener programas con todas sus relaciones cargadas
+     * Get programs with all their relationships loaded
      * 
      * @return \Illuminate\Database\Eloquent\Collection
      */
@@ -34,15 +34,15 @@ class ProgramRepository extends AbstractRepository
                 'contact',
                 'programState',
                 'sdgs'
-                // 'projects' // TODO: Descomentar cuando el módulo Project exista
+                // 'projects' // TODO: Uncomment when Project module exists
             ])
             ->get();
     }
-    
+
     /**
-     * Obtener programas paginados con todas sus relaciones cargadas
+     * Get paginated programs with all their relationships loaded
      * 
-     * @param int $perPage Número de registros por página
+     * @param int $perPage Number of records per page
      * @return \Illuminate\Pagination\LengthAwarePaginator
      */
     public function paginateWithRelations(int $perPage = 10)
@@ -52,17 +52,17 @@ class ProgramRepository extends AbstractRepository
                 'contact',
                 'programState',
                 'sdgs'
-                // 'projects' // TODO: Descomentar cuando el módulo Project exista
+                // 'projects' // TODO: Uncomment when Project module exists
             ])
             ->paginate($perPage);
     }
-    
+
     /**
-     * Buscar programa por ID con todas sus relaciones
+     * Find program by ID with all its relationships
      * 
      * @param int $id
      * @return Program
-     * @throws \RuntimeException Si no se encuentra
+     * @throws \RuntimeException If not found
      */
     public function findByIdWithRelations(int $id): Program
     {
@@ -71,31 +71,31 @@ class ProgramRepository extends AbstractRepository
                 'contact',
                 'programState',
                 'sdgs'
-                // 'projects' // TODO: Descomentar cuando el módulo Project exista
+                // 'projects' // TODO: Uncomment when Project module exists
             ])
             ->find($id);
-            
+
         if (!$program) {
-            throw new \RuntimeException("Programa con ID {$id} no encontrado");
+            throw new \RuntimeException("Program with ID {$id} not found");
         }
-        
+
         return $program;
     }
-    
+
     /**
-     * Sincronizar SDGs del programa
+     * Synchronize program SDGs
      * 
      * @param Program $program
-     * @param array $sdgIds Array de IDs de SDGs
+     * @param array $sdgIds Array of SDG IDs
      * @return void
      */
     public function syncSdgs(Program $program, array $sdgIds): void
     {
         $program->sdgs()->sync($sdgIds);
     }
-    
+
     /**
-     * Obtener programas por estado
+     * Get programs by state
      * 
      * @param int $programStateId
      * @return \Illuminate\Database\Eloquent\Collection

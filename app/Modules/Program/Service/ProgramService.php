@@ -29,7 +29,7 @@ class ProgramService
     }
 
     /**
-     * Crear un nuevo programa
+     * Create a new program
      */
     public function createProgram(
         string $name,
@@ -39,20 +39,20 @@ class ProgramService
         array $contactPayload,
         array $sdgIds = []
     ): Program {
-        // Validar duplicados
+        // Validate duplicates
         if ($this->programRepository->exists('name', trim($name))) {
-            throw new RuntimeException("Ya existe un programa con el nombre: {$name}");
+            throw new RuntimeException("A program with the name already exists: {$name}");
         }
 
-        // Manejar Contact (nuevo o existente)
+        // Handle Contact (new or existing)
         if (!empty($contactPayload['id'])) {
-            // Caso 1: Contact existente
+            // Case 1: Existing Contact
             $contact = $this->contactRepository->findById($contactPayload['id']);
             if (!$contact) {
-                throw new RuntimeException("El contacto con id {$contactPayload['id']} no existe.");
+                throw new RuntimeException("The contact with id {$contactPayload['id']} does not exist.");
             }
         } else {
-            // Caso 2: Crear nuevo Contact
+            // Case 2: Create new Contact
             $contact = \App\Modules\Contact\Domain\Contact::at(
                 $contactPayload['first_name'],
                 $contactPayload['last_name'],
@@ -63,21 +63,21 @@ class ProgramService
             $this->contactRepository->save($contact);
         }
 
-        // Forzar estado "Inactivo" al crear (regla de negocio)
-        // Solo cambiará a "Activo" cuando tenga proyectos asociados
-        $inactiveState = $this->programStateRepository->findBy('name', 'Inactivo');
+        // Force "Inactive" state when creating (business rule)
+        // Will only change to "Active" when it has associated projects
+        $inactiveState = $this->programStateRepository->findBy('name', 'Inactive');
 
-        // Validar SDGs si existen
+        // Validate SDGs if they exist
         if (!empty($sdgIds)) {
             foreach ($sdgIds as $sdgId) {
                 $this->sdgRepository->findById($sdgId);
             }
         }
 
-        // Usar el estado Inactivo encontrado
+        // Use the found Inactive state
         $programState = $inactiveState;
 
-        // Crear programa usando factory method con objetos
+        // Create program using factory method with objects
         $program = Program::at(
             $name,
             $description,
@@ -87,10 +87,10 @@ class ProgramService
             $programState
         );
 
-        // Guardar en base de datos
+        // Save to database
         $this->programRepository->save($program);
 
-        // Sincronizar relaciones M:N
+        // Synchronize M:N relationships
         if (!empty($sdgIds)) {
             $this->programRepository->syncSdgs($program, $sdgIds);
         }
@@ -99,7 +99,7 @@ class ProgramService
     }
 
     /**
-     * Obtener programa por ID
+     * Get program by ID
      */
     public function getProgramById(int $id): Program
     {
@@ -107,8 +107,8 @@ class ProgramService
     }
 
     /**
-     * Obtener todos los programas con paginación
-     * @param int $perPage Número de registros por página (default: 10)
+     * Get all programs with pagination
+     * @param int $perPage Number of records per page (default: 10)
      * @return \Illuminate\Pagination\LengthAwarePaginator
      */
     public function getAllPrograms(int $perPage = 10)
@@ -117,7 +117,7 @@ class ProgramService
     }
 
     /**
-     * Actualizar un programa
+     * Update a program
      */
     public function updateProgram(
         int $id,
@@ -129,27 +129,29 @@ class ProgramService
         int $programStateId,
         array $sdgIds = []
     ): Program {
-        // Obtener programa existente
+        // Get existing program
         $program = $this->programRepository->findById($id);
 
-        // Validar duplicados (excepto el actual)
+        // Validate duplicates (except current)
         $existing = $this->programRepository->exists('name', trim($name));
         if ($existing && strtolower(trim($program->name)) !== strtolower(trim($name))) {
-            throw new RuntimeException("Ya existe un programa con el nombre: {$name}");
+            throw new RuntimeException("A program with the name already exists: {$name}");
         }
 
-        // Manejar Contact (nuevo, existente o actualizar)
+        // Handle Contact (new, existing or update)
         if (!empty($contactPayload['id'])) {
-            // Caso 1: Contact existente - buscar
+            // Case 1: Existing Contact - search
             $contact = $this->contactRepository->findById($contactPayload['id']);
             if (!$contact) {
-                throw new RuntimeException("El contacto con id {$contactPayload['id']} no existe.");
+                throw new RuntimeException("The contact with id {$contactPayload['id']} does not exist.");
             }
-            
-            // Si vienen datos adicionales, ACTUALIZAR el contact
-            if (isset($contactPayload['first_name']) && isset($contactPayload['last_name']) 
-                && isset($contactPayload['title']) && isset($contactPayload['email'])) {
-                
+
+            // If additional data comes, UPDATE the contact
+            if (
+                isset($contactPayload['first_name']) && isset($contactPayload['last_name'])
+                && isset($contactPayload['title']) && isset($contactPayload['email'])
+            ) {
+
                 $updatedContact = \App\Modules\Contact\Domain\Contact::at(
                     $contactPayload['first_name'],
                     $contactPayload['last_name'],
@@ -157,18 +159,18 @@ class ProgramService
                     $contactPayload['email'],
                     $contactPayload['phone'] ?? ''
                 );
-                
+
                 $contact->first_name = $updatedContact->first_name;
                 $contact->last_name = $updatedContact->last_name;
                 $contact->title = $updatedContact->title;
                 $contact->email = $updatedContact->email;
                 $contact->phone = $updatedContact->phone;
-                
+
                 $this->contactRepository->save($contact);
             }
-            // Si solo viene 'id', no actualiza nada (reutiliza contact as-is)
+            // If only 'id' comes, doesn't update anything (reuse contact as-is)
         } else {
-            // Caso 2: Crear nuevo Contact
+            // Case 2: Create new Contact
             $contact = \App\Modules\Contact\Domain\Contact::at(
                 $contactPayload['first_name'],
                 $contactPayload['last_name'],
@@ -179,17 +181,17 @@ class ProgramService
             $this->contactRepository->save($contact);
         }
 
-        // Validar ProgramState
+        // Validate ProgramState
         $programState = $this->programStateRepository->findById($programStateId);
 
-        // Validar SDGs
+        // Validate SDGs
         if (!empty($sdgIds)) {
             foreach ($sdgIds as $sdgId) {
                 $this->sdgRepository->findById($sdgId);
             }
         }
 
-        // Validar datos con factory method (sin guardar)
+        // Validate data with factory method (without saving)
         Program::at(
             $name,
             $description,
@@ -199,29 +201,28 @@ class ProgramService
             $programState
         );
 
-        // Actualizar campos
+        // Update fields
         $program->name = trim($name);
         $program->description = trim($description);
         $program->banner_img = $bannerImg ? trim($bannerImg) : $program->banner_img;
         $program->program_url = trim($programUrl);
         $program->contact_id = $contact->id;
         $program->program_state_id = $programStateId;
-        
-        // Guardar cambios
+
+        // Save changes
         $this->programRepository->save($program);
 
-        // Sincronizar relaciones M:N
+        // Synchronize M:N relationships
         $this->programRepository->syncSdgs($program, $sdgIds);
 
         return $program->fresh(['contact', 'programState', 'sdgs']);
     }
 
     /**
-     * Buscar programa por nombre
+     * Search program by name
      */
     public function findProgramByName(string $name): Program
     {
         return $this->programRepository->findBy('name', $name);
     }
-
 }

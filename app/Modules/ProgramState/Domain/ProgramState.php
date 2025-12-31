@@ -9,19 +9,19 @@ use RuntimeException;
 class ProgramState extends Model
 {
     use HasFactory;
-    
+
     protected $table = 'program_state';
     protected $fillable = ['name'];
-    
-    public static $ERROR_NAME_EMPTY = 'el nombre del estado no debe ir vacio';
-    public static $ERROR_NAME_MIN_LENGTH = 'el nombre del estado debe tener al menos 2 caracteres';
-    
+
+    public static $ERROR_NAME_EMPTY = 'the state name must not be empty';
+    public static $ERROR_NAME_MIN_LENGTH = 'the state name must be at least 2 characters';
+
     public function __construct(array $attributes = [])
     {
         parent::__construct($attributes);
     }
-    
-    public static function at(string $name): ProgramState  
+
+    public static function at(string $name): ProgramState
     {
         if (empty(trim($name))) {
             throw new RuntimeException(self::$ERROR_NAME_EMPTY);
@@ -29,15 +29,15 @@ class ProgramState extends Model
         if (strlen(trim($name)) < 2) {
             throw new RuntimeException(self::$ERROR_NAME_MIN_LENGTH);
         }
-        
+
         return new ProgramState(['name' => trim($name)]);
     }
-    
+
     public function validateName(): bool
     {
         return strlen($this->name) >= 2;
     }
-    
+
     public function getName(): string
     {
         return $this->name;
@@ -54,12 +54,12 @@ class ProgramState extends Model
     }
 
     // ============================================
-    // RELACIONES ELOQUENT
+    // ELOQUENT RELATIONSHIPS
     // ============================================
 
     /**
-     * Relación 1:N con Program
-     * Un estado puede tener múltiples programas
+     * 1:N relationship with Program
+     * A state can have multiple programs
      */
     public function programs()
     {

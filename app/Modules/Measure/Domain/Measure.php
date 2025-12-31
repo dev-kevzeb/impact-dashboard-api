@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Modules\Measure\Domain;
 
 use App\Modules\Indicator\Domain\Indicator;
@@ -16,11 +17,11 @@ class Measure extends Model
     protected $fillable = ['name', 'strategic_output_id'];
     protected $appends = ['indicators_count'];
 
-    public static $ERROR_NAME_EMPTY = 'el nombre del Measure no debe ir vacio';
-    public static $ERROR_NAME_MIN_LENGTH = 'el nombre del Measure debe tener al menos 2 caracteres';
-    public static $ERROR_NAME_MAX_LENGTH = 'el nombre del Measure no debe exceder 150 caracteres';
-    public static $ERROR_INDICATORS_DUPLICATED = 'no se permiten indicadores duplicados en la medida';
-    public static $ERROR_INDICATOR_NOT_FOUND = 'el indicador especificado no existe en esta medida';
+    public static $ERROR_NAME_EMPTY = 'the measure name must not be empty';
+    public static $ERROR_NAME_MIN_LENGTH = 'the measure name must be at least 2 characters long';
+    public static $ERROR_NAME_MAX_LENGTH = 'the measure name must not exceed 150 characters';
+    public static $ERROR_INDICATORS_DUPLICATED = 'duplicate indicators are not allowed in the measure';
+    public static $ERROR_INDICATOR_NOT_FOUND = 'the specified indicator does not exist in this measure';
 
     public static function newFactory()
     {
@@ -68,13 +69,13 @@ class Measure extends Model
     {
         return $this->indicators()->exists();
     }
-    
+
     public function removeIndicator(string $name): bool
     {
         $found = $this->indicators()->where('name', trim($name))->first();
         if (!$found) return false;
-        
-         $found->measure_id = null;
+
+        $found->measure_id = null;
         $found->save();
         return true;
     }
@@ -83,13 +84,13 @@ class Measure extends Model
     {
         $indicator = $this->indicators()->where('name', trim($name))->first();
         if (!$indicator) throw new RuntimeException(self::$ERROR_INDICATOR_NOT_FOUND . ': ' . $name);
-        
+
         return $indicator;
     }
 
 
-    
-    // RELACIONES
+
+    // RELATIONSHIPS
     public function indicators()
     {
         return $this->hasMany(Indicator::class, 'measure_id', 'id');
@@ -97,6 +98,6 @@ class Measure extends Model
 
     public function StrategicOutput()
     {
-        return $this->belongsTo( StrategicOutput::class,  'strategic_output_id', 'id');
+        return $this->belongsTo(StrategicOutput::class,  'strategic_output_id', 'id');
     }
 }
