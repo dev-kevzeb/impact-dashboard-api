@@ -25,14 +25,14 @@ class ProgramController extends Controller
      * @OA\Get(
      *     path="/programs",
      *     tags={"Programs"},
-     *     summary="Listar todos los programas",
-     *     description="Obtiene la lista completa de programas con todas sus relaciones cargadas",
+     *     summary="List all programs",
+     *     description="Retrieves the complete list of programs with all their relationships loaded",
      *     @OA\Response(
      *         response=200,
-     *         description="Lista de programas obtenida exitosamente",
+     *         description="Program list retrieved successfully",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="Lista de programas obtenida exitosamente"),
+     *             @OA\Property(property="message", type="string", example="Program list retrieved successfully"),
      *             @OA\Property(
      *                 property="data",
      *                 type="object",
@@ -43,10 +43,10 @@ class ProgramController extends Controller
      *     ),
      *     @OA\Response(
      *         response=500,
-     *         description="Error interno del servidor",
+     *         description="Internal server error",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Error al obtener la lista de programas")
+     *             @OA\Property(property="message", type="string", example="Error retrieving program list")
      *         )
      *     )
      * )
@@ -56,7 +56,7 @@ class ProgramController extends Controller
         try {
             $perPage = (int) $request->get("per_page", 10);
             $programs = $this->programService->getAllPrograms($perPage);
-            
+
             return ApiResponse::success(
                 'Programs paginated list successfully uploaded',
                 200,
@@ -69,7 +69,7 @@ class ProgramController extends Controller
                 ]
             );
         } catch (\Exception $e) {
-            return ApiResponse::error('Error al obtener la lista de programas', 500);
+            return ApiResponse::error('Error retrieving program list', 500);
         }
     }
 
@@ -77,62 +77,62 @@ class ProgramController extends Controller
      * @OA\Post(
      *     path="/programs",
      *     tags={"Programs"},
-     *     summary="Crear nuevo programa",
-     *     description="Crea un nuevo programa con estado 'Inactivo' por defecto (regla de negocio). Para cambiar el estado, usar PUT. **Arrays:** Usa `sdg_ids[]=2&sdg_ids[]=5` o en form-data: `sdg_ids[0]=2, sdg_ids[1]=5`",
+     *     summary="Create new program",
+     *     description="Creates a new program with 'Inactive' state by default (business rule). To change state, use PUT. **Arrays:** Use `sdg_ids[]=2&sdg_ids[]=5` or in form-data: `sdg_ids[0]=2, sdg_ids[1]=5`",
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\MediaType(
      *             mediaType="multipart/form-data",
      *             @OA\Schema(
      *                 required={"name", "description", "contact_id"},
-     *                 @OA\Property(property="name", type="string", maxLength=255, example="Programa de Educación Rural 2025"),
-     *                 @OA\Property(property="description", type="string", maxLength=2000, example="Programa enfocado en mejorar la educación en zonas rurales mediante capacitación docente y equipamiento."),
-     *                 @OA\Property(property="banner_img", type="string", format="binary", description="Imagen banner del programa (OPCIONAL - JPG, PNG, GIF, WEBP - máx 2MB)"),
-     *                 @OA\Property(property="program_url", type="string", format="url", example="https://www.programa-educacion.org", description="URL del sitio web del programa (opcional)"),
-     *                 @OA\Property(property="contact_id", type="integer", example=1, description="ID del contacto responsable (requerido). El programa se crea automáticamente con estado 'Inactivo'."),
+                 @OA\Property(property="name", type="string", maxLength=255, example="Rural Education Program 2025"),
+                 @OA\Property(property="description", type="string", maxLength=2000, example="Program focused on improving education in rural areas through teacher training and equipment."),
+                 @OA\Property(property="banner_img", type="string", format="binary", description="Program banner image (OPTIONAL - JPG, PNG, GIF, WEBP - max 2MB)"),
+                 @OA\Property(property="program_url", type="string", format="url", example="https://www.education-program.org", description="Program website URL (optional)"),
+                 @OA\Property(property="contact_id", type="integer", example=1, description="Responsible contact ID (required). Program is automatically created with 'Inactive' state."),
      *                 @OA\Property(
      *                     property="sdg_ids[]",
      *                     type="array",
      *                     @OA\Items(type="integer"),
      *                     example={2, 4, 13},
-     *                     description="Array de IDs de ODS (opcional). Usar: sdg_ids[0]=2, sdg_ids[1]=4, sdg_ids[2]=13"
+     *                     description="Array of SDG IDs (optional). Use: sdg_ids[0]=2, sdg_ids[1]=4, sdg_ids[2]=13"
      *                 )
      *             )
      *         )
      *     ),
      *     @OA\Response(
      *         response=201,
-     *         description="Programa creado exitosamente",
+     *         description="Program created successfully",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="Programa creado exitosamente"),
+     *             @OA\Property(property="message", type="string", example="Program created successfully"),
      *             @OA\Property(property="data", ref="#/components/schemas/Program")
      *         )
      *     ),
      *     @OA\Response(
      *         response=400,
-     *         description="Error de validación de negocio",
+     *         description="Business validation error",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="El nombre debe tener al menos 3 caracteres")
+     *             @OA\Property(property="message", type="string", example="The name must be at least 3 characters long")
      *         )
      *     ),
      *     @OA\Response(
      *         response=422,
-     *         description="Error de validación técnica",
+     *         description="Technical validation error",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Error de validación"),
+     *             @OA\Property(property="message", type="string", example="Validation error"),
      *             @OA\Property(
      *                 property="errors",
      *                 type="object",
-     *                 @OA\Property(property="name", type="array", @OA\Items(type="string", example="Ya existe un programa con este nombre."))
+     *                 @OA\Property(property="name", type="array", @OA\Items(type="string", example="A program with this name already exists."))
      *             )
      *         )
      *     ),
      *     @OA\Response(
      *         response=500,
-     *         description="Error interno del servidor"
+     *         description="Internal server error"
      *     )
      * )
      */
@@ -159,16 +159,16 @@ class ProgramController extends Controller
             );
 
             return ApiResponse::created(
-                'Programa creado exitosamente',
+                'Program created successfully',
                 new ProgramResource($program)
             );
         } catch (RuntimeException $e) {
-            if (str_contains($e->getMessage(), 'Ya existe')) {
+            if (str_contains($e->getMessage(), 'already exists')) {
                 return ApiResponse::validationError(['name' => [$e->getMessage()]]);
             }
             return ApiResponse::error($e->getMessage(), 400);
         } catch (\Exception $e) {
-            return ApiResponse::error('Error al crear el programa: ' . $e->getMessage(), 500);
+            return ApiResponse::error('Error creating program: ' . $e->getMessage(), 500);
         }
     }
 
@@ -176,46 +176,46 @@ class ProgramController extends Controller
      * @OA\Get(
      *     path="/programs/search",
      *     tags={"Programs"},
-     *     summary="Buscar programa por nombre",
-     *     description="Busca un programa por su nombre exacto (case-insensitive)",
+     *     summary="Search program by name",
+     *     description="Searches for a program by its exact name (case-insensitive)",
      *     @OA\Parameter(
      *         name="name",
      *         in="query",
      *         required=true,
-     *         description="Nombre exacto del programa a buscar",
-     *         @OA\Schema(type="string", example="Programa de Educación Rural 2025")
+     *         description="Exact program name to search",
+     *         @OA\Schema(type="string", example="Rural Education Program 2025")
      *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="Programa encontrado",
+     *         description="Program found",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="Programa encontrado"),
+     *             @OA\Property(property="message", type="string", example="Program found"),
      *             @OA\Property(property="data", ref="#/components/schemas/Program")
      *         )
      *     ),
      *     @OA\Response(
      *         response=400,
-     *         description="Parámetro name requerido",
+     *         description="Name parameter required",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="El parámetro name es requerido")
+     *             @OA\Property(property="message", type="string", example="The name parameter is required")
      *         )
      *     ),
      *     @OA\Response(
      *         response=404,
-     *         description="Programa no encontrado",
+     *         description="Program not found",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Programa no encontrado")
+     *             @OA\Property(property="message", type="string", example="Program not found")
      *         )
      *     ),
      *     @OA\Response(
      *         response=500,
-     *         description="Error interno del servidor",
+     *         description="Internal server error",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Error en la búsqueda")
+     *             @OA\Property(property="message", type="string", example="Search error")
      *         )
      *     )
      * )
@@ -226,20 +226,20 @@ class ProgramController extends Controller
             $name = $request->query('name');
 
             if (empty($name)) {
-                return ApiResponse::error('El parámetro name es requerido', 400);
+                return ApiResponse::error('The name parameter is required', 400);
             }
 
             $program = $this->programService->findProgramByName($name);
 
             return ApiResponse::success(
-                'Programa encontrado',
+                'Program found',
                 200,
                 new ProgramResource($program)
             );
         } catch (RuntimeException $e) {
-            return ApiResponse::notFound('Programa');
+            return ApiResponse::notFound('Program');
         } catch (\Exception $e) {
-            return ApiResponse::error('Error en la búsqueda', 500);
+            return ApiResponse::error('Search error', 500);
         }
     }
 
@@ -247,38 +247,38 @@ class ProgramController extends Controller
      * @OA\Get(
      *     path="/programs/{id}",
      *     tags={"Programs"},
-     *     summary="Obtener un programa específico",
-     *     description="Obtiene los detalles completos de un programa por su ID, incluyendo todas sus relaciones",
+     *     summary="Get specific program",
+     *     description="Retrieves complete details of a program by its ID, including all its relationships",
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
      *         required=true,
-     *         description="ID del programa",
+     *         description="Program ID",
      *         @OA\Schema(type="integer", example=1)
      *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="Programa encontrado",
+     *         description="Program found",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="Programa encontrado"),
+     *             @OA\Property(property="message", type="string", example="Program found"),
      *             @OA\Property(property="data", ref="#/components/schemas/Program")
      *         )
      *     ),
      *     @OA\Response(
      *         response=404,
-     *         description="Programa no encontrado",
+     *         description="Program not found",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Programa no encontrado")
+     *             @OA\Property(property="message", type="string", example="Program not found")
      *         )
      *     ),
      *     @OA\Response(
      *         response=500,
-     *         description="Error interno del servidor",
+     *         description="Internal server error",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Error al obtener el programa")
+     *             @OA\Property(property="message", type="string", example="Error retrieving program")
      *         )
      *     )
      * )
@@ -288,14 +288,14 @@ class ProgramController extends Controller
         try {
             $program = $this->programService->getProgramById($id);
             return ApiResponse::success(
-                'Programa encontrado',
+                'Program found',
                 200,
                 new ProgramResource($program)
             );
         } catch (RuntimeException $e) {
-            return ApiResponse::notFound('Programa');
+            return ApiResponse::notFound('Program');
         } catch (\Exception $e) {
-            return ApiResponse::error('Error al obtener el programa', 500);
+            return ApiResponse::error('Error retrieving program', 500);
         }
     }
 
@@ -303,13 +303,13 @@ class ProgramController extends Controller
      * @OA\Put(
      *     path="/programs/{id}",
      *     tags={"Programs"},
-     *     summary="Actualizar programa",
-     *     description="Actualiza un programa existente, incluyendo cambios de estado. Usar POST con _method=PUT para enviar archivos desde Postman",
+     *     summary="Update program",
+     *     description="Updates an existing program, including state changes. Use POST with _method=PUT to send files from Postman",
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
      *         required=true,
-     *         description="ID del programa a actualizar",
+     *         description="Program ID to update",
      *         @OA\Schema(type="integer", example=1)
      *     ),
      *     @OA\RequestBody(
@@ -318,44 +318,44 @@ class ProgramController extends Controller
      *             mediaType="multipart/form-data",
      *             @OA\Schema(
      *                 required={"name", "description", "contact_id", "program_state_id"},
-     *                 @OA\Property(property="_method", type="string", example="PUT", description="Método HTTP spoofing (requerido en Postman con form-data)"),
-     *                 @OA\Property(property="name", type="string", maxLength=255, example="Programa de Educación Rural 2025 - Actualizado"),
-     *                 @OA\Property(property="description", type="string", maxLength=2000, example="Descripción actualizada del programa"),
-     *                 @OA\Property(property="banner_img", type="string", format="binary", description="Nueva imagen banner (opcional, si no se envía mantiene la actual)"),
-     *                 @OA\Property(property="program_url", type="string", format="url", example="https://www.programa-actualizado.org"),
-     *                 @OA\Property(property="contact_id", type="integer", example=3, description="ID del contacto responsable (requerido)"),
-     *                 @OA\Property(property="program_state_id", type="integer", example=2, description="ID del estado del programa (requerido): 1=Inactivo, 2=Activo, 3=Finalizado"),
-     *                 @OA\Property(property="sdg_ids", type="array", @OA\Items(type="integer", example=1), description="IDs de ODS (reemplaza los existentes)")
+     *                 @OA\Property(property="_method", type="string", example="PUT", description="HTTP method spoofing (required in Postman with form-data)"),
+     *                 @OA\Property(property="name", type="string", maxLength=255, example="Rural Education Program 2025 - Updated"),
+     *                 @OA\Property(property="description", type="string", maxLength=2000, example="Updated program description"),
+     *                 @OA\Property(property="banner_img", type="string", format="binary", description="New banner image (optional, if not sent keeps current)"),
+     *                 @OA\Property(property="program_url", type="string", format="url", example="https://www.updated-program.org"),
+     *                 @OA\Property(property="contact_id", type="integer", example=3, description="Responsible contact ID (required)"),
+     *                 @OA\Property(property="program_state_id", type="integer", example=2, description="Program state ID (required): 1=Inactive, 2=Active, 3=Completed"),
+     *                 @OA\Property(property="sdg_ids", type="array", @OA\Items(type="integer", example=1), description="SDG IDs (replaces existing)")
      *             )
      *         )
      *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="Programa actualizado exitosamente",
+     *         description="Program updated successfully",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="Programa actualizado exitosamente"),
+     *             @OA\Property(property="message", type="string", example="Program updated successfully"),
      *             @OA\Property(property="data", ref="#/components/schemas/Program")
      *         )
      *     ),
      *     @OA\Response(
      *         response=400,
-     *         description="Error de validación de negocio"
+     *         description="Business validation error"
      *     ),
      *     @OA\Response(
      *         response=404,
-     *         description="Programa no encontrado"
+     *         description="Program not found"
      *     ),
      *     @OA\Response(
      *         response=422,
-     *         description="Error de validación técnica"
+     *         description="Technical validation error"
      *     ),
      *     @OA\Response(
      *         response=500,
-     *         description="Error interno del servidor",
+     *         description="Internal server error",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Error al actualizar el programa")
+     *             @OA\Property(property="message", type="string", example="Error updating program")
      *         )
      *     )
      * )
@@ -372,7 +372,7 @@ class ProgramController extends Controller
                 $filename = time() . '_' . $file->getClientOriginalName();
                 $bannerPath = $file->storeAs('program_banners', $filename, 'public');
             } else {
-                // Mantener el banner actual
+                // Keep current banner
                 $currentProgram = $this->programService->getProgramById($id);
                 $bannerPath = $currentProgram->banner_img;
             }
@@ -389,20 +389,20 @@ class ProgramController extends Controller
             );
 
             return ApiResponse::success(
-                'Programa actualizado exitosamente',
+                'Program updated successfully',
                 200,
                 new ProgramResource($program)
             );
         } catch (RuntimeException $e) {
-            if (str_contains($e->getMessage(), 'Ya existe')) {
+            if (str_contains($e->getMessage(), 'already exists')) {
                 return ApiResponse::validationError(['name' => [$e->getMessage()]]);
             }
-            if (str_contains($e->getMessage(), 'no encontrado')) {
-                return ApiResponse::notFound('Programa');
+            if (str_contains($e->getMessage(), 'not found')) {
+                return ApiResponse::notFound('Program');
             }
             return ApiResponse::error($e->getMessage(), 400);
         } catch (\Exception $e) {
-            return ApiResponse::error('Error al actualizar el programa', 500);
+            return ApiResponse::error('Error updating program', 500);
         }
     }
 }

@@ -18,7 +18,7 @@ class ProgramStateService
     public function createProgramState(string $name): ProgramState
     {
         if ($this->programStateRepository->exists('name', trim($name))) {
-            throw new RuntimeException("Ya existe un estado con el nombre: {$name}");
+            throw new RuntimeException("A state with the name already exists: {$name}");
         }
 
         $programState = ProgramState::at($name);
@@ -47,10 +47,10 @@ class ProgramStateService
         try {
             $existing = $this->programStateRepository->findBy('name', trim($name));
             if ($existing && $existing->id !== $id) {
-                throw new RuntimeException("Ya existe otro estado con el nombre: {$name}");
+                throw new RuntimeException("Another state with the name already exists: {$name}");
             }
         } catch (RuntimeException $e) {
-            if (!str_contains($e->getMessage(), 'no encontrado')) {
+            if (!str_contains($e->getMessage(), 'not found')) {
                 throw $e;
             }
         }

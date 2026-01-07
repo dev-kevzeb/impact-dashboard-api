@@ -28,7 +28,7 @@ class ProgramRequest extends FormRequest
     public function rules(): array
     {
         $programId = $this->route('id');
-        
+
         return array_merge([
             'name' => [
                 'required',
@@ -39,7 +39,7 @@ class ProgramRequest extends FormRequest
             'description' => 'required|string|max:2000',
             'banner_img' => 'nullable|image|mimes:jpg,jpeg,png,gif,webp|max:2048',
             'program_url' => 'nullable|string|url|regex:/^https?:\/\//',
-            'program_state_id' => $this->isMethod('PUT') 
+            'program_state_id' => $this->isMethod('PUT')
                 ? 'required|integer|min:1|exists:program_state,id'
                 : 'nullable|integer|min:1|exists:program_state,id',
             'sdg_ids' => 'nullable|array',
@@ -55,21 +55,21 @@ class ProgramRequest extends FormRequest
     public function messages(): array
     {
         return array_merge([
-            'name.required' => 'El nombre del programa es obligatorio.',
-            'name.string' => 'El nombre debe ser una cadena de texto.',
-            'name.max' => 'El nombre del programa no debe exceder 255 caracteres.',
-            'name.unique' => 'Ya existe un programa con este nombre.',
-            'description.required' => 'La descripción del programa es obligatoria.',
-            'description.max' => 'La descripción no debe exceder 2000 caracteres.',
-            'banner_img.image' => 'El archivo debe ser una imagen.',
-            'banner_img.mimes' => 'La imagen debe ser de tipo: jpg, jpeg, png, gif o webp.',
-            'banner_img.max' => 'La imagen no debe exceder 2MB.',
-            'program_url.url' => 'La URL del programa debe ser válida.',
-            'program_url.regex' => 'La URL del programa debe usar protocolo HTTP o HTTPS.',
-            'program_state_id.required' => 'El ID del estado es obligatorio (solo en actualización).',
-            'program_state_id.exists' => 'El estado seleccionado no existe.',
-            'sdg_ids.array' => 'Los SDGs deben ser un array.',
-            'sdg_ids.*.exists' => 'Uno o más SDGs seleccionados no existen.',
+            'name.required' => 'The program name is required.',
+            'name.string' => 'The name must be a text string.',
+            'name.max' => 'The program name must not exceed 255 characters.',
+            'name.unique' => 'A program with this name already exists.',
+            'description.required' => 'The program description is required.',
+            'description.max' => 'The description must not exceed 2000 characters.',
+            'banner_img.image' => 'The file must be an image.',
+            'banner_img.mimes' => 'The image must be of type: jpg, jpeg, png, gif or webp.',
+            'banner_img.max' => 'The image must not exceed 2MB.',
+            'program_url.url' => 'The program URL must be valid.',
+            'program_url.regex' => 'The program URL must use HTTP or HTTPS protocol.',
+            'program_state_id.required' => 'The state ID is required (only on update).',
+            'program_state_id.exists' => 'The selected state does not exist.',
+            'sdg_ids.array' => 'The SDGs must be an array.',
+            'sdg_ids.*.exists' => 'One or more selected SDGs do not exist.',
         ], $this->contactMessages());
     }
 

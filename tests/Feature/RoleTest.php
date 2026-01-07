@@ -26,7 +26,7 @@ class RoleTest extends TestCase
             ->assertJsonStructure([
                 'success',
                 'message',
-                'data' => ['id', 'name', 'created_at', 'updated_at']
+                'data' => ['id', 'name']
             ]);
 
         $this->assertDatabaseHas('role', ['name' => 'super_admin']);

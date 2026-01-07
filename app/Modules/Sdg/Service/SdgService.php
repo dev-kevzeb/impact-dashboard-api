@@ -9,7 +9,7 @@ use RuntimeException;
 class SdgService
 {
     /**
-     * Repositorio de SDG
+     * SDG Repository
      * @var SdgRepository
      */
     private SdgRepository $sdgRepository;
@@ -24,7 +24,7 @@ class SdgService
     }
 
     /**
-     * Crear un nuevo SDG
+     * Create a new SDG
      * @param string $image
      * @param string $filename
      * @return Sdg
@@ -32,7 +32,7 @@ class SdgService
     public function createSdg(string $image, string $filename): Sdg
     {
         if ($this->sdgRepository->exists('filename', trim($filename))) {
-            throw new RuntimeException("Ya existe un SDG con el nombre: {$filename}");
+            throw new RuntimeException("An SDG with the name already exists: {$filename}");
         }
         $sdg = Sdg::at($image, $filename);
         $this->sdgRepository->save($sdg);
@@ -40,7 +40,7 @@ class SdgService
     }
 
     /**
-     * Obtener un SDG por ID
+     * Get an SDG by ID
      * @param int $id
      * @return Sdg
      */
@@ -50,7 +50,7 @@ class SdgService
     }
 
     /**
-     * Buscar SDG por filename
+     * Search SDG by filename
      * @param string $filename
      * @return Sdg
      */
@@ -60,8 +60,8 @@ class SdgService
     }
 
     /**
-     * Listar todos los SDGs con paginación
-     * @param int $perPage Número de registros por página (default: 10)
+     * List all SDGs with pagination
+     * @param int $perPage Number of records per page (default: 10)
      * @return \Illuminate\Pagination\LengthAwarePaginator
      */
     public function getAllSdgs(int $perPage = 10)
@@ -70,7 +70,7 @@ class SdgService
     }
 
     /**
-     * Actualizar un SDG existente
+     * Update an existing SDG
      * @param int $id
      * @param string $image
      * @param string $filename
@@ -82,10 +82,10 @@ class SdgService
         try {
             $existing = $this->sdgRepository->findBy('filename', trim($filename));
             if ($existing && $existing->id !== $id) {
-                throw new RuntimeException("Ya existe otro SDG con el nombre: {$filename}");
+                throw new RuntimeException("Another SDG with the name already exists: {$filename}");
             }
         } catch (RuntimeException $e) {
-            if (!str_contains($e->getMessage(), 'no encontrado')) {
+            if (!str_contains($e->getMessage(), 'not found')) {
                 throw $e;
             }
         }

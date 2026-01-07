@@ -17,16 +17,16 @@ use RuntimeException;
  *     schema="Indicator",
  *     type="object",
  *     title="Indicator",
- *     description="Indicadores de desempeño asociados a medidas, con su tipo y meta numérica",
- *     @OA\Property(property="id", type="integer", example=1, description="ID único del indicador"),
- *     @OA\Property(property="name", type="string", example="Porcentaje de cumplimiento de metas", description="Nombre del indicador"),
- *     @OA\Property(property="target", type="number", format="float", example=85.5, description="Meta numérica del indicador"),
+     description="Performance indicators associated with measures, with their type and numeric target",
+     @OA\Property(property="id", type="integer", example=1, description="Unique indicator ID"),
+     @OA\Property(property="name", type="string", example="Percentage of target achievement", description="Indicator name"),
+     @OA\Property(property="target", type="number", format="float", example=85.5, description="Numeric indicator target"),
  *     @OA\Property(
  *         property="type",
  *         type="object",
- *         description="Tipo de indicador",
- *         @OA\Property(property="id", type="integer", example=1),
- *         @OA\Property(property="name", type="string", example="Cuantitativo")
+         description="Indicator type",
+         @OA\Property(property="id", type="integer", example=1),
+         @OA\Property(property="name", type="string", example="Quantitative")
  *     )
  * )
  */
@@ -43,14 +43,14 @@ class IndicatorController extends Controller
      * @OA\Get(
      *     path="/indicators",
      *     tags={"Indicators"},
-     *     summary="Listar todos los indicadores",
-     *     description="Obtiene la lista completa de indicadores de desempeño con sus tipos asociados",
+     *     summary="List all indicators",
+     *     description="Retrieves the complete list of performance indicators with their associated types",
      *     @OA\Response(
      *         response=200,
-     *         description="Lista obtenida exitosamente",
+     *         description="List retrieved successfully",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="Lista de Indicadores obtenida exitosamente"),
+     *             @OA\Property(property="message", type="string", example="Indicator list retrieved successfully"),
      *             @OA\Property(
      *                 property="data",
      *                 type="object",
@@ -65,17 +65,17 @@ class IndicatorController extends Controller
      *     ),
      *     @OA\Response(
      *         response=500,
-     *         description="Error interno del servidor",
+     *         description="Internal server error",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Error interno del servidor")
+     *             @OA\Property(property="message", type="string", example="Internal server error")
      *         )
      *     )
      * )
      */
     public function index(): JsonResponse
     {
-        try{
+        try {
             $indicators = $this->indicatorService->getAllIndicators();
 
             return ApiResponse::success(
@@ -86,7 +86,7 @@ class IndicatorController extends Controller
                     'total' => $indicators->count(),
                 ]
             );
-        }  catch (RuntimeException $e) {
+        } catch (RuntimeException $e) {
             return ApiResponse::error($e->getMessage(), 500);
         } catch (\Exception $e) {
             return ApiResponse::error('Internal server error', 500);
@@ -97,41 +97,41 @@ class IndicatorController extends Controller
      * @OA\Get(
      *     path="/indicators/{id}",
      *     tags={"Indicators"},
-     *     summary="Obtener indicador específico",
-     *     description="Obtiene el detalle de un indicador de desempeño por su ID, incluyendo su tipo",
+     *     summary="Get specific indicator",
+     *     description="Retrieves details of a performance indicator by its ID, including its type",
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
      *         required=true,
-     *         description="ID del indicador",
+     *         description="Indicator ID",
      *         @OA\Schema(type="integer", example=1)
      *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="Indicador encontrado",
+     *         description="Indicator found",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="Indicador encontrado"),
+     *             @OA\Property(property="message", type="string", example="Indicator found"),
      *             @OA\Property(property="data", ref="#/components/schemas/Indicator")
      *         )
      *     ),
      *     @OA\Response(
      *         response=404,
-     *         description="Indicador no encontrado",
+     *         description="Indicator not found",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Indicador no encontrado")
+     *             @OA\Property(property="message", type="string", example="Indicator not found")
      *         )
      *     ),
      *     @OA\Response(
      *         response=500,
-     *         description="Error interno del servidor"
+     *         description="Internal server error"
      *     )
      * )
      */
     public function show(int $id): JsonResponse
     {
-        try{
+        try {
             $indicator = $this->indicatorService->getIndicatorById($id);
 
             return ApiResponse::success(
@@ -150,56 +150,56 @@ class IndicatorController extends Controller
      * @OA\Post(
      *     path="/indicators",
      *     tags={"Indicators"},
-     *     summary="Crear nuevo indicador",
-     *     description="Registra un nuevo indicador de desempeño asociado a una medida específica",
+     *     summary="Create new indicator",
+     *     description="Registers a new performance indicator associated with a specific measure",
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\MediaType(
      *             mediaType="application/json",
      *             @OA\Schema(
      *                 required={"name", "target", "type_id", "measure_id"},
-     *                 @OA\Property(property="name", type="string", example="Número de docentes capacitados anualmente", description="Nombre del indicador (requerido)"),
-     *                 @OA\Property(property="target", type="number", format="float", example=100.0, description="Meta numérica del indicador (requerido)"),
-     *                 @OA\Property(property="type_id", type="integer", example=1, description="ID del tipo de indicador (requerido, debe existir en indicator_type)"),
-     *                 @OA\Property(property="measure_id", type="integer", example=1, description="ID de la medida asociada (requerido, debe existir en measure)")
+                 @OA\Property(property="name", type="string", example="Number of teachers trained annually", description="Indicator name (required)"),
+                 @OA\Property(property="target", type="number", format="float", example=100.0, description="Numeric indicator target (required)"),
+                 @OA\Property(property="type_id", type="integer", example=1, description="Indicator type ID (required, must exist in indicator_type)"),
+                 @OA\Property(property="measure_id", type="integer", example=1, description="Associated measure ID (required, must exist in measure)")
      *             )
      *         )
      *     ),
      *     @OA\Response(
      *         response=201,
-     *         description="Indicador creado exitosamente",
+     *         description="Indicator created successfully",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="Indicador creado exitosamente"),
+     *             @OA\Property(property="message", type="string", example="Indicator created successfully"),
      *             @OA\Property(property="data", ref="#/components/schemas/Indicator")
      *         )
      *     ),
      *     @OA\Response(
      *         response=400,
-     *         description="Error de validación de dominio",
+     *         description="Domain validation error",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="El tipo de indicador o medida no existen")
+     *             @OA\Property(property="message", type="string", example="Indicator type or measure does not exist")
      *         )
      *     ),
      *     @OA\Response(
      *         response=422,
-     *         description="Error de validación técnica",
+     *         description="Technical validation error",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Error de validación"),
+     *             @OA\Property(property="message", type="string", example="Validation error"),
      *             @OA\Property(
      *                 property="errors",
      *                 type="object",
      *                 @OA\Property(
      *                     property="name",
      *                     type="array",
-     *                     @OA\Items(type="string", example="El campo name es obligatorio.")
+     *                     @OA\Items(type="string", example="The name field is required.")
      *                 ),
      *                 @OA\Property(
      *                     property="target",
      *                     type="array",
-     *                     @OA\Items(type="string", example="El campo target debe ser numérico.")
+     *                     @OA\Items(type="string", example="The target field must be numeric.")
      *                 )
      *             )
      *         )
@@ -208,7 +208,7 @@ class IndicatorController extends Controller
      */
     public function store(IndicatorRequest $request): JsonResponse
     {
-        try{
+        try {
             $validated = $request->validated();
 
             $indicator = $this->indicatorService->createIndicator(
@@ -222,8 +222,7 @@ class IndicatorController extends Controller
                 'Indicator created successfully',
                 new IndicatorResource($indicator)
             );
-
-        }catch (RuntimeException $e) {
+        } catch (RuntimeException $e) {
             return ApiResponse::error($e->getMessage(), 400);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return ApiResponse::validationError($e->errors());
@@ -234,13 +233,13 @@ class IndicatorController extends Controller
      * @OA\Put(
      *     path="/indicators/{id}",
      *     tags={"Indicators"},
-     *     summary="Actualizar indicador existente",
-     *     description="Actualiza la información de un indicador de desempeño, incluyendo nombre, meta, tipo y medida asociada",
+     *     summary="Update existing indicator",
+     *     description="Updates information of a performance indicator, including name, target, type and associated measure",
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
      *         required=true,
-     *         description="ID del indicador a actualizar",
+     *         description="Indicator ID to update",
      *         @OA\Schema(type="integer", example=1)
      *     ),
      *     @OA\RequestBody(
@@ -249,39 +248,39 @@ class IndicatorController extends Controller
      *             mediaType="application/json",
      *             @OA\Schema(
      *                 required={"name", "target", "type_id", "measure_id"},
-     *                 @OA\Property(property="name", type="string", example="Número de docentes certificados anualmente", description="Nombre actualizado del indicador"),
-     *                 @OA\Property(property="target", type="number", format="float", example=120.0, description="Meta numérica actualizada"),
-     *                 @OA\Property(property="type_id", type="integer", example=2, description="ID del tipo de indicador actualizado"),
-     *                 @OA\Property(property="measure_id", type="integer", example=1, description="ID de la medida asociada actualizada")
+                 @OA\Property(property="name", type="string", example="Number of certified teachers annually", description="Updated indicator name"),
+                 @OA\Property(property="target", type="number", format="float", example=120.0, description="Updated numeric target"),
+                 @OA\Property(property="type_id", type="integer", example=2, description="Updated indicator type ID"),
+                 @OA\Property(property="measure_id", type="integer", example=1, description="Updated associated measure ID")
      *             )
      *         )
      *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="Indicador actualizado exitosamente",
+     *         description="Indicator updated successfully",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="Indicador actualizado exitosamente"),
+     *             @OA\Property(property="message", type="string", example="Indicator updated successfully"),
      *             @OA\Property(property="data", ref="#/components/schemas/Indicator")
      *         )
      *     ),
      *     @OA\Response(
      *         response=400,
-     *         description="Error de validación de dominio"
+     *         description="Domain validation error"
      *     ),
      *     @OA\Response(
      *         response=404,
-     *         description="Indicador no encontrado"
+     *         description="Indicator not found"
      *     ),
      *     @OA\Response(
      *         response=422,
-     *         description="Error de validación técnica"
+     *         description="Technical validation error"
      *     )
      * )
      */
     public function update(IndicatorRequest $request, int $id): JsonResponse
     {
-        try{
+        try {
             $validated = $request->validated();
 
             $indicator = $this->indicatorService->updateIndicator(
@@ -293,12 +292,11 @@ class IndicatorController extends Controller
             );
 
             return ApiResponse::success(
-                    'Indicator uploaded successfully',
-                    200,
-                    new IndicatorResource($indicator)
-                );
-
-        }catch (RuntimeException $e) {
+                'Indicator uploaded successfully',
+                200,
+                new IndicatorResource($indicator)
+            );
+        } catch (RuntimeException $e) {
             return ApiResponse::error($e->getMessage(), 400);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return ApiResponse::validationError($e->errors());
@@ -309,58 +307,58 @@ class IndicatorController extends Controller
      * @OA\Get(
      *     path="/indicators/search",
      *     tags={"Indicators"},
-     *     summary="Buscar indicador por nombre",
-     *     description="Busca un indicador de desempeño específico por su nombre (búsqueda exacta, case-insensitive)",
+     *     summary="Search indicator by name",
+     *     description="Searches for a specific performance indicator by its name (exact search, case-insensitive)",
      *     @OA\Parameter(
      *         name="name",
      *         in="query",
      *         required=true,
-     *         description="Nombre del indicador a buscar",
-     *         @OA\Schema(type="string", example="Porcentaje de cumplimiento")
+     *         description="Indicator name to search",
+     *         @OA\Schema(type="string", example="Performance achievement percentage")
      *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="Indicador encontrado",
+     *         description="Indicator found",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="Indicador encontrado"),
+     *             @OA\Property(property="message", type="string", example="Indicator found"),
      *             @OA\Property(property="data", ref="#/components/schemas/Indicator")
      *         )
      *     ),
      *     @OA\Response(
      *         response=404,
-     *         description="Indicador no encontrado",
+     *         description="Indicator not found",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Indicador no encontrado")
+     *             @OA\Property(property="message", type="string", example="Indicator not found")
      *         )
      *     ),
      *     @OA\Response(
      *         response=422,
-     *         description="Error de validación técnica",
+     *         description="Technical validation error",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Error de validación"),
+     *             @OA\Property(property="message", type="string", example="Validation error"),
      *             @OA\Property(
      *                 property="errors",
      *                 type="object",
      *                 @OA\Property(
      *                     property="name",
      *                     type="array",
-     *                     @OA\Items(type="string", example="El campo name es obligatorio.")
+     *                     @OA\Items(type="string", example="The name field is required.")
      *                 )
      *             )
      *         )
      *     ),
      *     @OA\Response(
      *         response=500,
-     *         description="Error interno del servidor"
+     *         description="Internal server error"
      *     )
      * )
      */
     public function search(Request $request): JsonResponse
     {
-        try{
+        try {
             $request->validate([
                 'name' => 'required|string|min:1'
             ]);
@@ -372,7 +370,7 @@ class IndicatorController extends Controller
                 200,
                 new IndicatorResource($indicator)
             );
-        }catch (RuntimeException $e) {
+        } catch (RuntimeException $e) {
             return ApiResponse::notFound('Indicator');
         } catch (\Illuminate\Validation\ValidationException $e) {
             return ApiResponse::validationError($e->errors());

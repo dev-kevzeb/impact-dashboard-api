@@ -14,11 +14,11 @@ class IndicatorService
     private MeasureRepository $measureRepository;
     private IndicatorTypeRepository $indicatorTypeRepository;
 
-    public function __construct(IndicatorRepository $indicatorRepository, IndicatorTypeRepository $indicatorTypeRepository, MeasureRepository $measureRepository){
+    public function __construct(IndicatorRepository $indicatorRepository, IndicatorTypeRepository $indicatorTypeRepository, MeasureRepository $measureRepository)
+    {
         $this->indicatorRepository = $indicatorRepository;
         $this->indicatorTypeRepository = $indicatorTypeRepository;
         $this->measureRepository = $measureRepository;
-
     }
 
     public function createIndicator(string $name, float $target, int $indicatorTypeId, int $measureId): Indicator
@@ -27,9 +27,10 @@ class IndicatorService
         $indicatorType = $this->indicatorTypeRepository->findById($indicatorTypeId);
 
         if (!$measure) {
-            throw new RuntimeException("Medida no encontrada");
-        } if (!$indicatorType) {
-            throw new RuntimeException("Tipo de indicador no encontrado");
+            throw new RuntimeException("Measure not found");
+        }
+        if (!$indicatorType) {
+            throw new RuntimeException("Indicator type not found");
         }
 
         $indicator = Indicator::at($name, $indicatorType, $target, $measure);
@@ -46,7 +47,7 @@ class IndicatorService
     public function findIndicatorByName(string $name): Indicator
     {
         $indicator = $this->indicatorRepository->findByName(trim($name));
-        if (!$indicator) throw new RuntimeException("No existe el indicador");
+        if (!$indicator) throw new RuntimeException("The indicator does not exist");
         return $indicator;
     }
 
@@ -61,12 +62,14 @@ class IndicatorService
         $indicator = $this->indicatorRepository->findById($id);
         $indicatorType = $this->indicatorTypeRepository->findById($indicatorTypeId);
 
-        if(!$indicator){
-            throw new RuntimeException("No se encontro el indicador de nombre: {$name}");
-        } if(!$indicatorType){
-            throw new RuntimeException("No se encontro el tipo de indicador");
-        } if(!$measure){
-            throw new RuntimeException("No se encontro la medida");
+        if (!$indicator) {
+            throw new RuntimeException("Indicator with name not found: {$name}");
+        }
+        if (!$indicatorType) {
+            throw new RuntimeException("Indicator type not found");
+        }
+        if (!$measure) {
+            throw new RuntimeException("Measure not found");
         }
 
         $updatedIndicator = Indicator::at($name, $indicatorType, $target, $measure);

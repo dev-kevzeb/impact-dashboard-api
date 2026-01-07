@@ -15,9 +15,9 @@ use RuntimeException;
  *     schema="ProgramState",
  *     type="object",
  *     title="ProgramState",
- *     description="Estados del ciclo de vida de programas: Inactivo, Activo, Finalizado",
- *     @OA\Property(property="id", type="integer", example=1, description="ID único del estado"),
- *     @OA\Property(property="name", type="string", example="Activo", description="Nombre del estado del programa")
+ *     description="Program lifecycle states: Inactive, Active, Completed",
+ *     @OA\Property(property="id", type="integer", example=1, description="Unique state ID"),
+ *     @OA\Property(property="name", type="string", example="Active", description="Program state name")
  * )
  */
 class ProgramStateController extends Controller
@@ -33,14 +33,14 @@ class ProgramStateController extends Controller
      * @OA\Get(
      *     path="/program_states",
      *     tags={"Program States"},
-     *     summary="Listar todos los estados de programa",
-     *     description="Obtiene la lista completa de estados disponibles para los programas (Inactivo, Activo, Finalizado, etc.)",
+     *     summary="List all program states",
+     *     description="Retrieves the complete list of available states for programs (Inactive, Active, Completed, etc.)",
      *     @OA\Response(
      *         response=200,
-     *         description="Lista obtenida exitosamente",
+     *         description="List retrieved successfully",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="Lista de estados obtenida exitosamente"),
+     *             @OA\Property(property="message", type="string", example="State list retrieved successfully"),
      *             @OA\Property(
      *                 property="data",
      *                 type="object",
@@ -49,16 +49,16 @@ class ProgramStateController extends Controller
      *                     type="array",
      *                     @OA\Items(ref="#/components/schemas/ProgramState")
      *                 ),
-     *                 @OA\Property(property="total", type="integer", example=4, description="Total de estados disponibles")
+     *                 @OA\Property(property="total", type="integer", example=4, description="Total available states")
      *             )
      *         )
      *     ),
      *     @OA\Response(
      *         response=500,
-     *         description="Error interno del servidor",
+     *         description="Internal server error",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Error interno del servidor")
+     *             @OA\Property(property="message", type="string", example="Internal server error")
      *         )
      *     )
      * )
@@ -68,7 +68,7 @@ class ProgramStateController extends Controller
         try {
             $perPage = (int) $request->get("per_page", 10);
             $states = $this->programStateService->getAllProgramStates($perPage);
-            
+
             return ApiResponse::success(
                 'Program states paginated list successfully uploaded',
                 200,
@@ -83,7 +83,7 @@ class ProgramStateController extends Controller
         } catch (RuntimeException $e) {
             return ApiResponse::error($e->getMessage(), 500);
         } catch (\Exception $e) {
-            return ApiResponse::error('Error interno del servidor', 500);
+            return ApiResponse::error('Internal server error', 500);
         }
     }
 
@@ -91,35 +91,35 @@ class ProgramStateController extends Controller
      * @OA\Get(
      *     path="/program_states/{id}",
      *     tags={"Program States"},
-     *     summary="Obtener un estado específico",
-     *     description="Obtiene la información detallada de un estado de programa por su ID",
+     *     summary="Get specific state",
+     *     description="Retrieves detailed information of a program state by its ID",
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
      *         required=true,
-     *         description="ID del estado a obtener",
+     *         description="State ID to retrieve",
      *         @OA\Schema(type="integer", example=1)
      *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="Estado encontrado",
+     *         description="State found",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="Estado encontrado"),
+     *             @OA\Property(property="message", type="string", example="State found"),
      *             @OA\Property(property="data", ref="#/components/schemas/ProgramState")
      *         )
      *     ),
      *     @OA\Response(
      *         response=404,
-     *         description="Estado no encontrado",
+     *         description="State not found",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Estado no encontrado")
+     *             @OA\Property(property="message", type="string", example="State not found")
      *         )
      *     ),
      *     @OA\Response(
      *         response=500,
-     *         description="Error interno del servidor"
+     *         description="Internal server error"
      *     )
      * )
      */
@@ -128,14 +128,14 @@ class ProgramStateController extends Controller
         try {
             $state = $this->programStateService->getProgramStateById($id);
             return ApiResponse::success(
-                'Estado encontrado',
+                'State found',
                 200,
                 new ProgramStateResource($state)
             );
         } catch (RuntimeException $e) {
-            return ApiResponse::notFound('Estado');
+            return ApiResponse::notFound('State');
         } catch (\Exception $e) {
-            return ApiResponse::error('Error interno del servidor', 500);
+            return ApiResponse::error('Internal server error', 500);
         }
     }
 
@@ -143,48 +143,48 @@ class ProgramStateController extends Controller
      * @OA\Post(
      *     path="/program_states",
      *     tags={"Program States"},
-     *     summary="Crear nuevo estado de programa",
-     *     description="Crea un nuevo estado para el ciclo de vida de programas. El sistema valida que no exista un estado con el mismo nombre.",
+     *     summary="Create new program state",
+     *     description="Creates a new state for program lifecycle. The system validates that no state with the same name exists.",
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\MediaType(
      *             mediaType="application/json",
      *             @OA\Schema(
      *                 required={"name"},
-     *                 @OA\Property(property="name", type="string", maxLength=255, example="En Evaluación", description="Nombre del nuevo estado (requerido, único, mín 2 caracteres)")
+     *                 @OA\Property(property="name", type="string", maxLength=255, example="Under Evaluation", description="New state name (required, unique, min 2 characters)")
      *             )
      *         )
      *     ),
      *     @OA\Response(
      *         response=201,
-     *         description="Estado creado exitosamente",
+     *         description="State created successfully",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="Estado creado exitosamente"),
+     *             @OA\Property(property="message", type="string", example="State created successfully"),
      *             @OA\Property(property="data", ref="#/components/schemas/ProgramState")
      *         )
      *     ),
      *     @OA\Response(
      *         response=400,
-     *         description="Error de validación de dominio",
+     *         description="Domain validation error",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="el nombre debe tener al menos 2 caracteres")
+     *             @OA\Property(property="message", type="string", example="the name must be at least 2 characters")
      *         )
      *     ),
      *     @OA\Response(
      *         response=422,
-     *         description="Error de validación técnica",
+     *         description="Technical validation error",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Error de validación"),
+     *             @OA\Property(property="message", type="string", example="Validation error"),
      *             @OA\Property(
      *                 property="errors",
      *                 type="object",
      *                 @OA\Property(
      *                     property="name",
      *                     type="array",
-     *                     @OA\Items(type="string", example="Ya existe un estado con el nombre: Activo")
+     *                     @OA\Items(type="string", example="A state with the name already exists: Active")
      *                 )
      *             )
      *         )
@@ -199,12 +199,12 @@ class ProgramStateController extends Controller
             ]);
             $state = $this->programStateService->createProgramState($request->input('name'));
             return ApiResponse::created(
-                'Estado creado exitosamente',
+                'State created successfully',
                 new ProgramStateResource($state)
             );
         } catch (RuntimeException $e) {
-            // Si el error es de duplicado, retornar como error de validación (422)
-            if (str_contains($e->getMessage(), 'Ya existe')) {
+            // If error is duplicate, return as validation error (422)
+            if (str_contains($e->getMessage(), 'already exists')) {
                 return ApiResponse::validationError(['name' => [$e->getMessage()]]);
             }
             return ApiResponse::error($e->getMessage(), 400);
@@ -217,13 +217,13 @@ class ProgramStateController extends Controller
      * @OA\Put(
      *     path="/program_states/{id}",
      *     tags={"Program States"},
-     *     summary="Actualizar estado de programa",
-     *     description="Actualiza el nombre de un estado existente. Valida que no exista otro estado con el mismo nombre.",
+     *     summary="Update program state",
+     *     description="Updates an existing state name. Validates that no other state with the same name exists.",
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
      *         required=true,
-     *         description="ID del estado a actualizar",
+     *         description="State ID to update",
      *         @OA\Schema(type="integer", example=1)
      *     ),
      *     @OA\RequestBody(
@@ -232,40 +232,40 @@ class ProgramStateController extends Controller
      *             mediaType="application/json",
      *             @OA\Schema(
      *                 required={"name"},
-     *                 @OA\Property(property="name", type="string", maxLength=255, example="Activo Modificado", description="Nuevo nombre del estado (requerido, único, mín 2 caracteres)")
+     *                 @OA\Property(property="name", type="string", maxLength=255, example="Active Modified", description="New state name (required, unique, min 2 characters)")
      *             )
      *         )
      *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="Estado actualizado exitosamente",
+     *         description="State updated successfully",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="Estado actualizado exitosamente"),
+     *             @OA\Property(property="message", type="string", example="State updated successfully"),
      *             @OA\Property(property="data", ref="#/components/schemas/ProgramState")
      *         )
      *     ),
      *     @OA\Response(
      *         response=400,
-     *         description="Error de validación de dominio o estado no encontrado"
+     *         description="Domain validation error or state not found"
      *     ),
      *     @OA\Response(
      *         response=404,
-     *         description="Estado no encontrado"
+     *         description="State not found"
      *     ),
      *     @OA\Response(
      *         response=422,
-     *         description="Error de validación técnica",
+     *         description="Technical validation error",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Error de validación"),
+     *             @OA\Property(property="message", type="string", example="Validation error"),
      *             @OA\Property(
      *                 property="errors",
      *                 type="object",
      *                 @OA\Property(
      *                     property="name",
      *                     type="array",
-     *                     @OA\Items(type="string", example="Ya existe un estado con el nombre: Finalizado")
+     *                     @OA\Items(type="string", example="A state with the name already exists: Completed")
      *                 )
      *             )
      *         )
@@ -280,13 +280,13 @@ class ProgramStateController extends Controller
             ]);
             $state = $this->programStateService->updateProgramState($id, $request->input('name'));
             return ApiResponse::success(
-                'Estado actualizado exitosamente',
+                'State updated successfully',
                 200,
                 new ProgramStateResource($state)
             );
         } catch (RuntimeException $e) {
-            // Si el error es de duplicado, retornar como error de validación (422)
-            if (str_contains($e->getMessage(), 'Ya existe')) {
+            // If error is duplicate, return as validation error (422)
+            if (str_contains($e->getMessage(), 'already exists')) {
                 return ApiResponse::validationError(['name' => [$e->getMessage()]]);
             }
             return ApiResponse::error($e->getMessage(), 400);
@@ -299,52 +299,52 @@ class ProgramStateController extends Controller
      * @OA\Get(
      *     path="/program_states/search",
      *     tags={"Program States"},
-     *     summary="Buscar estado por nombre",
-     *     description="Busca un estado específico por su nombre (búsqueda exacta, case-insensitive)",
+     *     summary="Search state by name",
+     *     description="Searches for a specific state by its name (exact search, case-insensitive)",
      *     @OA\Parameter(
      *         name="name",
      *         in="query",
      *         required=true,
-     *         description="Nombre del estado a buscar",
-     *         @OA\Schema(type="string", example="Activo")
+     *         description="State name to search",
+     *         @OA\Schema(type="string", example="Active")
      *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="Estado encontrado",
+     *         description="State found",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="Estado encontrado"),
+     *             @OA\Property(property="message", type="string", example="State found"),
      *             @OA\Property(property="data", ref="#/components/schemas/ProgramState")
      *         )
      *     ),
      *     @OA\Response(
      *         response=404,
-     *         description="Estado no encontrado",
+     *         description="State not found",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Estado no encontrado")
+     *             @OA\Property(property="message", type="string", example="State not found")
      *         )
      *     ),
      *     @OA\Response(
      *         response=422,
-     *         description="Error de validación",
+     *         description="Validation error",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Error de validación"),
+     *             @OA\Property(property="message", type="string", example="Validation error"),
      *             @OA\Property(
      *                 property="errors",
      *                 type="object",
      *                 @OA\Property(
      *                     property="name",
      *                     type="array",
-     *                     @OA\Items(type="string", example="El campo nombre es obligatorio.")
+     *                     @OA\Items(type="string", example="The name field is required.")
      *                 )
      *             )
      *         )
      *     ),
      *     @OA\Response(
      *         response=500,
-     *         description="Error interno del servidor"
+     *         description="Internal server error"
      *     )
      * )
      */
@@ -356,16 +356,16 @@ class ProgramStateController extends Controller
             ]);
             $state = $this->programStateService->findProgramStateByName($request->input('name'));
             return ApiResponse::success(
-                'Estado encontrado',
+                'State found',
                 200,
                 new ProgramStateResource($state)
             );
         } catch (RuntimeException $e) {
-            return ApiResponse::notFound('Estado');
+            return ApiResponse::notFound('State');
         } catch (\Illuminate\Validation\ValidationException $e) {
             return ApiResponse::validationError($e->errors());
         } catch (\Exception $e) {
-            return ApiResponse::error('Error interno del servidor', 500);
+            return ApiResponse::error('Internal server error', 500);
         }
     }
 }

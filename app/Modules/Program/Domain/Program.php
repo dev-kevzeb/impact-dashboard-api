@@ -13,9 +13,9 @@ use App\Modules\Sdg\Domain\Sdg;
 class Program extends Model
 {
     use HasFactory;
-    
+
     protected $table = 'program';  // SINGULAR
-    
+
     protected $fillable = [
         'name',
         'description',
@@ -27,7 +27,7 @@ class Program extends Model
 
     protected $appends = ['projects_count'];
 
-    // Constantes de mensajes de error (solo reglas de negocio)
+    // Error message constants (business rules only)
     public static $ERROR_NAME_EMPTY = 'The program name must not be empty';
     public static $ERROR_NAME_MIN_LENGTH = 'The program name must be at least 3 characters long';
     public static $ERROR_DESCRIPTION_EMPTY = 'The program description must not be empty';
@@ -42,7 +42,7 @@ class Program extends Model
     }
 
     /**
-     * Factory Method - Crear entidad Program con validaciones
+     * Factory Method - Create Program entity with validations
      */
     public static function at(
         string $name,
@@ -52,29 +52,29 @@ class Program extends Model
         Contact $contact,
         ProgramState $programState
     ): Program {
-        // Validación de nombre (reglas de negocio)
+        // Name validation (business rules)
         if (empty(trim($name))) {
             throw new RuntimeException(self::$ERROR_NAME_EMPTY);
         }
-        
+
         $trimmedName = trim($name);
-        
+
         if (strlen($trimmedName) < 3) {
             throw new RuntimeException(self::$ERROR_NAME_MIN_LENGTH);
         }
 
-        // Validación de descripción (reglas de negocio)
+        // Description validation (business rules)
         if (empty(trim($description))) {
             throw new RuntimeException(self::$ERROR_DESCRIPTION_EMPTY);
         }
-        
+
         $trimmedDescription = trim($description);
-        
+
         if (strlen($trimmedDescription) < 10) {
             throw new RuntimeException(self::$ERROR_DESCRIPTION_MIN_LENGTH);
         }
 
-        // Validación de instancias de entidades relacionadas
+        // Validation of related entity instances
         if (!($contact instanceof Contact)) {
             throw new RuntimeException(self::$ERROR_CONTACT_INVALID);
         }
@@ -141,7 +141,7 @@ class Program extends Model
     }
 
     /**
-     * Relación M:N con Sdg (a través de tabla pivot program_sdg)
+     * M:N relationship with Sdg (through program_sdg pivot table)
      */
     public function sdgs()
     {
@@ -149,14 +149,14 @@ class Program extends Model
     }
 
     /**
-     * Relación 1:N con Project (un programa tiene muchos proyectos)
-     * TODO: Descomentar cuando el módulo Project esté implementado
+     * 1:N relationship with Project (a program has many projects)
+     * TODO: Uncomment when Project module is implemented
      */
     // public function projects()
     // {
     //     return $this->hasMany(\App\Modules\Project\Domain\Project::class, 'program_id');
     // }
-    
+
     /**
      * Laravel Factory integration
      * Requerido para arquitectura modular

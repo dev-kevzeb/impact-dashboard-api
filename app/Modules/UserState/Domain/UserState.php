@@ -13,15 +13,15 @@ class UserState extends Model
     protected $table = 'user_state';
     protected $fillable = ['name'];
 
-    // Error constants in Spanish
-    public static $ERROR_NAME_EMPTY = 'el nombre del estado no debe ir vacío';
-    public static $ERROR_NAME_MIN_LENGTH = 'el nombre del estado debe tener al menos 2 caracteres';
-    public static $ERROR_NAME_MAX_LENGTH = 'el nombre del estado no debe exceder 50 caracteres';
+    // Error constants
+    public static $ERROR_NAME_EMPTY = 'the state name must not be empty';
+    public static $ERROR_NAME_MIN_LENGTH = 'the state name must be at least 2 characters';
+    public static $ERROR_NAME_MAX_LENGTH = 'the state name must not exceed 50 characters';
 
     /**
      * Factory method with domain validation
      *
-     * @param string $name Estado del usuario (ej: active, inactive, suspended)
+     * @param string $name User state (e.g., active, inactive, suspended)
      * @throws RuntimeException
      * @return UserState
      */
@@ -56,10 +56,10 @@ class UserState extends Model
 
     /**
      * Check if the user state matches the given name (case-insensitive comparison)
-     * Método genérico y escalable para verificar estados sin hardcodear nombres
+     * Generic and scalable method to verify states without hardcoding names
      *
-     * @param string $stateName Nombre del estado a comparar
-     * @return bool True si el estado coincide, false en caso contrario
+     * @param string $stateName State name to compare
+     * @return bool True if the state matches, false otherwise
      */
     public function hasState(string $stateName): bool
     {

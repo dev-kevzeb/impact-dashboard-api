@@ -11,12 +11,12 @@ class Sdg extends Model
     protected $table = 'sdg';
     protected $fillable = ['image', 'filename'];
 
-    // Constantes de mensajes de error
-    public static $ERROR_IMAGE_EMPTY = 'el nombre de la imagen del SDG no debe ir vacío';
-    public static $ERROR_MISSING_EXTENSION = 'el archivo debe tener una extensión (ejemplos: .jpg, .png, .gif, .webp, .svg)';
-    public static $ERROR_MISSING_FILENAME = 'el archivo debe tener un nombre, no solo la extensión';
-    public static $ERROR_IMAGE_NAME_TOO_LONG = 'el nombre de la imagen no puede exceder 255 caracteres';
-    public static $ERROR_INVALID_CHARACTERS = 'el nombre de la imagen contiene caracteres no permitidos: < > : " | ? * \\ null';
+    // Error message constants
+    public static $ERROR_IMAGE_EMPTY = 'the SDG image name must not be empty';
+    public static $ERROR_MISSING_EXTENSION = 'the file must have an extension (examples: .jpg, .png, .gif, .webp, .svg)';
+    public static $ERROR_MISSING_FILENAME = 'the file must have a name, not just the extension';
+    public static $ERROR_IMAGE_NAME_TOO_LONG = 'the image name cannot exceed 255 characters';
+    public static $ERROR_INVALID_CHARACTERS = 'the image name contains invalid characters: < > : " | ? * \\ null';
 
     public function __construct(array $attributes = [])
     {
@@ -89,12 +89,12 @@ class Sdg extends Model
     }
 
     // ============================================
-    // RELACIONES ELOQUENT
+    // ELOQUENT RELATIONSHIPS
     // ============================================
 
     /**
-     * Relación M:N con Program
-     * Un SDG puede estar asociado a múltiples programas
+     * M:N relationship with Program
+     * An SDG can be associated with multiple programs
      */
     public function programs()
     {
