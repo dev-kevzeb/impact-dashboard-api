@@ -38,14 +38,14 @@ class UserStateController
      * @OA\Get(
      *     path="/user_states",
      *     tags={"User States"},
-     *     summary="Listar estados de usuario",
-     *     description="Obtiene todos los estados de usuario disponibles en el sistema",
+     *     summary="List user states",
+     *     description="Retrieves all user states available in the system",
      *     @OA\Response(
      *         response=200,
-     *         description="Lista de estados obtenida exitosamente",
+     *         description="States list retrieved successfully",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="Estados de usuario obtenidos exitosamente"),
+     *             @OA\Property(property="message", type="string", example="User states retrieved successfully"),
      *             @OA\Property(
      *                 property="data",
      *                 type="array",
@@ -55,10 +55,10 @@ class UserStateController
      *     ),
      *     @OA\Response(
      *         response=500,
-     *         description="Error interno del servidor",
+     *         description="Internal server error",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Error interno del servidor")
+     *             @OA\Property(property="message", type="string", example="Internal server error")
      *         )
      *     )
      * )
@@ -69,14 +69,14 @@ class UserStateController
             $userStates = $this->service->getAllUserStates();
 
             return ApiResponse::success(
-                'Estados de usuario obtenidos exitosamente',
+                'User states retrieved successfully',
                 200,
                 UserStateResource::collection($userStates)
             );
         } catch (RuntimeException $e) {
             return ApiResponse::error($e->getMessage(), 500);
         } catch (\Exception $e) {
-            return ApiResponse::error('Error interno del servidor', 500);
+            return ApiResponse::error('Internal server error', 500);
         }
     }
 
@@ -84,8 +84,8 @@ class UserStateController
      * @OA\Post(
      *     path="/user_states",
      *     tags={"User States"},
-     *     summary="Crear estado de usuario",
-     *     description="Crea un nuevo estado de usuario. El nombre debe ser único.",
+     *     summary="Create user state",
+     *     description="Creates a new user state. The name must be unique.",
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\MediaType(
@@ -96,26 +96,26 @@ class UserStateController
      *                     property="name",
      *                     type="string",
      *                     example="pending",
-     *                     description="Nombre del estado (requerido, único, máximo 50 caracteres, mínimo 2 caracteres)"
+     *                     description="State name (required, unique, maximum 50 characters, minimum 2 characters)"
      *                 )
      *             )
      *         )
      *     ),
      *     @OA\Response(
      *         response=201,
-     *         description="Estado creado exitosamente",
+     *         description="State created successfully",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="Estado de usuario creado exitosamente"),
+     *             @OA\Property(property="message", type="string", example="User state created successfully"),
      *             @OA\Property(property="data", ref="#/components/schemas/UserState")
      *         )
      *     ),
      *     @OA\Response(
      *         response=400,
-     *         description="Error de validación de negocio",
+     *         description="Business validation error",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="El nombre no debe ir vacío")
+     *             @OA\Property(property="message", type="string", example="The name must not be empty")
      *         )
      *     ),
      *     @OA\Response(
@@ -144,7 +144,7 @@ class UserStateController
             $userState = $this->service->createUserState($validated['name']);
 
             return ApiResponse::created(
-                'Estado de usuario creado exitosamente',
+                'User state created successfully',
                 new UserStateResource($userState)
             );
         } catch (RuntimeException $e) {
@@ -156,21 +156,21 @@ class UserStateController
      * @OA\Get(
      *     path="/user_states/{id}",
      *     tags={"User States"},
-     *     summary="Obtener estado por ID",
-     *     description="Obtiene la información de un estado de usuario específico",
+     *     summary="Get state by ID",
+     *     description="Retrieves a specific user state information",
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
      *         required=true,
-     *         description="ID del estado",
+     *         description="State ID",
      *         @OA\Schema(type="integer", example=1)
      *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="Estado encontrado exitosamente",
+     *         description="State found successfully",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="Estado de usuario encontrado"),
+     *             @OA\Property(property="message", type="string", example="User state found"),
      *             @OA\Property(property="data", ref="#/components/schemas/UserState")
      *         )
      *     ),
@@ -184,7 +184,7 @@ class UserStateController
      *     ),
      *     @OA\Response(
      *         response=500,
-     *         description="Error interno del servidor"
+     *         description="Internal server error"
      *     )
      * )
      */
@@ -194,14 +194,14 @@ class UserStateController
             $userState = $this->service->findUserStateById($id);
 
             return ApiResponse::success(
-                'Estado de usuario encontrado',
+                'User state found',
                 200,
                 new UserStateResource($userState)
             );
         } catch (RuntimeException $e) {
             return ApiResponse::notFound('Estado de usuario');
         } catch (\Exception $e) {
-            return ApiResponse::error('Error interno del servidor', 500);
+            return ApiResponse::error('Internal server error', 500);
         }
     }
 
@@ -209,13 +209,13 @@ class UserStateController
      * @OA\Put(
      *     path="/user_states/{id}",
      *     tags={"User States"},
-     *     summary="Actualizar estado de usuario",
-     *     description="Actualiza el nombre de un estado existente. El nuevo nombre debe ser único.",
+     *     summary="Update user state",
+     *     description="Updates an existing state name. The new name must be unique.",
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
      *         required=true,
-     *         description="ID del estado a actualizar",
+     *         description="State ID to update",
      *         @OA\Schema(type="integer", example=1)
      *     ),
      *     @OA\RequestBody(
@@ -228,17 +228,17 @@ class UserStateController
      *                     property="name",
      *                     type="string",
      *                     example="verified",
-     *                     description="Nuevo nombre del estado (requerido, único, máximo 50 caracteres, mínimo 2 caracteres)"
+     *                     description="New state name (required, unique, maximum 50 characters, minimum 2 characters)"
      *                 )
      *             )
      *         )
      *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="Estado actualizado exitosamente",
+     *         description="State updated successfully",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="Estado de usuario actualizado exitosamente"),
+     *             @OA\Property(property="message", type="string", example="User state updated successfully"),
      *             @OA\Property(property="data", ref="#/components/schemas/UserState")
      *         )
      *     ),
@@ -247,7 +247,7 @@ class UserStateController
      *         description="Error de validación de negocio",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="El nombre debe tener al menos 2 caracteres")
+     *             @OA\Property(property="message", type="string", example="The name must be at least 2 characters")
      *         )
      *     ),
      *     @OA\Response(
@@ -288,7 +288,7 @@ class UserStateController
             $userState = $this->service->updateUserState($id, $validated['name']);
 
             return ApiResponse::success(
-                'Estado de usuario actualizado exitosamente',
+                'User state updated successfully',
                 200,
                 new UserStateResource($userState)
             );
@@ -300,7 +300,7 @@ class UserStateController
             // Otros errores de negocio retornan 400
             return ApiResponse::error($e->getMessage(), 400);
         } catch (\Exception $e) {
-            return ApiResponse::error('Error interno del servidor', 500);
+            return ApiResponse::error('Internal server error', 500);
         }
     }
 
@@ -308,21 +308,21 @@ class UserStateController
      * @OA\Get(
      *     path="/user_states/search",
      *     tags={"User States"},
-     *     summary="Buscar estados por nombre",
-     *     description="Busca estados de usuario por término de búsqueda (búsqueda case-insensitive)",
+     *     summary="Search states by name",
+     *     description="Searches user states by search term (case-insensitive search)",
      *     @OA\Parameter(
      *         name="q",
      *         in="query",
      *         required=true,
-     *         description="Término de búsqueda para filtrar estados",
+     *         description="Search term to filter states",
      *         @OA\Schema(type="string", example="active")
      *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="Búsqueda completada exitosamente",
+     *         description="Search completed successfully",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="Búsqueda realizada exitosamente"),
+     *             @OA\Property(property="message", type="string", example="Search completed successfully"),
      *             @OA\Property(
      *                 property="data",
      *                 type="array",
@@ -332,35 +332,35 @@ class UserStateController
      *     ),
      *     @OA\Response(
      *         response=404,
-     *         description="No se encontraron resultados",
+     *         description="No results found",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="No se encontraron estados de usuario con ese criterio")
+     *             @OA\Property(property="message", type="string", example="No user states found with that criteria")
      *         )
      *     ),
      *     @OA\Response(
      *         response=422,
-     *         description="Parámetro q inválido",
+     *         description="Invalid q parameter",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Error de validación"),
+     *             @OA\Property(property="message", type="string", example="Validation error"),
      *             @OA\Property(
      *                 property="errors",
      *                 type="object",
      *                 @OA\Property(
      *                     property="q",
      *                     type="array",
-     *                     @OA\Items(type="string", example="El parámetro de búsqueda (q) es obligatorio")
+     *                     @OA\Items(type="string", example="The search parameter (q) is required")
      *                 )
      *             )
      *         )
      *     ),
      *     @OA\Response(
      *         response=400,
-     *         description="Error en la búsqueda",
+     *         description="Search error",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Error al buscar estados")
+     *             @OA\Property(property="message", type="string", example="Error searching states")
      *         )
      *     )
      * )
@@ -371,20 +371,20 @@ class UserStateController
             $request->validate([
                 'q' => 'required|string|min:1'
             ], [
-                'q.required' => 'El parámetro de búsqueda (q) es obligatorio.',
-                'q.string' => 'El parámetro de búsqueda debe ser una cadena de texto.',
-                'q.min' => 'El parámetro de búsqueda debe tener al menos 1 carácter.'
+                'q.required' => 'The search parameter (q) is required.',
+                'q.string' => 'The search parameter must be a string.',
+                'q.min' => 'The search parameter must be at least 1 character.'
             ]);
 
             $searchTerm = $request->input('q');
             $userStates = $this->service->searchUserStates($searchTerm);
 
             if ($userStates->isEmpty()) {
-                return ApiResponse::notFound('No se encontraron estados de usuario con ese criterio');
+                return ApiResponse::notFound('No user states found with that criteria');
             }
 
             return ApiResponse::success(
-                'Búsqueda realizada exitosamente',
+                'Search completed successfully',
                 200,
                 UserStateResource::collection($userStates)
             );

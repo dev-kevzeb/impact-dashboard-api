@@ -40,11 +40,11 @@ class UserStateRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'name.required' => 'El nombre del estado de usuario es obligatorio.',
-            'name.string' => 'El nombre debe ser una cadena de texto.',
-            'name.min' => 'El nombre debe tener al menos :min caracteres.',
-            'name.max' => 'El nombre no debe exceder :max caracteres.',
-            'name.unique' => 'Este estado de usuario ya existe en el sistema.',
+            'name.required' => 'The user state name is required.',
+            'name.string' => 'The name must be a string.',
+            'name.min' => 'The name must be at least :min characters.',
+            'name.max' => 'The name must not exceed :max characters.',
+            'name.unique' => 'This user state already exists in the system.',
         ];
     }
 }

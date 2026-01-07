@@ -16,18 +16,18 @@ class MeasureTest extends TestCase
 
     private const BASE_URL = '/api/v1/measures';
 
-    private const ERROR_NAME_EMPTY = 'el nombre de la medida no debe ir vacio';
-    private const ERROR_NAME_MIN   = 'el nombre de la medida debe tener al menos 2 caracteres';
-    private const ERROR_NAME_MAX   = 'el nombre de la medida no debe exceder 150 caracteres';
+    private const ERROR_NAME_EMPTY = 'The name of the measure should not be empty';
+    private const ERROR_NAME_MIN   = 'Measure name must be at least 2 characters';
+    private const ERROR_NAME_MAX   = 'The measure name must not exceed 150 characters';
 
-    private const ERROR_SO_REQUIRED = 'el resultado estratégico es obligatorio';
-    private const ERROR_SO_NOT_FOUND = 'el resultado estratégico especificado no existe';
+    private const ERROR_SO_REQUIRED = 'The strategic result is mandatory';
+    private const ERROR_SO_NOT_FOUND = 'The specified strategic result does not exist';
 
-    private const ERROR_INDICATOR_DUPLICATED = 'no se permiten indicadores duplicados en la medida';
+    private const ERROR_INDICATOR_DUPLICATED = 'duplicate indicators are not allowed in the measure';
 
 
     // LISTAR
-    
+
     public function test_can_list_measures(): void
     {
         Measure::factory()->count(3)->create();
@@ -35,18 +35,18 @@ class MeasureTest extends TestCase
         $response = $this->getJson(self::BASE_URL);
 
         $response->assertOk()
-                 ->assertJsonStructure([
-                     'success',
-                     'message',
-                     'data' => [
-                         'measures' => [
-                             '*' => ['id', 'name']
-                         ],
-                         'total'
-                     ]
-                 ])
-                 ->assertJsonPath('data.total', 3)
-                 ->assertJsonCount(3, 'data.measures');
+            ->assertJsonStructure([
+                'success',
+                'message',
+                'data' => [
+                    'measures' => [
+                        '*' => ['id', 'name']
+                    ],
+                    'total'
+                ]
+            ])
+            ->assertJsonPath('data.total', 3)
+            ->assertJsonCount(3, 'data.measures');
     }
 
     public function test_list_returns_empty_when_no_measures(): void
@@ -54,8 +54,8 @@ class MeasureTest extends TestCase
         $response = $this->getJson(self::BASE_URL);
 
         $response->assertOk()
-                 ->assertJsonPath('data.total', 0)
-                 ->assertJsonCount(0, 'data.measures');
+            ->assertJsonPath('data.total', 0)
+            ->assertJsonCount(0, 'data.measures');
     }
 
 
@@ -73,13 +73,13 @@ class MeasureTest extends TestCase
         $response = $this->postJson(self::BASE_URL, $data);
 
         $response->assertCreated()
-                 ->assertJson([
-                     'success' => true,
-                     'message' => 'Medida creada exitosamente',
-                 ])
-                 ->assertJsonStructure([
-                     'data' => ['id', 'name']
-                 ]);
+            ->assertJson([
+                'success' => true,
+                'message' => 'Measure created successfully',
+            ])
+            ->assertJsonStructure([
+                'data' => ['id', 'name']
+            ]);
 
         $this->assertDatabaseHas('measure', [
             'name' => 'Nueva Medida',
@@ -96,8 +96,8 @@ class MeasureTest extends TestCase
         ]);
 
         $response->assertStatus(422)
-                 ->assertJsonValidationErrors(['name'])
-                 ->assertJsonPath('errors.name.0', self::ERROR_NAME_EMPTY);
+            ->assertJsonValidationErrors(['name'])
+            ->assertJsonPath('errors.name.0', self::ERROR_NAME_EMPTY);
     }
 
     public function test_name_too_short(): void
@@ -110,7 +110,7 @@ class MeasureTest extends TestCase
         ]);
 
         $response->assertStatus(422)
-                 ->assertJsonPath('errors.name.0', self::ERROR_NAME_MIN);
+            ->assertJsonPath('errors.name.0', self::ERROR_NAME_MIN);
     }
 
     public function test_name_too_long(): void
@@ -125,7 +125,7 @@ class MeasureTest extends TestCase
         ]);
 
         $response->assertStatus(422)
-                 ->assertJsonPath('errors.name.0', self::ERROR_NAME_MAX);
+            ->assertJsonPath('errors.name.0', self::ERROR_NAME_MAX);
     }
 
     public function test_strategic_output_required(): void
@@ -135,8 +135,8 @@ class MeasureTest extends TestCase
         ]);
 
         $response->assertStatus(422)
-                 ->assertJsonValidationErrors(['strategic_output_id'])
-                 ->assertJsonPath('errors.strategic_output_id.0', self::ERROR_SO_REQUIRED);
+            ->assertJsonValidationErrors(['strategic_output_id'])
+            ->assertJsonPath('errors.strategic_output_id.0', self::ERROR_SO_REQUIRED);
     }
 
     public function test_strategic_output_must_exist(): void
@@ -147,12 +147,12 @@ class MeasureTest extends TestCase
         ]);
 
         $response->assertStatus(422)
-                 ->assertJsonPath('errors.strategic_output_id.0', self::ERROR_SO_NOT_FOUND);
+            ->assertJsonPath('errors.strategic_output_id.0', self::ERROR_SO_NOT_FOUND);
     }
 
 
     // SHOW
-    
+
     public function test_can_show_measure(): void
     {
         $measure = Measure::factory()->create();
@@ -160,14 +160,14 @@ class MeasureTest extends TestCase
         $response = $this->getJson(self::BASE_URL . "/{$measure->id}");
 
         $response->assertOk()
-                 ->assertJson([
-                     'success' => true,
-                     'message' => 'Medida encontrada',
-                     'data' => [
-                         'id' => $measure->id,
-                         'name' => $measure->name,
-                     ]
-                 ]);
+            ->assertJson([
+                'success' => true,
+                'message' => 'Measure found',
+                'data' => [
+                    'id' => $measure->id,
+                    'name' => $measure->name,
+                ]
+            ]);
     }
 
     public function test_show_not_found(): void
@@ -175,12 +175,12 @@ class MeasureTest extends TestCase
         $response = $this->getJson(self::BASE_URL . '/9999');
 
         $response->assertStatus(404)
-                 ->assertJson(['success' => false]);
+            ->assertJson(['success' => false]);
     }
 
 
     // UPDATE
-    
+
     public function test_can_update_measure(): void
     {
         $measure = Measure::factory()->create();
@@ -192,7 +192,7 @@ class MeasureTest extends TestCase
         ]);
 
         $response->assertOk()
-                 ->assertJsonPath('data.name', 'Actualizado');
+            ->assertJsonPath('data.name', 'Actualizado');
 
         $this->assertDatabaseHas('measure', [
             'id' => $measure->id,
@@ -208,7 +208,7 @@ class MeasureTest extends TestCase
         $response = $this->putJson(self::BASE_URL . "/{$measure->id}", []);
 
         $response->assertStatus(422)
-                 ->assertJsonValidationErrors(['name', 'strategic_output_id']);
+            ->assertJsonValidationErrors(['name', 'strategic_output_id']);
     }
 
 
@@ -222,13 +222,13 @@ class MeasureTest extends TestCase
         $response = $this->getJson(self::BASE_URL . "-indicators/{$measure->id}");
 
         $response->assertOk()
-                 ->assertJsonPath('data.indicators_count', 2)
-                 ->assertJsonCount(2, 'data.indicators');
+            ->assertJsonPath('data.indicators_count', 2)
+            ->assertJsonCount(2, 'data.indicators');
     }
 
 
-   // ADD INDICATOR
-    
+    // ADD INDICATOR
+
     public function test_can_add_indicator(): void
     {
         $measure = Measure::factory()->create();
@@ -242,7 +242,7 @@ class MeasureTest extends TestCase
         ]);
 
         $response->assertOk()
-                 ->assertJsonPath('data.indicators.0.name', 'Nuevo Indicador');
+            ->assertJsonPath('data.indicators.0.name', 'Nuevo Indicador');
 
         $this->assertDatabaseHas('indicator', [
             'name' => 'Nuevo Indicador',
@@ -270,7 +270,7 @@ class MeasureTest extends TestCase
         ]);
 
         $response->assertStatus(400)
-                 ->assertJsonPath('message', self::ERROR_INDICATOR_DUPLICATED);
+            ->assertJsonPath('message', self::ERROR_INDICATOR_DUPLICATED);
     }
 
 
@@ -288,7 +288,7 @@ class MeasureTest extends TestCase
         ]);
 
         $response->assertOk()
-                 ->assertJsonPath('message', 'Indicador removido exitosamente');
+            ->assertJsonPath('message', 'Indicator successfully removed');
 
         $this->assertDatabaseMissing('indicator', [
             'id' => $indicator->id,
@@ -297,7 +297,7 @@ class MeasureTest extends TestCase
     }
 
     // SEARCH
-    
+
     public function test_can_search_measure_by_name(): void
     {
         Measure::factory()->create(['name' => 'Medida Especial']);
@@ -305,7 +305,7 @@ class MeasureTest extends TestCase
         $response = $this->getJson(self::BASE_URL . '/search?name=Especial');
 
         $response->assertOk()
-                 ->assertJsonPath('data.measure.name', 'Medida Especial');
+            ->assertJsonPath('data.measure.name', 'Medida Especial');
     }
 
     public function test_search_not_found(): void
@@ -313,6 +313,6 @@ class MeasureTest extends TestCase
         $response = $this->getJson(self::BASE_URL . '/search?name=xyz');
 
         $response->assertStatus(400)
-                 ->assertJson(['success' => false]);
+            ->assertJson(['success' => false]);
     }
 }

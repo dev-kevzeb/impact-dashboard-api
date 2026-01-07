@@ -22,22 +22,22 @@ use RuntimeException;
  *     schema="Measure",
  *     type="object",
  *     title="Measure",
- *     description="Medidas (indicadores de resultado) asociadas a resultados estratégicos, con sus indicadores de desempeño",
- *     @OA\Property(property="id", type="integer", example=1, description="ID único de la medida"),
- *     @OA\Property(property="name", type="string", example="Número de escuelas mejoradas", description="Nombre de la medida (2-100 caracteres)"),
+     description="Measures (outcome indicators) associated with strategic outputs, with their performance indicators",
+     @OA\Property(property="id", type="integer", example=1, description="Unique measure ID"),
+     @OA\Property(property="name", type="string", example="Number of improved schools", description="Measure name (2-100 characters)"),
  *     @OA\Property(
  *         property="indicators",
  *         type="array",
- *         description="Indicadores de desempeño asociados a la medida (opcional, cargado con load)",
- *         @OA\Items(
- *             type="object",
- *             @OA\Property(property="id", type="integer", example=1),
- *             @OA\Property(property="name", type="string", example="Escuelas con infraestructura renovada"),
+         description="Performance indicators associated with the measure (optional, loaded with load)",
+         @OA\Items(
+             type="object",
+             @OA\Property(property="id", type="integer", example=1),
+             @OA\Property(property="name", type="string", example="Schools with renovated infrastructure"),
  *             @OA\Property(property="target", type="number", format="float", example=50),
  *             @OA\Property(property="type_id", type="integer", example=1)
  *         )
  *     ),
- *     @OA\Property(property="indicators_count", type="integer", example=3, description="Cantidad de indicadores asociados (opcional)")
+ *     @OA\Property(property="indicators_count", type="integer", example=3, description="Number of associated indicators (optional)")
  * )
  */
 class MeasureController extends Controller
@@ -57,14 +57,14 @@ class MeasureController extends Controller
      * @OA\Get(
      *     path="/measures",
      *     tags={"Measures"},
-     *     summary="Listar todas las medidas",
-     *     description="Obtiene la lista completa de medidas (indicadores de resultado) sin sus indicadores asociados",
+     *     summary="List all measures",
+     *     description="Retrieves the complete list of measures (outcome indicators) without their associated indicators",
      *     @OA\Response(
      *         response=200,
-     *         description="Lista obtenida exitosamente",
+     *         description="List retrieved successfully",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="Lista de medidas obtenida exitosamente"),
+     *             @OA\Property(property="message", type="string", example="Measure list retrieved successfully"),
      *             @OA\Property(
      *                 property="data",
      *                 type="object",
@@ -79,17 +79,17 @@ class MeasureController extends Controller
      *     ),
      *     @OA\Response(
      *         response=500,
-     *         description="Error interno del servidor",
+     *         description="Internal server error",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Error interno del servidor")
+     *             @OA\Property(property="message", type="string", example="Internal server error")
      *         )
      *     )
      * )
      */
     public function index()
     {
-        try{
+        try {
             $measure = $this->measureService->getAllMeasures();
 
             return ApiResponse::success(
@@ -110,35 +110,35 @@ class MeasureController extends Controller
      * @OA\Get(
      *     path="/measures/{id}",
      *     tags={"Measures"},
-     *     summary="Obtener medida específica",
-     *     description="Obtiene el detalle de una medida por su ID, sin sus indicadores asociados",
+     *     summary="Get specific measure",
+     *     description="Retrieves details of a measure by its ID, without its associated indicators",
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
      *         required=true,
-     *         description="ID de la medida",
+     *         description="Measure ID",
      *         @OA\Schema(type="integer", example=1)
      *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="Medida encontrada",
+     *         description="Measure found",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="Medida encontrada"),
+     *             @OA\Property(property="message", type="string", example="Measure found"),
      *             @OA\Property(property="data", ref="#/components/schemas/Measure")
      *         )
      *     ),
      *     @OA\Response(
      *         response=404,
-     *         description="Medida no encontrada",
+     *         description="Measure not found",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Medida no encontrado")
+     *             @OA\Property(property="message", type="string", example="Measure not found")
      *         )
      *     ),
      *     @OA\Response(
      *         response=500,
-     *         description="Error interno del servidor"
+     *         description="Internal server error"
      *     )
      * )
      */
@@ -163,31 +163,31 @@ class MeasureController extends Controller
      * @OA\Get(
      *     path="/measures/{id}/with-indicators",
      *     tags={"Measures"},
-     *     summary="Obtener medida con sus indicadores",
-     *     description="Obtiene una medida con todos sus indicadores de desempeño asociados (eager loading)",
+     *     summary="Get measure with its indicators",
+     *     description="Retrieves a measure with all its associated performance indicators (eager loading)",
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
      *         required=true,
-     *         description="ID de la medida",
+     *         description="Measure ID",
      *         @OA\Schema(type="integer", example=1)
      *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="Medida con indicadores recuperada exitosamente",
+     *         description="Measure with indicators retrieved successfully",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="Medida con sus indicadores recuperada exitosamente"),
+     *             @OA\Property(property="message", type="string", example="Measure with its indicators retrieved successfully"),
      *             @OA\Property(property="data", ref="#/components/schemas/Measure")
      *         )
      *     ),
      *     @OA\Response(
      *         response=404,
-     *         description="Medida no encontrada"
+     *         description="Measure not found"
      *     ),
      *     @OA\Response(
      *         response=500,
-     *         description="Error interno del servidor"
+     *         description="Internal server error"
      *     )
      * )
      */
@@ -214,31 +214,31 @@ class MeasureController extends Controller
      * @OA\Get(
      *     path="/measures/{id}/with-indicators-count",
      *     tags={"Measures"},
-     *     summary="Obtener medida con conteo de indicadores",
-     *     description="Obtiene una medida con sus indicadores y el conteo total de indicadores asociados",
+     *     summary="Get measure with indicator count",
+     *     description="Retrieves a measure with its indicators and the total count of associated indicators",
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
      *         required=true,
-     *         description="ID de la medida",
+     *         description="Measure ID",
      *         @OA\Schema(type="integer", example=1)
      *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="Medida con indicadores y conteo recuperada",
+     *         description="Measure with indicators and count retrieved",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="Lista de medidas con sus indicadores recuperada exitosamente"),
+     *             @OA\Property(property="message", type="string", example="Measure list with their indicators retrieved successfully"),
      *             @OA\Property(property="data", ref="#/components/schemas/Measure")
      *         )
      *     ),
      *     @OA\Response(
      *         response=404,
-     *         description="Medida no encontrada"
+     *         description="Measure not found"
      *     ),
      *     @OA\Response(
      *         response=500,
-     *         description="Error interno del servidor"
+     *         description="Internal server error"
      *     )
      * )
      */
@@ -264,43 +264,43 @@ class MeasureController extends Controller
      * @OA\Post(
      *     path="/measures",
      *     tags={"Measures"},
-     *     summary="Crear nueva medida",
-     *     description="Registra una nueva medida asociada a un resultado estratégico específico",
+     *     summary="Create new measure",
+     *     description="Registers a new measure associated with a specific strategic output",
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\MediaType(
      *             mediaType="application/json",
      *             @OA\Schema(
      *                 required={"name", "strategic_output_id"},
-     *                 @OA\Property(property="name", type="string", minLength=2, maxLength=100, example="Número de beneficiarios directos", description="Nombre de la medida (requerido, 2-100 caracteres)"),
-     *                 @OA\Property(property="strategic_output_id", type="integer", example=1, description="ID del resultado estratégico (requerido, debe existir)")
+     *                 @OA\Property(property="name", type="string", minLength=2, maxLength=100, example="Number of direct beneficiaries", description="Measure name (required, 2-100 characters)"),
+     *                 @OA\Property(property="strategic_output_id", type="integer", example=1, description="Strategic output ID (required, must exist)")
      *             )
      *         )
      *     ),
      *     @OA\Response(
      *         response=201,
-     *         description="Medida creada exitosamente",
+     *         description="Measure created successfully",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="Medida creada exitosamente"),
+     *             @OA\Property(property="message", type="string", example="Measure created successfully"),
      *             @OA\Property(property="data", ref="#/components/schemas/Measure")
      *         )
      *     ),
      *     @OA\Response(
      *         response=404,
-     *         description="Resultado estratégico no encontrado",
+     *         description="Strategic output not found",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Medida no encontrado")
+     *             @OA\Property(property="message", type="string", example="Measure not found")
      *         )
      *     ),
      *     @OA\Response(
      *         response=422,
-     *         description="Error de validación técnica"
+     *         description="Technical validation error"
      *     ),
      *     @OA\Response(
      *         response=500,
-     *         description="Error interno del servidor"
+     *         description="Internal server error"
      *     )
      * )
      */
@@ -312,14 +312,13 @@ class MeasureController extends Controller
             $measure = $this->measureService->createMeasure(
                 $validated['name'],
                 $validated['strategic_output_id'],
-                );
+            );
 
 
             return ApiResponse::created(
                 'Measure created successfully',
                 new MeasureResource($measure)
             );
-
         } catch (RuntimeException $e) {
             return ApiResponse::notFound('Measure');
         } catch (\Exception $e) {
@@ -331,13 +330,13 @@ class MeasureController extends Controller
      * @OA\Put(
      *     path="/measures/{id}",
      *     tags={"Measures"},
-     *     summary="Actualizar medida existente",
-     *     description="Actualiza el nombre y/o resultado estratégico asociado de una medida",
+     *     summary="Update existing measure",
+     *     description="Updates the name and/or associated strategic output of a measure",
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
      *         required=true,
-     *         description="ID de la medida a actualizar",
+     *         description="Measure ID to update",
      *         @OA\Schema(type="integer", example=1)
      *     ),
      *     @OA\RequestBody(
@@ -346,27 +345,27 @@ class MeasureController extends Controller
      *             mediaType="application/json",
      *             @OA\Schema(
      *                 required={"name", "strategic_output_id"},
-     *                 @OA\Property(property="name", type="string", minLength=2, maxLength=100, example="Número de beneficiarios indirectos", description="Nombre actualizado"),
-     *                 @OA\Property(property="strategic_output_id", type="integer", example=2, description="ID del resultado estratégico actualizado")
+                 @OA\Property(property="name", type="string", minLength=2, maxLength=100, example="Number of indirect beneficiaries", description="Updated name"),
+                 @OA\Property(property="strategic_output_id", type="integer", example=2, description="Updated strategic output ID")
      *             )
      *         )
      *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="Medida actualizada exitosamente",
+     *         description="Measure updated successfully",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="Medida actualziada exitosamente"),
+     *             @OA\Property(property="message", type="string", example="Measure updated successfully"),
      *             @OA\Property(property="data", ref="#/components/schemas/Measure")
      *         )
      *     ),
      *     @OA\Response(
      *         response=400,
-     *         description="Error de validación de dominio"
+     *         description="Domain validation error"
      *     ),
      *     @OA\Response(
      *         response=422,
-     *         description="Error de validación técnica"
+     *         description="Technical validation error"
      *     )
      * )
      */
@@ -383,7 +382,6 @@ class MeasureController extends Controller
                 200,
                 new MeasureResource($measure)
             );
-
         } catch (RuntimeException $e) {
             return ApiResponse::error($e->getMessage(), 400);
         } catch (\Illuminate\Validation\ValidationException $e) {
@@ -395,28 +393,28 @@ class MeasureController extends Controller
      * @OA\Get(
      *     path="/measures/{id}/indicator/{indicatorName}",
      *     tags={"Measures"},
-     *     summary="Buscar indicador por nombre en medida",
-     *     description="Obtiene un indicador específico de una medida buscando por su nombre",
+     *     summary="Search indicator by name in measure",
+     *     description="Retrieves a specific indicator from a measure by searching for its name",
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
      *         required=true,
-     *         description="ID de la medida",
+     *         description="Measure ID",
      *         @OA\Schema(type="integer", example=1)
      *     ),
      *     @OA\Parameter(
      *         name="indicatorName",
      *         in="path",
      *         required=true,
-     *         description="Nombre del indicador a buscar",
-     *         @OA\Schema(type="string", example="Escuelas renovadas")
+     *         description="Indicator name to search",
+     *         @OA\Schema(type="string", example="Renovated schools")
      *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="Indicador encontrado exitosamente",
+     *         description="Indicator found successfully",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="Indicador encontrado exitosamente"),
+     *             @OA\Property(property="message", type="string", example="Indicator found successfully"),
      *             @OA\Property(
      *                 property="data",
      *                 type="object",
@@ -426,11 +424,11 @@ class MeasureController extends Controller
      *     ),
      *     @OA\Response(
      *         response=400,
-     *         description="Error de validación o no encontrado"
+     *         description="Validation error or not found"
      *     ),
      *     @OA\Response(
      *         response=422,
-     *         description="Error de validación técnica"
+     *         description="Technical validation error"
      *     )
      * )
      */
@@ -444,7 +442,6 @@ class MeasureController extends Controller
                 200,
                 ['indicator' => $indicator]
             );
-
         } catch (RuntimeException $e) {
             return ApiResponse::error($e->getMessage(), 400);
         } catch (\Illuminate\Validation\ValidationException $e) {
@@ -456,37 +453,37 @@ class MeasureController extends Controller
      * @OA\Post(
      *     path="/measures/add-indicator",
      *     tags={"Measures"},
-     *     summary="Agregar indicador a medida",
-     *     description="Asocia un nuevo indicador de desempeño a una medida específica",
+     *     summary="Add indicator to measure",
+     *     description="Associates a new performance indicator with a specific measure",
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\MediaType(
      *             mediaType="application/json",
      *             @OA\Schema(
      *                 required={"name", "measure_id", "target", "type_id"},
-     *                 @OA\Property(property="name", type="string", minLength=2, maxLength=100, example="Porcentaje de cumplimiento", description="Nombre del indicador (requerido, 2-100 caracteres)"),
-     *                 @OA\Property(property="measure_id", type="integer", example=1, description="ID de la medida (requerido)"),
-     *                 @OA\Property(property="target", type="number", format="float", example=75.5, description="Meta numérica del indicador (requerido)"),
-     *                 @OA\Property(property="type_id", type="integer", example=1, description="ID del tipo de indicador (requerido, debe existir en indicator_type)")
+     *                 @OA\Property(property="name", type="string", minLength=2, maxLength=100, example="Completion percentage", description="Indicator name (required, 2-100 characters)"),
+     *                 @OA\Property(property="measure_id", type="integer", example=1, description="Measure ID (required)"),
+     *                 @OA\Property(property="target", type="number", format="float", example=75.5, description="Numeric target of the indicator (required)"),
+     *                 @OA\Property(property="type_id", type="integer", example=1, description="Indicator type ID (required, must exist in indicator_type)")
      *             )
      *         )
      *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="Indicador agregado exitosamente",
+     *         description="Indicator added successfully",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="Indicador agregado exitosamente a la medida"),
+     *             @OA\Property(property="message", type="string", example="Indicator added to measure successfully"),
      *             @OA\Property(property="data", ref="#/components/schemas/Measure")
      *         )
      *     ),
      *     @OA\Response(
      *         response=400,
-     *         description="Error de validación de dominio"
+     *         description="Domain validation error (duplicate indicator)"
      *     ),
      *     @OA\Response(
      *         response=422,
-     *         description="Error de validación técnica"
+     *         description="Technical validation error"
      *     )
      * )
      */
@@ -496,7 +493,7 @@ class MeasureController extends Controller
             $request->validate([
                 'name' => 'required|string|min:2|max:100',
                 'measure_id' => 'required|integer',
-                'target'=>'required|numeric',
+                'target' => 'required|numeric',
                 'type_id' => 'required|integer'
             ]);
 
@@ -512,7 +509,6 @@ class MeasureController extends Controller
                 200,
                 new MeasureResource($measure)
             );
-
         } catch (RuntimeException $e) {
             return ApiResponse::error($e->getMessage(), 400);
         } catch (\Illuminate\Validation\ValidationException $e) {
@@ -524,31 +520,31 @@ class MeasureController extends Controller
      * @OA\Post(
      *     path="/measures/remove-indicator",
      *     tags={"Measures"},
-     *     summary="Remover indicador de medida",
-     *     description="Elimina un indicador de desempeño asociado a una medida específica",
+     *     summary="Remove indicator from measure",
+     *     description="Removes a performance indicator associated with a specific measure",
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\MediaType(
      *             mediaType="application/json",
      *             @OA\Schema(
      *                 required={"measure_id", "indicator_id"},
-     *                 @OA\Property(property="measure_id", type="integer", example=1, description="ID de la medida (requerido)"),
-     *                 @OA\Property(property="indicator_id", type="integer", example=5, description="ID del indicador a eliminar (requerido)")
+     *                 @OA\Property(property="measure_id", type="integer", example=1, description="Measure ID (required)"),
+     *                 @OA\Property(property="indicator_id", type="integer", example=5, description="Indicator ID to remove (required)")
      *             )
      *         )
      *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="Indicador removido exitosamente",
+     *         description="Indicator successfully removed",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="Indicador removido exitosamente"),
+     *             @OA\Property(property="message", type="string", example="Indicator successfully removed"),
      *             @OA\Property(property="data", ref="#/components/schemas/Measure")
      *         )
      *     ),
      *     @OA\Response(
      *         response=422,
-     *         description="Error de validación técnica"
+     *         description="Technical validation error"
      *     )
      * )
      */
@@ -561,7 +557,7 @@ class MeasureController extends Controller
 
         $indicator = $this->indicatorService->getIndicatorById($request->input('indicator_id'));
         $this->measureService->removeIndicatorFromMeasure($request->input('measure_id'), $indicator);
-        
+
         $measure = $this->measureService->getMeasureById($request->input('measure_id'));
 
         return ApiResponse::success(
@@ -575,21 +571,21 @@ class MeasureController extends Controller
      * @OA\Get(
      *     path="/measures/search",
      *     tags={"Measures"},
-     *     summary="Buscar medida por nombre",
-     *     description="Busca una medida específica por su nombre (búsqueda exacta, case-insensitive)",
+     *     summary="Search measure by name",
+     *     description="Searches for a specific measure by its name (exact search, case-insensitive)",
      *     @OA\Parameter(
      *         name="name",
      *         in="query",
      *         required=true,
-     *         description="Nombre de la medida a buscar",
-     *         @OA\Schema(type="string", example="Número de escuelas mejoradas")
+     *         description="Measure name to search",
+     *         @OA\Schema(type="string", example="Number of improved schools")
      *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="Medida encontrada",
+     *         description="Measure found",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="Medida encontrada"),
+     *             @OA\Property(property="message", type="string", example="Measure found"),
      *             @OA\Property(
      *                 property="data",
      *                 type="object",
@@ -599,17 +595,17 @@ class MeasureController extends Controller
      *     ),
      *     @OA\Response(
      *         response=400,
-     *         description="Error de validación o no encontrada"
+     *         description="Validation error or not found"
      *     ),
      *     @OA\Response(
      *         response=422,
-     *         description="Error de validación técnica"
+     *         description="Technical validation error"
      *     )
      * )
      */
     public function search(Request $request): JsonResponse
     {
-        try{
+        try {
             $request->validate([
                 'name' => 'required|string|min:1'
             ]);
@@ -621,15 +617,14 @@ class MeasureController extends Controller
                 200,
                 ['measure' => new MeasureResource($measure)]
             );
-
-        }catch (RuntimeException $e) {
+        } catch (RuntimeException $e) {
             return ApiResponse::error($e->getMessage(), 400);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return ApiResponse::validationError($e->errors());
         }
     }
-
-     public function listByStrategicOutput(int $id)
+  
+    public function listByStrategicOutput(int $id)
     {
         try {
             $measures = $this->measureService->getAllMeasuresByStrategicOutputId($id);

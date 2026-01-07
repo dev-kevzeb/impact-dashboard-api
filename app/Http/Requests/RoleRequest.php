@@ -44,11 +44,11 @@ class RoleRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'name.required' => 'El nombre del rol es obligatorio.',
-            'name.string' => 'El nombre del rol debe ser una cadena de texto.',
-            'name.min' => 'El nombre del rol debe tener al menos :min caracteres.',
-            'name.max' => 'El nombre del rol no debe exceder :max caracteres.',
-            'name.unique' => 'Este rol ya existe en el sistema.',
+            'name.required' => 'The role name is required.',
+            'name.string' => 'The role name must be a string.',
+            'name.min' => 'The role name must be at least :min characters.',
+            'name.max' => 'The role name must not exceed :max characters.',
+            'name.unique' => 'This role already exists in the system.',
         ];
     }
 }

@@ -15,13 +15,13 @@ use RuntimeException;
  *     schema="Role",
  *     type="object",
  *     title="Role",
- *     description="Roles de usuario del sistema (admin, editor, viewer, etc.)",
- *     @OA\Property(property="id", type="integer", example=1, description="ID único del rol"),
+ *     description="System user roles (admin, editor, viewer, etc.)",
+ *     @OA\Property(property="id", type="integer", example=1, description="Unique role ID"),
  *     @OA\Property(
  *         property="name",
  *         type="string",
  *         example="admin",
- *         description="Nombre del rol de usuario (único, máximo 50 caracteres)"
+ *         description="User role name (unique, maximum 50 characters)"
  *     )
  * )
  */
@@ -38,14 +38,14 @@ class RoleController
      * @OA\Get(
      *     path="/roles",
      *     tags={"Roles"},
-     *     summary="Listar roles de usuario",
-     *     description="Obtiene todos los roles de usuario disponibles en el sistema",
+     *     summary="List user roles",
+     *     description="Retrieves all user roles available in the system",
      *     @OA\Response(
      *         response=200,
-     *         description="Lista de roles obtenida exitosamente",
+     *         description="Role list retrieved successfully",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="Roles de usuario obtenidos exitosamente"),
+     *             @OA\Property(property="message", type="string", example="User roles retrieved successfully"),
      *             @OA\Property(
      *                 property="data",
      *                 type="array",
@@ -55,10 +55,10 @@ class RoleController
      *     ),
      *     @OA\Response(
      *         response=500,
-     *         description="Error interno del servidor",
+     *         description="Internal server error",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Error interno del servidor")
+     *             @OA\Property(property="message", type="string", example="Internal server error")
      *         )
      *     )
      * )
@@ -69,14 +69,14 @@ class RoleController
             $roles = $this->service->getAllRoles();
 
             return ApiResponse::success(
-                'Roles de usuario obtenidos exitosamente',
+                'User roles retrieved successfully',
                 200,
                 RoleResource::collection($roles)
             );
         } catch (RuntimeException $e) {
             return ApiResponse::error($e->getMessage(), 500);
         } catch (\Exception $e) {
-            return ApiResponse::error('Error interno del servidor', 500);
+            return ApiResponse::error('Internal server error', 500);
         }
     }
 
@@ -84,8 +84,8 @@ class RoleController
      * @OA\Post(
      *     path="/roles",
      *     tags={"Roles"},
-     *     summary="Crear rol de usuario",
-     *     description="Crea un nuevo rol de usuario. El nombre debe ser único.",
+     *     summary="Create user role",
+     *     description="Creates a new user role. The name must be unique.",
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\MediaType(
@@ -96,41 +96,41 @@ class RoleController
      *                     property="name",
      *                     type="string",
      *                     example="editor",
-     *                     description="Nombre del rol (requerido, único, máximo 50 caracteres, mínimo 2 caracteres)"
+     *                     description="Role name (required, unique, maximum 50 characters, minimum 2 characters)"
      *                 )
      *             )
      *         )
      *     ),
      *     @OA\Response(
      *         response=201,
-     *         description="Rol creado exitosamente",
+     *         description="Role created successfully",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="Rol de usuario creado exitosamente"),
+     *             @OA\Property(property="message", type="string", example="User role created successfully"),
      *             @OA\Property(property="data", ref="#/components/schemas/Role")
      *         )
      *     ),
      *     @OA\Response(
      *         response=400,
-     *         description="Error de validación de negocio",
+     *         description="Business validation error",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="El nombre no debe ir vacío")
+     *             @OA\Property(property="message", type="string", example="The name must not be empty")
      *         )
      *     ),
      *     @OA\Response(
      *         response=422,
-     *         description="Error de validación técnica",
+     *         description="Technical validation error",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Error de validación"),
+     *             @OA\Property(property="message", type="string", example="Validation error"),
      *             @OA\Property(
      *                 property="errors",
      *                 type="object",
      *                 @OA\Property(
      *                     property="name",
      *                     type="array",
-     *                     @OA\Items(type="string", example="Este rol ya existe en el sistema")
+     *                     @OA\Items(type="string", example="This role already exists in the system")
      *                 )
      *             )
      *         )
@@ -144,7 +144,7 @@ class RoleController
             $role = $this->service->createRole($validated['name']);
 
             return ApiResponse::created(
-                'Rol de usuario creado exitosamente',
+                'User role created successfully',
                 new RoleResource($role)
             );
         } catch (RuntimeException $e) {
@@ -156,35 +156,35 @@ class RoleController
      * @OA\Get(
      *     path="/roles/{id}",
      *     tags={"Roles"},
-     *     summary="Obtener rol por ID",
-     *     description="Obtiene la información de un rol de usuario específico",
+     *     summary="Get role by ID",
+     *     description="Retrieves information of a specific user role",
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
      *         required=true,
-     *         description="ID del rol",
+     *         description="Role ID",
      *         @OA\Schema(type="integer", example=1)
      *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="Rol encontrado exitosamente",
+     *         description="Role found successfully",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="Rol de usuario encontrado"),
+     *             @OA\Property(property="message", type="string", example="User role found"),
      *             @OA\Property(property="data", ref="#/components/schemas/Role")
      *         )
      *     ),
      *     @OA\Response(
      *         response=404,
-     *         description="Rol no encontrado",
+     *         description="Role not found",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Rol de usuario no encontrado")
+     *             @OA\Property(property="message", type="string", example="User role not found")
      *         )
      *     ),
      *     @OA\Response(
      *         response=500,
-     *         description="Error interno del servidor"
+     *         description="Internal server error"
      *     )
      * )
      */
@@ -194,14 +194,14 @@ class RoleController
             $role = $this->service->findRoleById($id);
 
             return ApiResponse::success(
-                'Rol de usuario encontrado',
+                'User role found',
                 200,
                 new RoleResource($role)
             );
         } catch (RuntimeException $e) {
-            return ApiResponse::notFound('Rol de usuario');
+            return ApiResponse::notFound('User role');
         } catch (\Exception $e) {
-            return ApiResponse::error('Error interno del servidor', 500);
+            return ApiResponse::error('Internal server error', 500);
         }
     }
 
@@ -209,13 +209,13 @@ class RoleController
      * @OA\Put(
      *     path="/roles/{id}",
      *     tags={"Roles"},
-     *     summary="Actualizar rol de usuario",
-     *     description="Actualiza el nombre de un rol existente. El nuevo nombre debe ser único.",
+     *     summary="Update user role",
+     *     description="Updates an existing role name. The new name must be unique.",
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
      *         required=true,
-     *         description="ID del rol a actualizar",
+     *         description="Role ID to update",
      *         @OA\Schema(type="integer", example=1)
      *     ),
      *     @OA\RequestBody(
@@ -228,56 +228,56 @@ class RoleController
      *                     property="name",
      *                     type="string",
      *                     example="super_admin",
-     *                     description="Nuevo nombre del rol (requerido, único, máximo 50 caracteres, mínimo 2 caracteres)"
+     *                     description="New role name (required, unique, maximum 50 characters, minimum 2 characters)"
      *                 )
      *             )
      *         )
      *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="Rol actualizado exitosamente",
+     *         description="Role updated successfully",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="Rol de usuario actualizado exitosamente"),
+     *             @OA\Property(property="message", type="string", example="User role updated successfully"),
      *             @OA\Property(property="data", ref="#/components/schemas/Role")
      *         )
      *     ),
      *     @OA\Response(
      *         response=400,
-     *         description="Error de validación de negocio",
+     *         description="Business validation error",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="El nombre debe tener al menos 2 caracteres")
+     *             @OA\Property(property="message", type="string", example="The name must be at least 2 characters")
      *         )
      *     ),
      *     @OA\Response(
      *         response=404,
-     *         description="Rol no encontrado",
+     *         description="Role not found",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Rol de usuario no encontrado")
+     *             @OA\Property(property="message", type="string", example="User role not found")
      *         )
      *     ),
      *     @OA\Response(
      *         response=422,
-     *         description="Error de validación técnica",
+     *         description="Technical validation error",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Error de validación"),
+     *             @OA\Property(property="message", type="string", example="Validation error"),
      *             @OA\Property(
      *                 property="errors",
      *                 type="object",
      *                 @OA\Property(
      *                     property="name",
      *                     type="array",
-     *                     @OA\Items(type="string", example="Este rol ya existe en el sistema")
+     *                     @OA\Items(type="string", example="This role already exists in the system")
      *                 )
      *             )
      *         )
      *     ),
      *     @OA\Response(
      *         response=500,
-     *         description="Error interno del servidor"
+     *         description="Internal server error"
      *     )
      * )
      */
@@ -288,19 +288,19 @@ class RoleController
             $role = $this->service->updateRole($id, $validated['name']);
 
             return ApiResponse::success(
-                'Rol de usuario actualizado exitosamente',
+                'User role updated successfully',
                 200,
                 new RoleResource($role)
             );
         } catch (RuntimeException $e) {
-            // Si el mensaje indica que no se encontró, retornar 404
-            if (str_contains($e->getMessage(), 'no encontrado')) {
-                return ApiResponse::notFound('Rol de usuario');
+            // If message indicates not found, return 404
+            if (str_contains($e->getMessage(), 'not found')) {
+                return ApiResponse::notFound('User role');
             }
-            // Otros errores de negocio retornan 400
+            // Other business errors return 400
             return ApiResponse::error($e->getMessage(), 400);
         } catch (\Exception $e) {
-            return ApiResponse::error('Error interno del servidor', 500);
+            return ApiResponse::error('Internal server error', 500);
         }
     }
 
@@ -308,21 +308,21 @@ class RoleController
      * @OA\Get(
      *     path="/roles/search",
      *     tags={"Roles"},
-     *     summary="Buscar roles por nombre",
-     *     description="Busca roles de usuario por término de búsqueda (búsqueda case-insensitive)",
+     *     summary="Search roles by name",
+     *     description="Searches user roles by search term (case-insensitive search)",
      *     @OA\Parameter(
      *         name="q",
      *         in="query",
      *         required=true,
-     *         description="Término de búsqueda para filtrar roles",
+     *         description="Search term to filter roles",
      *         @OA\Schema(type="string", example="admin")
      *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="Búsqueda completada exitosamente",
+     *         description="Search completed successfully",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="Búsqueda completada"),
+     *             @OA\Property(property="message", type="string", example="Search completed"),
      *             @OA\Property(
      *                 property="data",
      *                 type="array",
@@ -332,27 +332,27 @@ class RoleController
      *     ),
      *     @OA\Response(
      *         response=422,
-     *         description="Parámetro q inválido",
+     *         description="Invalid q parameter",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Error de validación"),
+     *             @OA\Property(property="message", type="string", example="Validation error"),
      *             @OA\Property(
      *                 property="errors",
      *                 type="object",
      *                 @OA\Property(
      *                     property="q",
      *                     type="array",
-     *                     @OA\Items(type="string", example="El campo q es obligatorio")
+     *                     @OA\Items(type="string", example="The q field is required")
      *                 )
      *             )
      *         )
      *     ),
      *     @OA\Response(
      *         response=400,
-     *         description="Error en la búsqueda",
+     *         description="Search error",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Error al buscar roles")
+     *             @OA\Property(property="message", type="string", example="Error searching roles")
      *         )
      *     )
      * )
@@ -368,7 +368,7 @@ class RoleController
             $roles = $this->service->searchRoles($searchTerm);
 
             return ApiResponse::success(
-                'Búsqueda completada',
+                'Search completed',
                 200,
                 RoleResource::collection($roles)
             );

@@ -13,10 +13,10 @@ class Role extends Model
     protected $table = 'role';
     protected $fillable = ['name'];
 
-    // Error constants in Spanish
-    public static $ERROR_NAME_EMPTY = 'el nombre del rol no debe ir vacío';
-    public static $ERROR_NAME_MIN_LENGTH = 'el nombre del rol debe tener al menos 2 caracteres';
-    public static $ERROR_NAME_MAX_LENGTH = 'el nombre del rol no debe exceder 50 caracteres';
+    // Error constants
+    public static $ERROR_NAME_EMPTY = 'the role name must not be empty';
+    public static $ERROR_NAME_MIN_LENGTH = 'the role name must be at least 2 characters';
+    public static $ERROR_NAME_MAX_LENGTH = 'the role name must not exceed 50 characters';
 
     /**
      * Factory method with domain validation
@@ -56,10 +56,10 @@ class Role extends Model
 
     /**
      * Check if the role matches the given name (case-insensitive comparison)
-     * Método genérico y escalable para verificar roles sin hardcodear nombres
+     * Generic and scalable method to verify roles without hardcoding names
      *
-     * @param string $roleName Nombre del rol a comparar
-     * @return bool True si el rol coincide, false en caso contrario
+     * @param string $roleName Role name to compare
+     * @return bool True if the role matches, false otherwise
      */
     public function hasRole(string $roleName): bool
     {
