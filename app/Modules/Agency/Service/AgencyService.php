@@ -76,4 +76,8 @@ class AgencyService
     {
         return $this->agencyRepository->exists('name', $name);
     }
+
+    public function getAgenciesExcluding(int $perPage, ?string $search, ?array $exclude){
+        return $this->agencyRepository->getExcluding($search, $perPage, $exclude);
+    }
 }

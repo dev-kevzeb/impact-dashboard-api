@@ -72,11 +72,7 @@ class KpaController extends Controller
             $search = $request->get("search");
             $perPage = (int) $request->get("per_page", 10);
 
-            $query = Kpa::query();
-
-            if( $search ) $query->where("name","like","%". $search ."%");
-
-            $kpas = $query->paginate($perPage);
+            $kpas = $this->kpaService->getKpasPaginated($search, $perPage);
             
             return ApiResponse::success(
                 'KPAs paginated list successfully uploaded',
@@ -92,7 +88,7 @@ class KpaController extends Controller
         } catch (RuntimeException $e) {
             return ApiResponse::error($e->getMessage(), 500);
         } catch (\Exception $e) {
-            return ApiResponse::error('Internal server error', 500);
+            return ApiResponse::error($e->getMessage(), 500);
         }
     }
 

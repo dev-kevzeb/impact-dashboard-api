@@ -61,4 +61,8 @@ class BeneficiaryService
         
         return $beneficiary;
     }
+
+    public function getBeneficiariesPaginated(?string $search, int $perPage){
+        return $this->beneficiaryRepository->getPaginated($search, $perPage);
+    }
 }

@@ -380,4 +380,31 @@ class IndicatorController extends Controller
             return ApiResponse::error('Internal server error', 500);
         }
     }
+
+    public function getIndicatorsByMeasureId(Request $request, int $measureId){
+         try {
+            $search = $request->get("search");
+            $perPage = (int) $request->get("per_page", 10);
+        
+            $exclude = (array) $request->input('exclude', []);
+
+            $indicators = $this->indicatorService->getIndicatorsByMeasureId( $measureId, $perPage, $search, $exclude);
+
+            return ApiResponse::success(
+                'Indicators paginated list successfully uploaded',
+                200,
+                [
+                    'indicators' => IndicatorResource::collection($indicators),
+                    'total' => $indicators->count(),
+                    'per_page' => $indicators->perPage(),
+                    'current_page' => $indicators->currentPage(),
+                    'last_page' => $indicators->lastPage(),
+                ]
+            );
+        } catch (RuntimeException $e) {
+            return ApiResponse::error($e->getMessage(), 500);
+        } catch (\Exception $e) {
+            return ApiResponse::error('Internal server error', 500);
+        }
+    }
 }

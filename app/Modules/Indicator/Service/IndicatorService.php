@@ -80,4 +80,8 @@ class IndicatorService
 
         return $indicator;
     }
+
+    public function getIndicatorsByMeasureId(int $id, int $perPage, ?string $search, ?array $exclude){
+        return $this->indicatorRepository->getByMeasure($id, $search, $perPage, $exclude);
+    }
 }

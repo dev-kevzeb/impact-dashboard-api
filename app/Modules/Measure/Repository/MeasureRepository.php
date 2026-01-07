@@ -21,7 +21,15 @@ class MeasureRepository extends AbstractRepository implements RepositoryInterfac
             ->first();
     }
 
-    public function getByStrategicOutput(int $strategicOutputId)
+    public function getByStrategicOutput(int $strategicOutputId, ?string $search, int $perPage = 10)
+    {
+        $query = $this->model->where('strategic_output_id', $strategicOutputId);
+        if(!empty($search)) $query->whereRaw('lower(name) LIKE lower(?)', ['%'.trim($search).'%']);
+
+        return $query->orderBy('name')->paginate($perPage);
+    }
+
+    public function getAllByStrategicOutput(int $strategicOutputId)
     {
         return $this->model->where('strategic_output_id', $strategicOutputId)->get();
     }
