@@ -1,6 +1,7 @@
 <?php
 
 
+use App\Modules\Auth\Controller\AuthController;
 use App\Modules\Indicator\Controller\IndicatorController;
 use App\Modules\IndicatorType\Controller\IndicatorTypeController;
 use App\Modules\Measure\Controller\MeasureController;
@@ -34,6 +35,19 @@ use App\Modules\User\Controller\UserController;
 
 
 Route::prefix('v1')->group(function () {
+
+    // ========================================
+    // RUTAS PÚBLICAS (Sin autenticación)
+    // ========================================
+    Route::post('auth/login', [AuthController::class, 'login']);
+    Route::post('auth/register', [AuthController::class, 'register']);
+
+    // ========================================
+    // RUTAS PROTEGIDAS (Temporalmente sin middleware - FASE 3)
+    // ========================================
+    Route::post('auth/refresh', [AuthController::class, 'refresh']);
+    Route::get('auth/me', [AuthController::class, 'me']);
+
     // API Routes para Donors
     Route::get('donors', [DonorController::class, 'index']);
     Route::post('donors', [DonorController::class, 'store']);
@@ -60,8 +74,8 @@ Route::prefix('v1')->group(function () {
     Route::post('currencies', [CurrencyController::class, 'store']);
     Route::get('currencies/search', [CurrencyController::class, 'search']);
     Route::get('currencies/{id}', [CurrencyController::class, 'show']);
-    Route::put('currencies/{id}', [CurrencyController::class, 'update']);  
-    
+    Route::put('currencies/{id}', [CurrencyController::class, 'update']);
+
     // API Routes para Countries
     Route::get('countries', [CountryController::class, 'index']);
     Route::post('countries', [CountryController::class, 'store']);
@@ -97,7 +111,7 @@ Route::prefix('v1')->group(function () {
     Route::get('user_states/{id}', [UserStateController::class, 'show']);
     Route::put('user_states/{id}', [UserStateController::class, 'update']);
 
-     // API Routes para CountryKpa-Users (User assignments to CountryKpas)
+    // API Routes para CountryKpa-Users (User assignments to CountryKpas)
     Route::get('country_kpa_users', [CountryKpaUserController::class, 'index']);
     Route::post('country_kpa_users', [CountryKpaUserController::class, 'store']);
     Route::get('country_kpa_users/{id}', [CountryKpaUserController::class, 'show']);
@@ -201,26 +215,26 @@ Route::prefix('v1')->group(function () {
     Route::put('projects/{id}', [ProjectController::class, 'update']);
 
     // Listar todas las relaciones proyecto-agencia
-    Route::get('project-agencies', [ProjectAgencyController::class,'index']);
-    Route::post('project-agencies', [ProjectAgencyController::class,'createProjectAgency']);
-    Route::delete('project-agencies', [ProjectAgencyController::class,'deleteProjectAgency']);
-    Route::get('project-agencies/projects/by-agency/{id}', [ProjectAgencyController::class,'showProjectsByAgencyId']);
+    Route::get('project-agencies', [ProjectAgencyController::class, 'index']);
+    Route::post('project-agencies', [ProjectAgencyController::class, 'createProjectAgency']);
+    Route::delete('project-agencies', [ProjectAgencyController::class, 'deleteProjectAgency']);
+    Route::get('project-agencies/projects/by-agency/{id}', [ProjectAgencyController::class, 'showProjectsByAgencyId']);
     Route::get('project-agencies/projects/by-agency-name/{name}', [ProjectAgencyController::class, 'showProjectsByAgencyName']);
-    Route::get('project-agencies/agencies/by-project/{id}', [ProjectAgencyController::class,'showAgenciesByProjectId']);
-    Route::get('project-agencies/agencies/by-project-name/{name}', [ProjectAgencyController::class,'showAgenciesByProjectName']);
+    Route::get('project-agencies/agencies/by-project/{id}', [ProjectAgencyController::class, 'showAgenciesByProjectId']);
+    Route::get('project-agencies/agencies/by-project-name/{name}', [ProjectAgencyController::class, 'showAgenciesByProjectName']);
 
     // Listar todas las relaciones proyecto-indicador
-    Route::get('project-indicators', [ProjectIndicatorController::class,'index']);
-    Route::post('project-indicators', [ProjectIndicatorController::class,'createProjectIndicator']);
-    Route::delete('project-indicators', [ProjectIndicatorController::class,'deleteProjectIndicator']);
-        
-        // API Routes para Countries
+    Route::get('project-indicators', [ProjectIndicatorController::class, 'index']);
+    Route::post('project-indicators', [ProjectIndicatorController::class, 'createProjectIndicator']);
+    Route::delete('project-indicators', [ProjectIndicatorController::class, 'deleteProjectIndicator']);
+
+    // API Routes para Countries
     Route::get('countries', [CountryController::class, 'index']);
     Route::post('countries', [CountryController::class, 'store']);
     Route::get('countries/search', [CountryController::class, 'search']);
     Route::get('countries/{id}', [CountryController::class, 'show']);
     Route::put('countries/{id}', [CountryController::class, 'update']);
-    
+
     // API Routes para Kpas
     Route::get('kpas', [KpaController::class, 'index']);
     Route::post('kpas', [KpaController::class, 'store']);
@@ -248,14 +262,14 @@ Route::prefix('v1')->group(function () {
     Route::post('project_states', [ProjectStateController::class, 'store']);
     Route::get('project_states/{id}', [ProjectStateController::class, 'show']);
     Route::put('project_states/{id}', [ProjectStateController::class, 'update']);
-    
+
     // API Routes para SDG
     Route::get('sdgs', [SdgController::class, 'index']);
     Route::post('sdgs', [SdgController::class, 'store']);
     Route::get('sdgs/search', [SdgController::class, 'search']);
     Route::get('sdgs/{id}', [SdgController::class, 'show']);
     Route::put('sdgs/{id}', [SdgController::class, 'update']);
-    
+
     // API Routes para Agency
     Route::get('agencies', [AgencyController::class, 'index']);
     Route::post('agencies', [AgencyController::class, 'store']);
@@ -268,7 +282,7 @@ Route::prefix('v1')->group(function () {
     Route::post('project-states', [ProjectStateController::class, 'store']);
     Route::get('project-states/{id}', [ProjectStateController::class, 'show']);
     Route::put('project-states/{id}', [ProjectStateController::class, 'update']);
-    
+
     // API Routes para SDG
     Route::get('sdgs', [SdgController::class, 'index']);
     Route::post('sdgs', [SdgController::class, 'store']);
@@ -295,7 +309,7 @@ Route::prefix('v1')->group(function () {
     Route::put('measures/{id}', [MeasureController::class, 'update']);
     Route::get('measures/search', [MeasureController::class, 'search']);
     Route::get('measures/{id}', [MeasureController::class, 'show']);
-    Route::get('measures/strategic-output/{id}', [MeasureController::class,'listByStrategicOutput']);
+    Route::get('measures/strategic-output/{id}', [MeasureController::class, 'listByStrategicOutput']);
     Route::post('measures-indicators', [MeasureController::class, 'addIndicator']);
     Route::get('measures-indicators/{id}', [MeasureController::class, 'showWithIndicators']);
     Route::get('measures/{id}/indicators/{name}', [MeasureController::class, 'getIndicatorByName']);
@@ -307,7 +321,7 @@ Route::prefix('v1')->group(function () {
     Route::get('strategic-outputs/search', [StrategicOutputController::class, 'search']);
     Route::get('strategic-outputs/{id}', [StrategicOutputController::class, 'show']);
     Route::put('strategic-outputs/{id}', [StrategicOutputController::class, 'update']);
-    Route::get('strategic-outputs/country-kpa/{id}', [StrategicOutputController::class,'showByCountryKpa']);
+    Route::get('strategic-outputs/country-kpa/{id}', [StrategicOutputController::class, 'showByCountryKpa']);
     Route::post('strategic-outputs-measures', [StrategicOutputController::class, 'addMeasure']);
     Route::post('strategic-outputs/remove-measure', [StrategicOutputController::class, 'removeMeasure']);
 
@@ -319,26 +333,24 @@ Route::prefix('v1')->group(function () {
     Route::put('projects/{id}', [ProjectController::class, 'update']);
 
     // Listar todas las relaciones proyecto-agencia
-    Route::get('project-agencies', [ProjectAgencyController::class,'index']);
-    Route::post('project-agencies', [ProjectAgencyController::class,'createProjectAgency']);
-    Route::delete('project-agencies', [ProjectAgencyController::class,'deleteProjectAgency']);
-       
-    Route::get('project-agencies/projects/by-agency/{id}', [ProjectAgencyController::class,'showProjectsByAgencyId']);
+    Route::get('project-agencies', [ProjectAgencyController::class, 'index']);
+    Route::post('project-agencies', [ProjectAgencyController::class, 'createProjectAgency']);
+    Route::delete('project-agencies', [ProjectAgencyController::class, 'deleteProjectAgency']);
+
+    Route::get('project-agencies/projects/by-agency/{id}', [ProjectAgencyController::class, 'showProjectsByAgencyId']);
     Route::get('project-agencies/projects/by-agency-name/{name}', [ProjectAgencyController::class, 'showProjectsByAgencyName']);
-        
-    Route::get('project-agencies/agencies/by-project/{id}', [ProjectAgencyController::class,'showAgenciesByProjectId']);
-    Route::get('project-agencies/agencies/by-project-name/{name}', [ProjectAgencyController::class,'showAgenciesByProjectName']);
-    
+
+    Route::get('project-agencies/agencies/by-project/{id}', [ProjectAgencyController::class, 'showAgenciesByProjectId']);
+    Route::get('project-agencies/agencies/by-project-name/{name}', [ProjectAgencyController::class, 'showAgenciesByProjectName']);
+
     // Listar todas las relaciones proyecto-indicador
-    Route::get('project-indicators', [ProjectIndicatorController::class,'index']);
-    Route::post('project-indicators', [ProjectIndicatorController::class,'createProjectIndicator']);
-    Route::delete('project-indicators', [ProjectIndicatorController::class,'deleteProjectIndicator']);
-        
-    Route::get('project-indicators/projects/by-indicator/{id}', [ProjectIndicatorController::class,'showProjectsByIndicatorId']);
-    Route::get('project-indicators/projects/by-indicator/{id}', [ProjectIndicatorController::class,'showProjectsByIndicatorId']);
+    Route::get('project-indicators', [ProjectIndicatorController::class, 'index']);
+    Route::post('project-indicators', [ProjectIndicatorController::class, 'createProjectIndicator']);
+    Route::delete('project-indicators', [ProjectIndicatorController::class, 'deleteProjectIndicator']);
 
-    Route::get('project-indicators/indicators/by-project/{id}', [ProjectIndicatorController::class,'showIndicatorsByProjectId']);
-    Route::get('project-indicators/indicators/by-project-name/{name}', [ProjectIndicatorController::class,'showIndicatorsByProjectName']);
+    Route::get('project-indicators/projects/by-indicator/{id}', [ProjectIndicatorController::class, 'showProjectsByIndicatorId']);
+    Route::get('project-indicators/projects/by-indicator/{id}', [ProjectIndicatorController::class, 'showProjectsByIndicatorId']);
 
-
+    Route::get('project-indicators/indicators/by-project/{id}', [ProjectIndicatorController::class, 'showIndicatorsByProjectId']);
+    Route::get('project-indicators/indicators/by-project-name/{name}', [ProjectIndicatorController::class, 'showIndicatorsByProjectName']);
 });
