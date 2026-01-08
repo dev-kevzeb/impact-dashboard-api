@@ -32,4 +32,11 @@ class AgencyRepository extends AbstractRepository implements RepositoryInterface
             ->whereRaw('LOWER(name) LIKE ?', ['%' . $normalized . '%'])
             ->first();
     }
+
+    public function getExcluding(?string $search, int $perPage = 10, array $exclude = []){
+        $query = $this->model::query();
+        if(!empty($search)) $query->whereRaw('lower(name) LIKE lower(?)', ['%'.trim($search).'%']);
+        $query->whereNotIn('id', $exclude);
+        return $query->orderBy('name')->paginate($perPage);
+    }
 }

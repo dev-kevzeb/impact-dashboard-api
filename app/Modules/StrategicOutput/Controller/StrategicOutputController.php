@@ -5,6 +5,7 @@ use App\Http\Requests\StrategicOutputRequest;
 use App\Http\Resources\StrategicOutputResource;
 use App\Modules\Measure\Domain\Measure;
 use App\Modules\Measure\Service\MeasureService;
+use App\Modules\StrategicOutput\Domain\StrategicOutput;
 use App\Modules\StrategicOutput\Service\StrategicOutputService;
 use App\Http\Controllers\Controller;
 use App\Http\Responses\ApiResponse;
@@ -499,5 +500,29 @@ class StrategicOutputController extends Controller
     }
 
 
+    public function getStrategicOutputsForKpaId(Request $request, int $kpaId){
+        try {
+            $search = $request->get("search");
+            $perPage = (int) $request->get("per_page", 10);
 
+            $strategic_outputs = $this->strategicOutputService->getStrategicOutputsByKpaId( $perPage, $search, $kpaId);
+
+            return ApiResponse::success(
+                'Strategic Outputs paginated list successfully uploaded',
+                200,
+                [
+                    'strategic_outputs' => StrategicOutputResource::collection($strategic_outputs),
+                    'total' => $strategic_outputs->count(),
+                    'per_page' => $strategic_outputs->perPage(),
+                    'current_page' => $strategic_outputs->currentPage(),
+                    'last_page' => $strategic_outputs->lastPage(),
+                ]
+            );
+        } catch (RuntimeException $e) {
+            return ApiResponse::error($e->getMessage(), 500);
+        } catch (\Exception $e) {
+            return ApiResponse::error('Internal server error', 500);
+        }
+
+    }
 }

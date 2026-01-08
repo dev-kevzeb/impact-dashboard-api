@@ -57,4 +57,8 @@ class DonorService
     {
         return $this->donorRepository->getAll();
     }
+
+    public function getDonorsExcluding(int $perPage, ?string $search, ?array $exclude){
+        return $this->donorRepository->getExcluding($search, $perPage, $exclude);
+    }
 }

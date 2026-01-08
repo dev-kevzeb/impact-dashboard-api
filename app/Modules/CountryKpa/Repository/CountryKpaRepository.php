@@ -102,6 +102,10 @@ class CountryKpaRepository extends Model
 			throw new RuntimeException('Error updating CountryKpa: ' . $e->getMessage());
 		}
 	}
+
+	public function getIdsByKpaId(int $kpaId){
+		return $this->model->where('id_kpa', $kpaId)->pluck('id');
+	}
 }
 
 

@@ -106,24 +106,6 @@ class MeasureController extends Controller
             return ApiResponse::error('Internal Server Error', 500);
         }
     }
-
-    public function listByStrategicOutput(int $id)
-    {
-        try {
-            $measures = $this->measureService->getMeasuresByStrategicOutputId($id);
-
-            return ApiResponse::success(
-                'Measure obtained correctly',
-                200,
-                MeasureResource::collection($measures)
-            );
-        } catch (RuntimeException $e) {
-            return ApiResponse::error($e->getMessage(), 400);
-        } catch (\Exception $e) {
-            return ApiResponse::error('Internal Server Error', 500);
-        }
-    }
-
     /**
      * @OA\Get(
      *     path="/measures/{id}",
@@ -641,4 +623,51 @@ class MeasureController extends Controller
             return ApiResponse::validationError($e->errors());
         }
     }
+  
+    public function listByStrategicOutput(int $id)
+    {
+        try {
+            $measures = $this->measureService->getAllMeasuresByStrategicOutputId($id);
+
+            return ApiResponse::success(
+                'Measure obtained correctly',
+                200,
+                MeasureResource::collection($measures)
+            );
+
+        } catch (RuntimeException $e) {
+            return ApiResponse::error($e->getMessage(), 400);
+        } catch (\Exception $e) {
+            return ApiResponse::error('Internal Server Error', 500);
+        }
+    }
+
+    public function measuresListByStrategicOutput(Request $request, int $id)
+    {
+        try {
+            $search = $request->get("search");
+            $perPage = (int) $request->get("per_page", 10);
+
+            $measures = $this->measureService->getMeasuresByStrategicOutputId($id, $perPage, $search);
+
+            return ApiResponse::success(
+                'Measures paginated list successfully uploaded',
+                200,
+                [
+                    'measures' => MeasureResource::collection($measures),
+                    'total' => $measures->count(),
+                    'per_page' => $measures->perPage(),
+                    'current_page' => $measures->currentPage(),
+                    'last_page' => $measures->lastPage(),
+                ]
+            );
+
+        } catch (RuntimeException $e) {
+            return ApiResponse::error($e->getMessage(), 400);
+        } catch (\Exception $e) {
+            return ApiResponse::error('Internal server error', 500);
+        }
+    }
+
+
 }

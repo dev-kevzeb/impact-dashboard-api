@@ -1,16 +1,19 @@
 <?php
 namespace App\Modules\StrategicOutput\Service;
 
+use App\Modules\CountryKpa\Repository\CountryKpaRepository;
 use App\Modules\StrategicOutput\Domain\StrategicOutput;
 use App\Modules\StrategicOutput\Repository\StrategicOutputRepository;
 
 class StrategicOutputService{
 
     private StrategicOutputRepository $strategicOutputRepository;
+    private CountryKpaRepository $countryKpaRepository;
     
-    public function __construct(StrategicOutputRepository $strategicOutputRepository)
+    public function __construct(StrategicOutputRepository $strategicOutputRepository, CountryKpaRepository $countryKpaRepository)
     {
         $this->strategicOutputRepository = $strategicOutputRepository;
+        $this->countryKpaRepository = $countryKpaRepository;
     }
 
     public function getAllStrategicOutputs()
@@ -86,5 +89,13 @@ class StrategicOutputService{
         $removed = $strategicOutputId->removeMeasure($measure->getName());
 
         if (!$removed) throw new \RuntimeException("The specified indicator does not exist in this measure");
+    }
+
+    public function getStrategicOutputsByKpaId(int $perPage, ?string $search, int $kpaId){
+        $countryKpaIds = $this->countryKpaRepository->getIdsByKpaId($kpaId)->toArray();
+
+        if(empty($countryKpaIds)) return $this->strategicOutputRepository->paginateByCountryKpaIds([], $search, $perPage);
+        return $this->strategicOutputRepository->paginateByCountryKpaIds($countryKpaIds, $search, $perPage);
+
     }
 }

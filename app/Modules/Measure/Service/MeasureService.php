@@ -75,10 +75,16 @@ class MeasureService
         return $measure;
     }
 
-    public function getMeasuresByStrategicOutputId(int $id)
+    public function getMeasuresByStrategicOutputId(int $id, int $perPage, ?string $search)
     {
-        return $this->measureRepository->getByStrategicOutput($id);
+        return $this->measureRepository->getByStrategicOutput($id, $search, $perPage);
     }
+
+    public function getAllMeasuresByStrategicOutputId(int $id)
+    {
+        return $this->measureRepository->getAllByStrategicOutput($id);
+    }
+
 
 
     public function getIndicatorOfMeasureByName(int $measureId, string $indicatorName)

@@ -403,4 +403,31 @@ class AgencyController extends Controller
             return ApiResponse::error('Internal server error', 500);
         }
     }
+
+    public function getAgenciesExcluding(Request $request): JsonResponse{
+        try{
+            $search = $request->get("search");
+            $perPage = (int) $request->get("per_page", 10);
+            $exclude = (array) $request->input('exclude', []);
+
+            $agencies = $this->agencyService->getAgenciesExcluding($perPage, $search, $exclude);
+
+            return ApiResponse::success(
+                'Agencies list successfully obtained',
+                200,
+                [
+                    'agencies' => AgencyResource::collection($agencies),
+                    'total' => $agencies->count(),
+                    'per_page' => $agencies->perPage(),
+                    'current_page' => $agencies->currentPage(),
+                    'last_page' => $agencies->lastPage(),
+                    'all' => $agencies->total(),
+                ]
+            );
+        } catch (RuntimeException $e) {
+            return ApiResponse::error($e->getMessage(), 500);
+        } catch (\Exception $e) {
+            return ApiResponse::error($e->getMessage(), 500);
+        }
+    }
 }
