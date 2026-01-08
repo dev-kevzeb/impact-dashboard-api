@@ -21,5 +21,12 @@ class IndicatorRepository extends AbstractRepository implements RepositoryInterf
             ->whereRaw('LOWER(name) LIKE ?', ['%' . $normalized . '%'])
             ->first();
     }
+
+    public function getByMeasure(int $measureId, ?string $search, int $perPage = 10, array $exclude = []){
+        $query = $this->model->where('measure_id', $measureId);
+        if(!empty($search)) $query->whereRaw('lower(name) LIKE lower(?)', ['%'.trim($search).'%']);
+        $query->whereNotIn('id', $exclude);
+        return $query->orderBy('name')->paginate($perPage);
+    }
 }
 

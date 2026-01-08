@@ -410,4 +410,33 @@ class DonorController extends Controller
             return ApiResponse::error('Internal server error', 500);
         }
     }
+
+
+    public function getDonorsExcluding(Request $request): JsonResponse
+    {
+        try {
+            $search = $request->get("search");
+            $perPage = (int) $request->get("per_page", 10);
+            $exclude = (array) $request->input('exclude', []);
+
+            $donors = $this->donorService->getDonorsExcluding($perPage, $search, $exclude);
+            
+            return ApiResponse::success(
+                'Donors list successfully obtained',
+                200,
+                [
+                    'donors' => DonorResource::collection($donors),
+                    'total' => $donors->count(),
+                    'per_page' => $donors->perPage(),
+                    'current_page' => $donors->currentPage(),
+                    'last_page' => $donors->lastPage(),
+                    'all' => $donors->total(),
+                ]
+            );
+        } catch (RuntimeException $e) {
+            return ApiResponse::error($e->getMessage(), 500);
+        } catch (\Exception $e) {
+            return ApiResponse::error($e->getMessage(), 500);
+        }
+    }
 }

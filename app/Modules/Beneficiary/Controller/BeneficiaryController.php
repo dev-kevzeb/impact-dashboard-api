@@ -77,11 +77,7 @@ class BeneficiaryController extends Controller
             $search = $request->get("search");
             $perPage = (int) $request->get("per_page", 10);
 
-            $query = Beneficiary::query();
-
-            if ($search) $query->where('name', 'LIKE', '%' . $search . '%');
-
-            $beneficiaries = $query->paginate($perPage);
+            $beneficiaries = $this->beneficiaryService->getBeneficiariesPaginated($search, $perPage);
             
             return ApiResponse::success(
                 'Beneficiary list successfully obtained',

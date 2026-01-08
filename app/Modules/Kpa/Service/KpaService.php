@@ -71,4 +71,8 @@ class KpaService
     {
         return $this->kpaRepository->exists('name', $name);
     }
+
+    public function getKpasPaginated(?string $search, int $perPage){
+        return $this->kpaRepository->getPaginated($search, $perPage);
+    }
 }
