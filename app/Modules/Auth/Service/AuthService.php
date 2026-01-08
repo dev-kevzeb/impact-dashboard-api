@@ -87,11 +87,15 @@ class AuthService
 
     /**
      * Refresh expired token
+     * 
+     * Important: This regenerates scopes from current user roles.
+     * If roles changed since last login, new token will have updated scopes.
      *
      * @return array ['access_token', 'token_type', 'expires_in']
      */
     public function refresh(): array
     {
+        // Refresh token (this calls getJWTCustomClaims() to regenerate scopes)
         $newToken = auth('api')->refresh();
 
         return [

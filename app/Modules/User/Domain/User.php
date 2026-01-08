@@ -142,13 +142,107 @@ class User extends Authenticatable implements JWTSubject
     /**
      * Return a key value array, containing any custom claims to be added to the JWT.
      * 
-     * Por ahora retorna estructura vacía. Los scopes se implementarán más adelante
-     * con un enfoque simple por módulos.
+     * Returns user scopes based on assigned roles.
+     * Scopes format: {module}:{permission}
+     * 
+     * This method is called during token generation (login/register/refresh).
      *
      * @return array
      */
     public function getJWTCustomClaims(): array
     {
-        return [];
+        return [
+            'scopes' => $this->generateScopes()
+        ];
+    }
+
+    /**
+     * Generate scopes based on user roles
+     * 
+     * CURRENT IMPLEMENTATION: Hardcoded role-to-scope mapping
+     * 
+     * WARNING: This is a simple approach for MVP. For production scalability, 
+     * consider moving role permissions to database (see RolePermission table approach).
+     * 
+     * Existing roles in system: admin, project-manager, country-manager
+     * Scopes format: {module}:{permission} (e.g., 'donors:read', 'projects:write')
+     * 
+     * @return array Array of scope strings
+     */
+    private function generateScopes(): array
+    {
+        $scopes = [];
+
+        // Load roles if not already loaded
+        if (!$this->relationLoaded('roles')) {
+            $this->load('roles');
+        }
+
+        foreach ($this->roles as $role) {
+            $roleName = strtolower($role->name);
+
+            // ADMIN - Full system access (God mode)
+            if ($roleName === 'admin') {
+                return ['*:*'];  // Wildcard = all permissions on all modules
+            }
+
+            // PROJECT-MANAGER - Manages projects, programs, beneficiaries, indicators
+            if ($roleName === 'project-manager') {
+                $scopes = array_merge($scopes, [
+                    // Projects module
+                    'projects:read',
+                    'projects:write',
+
+                    // Programs module
+                    'programs:read',
+                    'programs:write',
+
+                    // Beneficiaries module
+                    'beneficiaries:read',
+                    'beneficiaries:write',
+
+                    // Donors (read-only)
+                    'donors:read',
+
+                    // Agencies, Contacts, SDGs (read/write)
+                    'projects:read',  // Already included above
+
+                    // Indicators, Measures, Strategic Outputs
+                    'projects:read',  // Already included above
+                ]);
+            }
+
+            // COUNTRY-MANAGER - Manages KPAs, countries, users assignments
+            if ($roleName === 'country-manager') {
+                $scopes = array_merge($scopes, [
+                    // KPAs module
+                    'kpas:read',
+                    'kpas:write',
+
+                    // Programs (read/write)
+                    'programs:read',
+                    'programs:write',
+
+                    // Projects (read-only)
+                    'projects:read',
+
+                    // Users management
+                    'users:read',
+                    'users:write',
+
+                    // Donors, Beneficiaries (read-only)
+                    'donors:read',
+                    'beneficiaries:read',
+                ]);
+            }
+        }
+
+        // If no roles assigned, return minimal read-only access
+        if (empty($scopes)) {
+            return ['donors:read', 'beneficiaries:read'];
+        }
+
+        // Remove duplicates and return
+        return array_values(array_unique($scopes));
     }
 }
