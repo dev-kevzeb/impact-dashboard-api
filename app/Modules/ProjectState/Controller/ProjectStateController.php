@@ -68,9 +68,7 @@ class ProjectStateController extends Controller
             $search = $request->get("search");
             $perPage = (int) $request->get("per_page", 10);
 
-            $query = ProjectState::query();
-            if( $search ) $query->where("state","like","%". $search ."%");
-            $states = $query->paginate($perPage);
+            $states = $this->projectStateService->getProjectStatesPaginated($search, $perPage);
 
             return ApiResponse::success(
                 'Project States list successfully obtained',
