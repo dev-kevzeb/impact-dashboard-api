@@ -16,7 +16,9 @@ class BeneficiaryRepository extends AbstractRepository implements RepositoryInte
 
     public function getPaginated(?string $search, int $perPage){
         $query = $this->model::query();
-        if ($search) $query->where('name', 'LIKE', '%' . $search . '%');
+        if ($search) { $search = mb_strtolower($search);
+            $query->whereRaw('LOWER(name) LIKE ?',['%' . $search . '%']);
+        }
 
         return $query->paginate($perPage);
     }

@@ -9,4 +9,13 @@ class ProjectStateRepository extends AbstractRepository implements RepositoryInt
     {
         parent::__construct($model);
     }
+
+    public function getPaginated(?string $search, int $perPage){
+        $query = $this->model::query();
+        if ($search) { $search = mb_strtolower($search);
+            $query->whereRaw('LOWER(state) LIKE ?',['%' . $search . '%']);
+        }
+
+    return $query->paginate($perPage);
+    }
 }

@@ -54,4 +54,8 @@ class ProjectStateService {
         return $this->projectStateRepository->findBy('state', $state);
     }
 
+    public function getProjectStatesPaginated(?string $search, int $perPage){
+        return $this->projectStateRepository->getPaginated($search, $perPage);
+    }
+
 }
