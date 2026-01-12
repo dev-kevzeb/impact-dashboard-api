@@ -274,6 +274,7 @@ class ProjectController extends Controller
             $validated = $request->validated();
 
             $project = $this->projectService->createProject(
+                $validated['program_id'],
                 $validated['name'],
                 $validated['description'],
                 $validated['project_url'] ?? null,
@@ -281,10 +282,13 @@ class ProjectController extends Controller
                 $validated['end_date'],
                 $validated['progress'],
                 $validated['comments'] ?? '',
-                $validated['project_budget'],
+                $validated['budget'],
+                $validated['indicators'],
+                $validated['donors'],
+                $validated['agencies'],
                 $validated['contact'],
-                $validated['beneficiary']['id'],
-                $validated['project_state']['id']
+                $validated['beneficiary'],
+                $validated['project_state']
             );
 
             return ApiResponse::created(
@@ -293,7 +297,6 @@ class ProjectController extends Controller
             );
 
         } catch (\RuntimeException $e) {
-            dd($e);
             return ApiResponse::error($e->getMessage(), 400);
         } catch (\Exception $e) {
             dd($e);

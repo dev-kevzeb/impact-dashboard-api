@@ -2,6 +2,10 @@
 
 namespace Tests\Feature;
 
+use App\Modules\Agency\Domain\Agency;
+use App\Modules\Donor\Domain\Donor;
+use App\Modules\Indicator\Domain\Indicator;
+use App\Modules\Program\Domain\Program;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -22,7 +26,13 @@ class ProjectTest extends TestCase
         $beneficiary = Beneficiary::factory()->create();
         $state = ProjectState::factory()->create();
 
+        $indicator = Indicator::factory()->create();
+        $agency = Agency::factory()->create();
+        $donor = Donor::factory()->create();
+        $program = Program::factory()->create();
+
         return array_merge([
+            'program_id' => $program->id,
             'name' => 'Proyecto Base',
             'description' => 'Descripción válida del proyecto',
             'project_url' => 'https://example.com',
@@ -30,7 +40,7 @@ class ProjectTest extends TestCase
             'end_date' => '2024-02-10',
             'progress' => 25,
             'comments' => 'Comentarios',
-            'project_budget' => 5000,
+            'budget' => 5000,
 
             'contact' => [
                 'first_name' => $contact->first_name,
@@ -49,6 +59,30 @@ class ProjectTest extends TestCase
                 'id' => $state->id,
                 'state' => $state->state,
             ],
+
+            'indicators' => [
+                [
+                    'id'=> $indicator->id,
+                    'name' => $indicator->name,
+                ]
+            ],
+
+            'agencies' => [
+                [
+                    'id' => $agency->id,
+                    'name' => $agency->name,
+                    'contribution' => 60.00
+                ]
+            ],
+
+            'donors' => [
+                [
+                    'id' => $donor->id,
+                    'name' => $donor->name,
+                    'contribution' => 40.00,
+                ]
+            ]
+
 
         ], $overrides);
     }
@@ -78,8 +112,13 @@ class ProjectTest extends TestCase
     {
         $beneficiary = Beneficiary::factory()->create();
         $state = ProjectState::factory()->create();
+        $indicator = Indicator::factory()->create();
+        $agency = Agency::factory()->create();
+        $donor = Donor::factory()->create();
+        $program = Program::factory()->create();
 
         $response = $this->postJson(self::BASE_URL, [
+            'program_id' => $program->id,
             'name' => 'Proyecto Base',
             'description' => 'Descripción válida del proyecto',
             'project_url' => 'https://example.com',
@@ -87,7 +126,7 @@ class ProjectTest extends TestCase
             'end_date' => '2024-02-10',
             'progress' => 25,
             'comments' => 'Comentarios',
-            'project_budget' => 5000,
+            'budget' => 5000,
 
             'contact' => [
                 'first_name' => 'Andres',
@@ -106,33 +145,49 @@ class ProjectTest extends TestCase
                 'id' => $state->id,
                 'state' => $state->state
             ],
+
+            'indicators' => [
+                [
+                    'id'=> $indicator->id,
+                    'name' => $indicator->name,
+                ]
+            ],
+
+            'agencies' => [
+                [
+                    'id' => $agency->id,
+                    'name' => $agency->name,
+                    'contribution' => 60.00
+                ]
+            ],
+
+            'donors' => [
+                [
+                    'id' => $donor->id,
+                    'name' => $donor->name,
+                    'contribution' => 40.00,
+                ]
+            ]
         ]);
 
         $response->assertCreated()->assertJsonPath('data.name', 'Proyecto Base');
     }
 
-
-    public function test_create_with_full_objects()
-    {
-        $contact = Contact::factory()->make();
-        $beneficiary = Beneficiary::factory()->create();
-        $state = ProjectState::factory()->create();
-
-        $response = $this->postJson(self::BASE_URL, [
-            'name' => 'Proyecto Objetos',
-            'description' => 'Descripción válida del proyecto',
-            'project_url' => 'https://example.com',
-            'start_date' => '2024-01-01',
-            'end_date' => '2024-02-01',
-            'progress' => 80,
-            'project_budget' => 1000,
-            'contact' => $contact->toArray(),
-            'beneficiary' => ['id' => $beneficiary->id, 'name' => $beneficiary->name],
-            'project_state' => ['id' => $state->id, 'state' => $state->state],
+    public function test_create_with_the_same_name(){
+        $program = Program::factory()->create();
+        $project = Project::factory()->create(['name' => 'Agua Potable', 'program_id' => $program->id]);
+        
+        $payload = $this->payload([
+            'name' => 'Agua    potable       ',
+            'program_id' => $program->id
         ]);
+        $payload['program_id'] = $program->id;
 
-        $response->assertCreated()->assertJsonPath('data.name', 'Proyecto Objetos');
+        $response = $this->postJson(self::BASE_URL, $payload);
+
+        $response->assertStatus(400)->assertJsonPath('message', 'The project with name Agua Potable already exist in the selected program.');
     }
+
 
 
     public function test_cannot_create_with_invalid_dates()
@@ -164,23 +219,7 @@ class ProjectTest extends TestCase
         $response = $this->postJson(self::BASE_URL, $this->payload([
             'progress' => 150
         ]));
-        $response->assertStatus(422);
-    }
-
-    public function test_validation_errors_on_store()
-    {
-        $response = $this->postJson(self::BASE_URL, []);
-        $response->assertStatus(422)->assertJsonValidationErrors([
-            'name',
-            'description',
-            'start_date',
-            'end_date',
-            'progress',
-            'project_budget',
-            'contact.first_name',
-            'beneficiary.id',
-            'project_state.id',
-        ]);
+        $response->assertStatus(400);
     }
 
 

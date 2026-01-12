@@ -25,4 +25,9 @@ class ProjectAgencyRepository extends AbstractRepository implements RepositoryIn
         $projectAgency = $this->findById($id);
         if ($projectAgency) $projectAgency->delete();
     }
+    
+    public function deleteByProjectId(int $projectId): void
+    {
+        $this->model->where('project_id', $projectId)->delete();
+    }
 }

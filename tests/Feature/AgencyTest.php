@@ -53,7 +53,7 @@ class AgencyTest extends TestCase
         $response = $this->postJson(self::BASE_URL, $data);
 
         $response->assertCreated()
-            ->assertJsonPath('message', 'Agency successfully created')
+            ->assertJsonPath('message', 'Agency created successfully')
             ->assertJsonStructure([
                 'data' => ['id', 'name', 'url', 'is_approved']
             ]);
@@ -96,7 +96,7 @@ class AgencyTest extends TestCase
         $response->assertOk()
             ->assertJson([
                 'success' => true,
-                'message' => 'Agencia encontrada',
+                'message' => 'Agency Found',
                 'data' => [
                     'id' => $agency->id,
                     'name' => $agency->name,
@@ -170,6 +170,6 @@ class AgencyTest extends TestCase
         $response = $this->getJson(self::BASE_URL . '/search?name=xyz');
 
         $response->assertStatus(404)
-            ->assertJsonPath('message', 'Agencia no encontrado');
+            ->assertJsonPath('message', 'Agency not Found');
     }
 }

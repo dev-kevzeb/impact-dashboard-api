@@ -25,4 +25,10 @@ class ProjectIndicatorRepository extends AbstractRepository implements Repositor
         $projectIndicador = $this->findById($id);
         if($projectIndicador) $projectIndicador->delete();
     }
+
+    public function deleteByProjectId(int $projectId): void
+    {
+        $this->model->where('project_id', $projectId)->delete();
+    }
+
 }
