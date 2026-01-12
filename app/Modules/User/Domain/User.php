@@ -187,51 +187,49 @@ class User extends Authenticatable implements JWTSubject
             }
 
             // PROJECT-MANAGER - Manages projects, programs, beneficiaries, indicators
+            // Responsible for project execution, tracking indicators, managing beneficiaries
             if ($roleName === 'project-manager') {
                 $scopes = array_merge($scopes, [
-                    // Projects module
+                    // Projects module (full access)
                     'projects:read',
                     'projects:write',
 
-                    // Programs module
+                    // Programs module (full access)
                     'programs:read',
                     'programs:write',
 
-                    // Beneficiaries module
+                    // Beneficiaries module (full access)
                     'beneficiaries:read',
                     'beneficiaries:write',
 
-                    // Donors (read-only)
+                    // Donors module (read-only - can view donor info)
                     'donors:read',
-
-                    // Agencies, Contacts, SDGs (read/write)
-                    'projects:read',  // Already included above
-
-                    // Indicators, Measures, Strategic Outputs
-                    'projects:read',  // Already included above
                 ]);
             }
 
-            // COUNTRY-MANAGER - Manages KPAs, countries, users assignments
+            // COUNTRY-MANAGER - Manages KPAs, countries, users, program assignments
+            // Responsible for country-level planning, KPA definitions, user management
             if ($roleName === 'country-manager') {
                 $scopes = array_merge($scopes, [
-                    // KPAs module
+                    // KPAs module (full access)
                     'kpas:read',
                     'kpas:write',
 
-                    // Programs (read/write)
+                    // Programs module (full access)
                     'programs:read',
                     'programs:write',
 
-                    // Projects (read-only)
-                    'projects:read',
-
-                    // Users management
+                    // Users module (full access)
                     'users:read',
                     'users:write',
 
-                    // Donors, Beneficiaries (read-only)
+                    // Projects module (read-only - can view projects)
+                    'projects:read',
+
+                    // Donors module (read-only)
                     'donors:read',
+
+                    // Beneficiaries module (read-only)
                     'beneficiaries:read',
                 ]);
             }
