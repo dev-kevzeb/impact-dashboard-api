@@ -53,17 +53,17 @@ class ProjectAgencyService
         return $project->agencies;
     }
 
-    public function createProjectAgency(int $projectId, int $agencyId)
+    public function createProjectAgency(int $projectId, int $agencyId, float $contribution)
     {
         $project = $this->projectRepository->findById($projectId);
-        if (empty($project)) throw new \RuntimeException("El proyecto con id {$projectId} no existe.");
+        if (empty($project)) throw new \RuntimeException("The project with id {$projectId} does not exist.");
         $agency = $this->agencyRepository->findById($agencyId);
-        if (empty($agency)) throw new \RuntimeException("La agencia con id {$agencyId} no existe.");
+        if (empty($agency)) throw new \RuntimeException("The agency with id {$agencyId} does not exist.");
 
         $projectAgency = $this->projectAgencyRepository->findByProjectAndAgency($agencyId, $projectId);
-        if (!empty($projectAgency)) throw new \RuntimeException("La relación entre el proyecto con id {$projectId} y la agencia con id {$agencyId} ya existe.");
+        if (!empty($projectAgency)) throw new \RuntimeException("The relationship between the project with id {$projectId} and the agency with id {$agencyId} already exist.");
 
-        $projectAgency = ProjectAgency::at($project, $agency);
+        $projectAgency = ProjectAgency::at($project, $agency, $contribution);
         $this->projectAgencyRepository->save($projectAgency);
         return $projectAgency;
     }
@@ -74,5 +74,16 @@ class ProjectAgencyService
         if (empty($projectAgency)) throw new \RuntimeException("La relación entre el proyecto y la agencia con id {$projectAgencyId} no existe.");
         $this->projectAgencyRepository->delete($projectAgency->id);
     }
+
+    public function deleteAllByProjectId(int $projectId): void
+    {
+        $project = $this->projectRepository->findById($projectId);
+        if (empty($project)) throw new \RuntimeException("The project with id {$projectId} does not exist.");
+        
+
+        $this->projectAgencyRepository->deleteByProjectId($projectId);
+    }
+
+
 
 }

@@ -15,8 +15,8 @@ class ProjectIndicator extends Model
 
     public static function at($project, $indicator):ProjectIndicator
     {
-        if (!($project instanceof Project)) throw new RuntimeException("El proyecto proporcionado es inválido.");
-        if (!($indicator instanceof Indicator)) throw new RuntimeException("El Indicador proporcionado es inválido.");
+        if (!($project instanceof Project)) throw new RuntimeException("The project must be an instance of Project.");
+        if (!($indicator instanceof Indicator)) throw new RuntimeException("The indicator must be an instance of Indicator.");
 
         return new self(['project_id'  => $project->id, 'indicator_id' => $indicator->id]);
     }
@@ -24,7 +24,7 @@ class ProjectIndicator extends Model
         return $this->belongsTo(Project::class, 'project_id','id');
     }
 
-    public function indicator()
+    public function indicators()
     {
         return $this->belongsTo(Indicator::class,'indicator_id','id');
     }

@@ -2,12 +2,22 @@
 
 namespace App\Modules\Project\Service;
 
+use App\Modules\Agency\Domain\Agency;
+use App\Modules\Agency\Service\AgencyService;
 use App\Modules\Contact\Domain\Contact;
 use App\Modules\Contact\Repository\ContactRepository;
 use App\Modules\Beneficiary\Repository\BeneficiaryRepository;
+use App\Modules\Donor\Domain\Donor;
+use App\Modules\Donor\Service\DonorService;
+use App\Modules\Indicator\Domain\Indicator;
+use App\Modules\Indicator\Service\IndicatorService;
+use App\Modules\ProjectAgency\Service\ProjectAgencyService;
+use App\Modules\ProjectIndicator\Service\ProjectIndicatorService;
 use App\Modules\ProjectState\Repository\ProjectStateRepository;
 use App\Modules\Project\Repository\ProjectRepository;
 use App\Modules\Project\Domain\Project;
+use App\Modules\ProjectDonor\Service\ProjectDonorService;
+
 
 class ProjectService
 {
@@ -15,17 +25,42 @@ class ProjectService
     private ContactRepository $contactRepository;
     private BeneficiaryRepository $beneficiaryRepository;
     private ProjectStateRepository $projectStateRepository;
+    private ProjectIndicatorService $projectIndicatorService;
+    private IndicatorService $indicatorService;
+
+    private ProjectDonorService $projectDonorService;
+    private DonorService $donorService;
+
+    private ProjectAgencyService $projectAgencyService;
+    private AgencyService $agencyService;
 
     public function __construct(
         ProjectRepository $projectRepository,
         ContactRepository $contactRepository,
         BeneficiaryRepository $beneficiaryRepository,
-        ProjectStateRepository $projectStateRepository
+        ProjectStateRepository $projectStateRepository,
+        ProjectIndicatorService $projectIndicatorService,
+        IndicatorService $indicatorService,
+        ProjectDonorService $projectDonorService,
+        DonorService $donorService,
+
+        ProjectAgencyService $projectAgencyService,
+        AgencyService $agencyService,
     ) {
         $this->projectRepository = $projectRepository;
         $this->contactRepository = $contactRepository;
         $this->beneficiaryRepository = $beneficiaryRepository;
         $this->projectStateRepository = $projectStateRepository;
+
+        $this->projectIndicatorService = $projectIndicatorService;
+        $this->indicatorService = $indicatorService;
+
+        $this->projectDonorService = $projectDonorService;
+        $this->donorService = $donorService;
+
+        $this->projectAgencyService = $projectAgencyService;
+        $this->agencyService = $agencyService;
+
     }
 
 
@@ -50,50 +85,100 @@ class ProjectService
         return $project;
     }
 
-    public function createProject(
-        string $name,
-        string $description,
-        ?string $projectUrl,
-        string $startDate,
-        string $endDate,
-        float $progress,
-        string $comments,
-        float $budget,
-        array $contactPayload,
-        int $beneficiaryId,
-        int $projectStateId
-    ): Project {
+    public function addIndicator(Indicator $indicator, Project $project){
+        return $this->projectIndicatorService->createProjectIndicator($project['id'], $indicator['id']);
+    }
+    
+    public function addDonors(Donor $donor, Project $project, float $contribution){
+        return $this->projectDonorService->createProjectDonor($project['id'], $donor['id'], $contribution);
+    }
 
-        if (!empty($contactPayload['id'])) {
-            
-            $contact = $this->contactRepository->findById($contactPayload['id']);
-            if (!$contact) throw new \RuntimeException("The contact with id {$contactPayload['id']} does not exist.");
+    public function addAgencies(Agency $agency, Project $project, float $contribution)
+    {
+        return $this->projectAgencyService->createProjectAgency($project['id'], $agency['id'], $contribution);
+    }
+
+
+    public function syncIndicators(Project $project, array $indicators){
+        $this->projectIndicatorService->deleteAllByProjectId($project['id']);
+
+        foreach($indicators as $indicator){
+            $founded = $this->indicatorService->getIndicatorById($indicator['id']);
+            $this->addIndicator($founded, $project);
+        }
+    }
+
+    public function syncDonors(Project $project, array $donors){
+        $this->projectDonorService->deleteAllByProjectId($project['id']);
+
+        foreach($donors as $donor){
+            $founded = $this->donorService->getDonorById($donor['id']);
+            $this->addDonors($founded, $project, $donor['contribution']);
+        }
+    }
+
+    public function syncAgencies(Project $project, array $agencies){
+        $this->projectAgencyService->deleteAllByProjectId($project['id']);
+
+        foreach($agencies as $agency){
+            $founded = $this->agencyService->getAgencyById($agency['id']);
+            $this->addAgencies($founded, $project, $agency['contribution']);
+        }
+    }
+
+        public function createProject(
+            int $program_id,
+            string $name,
+            string $description,
+            ?string $projectUrl,
+            string $startDate,
+            string $endDate,
+            float $progress,
+            string $comments,
+            float $budget,
+            array $indicators,
+            array $donors,
+            array $agencies,
+            array $contact,
+            array $beneficiary,
+            array $projectState,
+        ): Project {
+
+
+        if(empty($program_id)) throw new \RuntimeException("The program id is required.");
+
+        $normalizedName = preg_replace('/\s+/', ' ', trim($name));
+        $capitalizedName = mb_convert_case($normalizedName, MB_CASE_TITLE, "UTF-8");
+        
+        $founded_project = $this->projectRepository->findByNameAndProgramId($program_id, $capitalizedName);
+
+        if($founded_project) throw new \RuntimeException("The project with name $capitalizedName already exist in the selected program.");
+
+        $beneficiary = $this->beneficiaryRepository->findById($beneficiary['id']);
+        if (!$beneficiary) throw new \RuntimeException("The beneficiary does not exist.");
+
+        $projectState = $this->projectStateRepository->findById($projectState['id']);
+        if (!$projectState) throw new \RuntimeException("The project state does not exist.");
+
+        if (!empty($contact['id'])) {
+            $contact = $this->contactRepository->findById($contact['id']);
+            if (!$contact) throw new \RuntimeException("The contact with id {$contact['id']} does not exist.");
             
         } else {
-
-            $existingContact = $this->contactRepository->findOneBy('email', $contactPayload['email']);
-
-            if ($existingContact) throw new \RuntimeException("There is already a contact registered with the email {$contactPayload['email']}.");
-
             $contact = Contact::at(
-                $contactPayload['first_name'],
-                $contactPayload['last_name'],
-                $contactPayload['title'],
-                $contactPayload['email'],
-                $contactPayload['phone'] ?? ""
+                $contact['first_name'],
+                $contact['last_name'],
+                $contact['title'],
+                $contact['email'],
+                $contact['phone'] ?? ""
             );
 
             $this->contactRepository->save($contact);
         }
-
-        $beneficiary = $this->beneficiaryRepository->findById($beneficiaryId);
-        if (!$beneficiary) throw new \RuntimeException("The beneficiary with id {$beneficiaryId} does not exist.");
-
-        $projectState = $this->projectStateRepository->findById($projectStateId);
-        if (!$projectState) throw new \RuntimeException("The project state with id {$projectStateId} does not exist.");
         
         $project = Project::at(
-            $name,
+            $program_id,
+            $capitalizedName,
             $description,
             $projectUrl,
             $startDate,
@@ -106,7 +191,11 @@ class ProjectService
             $projectState
         );
 
-        $this->projectRepository->save($project);
+        $project = $this->projectRepository->saveReturn($project);
+
+        $this->syncIndicators($project, $indicators);
+        $this->syncDonors($project, $donors);
+        $this->syncAgencies($project, $agencies);
 
         return $project;
     }

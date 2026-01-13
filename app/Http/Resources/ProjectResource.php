@@ -25,6 +25,7 @@ class ProjectResource extends JsonResource
             'donors' => DonorResource::collection(
                 $this->whenLoaded('donors')
             ),
+            // AÑADIR CAMPOS FALTANTES PARA LA RESPUESTA
         ];
     }
 

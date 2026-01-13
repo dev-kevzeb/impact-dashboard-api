@@ -16,13 +16,16 @@ class ProjectRepository extends AbstractRepository implements RepositoryInterfac
     {
         $normalized = strtolower(trim($name));
 
-        return $this->model
-            ->whereRaw('LOWER(name) LIKE ?', ['%' . $normalized . '%'])
-            ->first();
+        return $this->model->whereRaw('LOWER(name) LIKE ?', ['%' . $normalized . '%'])->first();
     }
 
     public function findOneBy(string $field, mixed $value)
     {
         return $this->model->where($field, $value)->first();
+    }
+
+    public function findByNameAndProgramId(int $program_id, string $name): ?P
+    {
+        return $this->model->where('program_id', $program_id)->whereRaw('LOWER(name) LIKE ?', ['%' . strtolower($name) . '%'])->first();
     }
 }
