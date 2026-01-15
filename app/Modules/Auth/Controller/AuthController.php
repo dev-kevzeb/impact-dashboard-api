@@ -24,7 +24,7 @@ class AuthController extends Controller
 
     /**
      * @OA\Post(
-     *     path="/api/v1/auth/login",
+     *     path="/auth/login",
      *     tags={"Authentication"},
      *     summary="Login user",
      *     @OA\RequestBody(
@@ -63,7 +63,7 @@ class AuthController extends Controller
 
     /**
      * @OA\Post(
-     *     path="/api/v1/auth/register",
+     *     path="/auth/register",
      *     tags={"Authentication"},
      *     summary="Register new user",
      *     @OA\RequestBody(
@@ -102,7 +102,7 @@ class AuthController extends Controller
 
     /**
      * @OA\Post(
-     *     path="/api/v1/auth/refresh",
+     *     path="/auth/refresh",
      *     tags={"Authentication"},
      *     summary="Refresh access token",
      *     security={{"bearerAuth":{}}},
@@ -124,7 +124,7 @@ class AuthController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/api/v1/auth/me",
+     *     path="/auth/me",
      *     tags={"Authentication"},
      *     summary="Get authenticated user",
      *     security={{"bearerAuth":{}}},
@@ -141,6 +141,56 @@ class AuthController extends Controller
                 200,
                 new UserResource($user)
             );
+        } catch (\Exception $e) {
+            return ApiResponse::error('Not authenticated', 401);
+        }
+    }
+
+    /**
+     * @OA\Get(
+     *     path="/auth/permissions",
+     *     tags={"Authentication"},
+     *     summary="Get current user permissions and roles",
+     *     description="Returns all permissions assigned to the authenticated user (via roles and direct permissions)",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Permissions retrieved successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Permissions retrieved"),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="object",
+     *                 @OA\Property(property="user", type="string", example="Admin User"),
+     *                 @OA\Property(
+     *                     property="permissions",
+     *                     type="array",
+     *                     @OA\Items(type="string"),
+     *                     example={"*:*"}
+     *                 ),
+     *                 @OA\Property(
+     *                     property="roles",
+     *                     type="array",
+     *                     @OA\Items(type="string"),
+     *                     example={"admin"}
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(response=401, description="Unauthorized")
+     * )
+     */
+    public function permissions(): JsonResponse
+    {
+        try {
+            $user = auth('api')->user();
+
+            return ApiResponse::success('Permissions retrieved', 200, [
+                'user' => $user->name,
+                'permissions' => $user->getAllPermissions()->pluck('name'),
+                'roles' => $user->roles->pluck('name'),
+            ]);
         } catch (\Exception $e) {
             return ApiResponse::error('Not authenticated', 401);
         }

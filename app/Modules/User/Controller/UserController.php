@@ -44,7 +44,7 @@ class UserController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/api/v1/users",
+     *     path="/users",
      *     summary="Get all users with pagination",
      *     description="Retrieve a paginated list of all users with their roles and states",
      *     operationId="getUsersList",
@@ -112,7 +112,7 @@ class UserController extends Controller
 
     /**
      * @OA\Post(
-     *     path="/api/v1/users",
+     *     path="/users",
      *     summary="Create a new user",
      *     description="Create a new user with email, password, name and state. Roles must be assigned separately via /api/v1/user_roles",
      *     operationId="createUser",
@@ -204,7 +204,7 @@ class UserController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/api/v1/users/search",
+     *     path="/users/search",
      *     summary="Search users by name",
      *     description="Search for users by name (case-insensitive)",
      *     operationId="searchUsers",
@@ -274,7 +274,7 @@ class UserController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/api/v1/users/{id}",
+     *     path="/users/{id}",
      *     summary="Get user by ID",
      *     description="Retrieve a single user by their ID with role and state",
      *     operationId="getUserById",
@@ -338,7 +338,7 @@ class UserController extends Controller
 
     /**
      * @OA\Put(
-     *     path="/api/v1/users/{id}",
+     *     path="/users/{id}",
      *     summary="Update an existing user",
      *     description="Update user information (password is optional). Roles must be updated separately via /api/v1/user_roles",
      *     operationId="updateUser",

@@ -44,11 +44,14 @@ class AuthService
             throw new RuntimeException('User account is not active');
         }
 
+        // Load relationships needed for UserResource
+        $user->load('roles', 'userState');
+
         return [
             'access_token' => $token,
             'token_type' => 'bearer',
             'expires_in' => auth('api')->factory()->getTTL() * 60,  // Seconds
-            'user' => $user->load('roles', 'userState')
+            'user' => new \App\Http\Resources\UserResource($user)
         ];
     }
 
@@ -77,11 +80,14 @@ class AuthService
         // Generate token for new user
         $token = auth('api')->login($user);
 
+        // Load relationships for UserResource
+        $user->load('userState');
+
         return [
             'access_token' => $token,
             'token_type' => 'bearer',
             'expires_in' => auth('api')->factory()->getTTL() * 60,
-            'user' => $user->load('userState')
+            'user' => new \App\Http\Resources\UserResource($user)
         ];
     }
 

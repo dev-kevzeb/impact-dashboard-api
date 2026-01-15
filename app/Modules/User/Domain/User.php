@@ -11,14 +11,21 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Support\Facades\Hash;
 use PHPOpenSourceSaver\JWTAuth\Contracts\JWTSubject;
 use RuntimeException;
+use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable implements JWTSubject
 {
-    use HasFactory;
+    use HasFactory, HasRoles;
 
     protected $table = 'user';
     protected $fillable = ['name', 'email', 'password', 'user_state_id'];
     protected $hidden = ['password', 'remember_token'];
+
+    /**
+     * Spatie Permission: Define guard name for permissions
+     * Must match guard_name in role and permission tables
+     */
+    protected $guard_name = 'api';
 
     // Error constants
     public static $ERROR_NAME_EMPTY = 'the name must not be empty';
@@ -99,7 +106,16 @@ class User extends Authenticatable implements JWTSubject
 
     /**
      * Relationship: User has many Roles through user_role pivot table
-     * Use $user->roles to get all roles assigned to the user
+     * 
+     * NOTE: This relationship is now managed by Spatie's HasRoles trait.
+     * The trait provides methods like:
+     * - $user->hasRole('admin')
+     * - $user->assignRole('project-manager')
+     * - $user->removeRole('country-manager')
+     * - $user->getRoleNames()
+     * 
+     * This manual relationship definition is kept for backwards compatibility
+     * with existing code that uses $user->roles->pluck('name').
      *
      * @return BelongsToMany
      */
@@ -157,90 +173,41 @@ class User extends Authenticatable implements JWTSubject
     }
 
     /**
-     * Generate scopes based on user roles
+     * Generate scopes based on user roles and permissions from database
      * 
-     * CURRENT IMPLEMENTATION: Hardcoded role-to-scope mapping
+     * SPATIE PERMISSION INTEGRATION: Reads permissions from database
      * 
-     * WARNING: This is a simple approach for MVP. For production scalability, 
-     * consider moving role permissions to database (see RolePermission table approach).
+     * Uses Spatie's HasRoles trait to fetch permissions:
+     * - Admin role: Checks for wildcard permission '*:*'
+     * - Other roles: Gets all permissions assigned via role_permission table
      * 
-     * Existing roles in system: admin, project-manager, country-manager
-     * Scopes format: {module}:{permission} (e.g., 'donors:read', 'projects:write')
+     * Permissions are cached by Spatie for performance.
      * 
-     * @return array Array of scope strings
+     * @return array Array of scope strings (e.g., ['donors:read', 'projects:write'])
      */
     private function generateScopes(): array
     {
-        $scopes = [];
-
-        // Load roles if not already loaded
-        if (!$this->relationLoaded('roles')) {
-            $this->load('roles');
+        // Check if user has admin role with wildcard permission
+        // hasPermissionTo() is provided by HasRoles trait
+        if ($this->hasPermissionTo('*:*')) {
+            return ['*:*'];  // Full system access
         }
 
-        foreach ($this->roles as $role) {
-            $roleName = strtolower($role->name);
+        // Get all permissions for this user (via roles)
+        // getAllPermissions() returns Collection of Permission models
+        $permissions = $this->getAllPermissions();
 
-            // ADMIN - Full system access (God mode)
-            if ($roleName === 'admin') {
-                return ['*:*'];  // Wildcard = all permissions on all modules
-            }
+        // Extract permission names (scope format)
+        // pluck('name') gets the 'name' column from each Permission
+        // unique() removes duplicates if user has multiple roles with same permission
+        // values() resets array keys to sequential numbers
+        $scopes = $permissions->pluck('name')->unique()->values()->toArray();
 
-            // PROJECT-MANAGER - Manages projects, programs, beneficiaries, indicators
-            // Responsible for project execution, tracking indicators, managing beneficiaries
-            if ($roleName === 'project-manager') {
-                $scopes = array_merge($scopes, [
-                    // Projects module (full access)
-                    'projects:read',
-                    'projects:write',
-
-                    // Programs module (full access)
-                    'programs:read',
-                    'programs:write',
-
-                    // Beneficiaries module (full access)
-                    'beneficiaries:read',
-                    'beneficiaries:write',
-
-                    // Donors module (read-only - can view donor info)
-                    'donors:read',
-                ]);
-            }
-
-            // COUNTRY-MANAGER - Manages KPAs, countries, users, program assignments
-            // Responsible for country-level planning, KPA definitions, user management
-            if ($roleName === 'country-manager') {
-                $scopes = array_merge($scopes, [
-                    // KPAs module (full access)
-                    'kpas:read',
-                    'kpas:write',
-
-                    // Programs module (full access)
-                    'programs:read',
-                    'programs:write',
-
-                    // Users module (full access)
-                    'users:read',
-                    'users:write',
-
-                    // Projects module (read-only - can view projects)
-                    'projects:read',
-
-                    // Donors module (read-only)
-                    'donors:read',
-
-                    // Beneficiaries module (read-only)
-                    'beneficiaries:read',
-                ]);
-            }
-        }
-
-        // If no roles assigned, return minimal read-only access
+        // If no permissions assigned, return minimal read-only access
         if (empty($scopes)) {
             return ['donors:read', 'beneficiaries:read'];
         }
 
-        // Remove duplicates and return
-        return array_values(array_unique($scopes));
+        return $scopes;
     }
 }

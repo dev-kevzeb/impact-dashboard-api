@@ -22,7 +22,7 @@ class ProgramUserController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/api/v1/program_users",
+     *     path="/program_users",
      *     summary="List all Program-CountryKpaUser assignments",
      *     description="Get paginated list of all Program-CountryKpaUser assignments with optional filters",
      *     operationId="listProgramUsers",
@@ -82,7 +82,7 @@ class ProgramUserController extends Controller
 
     /**
      * @OA\Post(
-     *     path="/api/v1/program_users",
+     *     path="/program_users",
      *     summary="Create a new Program-CountryKpaUser assignment",
      *     description="Assign a CountryKpaUser to a Program",
      *     operationId="createProgramUser",
@@ -132,7 +132,7 @@ class ProgramUserController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/api/v1/program_users/{id}",
+     *     path="/program_users/{id}",
      *     summary="Get a specific Program-CountryKpaUser assignment",
      *     description="Retrieve details of a specific assignment by ID",
      *     operationId="getProgramUser",
@@ -171,7 +171,7 @@ class ProgramUserController extends Controller
 
     /**
      * @OA\Put(
-     *     path="/api/v1/program_users/{id}",
+     *     path="/program_users/{id}",
      *     summary="Update a Program-CountryKpaUser assignment",
      *     description="Update an existing assignment",
      *     operationId="updateProgramUser",
@@ -233,7 +233,7 @@ class ProgramUserController extends Controller
 
     /**
      * @OA\Delete(
-     *     path="/api/v1/program_users/{id}",
+     *     path="/program_users/{id}",
      *     summary="Delete a Program-CountryKpaUser assignment",
      *     description="Remove an assignment between Program and CountryKpaUser",
      *     operationId="deleteProgramUser",

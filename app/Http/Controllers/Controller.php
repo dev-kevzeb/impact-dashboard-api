@@ -25,6 +25,19 @@ use Illuminate\Routing\Controller as BaseController;
  *     description="Servidor de Producción"
  * )
  * 
+ * @OA\SecurityScheme(
+ *     securityScheme="bearerAuth",
+ *     type="http",
+ *     scheme="bearer",
+ *     bearerFormat="JWT",
+ *     description="JWT Authorization header. Obtén el token con POST /auth/login. Formato: 'Bearer {token}'"
+ * )
+ * 
+ * @OA\Tag(
+ *     name="Authentication",
+ *     description="Autenticación y autorización con JWT"
+ * )
+ * 
  * @OA\Tag(
  *     name="Programs",
  *     description="Gestión de Programas - CRUD completo con relaciones M:N"
