@@ -203,11 +203,8 @@ class User extends Authenticatable implements JWTSubject
         // values() resets array keys to sequential numbers
         $scopes = $permissions->pluck('name')->unique()->values()->toArray();
 
-        // If no permissions assigned, return minimal read-only access
-        if (empty($scopes)) {
-            return ['donors:read', 'beneficiaries:read'];
-        }
-
+        // Return scopes as-is (empty array if no permissions assigned)
+        // Users without roles/permissions will have no access to protected endpoints
         return $scopes;
     }
 }
