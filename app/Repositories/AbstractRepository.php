@@ -42,6 +42,21 @@ abstract class AbstractRepository implements RepositoryInterface
         }
     }
 
+    public function saveReturn(object $entity): object
+    {
+        try {
+            $entity->save();
+            return $entity;
+        } catch (\Illuminate\Database\QueryException $e) {
+            throw $e;
+        } catch (\Exception $e) {
+            throw new RuntimeException(
+                "Error saving entity: " . $e->getMessage()
+            );
+        }
+    }
+
+
     /**
      * Buscar entidad por ID
      *

@@ -58,7 +58,7 @@ class Project extends Model
     {
         return ProjectFactory::new();
     }
-    public static function at($name, $description, $projectUrl, $startDate, $endDate, $progress, $comments, $projectBudget, $contact, $projectBeneficiary, $projectState): Project {
+    public static function at($program_id, $name, $description, $projectUrl, $startDate, $endDate, $progress, $comments, $projectBudget, $contact, $projectBeneficiary, $projectState): Project {
     
         if (empty(trim($name))) throw new \RuntimeException(self::$ERROR_NAME_EMPTY);
         if (strlen(trim($name)) < 3) throw new \RuntimeException(self::$ERROR_NAME_MIN_LENGTH);
@@ -92,15 +92,26 @@ class Project extends Model
         if (strlen(trim($comments)) > 1000) throw new \RuntimeException(self::$ERROR_COMMENTS_MAX_LENGTH);
         if (!is_numeric($projectBudget)) throw new \RuntimeException(self::$ERROR_PROJECT_BUDGET_INVALID);
         $projectBudgetFloat = (float) $projectBudget;
-        if ($projectBudgetFloat <= 0) throw new \RuntimeException(self::$ERROR_PROJECT_BUDGET_INVALID);
+        if ($projectBudgetFloat < 0) throw new \RuntimeException(self::$ERROR_PROJECT_BUDGET_INVALID);
 
         if (!($contact instanceof Contact)) throw new \RuntimeException(self::$ERROR_CONTACT_INVALID);
         if (!($projectBeneficiary instanceof Beneficiary)) throw new \RuntimeException(self::$ERROR_PROJECT_BENEFICIARY_INVALID);
         if (!($projectState instanceof ProjectState)) throw new \RuntimeException(self::$ERROR_PROJECT_STATE_INVALID);
 
-        return new self(['name' => trim($name), 'description'=> trim($description), 'project_url'=>trim($projectUrl),
-            'start_date'=> $startDate, 'end_date'=> $endDate, 'progress'=>$progressFloat, 'comments'=>trim($comments),
-            'project_budget'=> $projectBudgetFloat, 'contact_id'=> $contact->id, 'beneficiary_id'=>$projectBeneficiary->id, 'project_state_id'=>$projectState->id]);
+        return new self([
+            'program_id'=> $program_id,
+            'name' => trim($name), 
+            'description'=> trim($description), 
+            'project_url'=>trim($projectUrl),
+            'start_date'=> $startDate, 
+            'end_date'=> $endDate, 
+            'progress'=>$progressFloat, 
+            'comments'=>trim($comments),
+            'project_budget'=> $projectBudgetFloat, 
+            'contact_id'=> $contact->id, 
+            'beneficiary_id'=>$projectBeneficiary->id, 
+            'project_state_id'=>$projectState->id
+        ]);
     }
 
     public function donors()
@@ -119,15 +130,6 @@ class Project extends Model
     }
 
 
-    public function agencies()
-    {
-        return $this->belongsToMany(Agency::class, 'project_agency', 'project_id', 'agency_id');
-    }
-
-    public function indicators()
-    {
-        return $this->belongsToMany(Indicator::class, 'project_indicator', 'project_id', 'indicator_id');
-    }
 
     // Getters
     public function getName(): string
@@ -221,13 +223,4 @@ class Project extends Model
         return $this->donors()->count();
     }
 
-    public function getIndicatorsCountAttribute(): int
-    {
-        return $this->donors()->count();
-    }
-    public function getAgenciesCountAttribute(): int
-    {
-        return $this->donors()->count();
-    }
-    
-}
+}   

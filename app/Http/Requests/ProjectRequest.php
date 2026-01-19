@@ -20,11 +20,28 @@ class ProjectRequest extends FormRequest
             'name' => 'required|string|min:3|max:255',
             'description' => 'required|string|min:10|max:2000',
             'project_url' => ['nullable','string','max:255','regex:/^https?:\/\/.+$/i'],
-            'start_date' => 'required|date_format:Y-m-d',
-            'end_date'   => 'required|date_format:Y-m-d|after_or_equal:start_date',
+            'start_date' => 'required',
+            'end_date'   => 'required|after_or_equal:start_date',
             'progress' => 'required|numeric|min:0|max:100',
             'comments' => 'nullable|string|max:1000',
-            'project_budget' => 'required|numeric|gt:0',
+            'budget' => 'required|numeric|gte:0',
+
+            // INDICATORS
+            'indicators' => 'required|array|min:1',
+            'indicators.*.id' => 'required|integer|exists:indicator,id',
+            'indicators.*.name' => 'required|string|min:2|max:100',
+
+            // DONORS
+            'donors' => 'required|array|min:1',
+            'donors.*.id' => 'required|integer|exists:donor,id',
+            'donors.*.name' => 'required|string|min:2|max:150',
+            'donors.*.contribution' => 'required|numeric|min:0',
+
+            // AGENCIES
+            'agencies' => 'required|array|min:1',
+            'agencies.*.id' => 'required|integer|exists:agency,id',
+            'agencies.*.name' => 'required|string|min:2|max:150',
+            'agencies.*.contribution' => 'required|numeric|min:0',
 
             'contact.first_name' => 'required|string|min:2|max:50|regex:/^[a-zA-ZÀ-ÿñÑ\s\'\-\.,\/]+$/u',
             'contact.last_name'  => 'required|string|min:2|max:50|regex:/^[a-zA-ZÀ-ÿñÑ\s\'\-\.,\/]+$/u',
@@ -37,6 +54,8 @@ class ProjectRequest extends FormRequest
 
             'project_state.id'    => 'required|integer|exists:project_state,id',
             'project_state.state' => 'required|string|min:3|max:100',
+
+            'program_id' => 'required|numeric'
             
         ];
 
@@ -49,90 +68,144 @@ class ProjectRequest extends FormRequest
     {
         return [
 
-            // PROJECT
-            'name.required' => 'El nombre del proyecto es obligatorio.',
-            'name.string' => 'El nombre del proyecto debe ser un texto válido.',
-            'name.min' => 'El nombre del proyecto debe tener al menos 3 caracteres.',
-            'name.max' => 'El nombre del proyecto no puede superar los 255 caracteres.',
+           // PROJECT
+            'name.required' => 'The project name is required.',
+            'name.string' => 'The project name must be a valid text.',
+            'name.min' => 'The project name must be at least 3 characters long.',
+            'name.max' => 'The project name may not exceed 255 characters.',
 
-            'description.required' => 'La descripción es obligatoria.',
-            'description.string' => 'La descripción debe ser un texto válido.',
-            'description.min' => 'La descripción debe tener al menos 10 caracteres.',
-            'description.max' => 'La descripción no puede superar los 2000 caracteres.',
+            'description.required' => 'The project description is required.',
+            'description.string' => 'The project description must be a valid text.',
+            'description.min' => 'The project description must be at least 10 characters long.',
+            'description.max' => 'The project description may not exceed 2000 characters.',
 
-            'project_url.string' => 'La URL debe ser un texto válido.',
-            'project_url.max' => 'La URL no puede superar los 255 caracteres.',
-            'project_url.regex' => 'La URL del proyecto debe empezar con http:// o https://',
+            'project_url.string' => 'The project URL must be a valid text.',
+            'project_url.max' => 'The project URL may not exceed 255 characters.',
+            'project_url.regex' => 'The project URL must start with http:// or https://.',
 
+            'start_date.required' => 'The start date is required.',
+            'start_date.date_format' => 'The start date must have the format Y-m-d.',
 
-            'start_date.required' => 'La fecha de inicio es obligatoria.',
-            'start_date.date_format' => 'La fecha de inicio debe tener el formato Y-m-d.',
+            'end_date.required' => 'The end date is required.',
+            'end_date.date_format' => 'The end date must have the format Y-m-d.',
+            'end_date.after_or_equal' => 'The end date must be equal to or later than the start date.',
 
-            'end_date.required' => 'La fecha de finalización es obligatoria.',
-            'end_date.date_format' => 'La fecha de finalización debe tener el formato Y-m-d.',
-            'end_date.after_or_equal' => 'La fecha de finalización debe ser igual o posterior a la fecha de inicio.',
+            'progress.required' => 'The project progress is required.',
+            'progress.numeric' => 'The project progress must be a numeric value.',
+            'progress.min' => 'The project progress cannot be less than 0%.',
+            'progress.max' => 'The project progress cannot exceed 100%.',
 
-            'progress.required' => 'El progreso del proyecto es obligatorio.',
-            'progress.numeric' => 'El progreso debe ser un valor numérico.',
-            'progress.min' => 'El progreso no puede ser menor a 0%.',
-            'progress.max' => 'El progreso no puede superar el 100%.',
+            'comments.string' => 'The comments must be valid text.',
+            'comments.max' => 'The comments may not exceed 1000 characters.',
 
-            'comments.string' => 'Los comentarios deben ser texto válido.',
-            'comments.max' => 'Los comentarios no pueden superar los 1000 caracteres.',
+            'budget.required' => 'The project budget is required.',
+            'budget.numeric' => 'The project budget must be a valid number.',
+            'budget.gt' => 'The project budget must be greater than 0.',
 
-            'project_budget.required' => 'El presupuesto del proyecto es obligatorio.',
-            'project_budget.numeric' => 'El presupuesto debe ser un número válido.',
-            'project_budget.gt' => 'El presupuesto debe ser mayor a 0.',
 
             // CONTACT
-            'contact.first_name.required' => 'El nombre del contacto es obligatorio.',
-            'contact.first_name.string'   => 'El nombre del contacto debe ser un texto válido.',
-            'contact.first_name.min'      => 'El nombre del contacto debe tener al menos 2 caracteres.',
-            'contact.first_name.max'      => 'El nombre del contacto no puede superar los 50 caracteres.',
-            'contact.first_name.regex'    => 'El nombre del contacto contiene caracteres no permitidos.',
+            'contact.first_name.required' => 'The contact first name is required.',
+            'contact.first_name.string'   => 'The contact first name must be valid text.',
+            'contact.first_name.min'      => 'The contact first name must be at least 2 characters long.',
+            'contact.first_name.max'      => 'The contact first name may not exceed 50 characters.',
+            'contact.first_name.regex'    => 'The contact first name contains invalid characters.',
 
-            'contact.last_name.required' => 'El apellido del contacto es obligatorio.',
-            'contact.last_name.string'   => 'El apellido del contacto debe ser un texto válido.',
-            'contact.last_name.min'      => 'El apellido del contacto debe tener al menos 2 caracteres.',
-            'contact.last_name.max'      => 'El apellido del contacto no puede superar los 50 caracteres.',
-            'contact.last_name.regex'    => 'El apellido del contacto contiene caracteres no permitidos.',
+            'contact.last_name.required' => 'The contact last name is required.',
+            'contact.last_name.string'   => 'The contact last name must be valid text.',
+            'contact.last_name.min'      => 'The contact last name must be at least 2 characters long.',
+            'contact.last_name.max'      => 'The contact last name may not exceed 50 characters.',
+            'contact.last_name.regex'    => 'The contact last name contains invalid characters.',
 
-            'contact.title.required' => 'El título del contacto es obligatorio.',
-            'contact.title.string'   => 'El título del contacto debe ser un texto válido.',
-            'contact.title.min'      => 'El título del contacto debe tener al menos 2 caracteres.',
-            'contact.title.max'      => 'El título del contacto no puede superar los 100 caracteres.',
-            'contact.title.regex'    => 'El título del contacto contiene caracteres no permitidos.',
+            'contact.title.required' => 'The contact title is required.',
+            'contact.title.string'   => 'The contact title must be valid text.',
+            'contact.title.min'      => 'The contact title must be at least 2 characters long.',
+            'contact.title.max'      => 'The contact title may not exceed 100 characters.',
+            'contact.title.regex'    => 'The contact title contains invalid characters.',
 
-            'contact.email.required' => 'El email del contacto es obligatorio.',
-            'contact.email.email'    => 'El email del contacto no es válido.',
-            'contact.email.max'      => 'El email del contacto no puede superar los 254 caracteres.',
+            'contact.email.required' => 'The contact email is required.',
+            'contact.email.email'    => 'The contact email is not valid.',
+            'contact.email.max'      => 'The contact email may not exceed 254 characters.',
 
-            'contact.phone.string' => 'El número de teléfono debe ser un texto válido.',
-            'contact.phone.regex'  => 'El número de teléfono proporcionado no es válido.',
+            'contact.phone.string' => 'The phone number must be valid text.',
+            'contact.phone.regex'  => 'The provided phone number is not valid.',
 
 
             // BENEFICIARY
-            'beneficiary.id.required' => 'El beneficiario es obligatorio.',
-            'beneficiary.id.integer'  => 'El ID del beneficiario debe ser un número válido.',
-            'beneficiary.id.exists'   => 'El beneficiario seleccionado no existe.',
+            'beneficiary.id.required' => 'The beneficiary is required.',
+            'beneficiary.id.integer'  => 'The beneficiary ID must be a valid number.',
+            'beneficiary.id.exists'   => 'The selected beneficiary does not exist.',
 
-            'beneficiary.name.required' => 'El nombre del beneficiario es obligatorio.',
-            'beneficiary.name.string'   => 'El nombre del beneficiario debe ser texto válido.',
+            'beneficiary.name.required' => 'The beneficiary name is required.',
+            'beneficiary.name.string'   => 'The beneficiary name must be valid text.',
 
 
             // PROJECT STATE
-            'project_state.id.required' => 'El estado del proyecto es obligatorio.',
-            'project_state.id.integer'  => 'El ID del estado del proyecto debe ser un número válido.',
-            'project_state.id.exists'   => 'El estado del proyecto seleccionado no existe.',
+            'project_state.id.required' => 'The project state is required.',
+            'project_state.id.integer'  => 'The project state ID must be a valid number.',
+            'project_state.id.exists'   => 'The selected project state does not exist.',
 
-            'project_state.state.required' => 'El nombre del estado del proyecto es obligatorio.',
-            'project_state.state.string'   => 'El nombre del estado debe ser texto válido.',
-            'project_state.state.min'      => 'El nombre del estado debe tener al menos 3 caracteres.',
-            'project_state.state.max'      => 'El nombre del estado no puede superar los 100 caracteres.',
+            'project_state.state.required' => 'The project state name is required.',
+            'project_state.state.string'   => 'The project state name must be valid text.',
+            'project_state.state.min'      => 'The project state name must be at least 3 characters long.',
+            'project_state.state.max'      => 'The project state name may not exceed 100 characters.',
 
-            'contact.id.required' => 'El ID del contacto es obligatorio para actualizar.',
-            'contact.id.integer'  => 'El ID del contacto debe ser un número válido.',
-            'contact.id.exists'   => 'El contacto seleccionado no existe.',
+
+            // CONTACT (update)
+            'contact.id.required' => 'The contact ID is required for update.',
+            'contact.id.integer'  => 'The contact ID must be a valid number.',
+            'contact.id.exists'   => 'The selected contact does not exist.',
+
+
+            // INDICATORS
+            'indicators.required' => 'At least one indicator is required.',
+            'indicators.array' => 'Indicators must be sent as a list.',
+            'indicators.min' => 'At least one indicator must be selected.',
+
+            'indicators.*.id.required' => 'The indicator ID is required.',
+            'indicators.*.id.integer' => 'The indicator ID must be a valid number.',
+            'indicators.*.id.exists' => 'The selected indicator does not exist.',
+
+            'indicators.*.name.required' => 'The indicator name is required.',
+            'indicators.*.name.string' => 'The indicator name must be a valid text.',
+            'indicators.*.name.min' => 'The indicator name must have at least 2 characters.',
+            'indicators.*.name.max' => 'The indicator name may not exceed 100 characters.',
+
+            // DONORS
+            'donors.required' => 'At least one donor is required.',
+            'donors.array' => 'Donors must be sent as a list.',
+            'donors.min' => 'At least one donor must be provided.',
+
+            'donors.*.id.required' => 'The donor ID is required.',
+            'donors.*.id.integer' => 'The donor ID must be a valid number.',
+            'donors.*.id.exists' => 'The selected donor does not exist.',
+
+            'donors.*.name.required' => 'The donor name is required.',
+            'donors.*.name.string' => 'The donor name must be a valid text.',
+            'donors.*.name.min' => 'The donor name must have at least 2 characters.',
+            'donors.*.name.max' => 'The donor name may not exceed 150 characters.',
+
+            'donors.*.contribution.required' => 'The donor contribution amount is required.',
+            'donors.*.contribution.numeric' => 'The donor contribution must be a number.',
+            'donors.*.contribution.min' => 'The donor contribution cannot be negative.',
+
+            // AGENCIES
+            'agencies.required' => 'At least one agency is required.',
+            'agencies.array' => 'Agencies must be sent as a list.',
+            'agencies.min' => 'At least one agency must be provided.',
+
+            'agencies.*.id.required' => 'The agency ID is required.',
+            'agencies.*.id.integer' => 'The agency ID must be a valid number.',
+            'agencies.*.id.exists' => 'The selected agency does not exist.',
+
+            'agencies.*.name.required' => 'The agency name is required.',
+            'agencies.*.name.string' => 'The agency name must be a valid text.',
+            'agencies.*.name.min' => 'The agency name must have at least 2 characters.',
+            'agencies.*.name.max' => 'The agency name may not exceed 150 characters.',
+
+            'agencies.*.contribution.required' => 'The agency contribution amount is required.',
+            'agencies.*.contribution.numeric' => 'The agency contribution must be a number.',
+            'agencies.*.contribution.min' => 'The agency contribution cannot be negative.',
+
         ];
     }
 

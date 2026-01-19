@@ -70,4 +70,14 @@ class ProjectIndicatorService
         if (empty($projectIndicator)) throw new RuntimeException("La relación entre el proyecto y la agencia con id {$projectIndicatorId} no existe.");
         $this->projectIndicatorRepository->delete($projectIndicator->id);
     }
+
+    public function deleteAllByProjectId(int $projectId): void
+    {
+        $project = $this->projectRepository->findById($projectId);
+        if (empty($project)) throw new RuntimeException("The project with id {$projectId} does not exist.");
+        
+
+        $this->projectIndicatorRepository->deleteByProjectId($projectId);
+    }
+
 }
