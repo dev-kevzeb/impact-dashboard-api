@@ -90,6 +90,9 @@ Route::prefix('v1')->group(function () {
         Route::put('kpas/{id}', [KpaController::class, 'update'])->middleware('scope:kpas:write');
 
         // API Routes para Users
+        Route::get('users/pending', [UserController::class, 'pending'])->middleware('scope:users:write');
+        Route::post('users/{id}/approve', [UserController::class, 'approve'])->middleware('scope:users:write');
+        Route::delete('users/{id}/reject', [UserController::class, 'reject'])->middleware('scope:users:write');
         Route::get('users', [UserController::class, 'index'])->middleware('scope:users');
         Route::post('users', [UserController::class, 'store'])->middleware('scope:users:write');
         Route::get('users/search', [UserController::class, 'search'])->middleware('scope:users');

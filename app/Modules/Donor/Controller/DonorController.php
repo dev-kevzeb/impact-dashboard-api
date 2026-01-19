@@ -41,7 +41,8 @@ class DonorController extends Controller
      *     path="/donors",
      *     tags={"Donors"},
      *     summary="Listar donantes",
-     *     description="Obtiene todos los donantes con sus contribuciones y proyectos asociados",
+     *     description="Obtiene todos los donantes con sus contribuciones y proyectos asociados. Requiere permiso: donors:read o *:*",
+     *     security={{"bearerAuth":{}}},
      *     @OA\Response(
      *         response=200,
      *         description="Lista de donantes obtenida exitosamente",
@@ -78,9 +79,9 @@ class DonorController extends Controller
 
             $query = Donor::query();
 
-            if( $search ) $query->where("name","like","%". $search ."%");
+            if ($search) $query->where("name", "like", "%" . $search . "%");
             $donors = $query->paginate($perPage);
-            
+
             return ApiResponse::success(
                 'Donors list successfully obtained',
                 200,
@@ -104,7 +105,8 @@ class DonorController extends Controller
      *     path="/donors/{id}",
      *     tags={"Donors"},
      *     summary="Obtener donante por ID",
-     *     description="Obtiene la información completa de un donante específico",
+     *     description="Obtiene la información completa de un donante específico. Requiere permiso: donors:read o *:*",
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
@@ -157,7 +159,8 @@ class DonorController extends Controller
      *     path="/donors",
      *     tags={"Donors"},
      *     summary="Crear donante",
-     *     description="Crea un nuevo donante con su contribución y proyecto asociado. El nombre debe ser único.",
+     *     description="Crea un nuevo donante con su contribución y proyecto asociado. El nombre debe ser único. Requiere permiso: donors:write o *:*",
+     *     security={{"bearerAuth":{}}},
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\MediaType(
@@ -239,7 +242,8 @@ class DonorController extends Controller
      *     path="/donors/{id}",
      *     tags={"Donors"},
      *     summary="Actualizar donante",
-     *     description="Actualiza la información de un donante existente. El nombre debe ser único.",
+     *     description="Actualiza la información de un donante existente. El nombre debe ser único. Requiere permiso: donors:write o *:*",
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
@@ -339,7 +343,8 @@ class DonorController extends Controller
      *     path="/donors/search",
      *     tags={"Donors"},
      *     summary="Buscar donante por nombre",
-     *     description="Busca un donante específico por su nombre (búsqueda exacta, case-insensitive)",
+     *     description="Busca un donante específico por su nombre (búsqueda exacta, case-insensitive). Requiere permiso: donors:read o *:*",
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="name",
      *         in="query",
@@ -401,7 +406,6 @@ class DonorController extends Controller
                 200,
                 new DonorResource($donor)
             );
-
         } catch (RuntimeException $e) {
             return ApiResponse::notFound('Donor');
         } catch (\Illuminate\Validation\ValidationException $e) {
@@ -420,7 +424,7 @@ class DonorController extends Controller
             $exclude = (array) $request->input('exclude', []);
 
             $donors = $this->donorService->getDonorsExcluding($perPage, $search, $exclude);
-            
+
             return ApiResponse::success(
                 'Donors list successfully obtained',
                 200,

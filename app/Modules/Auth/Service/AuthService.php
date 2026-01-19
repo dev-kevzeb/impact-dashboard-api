@@ -2,6 +2,7 @@
 
 namespace App\Modules\Auth\Service;
 
+use App\Modules\Role\Domain\Role;
 use App\Modules\User\Domain\User;
 use App\Modules\User\Repository\UserRepository;
 use App\Modules\UserState\Repository\UserStateRepository;
@@ -39,8 +40,18 @@ class AuthService
 
         $user = auth('api')->user();
 
-        // Validate user state
-        if (!$user->userState->hasState('active')) {
+        // Validate user state with specific messages
+        $stateName = $user->userState->name;
+
+        if ($stateName === 'pending') {
+            throw new RuntimeException('Your account is pending approval. Please wait for admin confirmation.');
+        }
+
+        if ($stateName === 'inactive') {
+            throw new RuntimeException('Your account has been deactivated. Contact support for assistance.');
+        }
+
+        if ($stateName !== 'active') {
             throw new RuntimeException('User account is not active');
         }
 
@@ -56,37 +67,54 @@ class AuthService
     }
 
     /**
-     * Register new user
+     * Register new user with pending state
+     * 
+     * Users register with pending state and cannot login until admin approves.
+     * Only project-manager and country-manager roles are allowed for self-registration.
      *
      * @param string $name
      * @param string $email
      * @param string $password
-     * @return array ['access_token', 'token_type', 'expires_in', 'user']
+     * @param string $roleName Role name (project-manager or country-manager)
+     * @return array ['message', 'user'] - NO token until approval
      * @throws RuntimeException
      */
-    public function register(string $name, string $email, string $password): array
+    public function register(string $name, string $email, string $password, string $roleName): array
     {
-        // Get default "active" state
-        $activeState = $this->userStateRepository->findBy('name', 'active');
-        if (!$activeState) {
-            throw new RuntimeException('Default user state not found. Run seeders.');
+        // Validate allowed roles for self-registration
+        $allowedRoles = ['project-manager', 'country-manager'];
+        if (!in_array($roleName, $allowedRoles)) {
+            throw new RuntimeException(
+                'Invalid role. Only project-manager and country-manager are allowed for registration.'
+            );
         }
 
-        // Create user with domain factory method
-        $user = User::at($name, $email, $activeState);
+        // Get pending state
+        $pendingState = $this->userStateRepository->findBy('name', 'pending');
+        if (!$pendingState) {
+            throw new RuntimeException('Pending state not found. Run UserStateSeeder.');
+        }
+
+        // Validate role exists
+        $role = Role::where('name', $roleName)->first();
+        if (!$role) {
+            throw new RuntimeException("Role {$roleName} not found. Run RoleSeeder.");
+        }
+
+        // Create user with pending state
+        $user = User::at($name, $email, $pendingState);
         $user->password = $password;  // Hashed automatically with mutator
         $this->userRepository->save($user);
 
-        // Generate token for new user
-        $token = auth('api')->login($user);
+        // Assign selected role
+        $user->assignRole($role);
 
-        // Load relationships for UserResource
-        $user->load('userState');
+        // Load relationships for response
+        $user->load('roles', 'userState');
 
+        // NO token generated - user cannot login until approved
         return [
-            'access_token' => $token,
-            'token_type' => 'bearer',
-            'expires_in' => auth('api')->factory()->getTTL() * 60,
+            'message' => 'Registration successful. Your account is pending approval by an administrator.',
             'user' => new \App\Http\Resources\UserResource($user)
         ];
     }

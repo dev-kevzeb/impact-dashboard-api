@@ -33,6 +33,7 @@ class RegisterRequest extends FormRequest
                 'confirmed',
                 Password::min(6)
             ],
+            'role_name' => 'required|string|in:project-manager,country-manager',
         ];
     }
 
@@ -58,6 +59,10 @@ class RegisterRequest extends FormRequest
             'password.string' => 'The password must be a string.',
             'password.min' => 'The password must be at least :min characters.',
             'password.confirmed' => 'The passwords do not match.',
+
+            'role_name.required' => 'Please select a role.',
+            'role_name.string' => 'The role must be a string.',
+            'role_name.in' => 'Invalid role. Only project-manager and country-manager are allowed.',
         ];
     }
 

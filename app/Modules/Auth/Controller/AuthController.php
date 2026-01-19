@@ -66,17 +66,38 @@ class AuthController extends Controller
      *     path="/auth/register",
      *     tags={"Authentication"},
      *     summary="Register new user",
+     *     description="Register a new user with pending state. Requires admin approval before login is allowed. Only project-manager and country-manager roles can self-register.",
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
-     *             required={"name", "email", "password", "password_confirmation"},
+     *             required={"name", "email", "password", "password_confirmation", "role_name"},
      *             @OA\Property(property="name", type="string", example="John Doe"),
      *             @OA\Property(property="email", type="string", format="email", example="john@example.com"),
      *             @OA\Property(property="password", type="string", example="password123"),
-     *             @OA\Property(property="password_confirmation", type="string", example="password123")
+     *             @OA\Property(property="password_confirmation", type="string", example="password123"),
+     *             @OA\Property(
+     *                 property="role_name",
+     *                 type="string",
+     *                 enum={"project-manager", "country-manager"},
+     *                 example="project-manager",
+     *                 description="Role to assign (only project-manager and country-manager allowed)"
+     *             )
      *         )
      *     ),
-     *     @OA\Response(response=201, description="User registered successfully"),
+     *     @OA\Response(
+     *         response=201,
+     *         description="User registered successfully, pending approval",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Registration successful. Your account is pending approval by an administrator."),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="object",
+     *                 @OA\Property(property="message", type="string"),
+     *                 @OA\Property(property="user", ref="#/components/schemas/User")
+     *             )
+     *         )
+     *     ),
      *     @OA\Response(response=400, description="Business logic error"),
      *     @OA\Response(response=422, description="Validation error")
      * )
@@ -88,12 +109,13 @@ class AuthController extends Controller
             $result = $this->authService->register(
                 $validated['name'],
                 $validated['email'],
-                $validated['password']
+                $validated['password'],
+                $validated['role_name']
             );
 
             return ApiResponse::created(
-                'User registered successfully',
-                $result
+                $result['message'],
+                ['user' => $result['user']]
             );
         } catch (RuntimeException $e) {
             return ApiResponse::error($e->getMessage(), 400);
