@@ -51,7 +51,7 @@ class CountryKpaUserController extends Controller
     
     /**
      * @OA\Get(
-     *     path="/api/v1/country_kpa_users",
+     *     path="/country_kpa_users",
      *     summary="Get all user assignments to CountryKpas",
      *     description="Retrieve a list of all user assignments with relationships loaded",
      *     operationId="getCountryKpaUsersList",
@@ -150,7 +150,7 @@ class CountryKpaUserController extends Controller
     
     /**
      * @OA\Post(
-     *     path="/api/v1/country_kpa_users",
+     *     path="/country_kpa_users",
      *     summary="Assign a user to a CountryKpa",
      *     description="Create a new assignment between a User and a CountryKpa with optional role validation",
      *     operationId="createCountryKpaUserAssignment",
@@ -231,7 +231,7 @@ class CountryKpaUserController extends Controller
     
     /**
      * @OA\Get(
-     *     path="/api/v1/country_kpa_users/{id}",
+     *     path="/country_kpa_users/{id}",
      *     summary="Get assignment by ID",
      *     description="Retrieve a specific assignment by its ID with relationships",
      *     operationId="getCountryKpaUserById",
@@ -294,7 +294,7 @@ class CountryKpaUserController extends Controller
     
     /**
      * @OA\Put(
-     *     path="/api/v1/country_kpa_users/{id}",
+     *     path="/country_kpa_users/{id}",
      *     summary="Update an assignment",
      *     description="Update an existing user assignment to a different CountryKpa or different user with optional role validation",
      *     operationId="updateCountryKpaUserAssignment",
@@ -396,7 +396,7 @@ class CountryKpaUserController extends Controller
     
     /**
      * @OA\Delete(
-     *     path="/api/v1/country_kpa_users/{id}",
+     *     path="/country_kpa_users/{id}",
      *     summary="Remove an assignment (physical delete)",
      *     description="Permanently delete an assignment between a User and a CountryKpa",
      *     operationId="deleteCountryKpaUserAssignment",

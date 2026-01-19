@@ -58,4 +58,32 @@ class UserRepository extends AbstractRepository
 
         return $user;
     }
+
+    /**
+     * Get paginated users with pending state
+     *
+     * @param int $perPage
+     * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
+     */
+    public function getPendingUsers(int $perPage = 10)
+    {
+        return $this->model
+            ->with(['roles', 'userState'])
+            ->whereHas('userState', function ($query) {
+                $query->where('name', 'pending');
+            })
+            ->orderBy('created_at', 'desc')
+            ->paginate($perPage);
+    }
+
+    /**
+     * Delete user (hard delete)
+     *
+     * @param User $user
+     * @return bool
+     */
+    public function delete(User $user): bool
+    {
+        return $user->delete();
+    }
 }

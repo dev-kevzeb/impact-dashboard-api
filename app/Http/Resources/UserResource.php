@@ -18,6 +18,11 @@ class UserResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'email' => $this->email,
+
+            // All effective permissions (direct + from roles)
+            // This matches JWT scopes and shows what user can actually do
+            'permissions' => $this->getAllPermissions()->pluck('name')->toArray(),
+
             'roles' => RoleResource::collection($this->whenLoaded('roles')),
             'userState' => new UserStateResource($this->whenLoaded('userState')),
             'created_at' => $this->created_at?->toISOString(),

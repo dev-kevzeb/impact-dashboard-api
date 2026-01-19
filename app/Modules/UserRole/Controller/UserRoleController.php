@@ -50,7 +50,7 @@ class UserRoleController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/api/v1/user_roles",
+     *     path="/user_roles",
      *     summary="Get all user-role assignments",
      *     description="Retrieve a list of all user-role assignments with relationships loaded",
      *     operationId="getUserRolesList",
@@ -149,7 +149,7 @@ class UserRoleController extends Controller
 
     /**
      * @OA\Post(
-     *     path="/api/v1/user_roles",
+     *     path="/user_roles",
      *     summary="Assign a role to a user",
      *     description="Create a new assignment between a User and a Role",
      *     operationId="createUserRoleAssignment",
@@ -228,7 +228,7 @@ class UserRoleController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/api/v1/user_roles/{id}",
+     *     path="/user_roles/{id}",
      *     summary="Get assignment by ID",
      *     description="Retrieve a specific assignment by its ID with relationships",
      *     operationId="getUserRoleById",
@@ -291,7 +291,7 @@ class UserRoleController extends Controller
 
     /**
      * @OA\Put(
-     *     path="/api/v1/user_roles/{id}",
+     *     path="/user_roles/{id}",
      *     summary="Update an assignment",
      *     description="Update an existing user-role assignment",
      *     operationId="updateUserRoleAssignment",
@@ -391,7 +391,7 @@ class UserRoleController extends Controller
 
     /**
      * @OA\Delete(
-     *     path="/api/v1/user_roles/{id}",
+     *     path="/user_roles/{id}",
      *     summary="Remove an assignment (physical delete)",
      *     description="Permanently delete an assignment between a User and a Role",
      *     operationId="deleteUserRoleAssignment",
@@ -409,7 +409,7 @@ class UserRoleController extends Controller
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
      *             @OA\Property(property="message", type="string", example="Assignment removed successfully"),
-     *             @OA\Property(property="data", type="null)
+     *             @OA\Property(property="data", type="object", nullable=true)
      *         )
      *     ),
      *     @OA\Response(
@@ -418,7 +418,7 @@ class UserRoleController extends Controller
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=false),
      *             @OA\Property(property="message", type="string", example="UserRole not found with ID: 999"),
-     *             @OA\Property(property="data", type="null)
+     *             @OA\Property(property="data", type="object", nullable=true)
      *         )
      *     ),
      *     @OA\Response(
@@ -427,7 +427,7 @@ class UserRoleController extends Controller
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=false),
      *             @OA\Property(property="message", type="string", example="Internal server error"),
-     *             @OA\Property(property="data", type="null)
+     *             @OA\Property(property="data", type="object", nullable=true)
      *         )
      *     )
      * )

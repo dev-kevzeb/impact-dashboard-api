@@ -4,14 +4,21 @@ namespace App\Modules\Role\Domain;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use RuntimeException;
+use Spatie\Permission\Traits\HasPermissions;
 
 class Role extends Model
 {
-    use HasFactory;
+    use HasFactory, HasPermissions;
 
     protected $table = 'role';
-    protected $fillable = ['name'];
+    protected $fillable = ['name', 'guard_name'];
+
+    /**
+     * Spatie Permission: Define guard name
+     */
+    protected $guard_name = 'api';
 
     // Error constants
     public static $ERROR_NAME_EMPTY = 'the role name must not be empty';
@@ -64,6 +71,30 @@ class Role extends Model
     public function hasRole(string $roleName): bool
     {
         return strtolower(trim($this->name)) === strtolower(trim($roleName));
+    }
+
+    /**
+     * Relationship: Role has many Permissions through role_permission pivot table
+     * 
+     * This relationship is managed by Spatie's HasPermissions trait.
+     * The trait provides methods like:
+     * - $role->givePermissionTo('donors:read')
+     * - $role->revokePermissionTo('projects:write')
+     * - $role->syncPermissions(['perm1', 'perm2'])
+     * - $role->permissions (collection of Permission models)
+     * 
+     * This manual relationship definition is kept for backwards compatibility.
+     *
+     * @return BelongsToMany
+     */
+    public function permissions(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            \Spatie\Permission\Models\Permission::class,
+            'role_permission',
+            'role_id',
+            'permission_id'
+        );
     }
 
     /**

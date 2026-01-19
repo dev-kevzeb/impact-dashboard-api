@@ -9,15 +9,23 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Support\Facades\Hash;
+use PHPOpenSourceSaver\JWTAuth\Contracts\JWTSubject;
 use RuntimeException;
+use Spatie\Permission\Traits\HasRoles;
 
-class User extends Authenticatable
+class User extends Authenticatable implements JWTSubject
 {
-    use HasFactory;
+    use HasFactory, HasRoles;
 
     protected $table = 'user';
     protected $fillable = ['name', 'email', 'password', 'user_state_id'];
     protected $hidden = ['password', 'remember_token'];
+
+    /**
+     * Spatie Permission: Define guard name for permissions
+     * Must match guard_name in role and permission tables
+     */
+    protected $guard_name = 'api';
 
     // Error constants
     public static $ERROR_NAME_EMPTY = 'the name must not be empty';
@@ -98,14 +106,23 @@ class User extends Authenticatable
 
     /**
      * Relationship: User has many Roles through user_role pivot table
-     * Use $user->roles to get all roles assigned to the user
+     * 
+     * NOTE: This relationship is now managed by Spatie's HasRoles trait.
+     * The trait provides methods like:
+     * - $user->hasRole('admin')
+     * - $user->assignRole('project-manager')
+     * - $user->removeRole('country-manager')
+     * - $user->getRoleNames()
+     * 
+     * This manual relationship definition is kept for backwards compatibility
+     * with existing code that uses $user->roles->pluck('name').
      *
      * @return BelongsToMany
      */
     public function roles(): BelongsToMany
     {
         return $this->belongsToMany(Role::class, 'user_role', 'user_id', 'role_id')
-                    ->withTimestamps();
+            ->withTimestamps();
     }
 
     /**
@@ -126,5 +143,68 @@ class User extends Authenticatable
     protected static function newFactory()
     {
         return \Database\Factories\UserFactory::new();
+    }
+
+    /**
+     * Get the identifier that will be stored in the JWT subject claim.
+     *
+     * @return mixed
+     */
+    public function getJWTIdentifier(): mixed
+    {
+        return $this->getKey();
+    }
+
+    /**
+     * Return a key value array, containing any custom claims to be added to the JWT.
+     * 
+     * Returns user scopes based on assigned roles.
+     * Scopes format: {module}:{permission}
+     * 
+     * This method is called during token generation (login/register/refresh).
+     *
+     * @return array
+     */
+    public function getJWTCustomClaims(): array
+    {
+        return [
+            'scopes' => $this->generateScopes()
+        ];
+    }
+
+    /**
+     * Generate scopes based on user roles and permissions from database
+     * 
+     * SPATIE PERMISSION INTEGRATION: Reads permissions from database
+     * 
+     * Uses Spatie's HasRoles trait to fetch permissions:
+     * - Admin role: Checks for wildcard permission '*:*'
+     * - Other roles: Gets all permissions assigned via role_permission table
+     * 
+     * Permissions are cached by Spatie for performance.
+     * 
+     * @return array Array of scope strings (e.g., ['donors:read', 'projects:write'])
+     */
+    private function generateScopes(): array
+    {
+        // Check if user has admin role with wildcard permission
+        // hasPermissionTo() is provided by HasRoles trait
+        if ($this->hasPermissionTo('*:*')) {
+            return ['*:*'];  // Full system access
+        }
+
+        // Get all permissions for this user (via roles)
+        // getAllPermissions() returns Collection of Permission models
+        $permissions = $this->getAllPermissions();
+
+        // Extract permission names (scope format)
+        // pluck('name') gets the 'name' column from each Permission
+        // unique() removes duplicates if user has multiple roles with same permission
+        // values() resets array keys to sequential numbers
+        $scopes = $permissions->pluck('name')->unique()->values()->toArray();
+
+        // Return scopes as-is (empty array if no permissions assigned)
+        // Users without roles/permissions will have no access to protected endpoints
+        return $scopes;
     }
 }
