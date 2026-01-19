@@ -17,6 +17,7 @@ class DonorResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
+            'contribution' => $this->pivot->contribution ?? null,
         ];
     }
 

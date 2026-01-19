@@ -73,9 +73,19 @@ class ProjectService
     {
         $project = $this->projectRepository->findById($id);
         if (!$project) throw new \RuntimeException("The project with id {$id} does not exist.");
+
+        $project->load(['contact', 'beneficiary', 'projectState', 'donors', 'agencies', 'indicators.measure.strategicOutput.countryKpa.kpa']);
+        $project->indicators->pluck('measure.strategicOutput.countryKpa.kpa')->filter()->unique('id')->each(fn ($kpa) => $kpa->loadCount('strategicOutputs'));
         
         return $project;
     }
+
+    public function findProjectByProgramIdPaginated(int $programId, ?string $search, int $perPage)
+    {
+        return $this->projectRepository->getPaginatedProjectsByProgramId($programId, $search, $perPage);
+    }
+    
+
 
     public function getProjectByName(string $name)
     {

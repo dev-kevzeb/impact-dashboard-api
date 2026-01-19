@@ -17,18 +17,9 @@ class KpaRepository extends AbstractRepository implements RepositoryInterface
     public function getPaginated(?string $search, int $perPage = 10){
         $query = $this->model::query();
 
-            if( $search ) $query->whereRaw('lower(name) LIKE lower(?)',['%' . $search . '%']);
+        if( $search ) $query->whereRaw('lower(name) LIKE lower(?)',['%' . $search . '%']);
 
-        return $query->withCount([
-                'countries as strategic_outputs_count' => function ($q) {
-                $q->join(
-                    'strategic_output',
-                    'strategic_output.id_ck',
-                    '=',
-                    'country_kpa.id'
-                );
-            }
-        ])->paginate($perPage);
+        return $query->withCount('strategicOutputs')->paginate($perPage);
     }
     
 }

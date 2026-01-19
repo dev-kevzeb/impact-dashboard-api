@@ -207,6 +207,8 @@ Route::prefix('v1')->group(function () {
     Route::get('projects/search', [ProjectController::class, 'search']);
     Route::get('projects/{id}', [ProjectController::class, 'show']);
     Route::put('projects/{id}', [ProjectController::class, 'update']);
+    Route::get('projects/program/{id}', [ProjectController::class, 'getProjectsByProgramId']);
+
 
     // Listar todas las relaciones proyecto-agencia
     Route::get('project-agencies', [ProjectAgencyController::class,'index']);

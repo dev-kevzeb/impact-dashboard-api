@@ -19,6 +19,7 @@ class AgencyResource extends JsonResource
             'name' => $this->name,
             'url' => $this->url,
             'is_approved' => (bool) $this->is_approved,
+            'contribution' => $this->pivot->contribution ?? null,
         ];
     }
 
