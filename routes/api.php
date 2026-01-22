@@ -222,6 +222,7 @@ Route::prefix('v1')->group(function () {
         Route::get('projects/search', [ProjectController::class, 'search'])->middleware('scope:projects');
         Route::get('projects/{id}', [ProjectController::class, 'show'])->middleware('scope:projects');
         Route::put('projects/{id}', [ProjectController::class, 'update'])->middleware('scope:projects:write');
+        Route::get('projects/program/{id}', [ProjectController::class, 'getProjectsByProgramId'])->middleware('scope:projects');
 
         // Listar todas las relaciones proyecto-agencia
         Route::get('project-agencies', [ProjectAgencyController::class, 'index'])->middleware('scope:projects');
