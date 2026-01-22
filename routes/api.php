@@ -40,8 +40,8 @@ Route::prefix('v1')->group(function () {
     Route::post('auth/register', [AuthController::class, 'register']);
 
     // Protected routes - require JWT token
-    Route::middleware('jwt')->group(function () {
-        // Auth endpoints
+        Route::middleware('jwt')->group(function () {
+            // Auth endpoints
         Route::post('auth/refresh', [AuthController::class, 'refresh']);
         Route::get('auth/me', [AuthController::class, 'me']);
         Route::get('auth/permissions', [AuthController::class, 'permissions']);
@@ -150,10 +150,10 @@ Route::prefix('v1')->group(function () {
         Route::put('contacts/{id}', [ContactController::class, 'update'])->middleware('scope:donors:write');
 
         // API Routes para ProjectStates
-        Route::get('project_states', [ProjectStateController::class, 'index'])->middleware('scope:projects');
-        Route::post('project_states', [ProjectStateController::class, 'store'])->middleware('scope:projects:write');
-        Route::get('project_states/{id}', [ProjectStateController::class, 'show'])->middleware('scope:projects');
-        Route::put('project_states/{id}', [ProjectStateController::class, 'update'])->middleware('scope:projects:write');
+        Route::get('project-states', [ProjectStateController::class, 'index'])->middleware('scope:projects');
+        Route::post('project-states', [ProjectStateController::class, 'store'])->middleware('scope:projects:write');
+        Route::get('project-states/{id}', [ProjectStateController::class, 'show'])->middleware('scope:projects');
+        Route::put('project-states/{id}', [ProjectStateController::class, 'update'])->middleware('scope:projects:write');
 
         // API Routes para SDG
         Route::get('sdgs', [SdgController::class, 'index'])->middleware('scope:projects');
