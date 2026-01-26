@@ -109,30 +109,53 @@ class ProjectService
     }
 
 
-    public function syncIndicators(Project $project, array $indicators){
-        $this->projectIndicatorService->deleteAllByProjectId($project['id']);
+    public function syncIndicators(Project $project, array $indicators)
+    {
+        $validated = [];
+        foreach ($indicators as $indicator) {
+            $validated[] = $this->indicatorService->getIndicatorById($indicator['id']);
+        }
 
-        foreach($indicators as $indicator){
-            $founded = $this->indicatorService->getIndicatorById($indicator['id']);
-            $this->addIndicator($founded, $project);
+        $this->projectIndicatorService->deleteAllByProjectId($project->id);
+
+        foreach ($validated as $indicator) {
+            $this->addIndicator($indicator, $project);
         }
     }
 
-    public function syncDonors(Project $project, array $donors){
-        $this->projectDonorService->deleteAllByProjectId($project['id']);
 
-        foreach($donors as $donor){
-            $founded = $this->donorService->getDonorById($donor['id']);
-            $this->addDonors($founded, $project, $donor['contribution']);
+    public function syncDonors(Project $project, array $donors)
+    {
+        $validated = [];
+
+        foreach ($donors as $donor) {
+            $validated[$donor['id']] = [
+                'donor' => $this->donorService->getDonorById($donor['id']),
+                'contribution' => $donor['contribution']
+            ];
+        }
+
+        $this->projectDonorService->deleteAllByProjectId($project->id);
+
+        foreach ($validated as $item) {
+            $this->addDonors($item['donor'], $project, $item['contribution']);
         }
     }
+
 
     public function syncAgencies(Project $project, array $agencies){
-        $this->projectAgencyService->deleteAllByProjectId($project['id']);
+        $validated = [];
+        foreach ($agencies as $agency) {
+            $validated[$agency['id']] = [
+                'agency' => $this->agencyService->getAgencyById($agency['id']),
+                'contribution' => $agency['contribution']
+            ];
+        }
 
-        foreach($agencies as $agency){
-            $founded = $this->agencyService->getAgencyById($agency['id']);
-            $this->addAgencies($founded, $project, $agency['contribution']);
+        $this->projectAgencyService->deleteAllByProjectId($project->id);
+
+        foreach ($validated as $item) {
+            $this->addAgencies($item['agency'], $project, $item['contribution']);
         }
     }
 
@@ -210,34 +233,37 @@ class ProjectService
         return $project;
     }
 
-    public function updateProject( int $id, string $name, string $description, ?string $projectUrl, string $startDate, string $endDate, float $progress, string $comments, float $budget, array $contactPayload, int $beneficiaryId, int $projectStateId ): Project {
-
-        $project = $this->findProjectById($id);
-
-        if (!empty($contactPayload['id'])) {
-
-            $contact = $this->contactRepository->findById($contactPayload['id']);
-            if (!$contact) throw new \RuntimeException("Contact with id {$contactPayload['id']} does not exist.");
-        } else {
-
-            $contact = $project->contact;
-            $contact->first_name = $contactPayload['first_name'];
-            $contact->last_name = $contactPayload['last_name'];
-            $contact->title = $contactPayload['title'];
-            $contact->email = $contactPayload['email'];
-            $contact->phone = $contactPayload['phone'] ?? "";
-
-            $this->contactRepository->save($contact);
-        }
-
-
-        $beneficiary = $this->beneficiaryRepository->findById($beneficiaryId);
-        if (!$beneficiary) throw new \RuntimeException("The beneficiary with id {$beneficiaryId} does not exist.");
+    public function updateProject(int $id, int $program_id, string $name, string $description, ?string $projectUrl, string $startDate, string $endDate, float $progress, string $comments, float $budget, array $indicators, array $donors, array $agencies,  array $contact, array $beneficiary, array $projectState): Project {
+        if(empty($program_id)) throw new \RuntimeException("The program id is required.");
         
-        $projectState = $this->projectStateRepository->findById($projectStateId);
-        if (!$projectState) throw new \RuntimeException("The project state with id {$projectStateId} does not exist.");
+        $project = $this->findProjectById($id);
+        if(empty($project)) throw new \RuntimeException("The project with id {$id} does not exist.");
 
-        $project->name = $name;
+        $normalizedName = preg_replace('/\s+/', ' ', trim($name));
+        $capitalizedName = mb_convert_case($normalizedName, MB_CASE_TITLE, "UTF-8");
+        
+        $founded_project = $this->projectRepository->findByNameAndProgramId($program_id, $capitalizedName);
+        if($founded_project && $founded_project->id !== $id) throw new \RuntimeException("The project with name $capitalizedName already exist in the selected program.");
+
+        $beneficiary = $this->beneficiaryRepository->findById($beneficiary['id']);
+        if (!$beneficiary) throw new \RuntimeException("The beneficiary does not exist.");
+
+        $projectState = $this->projectStateRepository->findById($projectState['id']);
+        if (!$projectState) throw new \RuntimeException("The project state does not exist.");
+
+        $contact_founded = $this->contactRepository->findById($contact['id']);
+        if (!$contact_founded) throw new \RuntimeException("The contact with id {$contact['id']} does not exist.");
+
+        $contact_founded->first_name = $contact['first_name'];
+        $contact_founded->last_name = $contact['last_name'];
+        $contact_founded->title = $contact['title'];
+        $contact_founded->email = $contact['email'];
+        $contact_founded->phone = $contact['phone'] ?? "";
+
+        $this->contactRepository->save($contact_founded);
+
+        $project->program_id = $program_id;
+        $project->name = $capitalizedName;
         $project->description = $description;
         $project->project_url = $projectUrl;
         $project->start_date = $startDate;
@@ -246,11 +272,15 @@ class ProjectService
         $project->comments = $comments;
         $project->project_budget = $budget;
 
-        $project->contact_id = $contact->id;
+        $project->contact_id = $contact_founded->id;
         $project->beneficiary_id = $beneficiary->id;
         $project->project_state_id = $projectState->id;
 
         $this->projectRepository->save($project);
+
+        $this->syncIndicators($project, $indicators);
+        $this->syncDonors($project, $donors);
+        $this->syncAgencies($project, $agencies);
 
         return $project;
     }

@@ -34,6 +34,7 @@ class CountryKpaRepository extends Model
 	{
 		$countryKpas = $this->model->with(['country', 'kpa'])
         ->where('id_country', $countryId)
+		
         ->get();
 
     if ($countryKpas->isEmpty()) {

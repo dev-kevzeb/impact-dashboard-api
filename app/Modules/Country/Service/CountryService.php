@@ -98,9 +98,14 @@ class CountryService
         return $this->countryRepository->findBy('name', trim($name));
     }
 
-    public function getAllCountries(int $perPage = 10)
+    public function getAllCountries(?string $search, int $perPage = 10)
     {
-        return $this->countryRepository->paginate($perPage);
+        return $this->countryRepository->getPaginated($search, $perPage);
+    }
+
+        public function getAllCountriesWithKpasNumber(?string $search, int $perPage = 10)
+    {
+        return $this->countryRepository->getPaginatedWithKpasNumber($search, $perPage);
     }
 
     public function countryExists(string $name): bool

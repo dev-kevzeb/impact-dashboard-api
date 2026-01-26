@@ -383,6 +383,7 @@ class ProjectController extends Controller
 
             $project = $this->projectService->updateProject(
                 $id,
+                $validated['program_id'],
                 $validated['name'],
                 $validated['description'],
                 $validated['project_url'] ?? null,
@@ -390,10 +391,13 @@ class ProjectController extends Controller
                 $validated['end_date'],
                 $validated['progress'],
                 $validated['comments'] ?? '',
-                $validated['project_budget'],
+                $validated['budget'],
+                $validated['indicators'],
+                $validated['donors'],
+                $validated['agencies'],
                 $validated['contact'],
-                $validated['beneficiary']['id'],
-                $validated['project_state']['id']
+                $validated['beneficiary'],
+                $validated['project_state']
             );
 
             return ApiResponse::success(
@@ -405,7 +409,7 @@ class ProjectController extends Controller
         } catch (\RuntimeException $e) {
             return ApiResponse::error($e->getMessage(), 400);
         } catch (\Exception $e) {
-            return ApiResponse::error("Internal server error", 500);
+            return ApiResponse::error($e, 500);
         }
     }
 
