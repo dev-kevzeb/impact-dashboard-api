@@ -4,6 +4,12 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use App\Http\Resources\ContactResource;
+use App\Http\Resources\BeneficiaryResource;
+use App\Http\Resources\ProjectStateResource;
+use App\Http\Resources\DonorResource;
+use App\Http\Resources\AgencyResource;
+use App\Http\Resources\IndicatorResource;
 
 class ProjectResource extends JsonResource
 {
@@ -18,14 +24,21 @@ class ProjectResource extends JsonResource
             'end_date' => $this->end_date,
             'progress' => $this->progress,
             'comments'=> $this->comments,
-            'project_budget' => $this->project_budget,
-            'contact_id' => $this->contact_id,
-            'beneficiary_id' => $this->beneficiary_id,
-            'project_state_id' => $this->project_state_id,
-            'donors' => DonorResource::collection(
-                $this->whenLoaded('donors')
-            ),
-            // AÑADIR CAMPOS FALTANTES PARA LA RESPUESTA
+            'budget' => $this->project_budget,
+
+            'contact' => new ContactResource($this->whenLoaded('contact')),
+            'beneficiary' => new BeneficiaryResource($this->whenLoaded('beneficiary')),
+            'project_state' => new ProjectStateResource($this->whenLoaded('projectState')),
+
+            'donors' => DonorResource::collection($this->whenLoaded('donors')),
+            'agencies' => AgencyResource::collection($this->whenLoaded('agencies')),
+            'indicators' => IndicatorResource::collection($this->whenLoaded('indicators')),
+
+            'measure' => new MeasureResource($this->indicators->first()?->measure),
+            'strategic_output' => new StrategicOutputResource($this->indicators->first()?->measure?->strategicOutput),
+            'kpa' => new KpaResource($this->indicators->first()?->measure?->strategicOutput?->countryKpa?->kpa),
+
+            'program_id' => $this->program_id
         ];
     }
 
@@ -38,5 +51,4 @@ class ProjectResource extends JsonResource
             ],
         ];
     }
-
 }

@@ -57,7 +57,7 @@ class AuthController extends Controller
         } catch (RuntimeException $e) {
             return ApiResponse::error($e->getMessage(), 401);
         } catch (\Exception $e) {
-            return ApiResponse::error('Authentication error', 500);
+            return ApiResponse::error($e, 500);
         }
     }
 

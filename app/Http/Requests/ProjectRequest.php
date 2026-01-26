@@ -69,6 +69,7 @@ class ProjectRequest extends FormRequest
         return [
 
            // PROJECT
+
             'name.required' => 'The project name is required.',
             'name.string' => 'The project name must be a valid text.',
             'name.min' => 'The project name must be at least 3 characters long.',
@@ -102,7 +103,6 @@ class ProjectRequest extends FormRequest
             'budget.numeric' => 'The project budget must be a valid number.',
             'budget.gt' => 'The project budget must be greater than 0.',
 
-
             // CONTACT
             'contact.first_name.required' => 'The contact first name is required.',
             'contact.first_name.string'   => 'The contact first name must be valid text.',
@@ -129,7 +129,6 @@ class ProjectRequest extends FormRequest
             'contact.phone.string' => 'The phone number must be valid text.',
             'contact.phone.regex'  => 'The provided phone number is not valid.',
 
-
             // BENEFICIARY
             'beneficiary.id.required' => 'The beneficiary is required.',
             'beneficiary.id.integer'  => 'The beneficiary ID must be a valid number.',
@@ -137,7 +136,6 @@ class ProjectRequest extends FormRequest
 
             'beneficiary.name.required' => 'The beneficiary name is required.',
             'beneficiary.name.string'   => 'The beneficiary name must be valid text.',
-
 
             // PROJECT STATE
             'project_state.id.required' => 'The project state is required.',
@@ -149,12 +147,10 @@ class ProjectRequest extends FormRequest
             'project_state.state.min'      => 'The project state name must be at least 3 characters long.',
             'project_state.state.max'      => 'The project state name may not exceed 100 characters.',
 
-
             // CONTACT (update)
             'contact.id.required' => 'The contact ID is required for update.',
             'contact.id.integer'  => 'The contact ID must be a valid number.',
             'contact.id.exists'   => 'The selected contact does not exist.',
-
 
             // INDICATORS
             'indicators.required' => 'At least one indicator is required.',

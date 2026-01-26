@@ -5,9 +5,11 @@ namespace App\Modules\Project\Controller;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ProjectRequest;
 use App\Http\Resources\ProjectResource;
+use App\Http\Resources\SimpleProjectResource;
 use App\Http\Responses\ApiResponse;
 use App\Modules\Project\Service\ProjectService;
 use Illuminate\Http\Request;
+use RuntimeException;
 
 /**
  * @OA\Schema(
@@ -205,9 +207,10 @@ class ProjectController extends Controller
                 new ProjectResource($project)
             );
         } catch (\RuntimeException $e) {
-            return ApiResponse::notFound('Project');
+            return ApiResponse::error($e, 500);    
+            //return ApiResponse::notFound('Project');
         } catch (\Exception $e) {
-            return ApiResponse::error('Internal server error', 500);
+            return ApiResponse::error($e, 500);
         }
     }
 
@@ -380,6 +383,7 @@ class ProjectController extends Controller
 
             $project = $this->projectService->updateProject(
                 $id,
+                $validated['program_id'],
                 $validated['name'],
                 $validated['description'],
                 $validated['project_url'] ?? null,
@@ -387,10 +391,13 @@ class ProjectController extends Controller
                 $validated['end_date'],
                 $validated['progress'],
                 $validated['comments'] ?? '',
-                $validated['project_budget'],
+                $validated['budget'],
+                $validated['indicators'],
+                $validated['donors'],
+                $validated['agencies'],
                 $validated['contact'],
-                $validated['beneficiary']['id'],
-                $validated['project_state']['id']
+                $validated['beneficiary'],
+                $validated['project_state']
             );
 
             return ApiResponse::success(
@@ -402,7 +409,7 @@ class ProjectController extends Controller
         } catch (\RuntimeException $e) {
             return ApiResponse::error($e->getMessage(), 400);
         } catch (\Exception $e) {
-            return ApiResponse::error("Internal server error", 500);
+            return ApiResponse::error($e, 500);
         }
     }
 
@@ -477,6 +484,31 @@ class ProjectController extends Controller
             return ApiResponse::notFound('Project');
         } catch (\Illuminate\Validation\ValidationException $e) {
             return ApiResponse::validationError($e->errors());
+        } catch (\Exception $e) {
+            return ApiResponse::error('Internal server error', 500);
+        }
+    }
+
+    public function getProjectsByProgramId(Request $request, int $programId){
+        try{
+            $search = $request->get("search");
+            $perPage = (int) $request->get("per_page", 10);
+            
+            $projects = $this->projectService->findProjectByProgramIdPaginated($programId, $search, $perPage);
+
+            return ApiResponse::success(
+                'Projects paginated of selected program list successfully uploaded',
+                200,
+                [
+                    'projects' => SimpleProjectResource::collection($projects),
+                    'total' => $projects->count(),
+                    'per_page' => $projects->perPage(),
+                    'current_page' => $projects->currentPage(),
+                    'last_page' => $projects->lastPage(),
+                ]
+            );
+        } catch (RuntimeException $e) {
+            return ApiResponse::error($e->getMessage(), 500);
         } catch (\Exception $e) {
             return ApiResponse::error('Internal server error', 500);
         }

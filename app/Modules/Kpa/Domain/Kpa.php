@@ -2,6 +2,8 @@
 
 namespace App\Modules\Kpa\Domain;
 use \App\Modules\Country\Domain\Country;
+use App\Modules\CountryKpa\Domain\CountryKpa;
+use App\Modules\StrategicOutput\Domain\StrategicOutput;
 use Database\Factories\KpaFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -65,4 +67,10 @@ class Kpa extends Model
     {
         return $this->belongsToMany(Country::class, 'country_kpa', 'id_kpa', 'id_country');
     }
+
+    public function strategicOutputs()
+    {
+        return $this->hasManyThrough(StrategicOutput::class,CountryKpa::class,'id_kpa','id_ck','id','id');
+    }
+
 }
