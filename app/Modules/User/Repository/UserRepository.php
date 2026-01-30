@@ -40,6 +40,26 @@ class UserRepository extends AbstractRepository
     }
 
     /**
+     * Get paginated users excluding admin role
+     * 
+     * Admin manages the system but is not managed by the system.
+     * Only returns users with roles: project-manager, country-manager, etc.
+     *
+     * @param int $perPage
+     * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
+     */
+    public function paginateManageableUsers(int $perPage = 10)
+    {
+        return $this->model
+            ->with(['roles', 'userState'])
+            ->whereDoesntHave('roles', function ($query) {
+                $query->where('name', 'admin');
+            })
+            ->orderBy('created_at', 'desc')
+            ->paginate($perPage);
+    }
+
+    /**
      * Find user by ID with relationships
      *
      * @param int $id

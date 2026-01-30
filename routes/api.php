@@ -93,6 +93,7 @@ Route::prefix('v1')->group(function () {
         Route::get('users/pending', [UserController::class, 'pending'])->middleware('scope:users:write');
         Route::post('users/{id}/approve', [UserController::class, 'approve'])->middleware('scope:users:write');
         Route::delete('users/{id}/reject', [UserController::class, 'reject'])->middleware('scope:users:write');
+        Route::put('users/{id}/state', [UserController::class, 'changeUserState'])->middleware('scope:users:write');
         Route::get('users', [UserController::class, 'index'])->middleware('scope:users');
         Route::post('users', [UserController::class, 'store'])->middleware('scope:users:write');
         Route::get('users/search', [UserController::class, 'search'])->middleware('scope:users');
