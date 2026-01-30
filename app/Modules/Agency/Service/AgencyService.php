@@ -80,4 +80,9 @@ class AgencyService
     public function getAgenciesExcluding(int $perPage, ?string $search, ?array $exclude){
         return $this->agencyRepository->getExcluding($search, $perPage, $exclude);
     }
+
+    public function getAllAgenciesPaginated(int $perPage = 10, ?string $search)
+    {
+        return $this->agencyRepository->getPaginated($perPage, $search);
+    }
 }
