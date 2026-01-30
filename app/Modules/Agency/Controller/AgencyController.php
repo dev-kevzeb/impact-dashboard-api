@@ -70,9 +70,10 @@ class AgencyController extends Controller
     public function index(Request $request): JsonResponse
     {
         try {
+            $search = $request->get("search");
             $perPage = (int) $request->get("per_page", 10);
 
-            $agencies = $this->agencyService->getAllAgencies($perPage);
+            $agencies = $this->agencyService->getAllAgenciesPaginated($perPage, $search);
 
             return ApiResponse::success(
                 'Agencies paginated list successfully uploaded',

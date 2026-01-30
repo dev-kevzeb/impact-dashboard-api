@@ -39,4 +39,10 @@ class AgencyRepository extends AbstractRepository implements RepositoryInterface
         $query->whereNotIn('id', $exclude);
         return $query->orderBy('name')->paginate($perPage);
     }
+
+    public function getPaginated(int $perPage = 10, ?string $search){
+        $query = $this->model::query();
+        if( $search ) $query->whereRaw('lower(name) LIKE lower(?)',['%' . $search . '%']);
+        return $query->paginate($perPage);
+    }
 }
