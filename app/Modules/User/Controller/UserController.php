@@ -45,8 +45,8 @@ class UserController extends Controller
     /**
      * @OA\Get(
      *     path="/users",
-     *     summary="Get all users with pagination",
-     *     description="Retrieve a paginated list of all users with their roles and states",
+     *     summary="Get manageable users with pagination",
+     *     description="Retrieve a paginated list of manageable users (excludes admin role). Admin manages the system but is not managed by the system.",
      *     operationId="getUsersList",
      *     tags={"Users"},
      *     @OA\Parameter(
@@ -92,7 +92,10 @@ class UserController extends Controller
     {
         try {
             $perPage = (int) $request->get('per_page', 10);
-            $users = $this->service->getAllUsers($perPage);
+
+            // Get manageable users (excludes admin role)
+            // Admin manages the system but is not managed by the system
+            $users = $this->service->getManageableUsers($perPage);
 
             return ApiResponse::success(
                 'Users retrieved successfully',
@@ -602,6 +605,77 @@ class UserController extends Controller
             if (str_contains(strtolower($e->getMessage()), 'not found')) {
                 return ApiResponse::notFound($e->getMessage());
             }
+            return ApiResponse::error($e->getMessage(), 400);
+        } catch (Exception $e) {
+            return ApiResponse::error('Internal server error', 500);
+        }
+    }
+
+    /**
+     * @OA\Put(
+     *     path="/users/{id}/state",
+     *     summary="Change user state",
+     *     description="Toggle user state between active and inactive. Inactive users cannot login.",
+     *     operationId="changeUserState",
+     *     tags={"Users"},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="User ID",
+     *         required=true,
+     *         @OA\Schema(type="integer", example=5)
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"state"},
+     *             @OA\Property(property="state", type="string", enum={"active", "inactive"}, example="inactive")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="User state changed successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="User state changed to inactive"),
+     *             @OA\Property(property="data", ref="#/components/schemas/User")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Business logic error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="User is already in 'inactive' state."),
+     *             @OA\Property(property="data", type="null")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="User not found",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Resource not found"),
+     *             @OA\Property(property="data", type="null")
+     *         )
+     *     )
+     * )
+     */
+    public function changeUserState(Request $request, int $id): JsonResponse
+    {
+        try {
+            $validated = $request->validate([
+                'state' => 'required|string|in:active,inactive'
+            ]);
+
+            $user = $this->service->changeUserState($id, $validated['state']);
+
+            return ApiResponse::success(
+                "User state changed to {$validated['state']}",
+                200,
+                new UserResource($user)
+            );
+        } catch (RuntimeException $e) {
             return ApiResponse::error($e->getMessage(), 400);
         } catch (Exception $e) {
             return ApiResponse::error('Internal server error', 500);

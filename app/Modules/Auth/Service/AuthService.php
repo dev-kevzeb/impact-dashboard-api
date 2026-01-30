@@ -2,10 +2,10 @@
 
 namespace App\Modules\Auth\Service;
 
-use App\Modules\Role\Domain\Role;
 use App\Modules\User\Domain\User;
 use App\Modules\User\Repository\UserRepository;
 use App\Modules\UserState\Repository\UserStateRepository;
+use Spatie\Permission\Models\Role;
 use RuntimeException;
 
 class AuthService
