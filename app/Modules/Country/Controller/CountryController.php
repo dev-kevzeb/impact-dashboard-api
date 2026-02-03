@@ -74,9 +74,10 @@ class CountryController extends Controller
     public function index(Request $request): JsonResponse
     {
         try {
+            $search = $request->get("search");
             $perPage = (int) $request->get("per_page", 10);
 
-            $countries = $this->countryService->getAllCountries($perPage);
+            $countries = $this->countryService->getAllCountries($search,$perPage);
             
             return ApiResponse::success(
                 'Countries paginated list successfully uploaded',

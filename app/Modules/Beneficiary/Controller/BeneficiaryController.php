@@ -43,6 +43,7 @@ class BeneficiaryController extends Controller
      *     tags={"Beneficiaries"},
      *     summary="Listar beneficiarios",
      *     description="Obtiene todos los beneficiarios o grupos objetivo de programas y proyectos",
+     *     security={{"bearerAuth":{}}},
      *     @OA\Response(
      *         response=200,
      *         description="Lista de beneficiarios obtenida exitosamente",
@@ -78,7 +79,7 @@ class BeneficiaryController extends Controller
             $perPage = (int) $request->get("per_page", 10);
 
             $beneficiaries = $this->beneficiaryService->getBeneficiariesPaginated($search, $perPage);
-            
+
             return ApiResponse::success(
                 'Beneficiary list successfully obtained',
                 200,
@@ -325,7 +326,6 @@ class BeneficiaryController extends Controller
                 200,
                 new BeneficiaryResource($beneficiary)
             );
-
         } catch (QueryException $e) {
             // Error 23505 = Unique violation en PostgreSQL
             if ($e->getCode() == 23505 || $e->getCode() === '23505') {
@@ -412,7 +412,6 @@ class BeneficiaryController extends Controller
                 200,
                 new BeneficiaryResource($beneficiary)
             );
-
         } catch (RuntimeException $e) {
             return ApiResponse::notFound('Beneficiary');
         } catch (\Illuminate\Validation\ValidationException $e) {

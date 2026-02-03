@@ -18,22 +18,23 @@ class ProjectDonor extends Model
     public static $ERROR_CONTRIBUTION_NOT_NUMERIC = 'The contribution must be a number';
     public static $ERROR_CONTRIBUTION_OUT_OF_RANGE = 'The contribution must be between 0 and 100';
 
-    
+
     public static function at($project, $donor, $contribution): ProjectDonor
     {
-        if (!($project instanceof Project)) throw new RuntimeException(self:: $ERROR_PROJECT_INVALID);
+        if (!($project instanceof Project)) throw new RuntimeException(self::$ERROR_PROJECT_INVALID);
         if (!($donor instanceof Donor)) throw new RuntimeException(self::$ERROR_DONOR_INVALID);
-        
+
         if (!is_numeric($contribution)) throw new RuntimeException(self::$ERROR_CONTRIBUTION_NOT_NUMERIC);
-        
-        
+
+
         $contributionFloat = (float) $contribution;
-        
+
         if ($contributionFloat < 0 || $contributionFloat > 100) throw new RuntimeException(self::$ERROR_CONTRIBUTION_OUT_OF_RANGE);
-        return new self(['project_id' => $project->id, 'donor_id' => $donor->id, 'contribution'=> $contribution]);
+        return new self(['project_id' => $project->id, 'donor_id' => $donor->id, 'contribution' => $contribution]);
     }
 
-    public function project(){
+    public function project()
+    {
         return $this->belongsTo(Project::class, 'project_id', 'id');
     }
 
@@ -41,5 +42,4 @@ class ProjectDonor extends Model
     {
         return $this->belongsTo(Donor::class, 'donor_id', 'id');
     }
-    
 }

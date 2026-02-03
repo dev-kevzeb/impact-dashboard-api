@@ -8,6 +8,7 @@ use App\Modules\Contact\Domain\Contact;
 use App\Modules\Donor\Domain\Donor;
 use App\Modules\Indicator\Domain\Indicator;
 use App\Modules\ProjectAgency\Domain\ProjectAgency;
+use App\Modules\ProjectDonor\Domain\ProjectDonor;
 use App\Modules\ProjectIndicator\Domain\ProjectIndicator;
 use App\Modules\ProjectState\Domain\ProjectState;
 use Database\Factories\ProjectFactory;
@@ -114,9 +115,9 @@ class Project extends Model
         ]);
     }
 
-    public function donors()
+    public function projectDonors()
     {
-        return $this->hasMany(Donor::class, 'project_id','id');
+        return $this->hasMany(ProjectDonor::class, 'project_id','id');
     }
 
     public function projectIndicators()
@@ -129,76 +130,37 @@ class Project extends Model
         return $this->hasMany(ProjectAgency::class, 'project_id', 'id');
     }
 
-
-
-    // Getters
-    public function getName(): string
+    public function contact()
     {
-        return $this->name;
+        return $this->belongsTo(Contact::class, 'contact_id');
     }
 
-    public function getDescription(): string
+    public function beneficiary()
     {
-        return $this->description;
+        return $this->belongsTo(Beneficiary::class, 'beneficiary_id');
     }
 
-    public function getProjectUrl(): string
+    public function projectState()
     {
-        return $this->projectUrl;
+        return $this->belongsTo(ProjectState::class, 'project_state_id');
     }
 
-    public function getStartDate(): string
+    public function donors()
     {
-        return $this->startDate;
+        return $this->belongsToMany(Donor::class, 'project_donor', 'project_id', 'donor_id')
+                    ->withPivot('contribution');
     }
 
-    public function getEndDate(): string
+    public function agencies()
     {
-        return $this->endDate;
+        return $this->belongsToMany(Agency::class, 'project_agency', 'project_id', 'agency_id')
+                    ->withPivot('contribution');
     }
 
-    public function getProgress(): float
+    public function indicators()
     {
-        return $this->progress;
+        return $this->belongsToMany(Indicator::class, 'project_indicator', 'project_id', 'indicator_id');
     }
-
-    public function getComments(): string
-    {
-        return $this->comments;
-    }
-
-    public function getProjectBudget(): float
-    {
-        return $this->projectBudget;
-    }
-
-    public function getContact(): Contact
-    {
-        return $this->contact;
-    }
-
-    public function getProjectBeneficiary(): Beneficiary
-    {
-        return $this->projectBeneficiary;
-    }
-
-    public function getProjectState(): ProjectState
-    {
-        return $this->projectState;
-    }
-
-    public function hasDonorsWithName(string $donorName): bool
-    {
-        return $this->donors()->where('name', trim($donorName))->exists();
-    }
-
-    public function addDonors($donor)
-    {
-        if(!($donor instanceof Donor)) throw new \RuntimeException(self::$ERROR_PROJECT_DONORS_INVALID_INSTANCE);
-        if($this->hasDonorsWithName($donor->getName())) throw new \RuntimeException(self::$ERROR_PROJECT_DONORS_DUPLICATED);
-        
-        $this->donors()->save($donor);
-    }    
 
     private static function isValidDate(string $date): bool
     {
@@ -217,10 +179,4 @@ class Project extends Model
         
         return $dateTime && $dateTime->format('Y-m-d') === $date;
     }
-
-    public function getDonorsCountAttribute(): int
-    {
-        return $this->donors()->count();
-    }
-
 }   

@@ -72,8 +72,156 @@ class UserService
         return $this->repository->paginateWithRelations($perPage);
     }
 
+    /**
+     * Get manageable users (excludes admin role)
+     * 
+     * Returns only users that can be managed through the admin panel.
+     * Admin users are excluded as they manage the system itself.
+     *
+     * @param int $perPage Number of items per page
+     * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
+     */
+    public function getManageableUsers(int $perPage = 10)
+    {
+        return $this->repository->paginateManageableUsers($perPage);
+    }
+
     public function getUserById(int $id): User
     {
         return $this->repository->findByIdWithRelations($id);
+    }
+
+    /**
+     * Get all users with pending state (waiting for approval)
+     *
+     * @param int $perPage Number of items per page
+     * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
+     */
+    public function getPendingUsers(int $perPage = 10)
+    {
+        return $this->repository->getPendingUsers($perPage);
+    }
+
+    /**
+     * Approve a pending user (change state from pending to active)
+     * 
+     * After approval, user can login with assigned role permissions.
+     *
+     * @param int $id User ID
+     * @return User
+     * @throws RuntimeException
+     */
+    public function approveUser(int $id): User
+    {
+        $user = $this->repository->findByIdWithRelations($id);
+
+        // Validate user is in pending state
+        if ($user->userState->name !== 'pending') {
+            throw new RuntimeException(
+                "User is not pending approval. Current state: {$user->userState->name}"
+            );
+        }
+
+        // Security: Prevent managing admin users
+        if ($user->roles()->where('name', 'admin')->exists()) {
+            throw new RuntimeException('Cannot manage admin users through this endpoint.');
+        }
+
+        // Get active state
+        $activeState = $this->userStateRepository->findBy('name', 'active');
+        if (!$activeState) {
+            throw new RuntimeException('Active state not found. Run UserStateSeeder.');
+        }
+
+        // Change state to active
+        $user->user_state_id = $activeState->id;
+        $this->repository->save($user);
+
+        return $user->fresh(['roles', 'userState']);
+    }
+
+    /**
+     * Reject a pending user (delete registration request)
+     * 
+     * This permanently removes the user from database.
+     * Use for unwanted/spam registrations.
+     *
+     * @param int $id User ID
+     * @return bool
+     * @throws RuntimeException
+     */
+    public function rejectUser(int $id): bool
+    {
+        $user = $this->repository->findById($id);
+
+        // Validate user is in pending state
+        if ($user->userState->name !== 'pending') {
+            throw new RuntimeException(
+                "Cannot reject user. Only pending users can be rejected. Current state: {$user->userState->name}"
+            );
+        }
+
+        // Security: Prevent managing admin users
+        if ($user->roles()->where('name', 'admin')->exists()) {
+            throw new RuntimeException('Cannot manage admin users through this endpoint.');
+        }
+
+        // Delete user (hard delete)
+        return $this->repository->delete($user);
+    }
+
+    /**
+     * Change user state between active and inactive
+     * 
+     * Allows toggling user access without deleting the account.
+     * Inactive users cannot login until reactivated.
+     *
+     * @param int $id User ID
+     * @param string $newStateName State name ('active' or 'inactive')
+     * @return User
+     * @throws RuntimeException
+     */
+    public function changeUserState(int $id, string $newStateName): User
+    {
+        $user = $this->repository->findByIdWithRelations($id);
+
+        // Security: Prevent managing admin users
+        if ($user->roles()->where('name', 'admin')->exists()) {
+            throw new RuntimeException('Cannot manage admin users through this endpoint.');
+        }
+
+        // Validate current state (only active/inactive can be changed)
+        $currentState = $user->userState->name;
+        if (!in_array($currentState, ['active', 'inactive'])) {
+            throw new RuntimeException(
+                "Cannot change state. User is in '{$currentState}' state. Only active/inactive users can be toggled."
+            );
+        }
+
+        // Validate new state
+        if (!in_array($newStateName, ['active', 'inactive'])) {
+            throw new RuntimeException(
+                "Invalid state '{$newStateName}'. Only 'active' or 'inactive' are allowed."
+            );
+        }
+
+        // Prevent redundant state change
+        if ($currentState === $newStateName) {
+            throw new RuntimeException(
+                "User is already in '{$newStateName}' state."
+            );
+        }
+
+        // Get new state from database
+        $newState = $this->userStateRepository->findBy('name', $newStateName);
+        if (!$newState) {
+            throw new RuntimeException("State '{$newStateName}' not found. Run UserStateSeeder.");
+        }
+
+        // Update user state
+        $user->user_state_id = $newState->id;
+        $this->repository->save($user);
+
+        return $user->fresh(['roles', 'userState']);
     }
 }

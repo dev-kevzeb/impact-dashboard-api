@@ -24,4 +24,19 @@ class CountryRepository extends AbstractRepository implements RepositoryInterfac
         return $this->model->whereRaw('LOWER(name) = LOWER(?)', [trim($name)])->exists();
     }
 
+    public function getPaginated(?string $search, int $perPage = 10){
+        $query = $this->model::query();
+
+        if( $search ) $query->whereRaw('lower(name) LIKE lower(?)',['%' . $search . '%']);
+
+        return $query->withCount('kpas')->paginate($perPage);
+    }
+    public function getPaginatedWithKpasNumber(?string $search, int $perPage = 10){
+        $query = $this->model::query();
+
+        if( $search ) $query->whereRaw('lower(name) LIKE lower(?)',['%' . $search . '%']);
+
+        return $query->withCount('kpas')->paginate($perPage);
+    }
+
 }

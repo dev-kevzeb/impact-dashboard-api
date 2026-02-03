@@ -28,4 +28,10 @@ class ProjectRepository extends AbstractRepository implements RepositoryInterfac
     {
         return $this->model->where('program_id', $program_id)->whereRaw('LOWER(name) LIKE ?', ['%' . strtolower($name) . '%'])->first();
     }
+
+    public function getPaginatedProjectsByProgramId(int $programId, ?string $search, int $perPage = 10){
+        $query = $this->model->where('program_id', $programId)->with('projectState');
+        if(!empty($search)) $query->whereRaw('lower(name) LIKE lower(?)', ['%'.trim($search).'%']);
+        return $query->orderBy('name')->paginate($perPage);
+    }
 }

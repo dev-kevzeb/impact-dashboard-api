@@ -48,4 +48,9 @@ class IndicatorTypeService
 
         return $indicatorType;
     }
+
+    public function getPaginatedIndicatorTypes(int $perPage = 10, ?string $search)
+    {
+        return $this->indicatorTypeRepository->getPaginated($perPage, $search);
+    }
 }

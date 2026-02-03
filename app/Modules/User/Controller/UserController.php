@@ -44,9 +44,9 @@ class UserController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/api/v1/users",
-     *     summary="Get all users with pagination",
-     *     description="Retrieve a paginated list of all users with their roles and states",
+     *     path="/users",
+     *     summary="Get manageable users with pagination",
+     *     description="Retrieve a paginated list of manageable users (excludes admin role). Admin manages the system but is not managed by the system.",
      *     operationId="getUsersList",
      *     tags={"Users"},
      *     @OA\Parameter(
@@ -92,7 +92,10 @@ class UserController extends Controller
     {
         try {
             $perPage = (int) $request->get('per_page', 10);
-            $users = $this->service->getAllUsers($perPage);
+
+            // Get manageable users (excludes admin role)
+            // Admin manages the system but is not managed by the system
+            $users = $this->service->getManageableUsers($perPage);
 
             return ApiResponse::success(
                 'Users retrieved successfully',
@@ -112,7 +115,7 @@ class UserController extends Controller
 
     /**
      * @OA\Post(
-     *     path="/api/v1/users",
+     *     path="/users",
      *     summary="Create a new user",
      *     description="Create a new user with email, password, name and state. Roles must be assigned separately via /api/v1/user_roles",
      *     operationId="createUser",
@@ -204,7 +207,7 @@ class UserController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/api/v1/users/search",
+     *     path="/users/search",
      *     summary="Search users by name",
      *     description="Search for users by name (case-insensitive)",
      *     operationId="searchUsers",
@@ -274,7 +277,7 @@ class UserController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/api/v1/users/{id}",
+     *     path="/users/{id}",
      *     summary="Get user by ID",
      *     description="Retrieve a single user by their ID with role and state",
      *     operationId="getUserById",
@@ -338,7 +341,7 @@ class UserController extends Controller
 
     /**
      * @OA\Put(
-     *     path="/api/v1/users/{id}",
+     *     path="/users/{id}",
      *     summary="Update an existing user",
      *     description="Update user information (password is optional). Roles must be updated separately via /api/v1/user_roles",
      *     operationId="updateUser",
@@ -443,6 +446,236 @@ class UserController extends Controller
             if (str_contains(strtolower($e->getMessage()), 'not found')) {
                 return ApiResponse::notFound($e->getMessage());
             }
+            return ApiResponse::error($e->getMessage(), 400);
+        } catch (Exception $e) {
+            return ApiResponse::error('Internal server error', 500);
+        }
+    }
+
+    /**
+     * @OA\Get(
+     *     path="/users/pending",
+     *     summary="Get pending users waiting for approval",
+     *     description="Retrieve paginated list of users with pending state. Requires admin permissions (users:write or *:*).",
+     *     operationId="getPendingUsers",
+     *     tags={"Users"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="per_page",
+     *         in="query",
+     *         description="Number of users per page (default: 10)",
+     *         required=false,
+     *         @OA\Schema(type="integer", example=10)
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Pending users retrieved successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Pending users retrieved successfully"),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="object",
+     *                 @OA\Property(
+     *                     property="users",
+     *                     type="array",
+     *                     @OA\Items(ref="#/components/schemas/User")
+     *                 ),
+     *                 @OA\Property(property="total", type="integer", example=5),
+     *                 @OA\Property(property="per_page", type="integer", example=10),
+     *                 @OA\Property(property="current_page", type="integer", example=1)
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(response=401, description="Unauthorized - Invalid or missing token"),
+     *     @OA\Response(response=403, description="Forbidden - Insufficient permissions")
+     * )
+     */
+    public function pending(Request $request): JsonResponse
+    {
+        try {
+            $perPage = $request->query('per_page', 10);
+            $users = $this->service->getPendingUsers($perPage);
+
+            return ApiResponse::success(
+                'Pending users retrieved successfully',
+                200,
+                [
+                    'users' => UserResource::collection($users),
+                    'total' => $users->total(),
+                    'per_page' => $users->perPage(),
+                    'current_page' => $users->currentPage(),
+                    'last_page' => $users->lastPage()
+                ]
+            );
+        } catch (Exception $e) {
+            return ApiResponse::error('Internal server error', 500);
+        }
+    }
+
+    /**
+     * @OA\Post(
+     *     path="/users/{id}/approve",
+     *     summary="Approve pending user",
+     *     description="Change user state from pending to active. User will be able to login after approval. Requires admin permissions (users:write or *:*).",
+     *     operationId="approveUser",
+     *     tags={"Users"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="User ID to approve",
+     *         required=true,
+     *         @OA\Schema(type="integer", example=5)
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="User approved successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="User approved successfully. They can now login."),
+     *             @OA\Property(property="data", ref="#/components/schemas/User")
+     *         )
+     *     ),
+     *     @OA\Response(response=400, description="User is not pending or business logic error"),
+     *     @OA\Response(response=401, description="Unauthorized"),
+     *     @OA\Response(response=403, description="Forbidden - Insufficient permissions"),
+     *     @OA\Response(response=404, description="User not found")
+     * )
+     */
+    public function approve(int $id): JsonResponse
+    {
+        try {
+            $user = $this->service->approveUser($id);
+
+            return ApiResponse::success(
+                'User approved successfully. They can now login.',
+                200,
+                new UserResource($user)
+            );
+        } catch (RuntimeException $e) {
+            if (str_contains(strtolower($e->getMessage()), 'not found')) {
+                return ApiResponse::notFound($e->getMessage());
+            }
+            return ApiResponse::error($e->getMessage(), 400);
+        } catch (Exception $e) {
+            return ApiResponse::error('Internal server error', 500);
+        }
+    }
+
+    /**
+     * @OA\Delete(
+     *     path="/users/{id}/reject",
+     *     summary="Reject pending user",
+     *     description="Permanently delete a pending user registration request. Use for unwanted or spam registrations. Requires admin permissions (users:write or *:*).",
+     *     operationId="rejectUser",
+     *     tags={"Users"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="User ID to reject",
+     *         required=true,
+     *         @OA\Schema(type="integer", example=5)
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="User rejected and deleted successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="User registration rejected and deleted successfully.")
+     *         )
+     *     ),
+     *     @OA\Response(response=400, description="User is not pending or business logic error"),
+     *     @OA\Response(response=401, description="Unauthorized"),
+     *     @OA\Response(response=403, description="Forbidden - Insufficient permissions"),
+     *     @OA\Response(response=404, description="User not found")
+     * )
+     */
+    public function reject(int $id): JsonResponse
+    {
+        try {
+            $this->service->rejectUser($id);
+
+            return ApiResponse::success(
+                'User registration rejected and deleted successfully.',
+                200
+            );
+        } catch (RuntimeException $e) {
+            if (str_contains(strtolower($e->getMessage()), 'not found')) {
+                return ApiResponse::notFound($e->getMessage());
+            }
+            return ApiResponse::error($e->getMessage(), 400);
+        } catch (Exception $e) {
+            return ApiResponse::error('Internal server error', 500);
+        }
+    }
+
+    /**
+     * @OA\Put(
+     *     path="/users/{id}/state",
+     *     summary="Change user state",
+     *     description="Toggle user state between active and inactive. Inactive users cannot login.",
+     *     operationId="changeUserState",
+     *     tags={"Users"},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="User ID",
+     *         required=true,
+     *         @OA\Schema(type="integer", example=5)
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"state"},
+     *             @OA\Property(property="state", type="string", enum={"active", "inactive"}, example="inactive")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="User state changed successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="User state changed to inactive"),
+     *             @OA\Property(property="data", ref="#/components/schemas/User")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Business logic error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="User is already in 'inactive' state."),
+     *             @OA\Property(property="data", type="null")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="User not found",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Resource not found"),
+     *             @OA\Property(property="data", type="null")
+     *         )
+     *     )
+     * )
+     */
+    public function changeUserState(Request $request, int $id): JsonResponse
+    {
+        try {
+            $validated = $request->validate([
+                'state' => 'required|string|in:active,inactive'
+            ]);
+
+            $user = $this->service->changeUserState($id, $validated['state']);
+
+            return ApiResponse::success(
+                "User state changed to {$validated['state']}",
+                200,
+                new UserResource($user)
+            );
+        } catch (RuntimeException $e) {
             return ApiResponse::error($e->getMessage(), 400);
         } catch (Exception $e) {
             return ApiResponse::error('Internal server error', 500);

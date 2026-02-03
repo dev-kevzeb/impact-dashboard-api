@@ -38,6 +38,7 @@ class AgencyController extends Controller
      *     tags={"Agencies"},
      *     summary="Listar todas las agencias",
      *     description="Obtiene la lista completa de agencias ejecutoras registradas en el sistema",
+     *     security={{"bearerAuth":{}}},
      *     @OA\Response(
      *         response=200,
      *         description="Lista obtenida exitosamente",
@@ -69,10 +70,11 @@ class AgencyController extends Controller
     public function index(Request $request): JsonResponse
     {
         try {
+            $search = $request->get("search");
             $perPage = (int) $request->get("per_page", 10);
 
-            $agencies = $this->agencyService->getAllAgencies($perPage);
-            
+            $agencies = $this->agencyService->getAllAgenciesPaginated($perPage, $search);
+
             return ApiResponse::success(
                 'Agencies paginated list successfully uploaded',
                 200,
@@ -83,7 +85,7 @@ class AgencyController extends Controller
                     'current_page' => $agencies->currentPage(),
                     'last_page' => $agencies->lastPage(),
                 ]
-            );  
+            );
         } catch (RuntimeException $e) {
             return ApiResponse::error($e->getMessage(), 500);
         } catch (\Exception $e) {
@@ -224,7 +226,6 @@ class AgencyController extends Controller
                 'Agency created successfully',
                 new AgencyResource($agency)
             );
-
         } catch (RuntimeException $e) {
             // Si el error es de duplicado, retornar como error de validación (422)
             if (str_contains($e->getMessage(), 'Ya existe')) {
@@ -300,7 +301,7 @@ class AgencyController extends Controller
     public function update(AgencyRequest $request, int $id): JsonResponse
     {
         try {
-            $validated =$request->validated();
+            $validated = $request->validated();
 
             $agency = $this->agencyService->updateAgency(
                 $id,
@@ -314,7 +315,6 @@ class AgencyController extends Controller
                 200,
                 new AgencyResource($agency)
             );
-
         } catch (RuntimeException $e) {
             // Si el error es de duplicado, retornar como error de validación (422)
             if (str_contains($e->getMessage(), 'Ya existe')) {
@@ -394,7 +394,6 @@ class AgencyController extends Controller
                 200,
                 new AgencyResource($agency)
             );
-
         } catch (RuntimeException $e) {
             return ApiResponse::notFound('Agency');
         } catch (\Illuminate\Validation\ValidationException $e) {
@@ -404,8 +403,9 @@ class AgencyController extends Controller
         }
     }
 
-    public function getAgenciesExcluding(Request $request): JsonResponse{
-        try{
+    public function getAgenciesExcluding(Request $request): JsonResponse
+    {
+        try {
             $search = $request->get("search");
             $perPage = (int) $request->get("per_page", 10);
             $exclude = (array) $request->input('exclude', []);

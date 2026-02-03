@@ -13,8 +13,16 @@ class IndicatorTypeRepository extends AbstractRepository implements RepositoryIn
         parent::__construct($model);
     }
 
-        public function existsByName(string $name): bool
+    public function existsByName(string $name): bool
     {
         return $this->model->whereRaw('LOWER(name) = LOWER(?)', [trim($name)])->exists();
+    }
+
+    public function getPaginated(int $perPage = 10, ?string $search){
+        $query = $this->model::query();
+
+        if( $search ) $query->whereRaw('lower(name) LIKE lower(?)',['%' . $search . '%']);
+
+        return $query->paginate($perPage);
     }
 }

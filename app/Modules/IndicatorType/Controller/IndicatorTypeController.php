@@ -70,10 +70,8 @@ class IndicatorTypeController extends Controller
         try{
             $search = $request->get("search");
             $perPage = (int) $request->get("per_page", 10);
-        
-            $query = IndicatorType::query();
-            if( $search ) $query->where("name","like","%". $search ."%");
-            $indicatorTypes = $query->paginate($perPage);
+
+            $indicatorTypes = $this->indicatorTypeService->getPaginatedIndicatorTypes($perPage, $search);
 
             return ApiResponse::success(
                 "Indicator Types paginated list successfully uploaded",

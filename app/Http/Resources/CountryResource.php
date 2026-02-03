@@ -21,6 +21,7 @@ class CountryResource extends JsonResource
                 'id' => $this->currency->id,
                 'code' => $this->currency->code,
             ],
+            'kpas_count' => $this->when(isset($this->kpas_count), $this->kpas_count),
         ];
     }
 
