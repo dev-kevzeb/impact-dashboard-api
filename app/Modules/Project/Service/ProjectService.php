@@ -58,12 +58,12 @@ class ProjectService
         DonorService $donorService,
         ProjectAgencyService $projectAgencyService,
         AgencyService $agencyService,
+        ProgramService $programService,
         CountryService $countryService,
         CountryKpaService $countryKpaService,
         KpaService $kpaService,
         StrategicOutputService $strategicOutputService,
         MeasureService $measureService,
-        ProgramService $programService
     ) {
         $this->projectRepository = $projectRepository;
         $this->contactRepository = $contactRepository;
@@ -85,6 +85,12 @@ class ProjectService
         $this->strategicOutputService = $strategicOutputService;
         $this->measureService = $measureService;
         $this->programService = $programService;
+
+        $this->countryService= $countryService;
+        $this->countryKpaService = $countryKpaService;
+        $this->kpaService = $kpaService;
+        $this->strategicOutputService = $strategicOutputService;
+        $this->measureService = $measureService;
     }
 
 

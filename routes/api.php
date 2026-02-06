@@ -1,6 +1,5 @@
 <?php
 
-
 use App\Modules\Auth\Controller\AuthController;
 use App\Modules\Country\Controller\PublicCountryController;
 use App\Modules\CountryKpa\Controller\PublicCountryKpaController;
@@ -39,8 +38,6 @@ use App\Modules\Role\Controller\RoleController;
 use App\Modules\UserState\Controller\UserStateController;
 use App\Modules\User\Controller\UserController;
 use App\Modules\Stats\Controller\StatsController;
-
-
 
 Route::prefix('v1')->group(function () {
     // Public auth routes
