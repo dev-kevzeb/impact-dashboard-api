@@ -25,8 +25,6 @@ class Program extends Model
         'program_state_id'
     ];
 
-    protected $appends = ['projects_count'];
-
     // Error message constants (business rules only)
     public static $ERROR_NAME_EMPTY = 'The program name must not be empty';
     public static $ERROR_NAME_MIN_LENGTH = 'The program name must be at least 3 characters long';

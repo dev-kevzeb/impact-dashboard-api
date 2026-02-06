@@ -23,6 +23,7 @@ use App\Modules\Project\Domain\Project;
 use App\Modules\ProjectDonor\Service\ProjectDonorService;
 use App\Modules\StrategicOutput\Service\StrategicOutputService;
 use Illuminate\Support\Collection;
+use App\Modules\Program\Service\ProgramService;
 
 
 class ProjectService
@@ -44,6 +45,7 @@ class ProjectService
 
     private ProjectAgencyService $projectAgencyService;
     private AgencyService $agencyService;
+    private ProgramService $programService;
 
     public function __construct(
         ProjectRepository $projectRepository,
@@ -61,6 +63,7 @@ class ProjectService
         KpaService $kpaService,
         StrategicOutputService $strategicOutputService,
         MeasureService $measureService,
+        ProgramService $programService
     ) {
         $this->projectRepository = $projectRepository;
         $this->contactRepository = $contactRepository;
@@ -81,6 +84,7 @@ class ProjectService
         $this->kpaService = $kpaService;
         $this->strategicOutputService = $strategicOutputService;
         $this->measureService = $measureService;
+        $this->programService = $programService;
     }
 
 
@@ -95,8 +99,8 @@ class ProjectService
         if (!$project) throw new \RuntimeException("The project with id {$id} does not exist.");
 
         $project->load(['contact', 'beneficiary', 'projectState', 'donors', 'agencies', 'indicators.measure.strategicOutput.countryKpa.kpa']);
-        $project->indicators->pluck('measure.strategicOutput.countryKpa.kpa')->filter()->unique('id')->each(fn ($kpa) => $kpa->loadCount('strategicOutputs'));
-        
+        $project->indicators->pluck('measure.strategicOutput.countryKpa.kpa')->filter()->unique('id')->each(fn($kpa) => $kpa->loadCount('strategicOutputs'));
+
         return $project;
     }
 
@@ -104,22 +108,24 @@ class ProjectService
     {
         return $this->projectRepository->getPaginatedProjectsByProgramId($programId, $search, $perPage);
     }
-    
+
 
 
     public function getProjectByName(string $name)
     {
         $project = $this->projectRepository->findByName($name);
         if (!$project) throw new \RuntimeException("The project with name {$name} does not exist.");
-        
+
         return $project;
     }
 
-    public function addIndicator(Indicator $indicator, Project $project){
+    public function addIndicator(Indicator $indicator, Project $project)
+    {
         return $this->projectIndicatorService->createProjectIndicator($project['id'], $indicator['id']);
     }
-    
-    public function addDonors(Donor $donor, Project $project, float $contribution){
+
+    public function addDonors(Donor $donor, Project $project, float $contribution)
+    {
         return $this->projectDonorService->createProjectDonor($project['id'], $donor['id'], $contribution);
     }
 
@@ -163,7 +169,8 @@ class ProjectService
     }
 
 
-    public function syncAgencies(Project $project, array $agencies){
+    public function syncAgencies(Project $project, array $agencies)
+    {
         $validated = [];
         foreach ($agencies as $agency) {
             $validated[$agency['id']] = [
@@ -198,14 +205,14 @@ class ProjectService
     ): Project {
 
 
-        if(empty($program_id)) throw new \RuntimeException("The program id is required.");
+        if (empty($program_id)) throw new \RuntimeException("The program id is required.");
 
         $normalizedName = preg_replace('/\s+/', ' ', trim($name));
         $capitalizedName = mb_convert_case($normalizedName, MB_CASE_TITLE, "UTF-8");
-        
+
         $founded_project = $this->projectRepository->findByNameAndProgramId($program_id, $capitalizedName);
 
-        if($founded_project) throw new \RuntimeException("The project with name $capitalizedName already exist in the selected program.");
+        if ($founded_project) throw new \RuntimeException("The project with name $capitalizedName already exist in the selected program.");
 
         $beneficiary = $this->beneficiaryRepository->findById($beneficiary['id']);
         if (!$beneficiary) throw new \RuntimeException("The beneficiary does not exist.");
@@ -216,7 +223,6 @@ class ProjectService
         if (!empty($contact['id'])) {
             $contact = $this->contactRepository->findById($contact['id']);
             if (!$contact) throw new \RuntimeException("The contact with id {$contact['id']} does not exist.");
-            
         } else {
             $contact = Contact::at(
                 $contact['first_name'],
@@ -228,7 +234,7 @@ class ProjectService
 
             $this->contactRepository->save($contact);
         }
-        
+
         $project = Project::at(
             $program_id,
             $capitalizedName,
@@ -250,20 +256,24 @@ class ProjectService
         $this->syncDonors($project, $donors);
         $this->syncAgencies($project, $agencies);
 
+        // Business Rule: Auto-activate program when first project is created
+        $this->programService->activateProgramIfNeeded($program_id);
+
         return $project;
     }
 
-    public function updateProject(int $id, int $program_id, string $name, string $description, ?string $projectUrl, string $startDate, string $endDate, float $progress, string $comments, float $budget, array $indicators, array $donors, array $agencies,  array $contact, array $beneficiary, array $projectState): Project {
-        if(empty($program_id)) throw new \RuntimeException("The program id is required.");
-        
+    public function updateProject(int $id, int $program_id, string $name, string $description, ?string $projectUrl, string $startDate, string $endDate, float $progress, string $comments, float $budget, array $indicators, array $donors, array $agencies,  array $contact, array $beneficiary, array $projectState): Project
+    {
+        if (empty($program_id)) throw new \RuntimeException("The program id is required.");
+
         $project = $this->findProjectById($id);
-        if(empty($project)) throw new \RuntimeException("The project with id {$id} does not exist.");
+        if (empty($project)) throw new \RuntimeException("The project with id {$id} does not exist.");
 
         $normalizedName = preg_replace('/\s+/', ' ', trim($name));
         $capitalizedName = mb_convert_case($normalizedName, MB_CASE_TITLE, "UTF-8");
-        
+
         $founded_project = $this->projectRepository->findByNameAndProgramId($program_id, $capitalizedName);
-        if($founded_project && $founded_project->id !== $id) throw new \RuntimeException("The project with name $capitalizedName already exist in the selected program.");
+        if ($founded_project && $founded_project->id !== $id) throw new \RuntimeException("The project with name $capitalizedName already exist in the selected program.");
 
         $beneficiary = $this->beneficiaryRepository->findById($beneficiary['id']);
         if (!$beneficiary) throw new \RuntimeException("The beneficiary does not exist.");
