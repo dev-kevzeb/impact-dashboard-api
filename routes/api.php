@@ -5,6 +5,7 @@ use App\Modules\Auth\Controller\AuthController;
 use App\Modules\Indicator\Controller\IndicatorController;
 use App\Modules\IndicatorType\Controller\IndicatorTypeController;
 use App\Modules\Measure\Controller\MeasureController;
+use App\Modules\Project\Controller\PublicProjectController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Models\User;
@@ -40,7 +41,7 @@ Route::prefix('v1')->group(function () {
     Route::post('auth/register', [AuthController::class, 'register']);
 
     // Protected routes - require JWT token
-        Route::middleware('jwt')->group(function () {
+    Route::middleware('jwt')->group(function () {
             // Auth endpoints
         Route::post('auth/refresh', [AuthController::class, 'refresh']);
         Route::get('auth/me', [AuthController::class, 'me']);
@@ -243,4 +244,8 @@ Route::prefix('v1')->group(function () {
         Route::get('project-indicators/indicators/by-project/{id}', [ProjectIndicatorController::class, 'showIndicatorsByProjectId'])->middleware('scope:projects');
         Route::get('project-indicators/indicators/by-project-name/{name}', [ProjectIndicatorController::class, 'showIndicatorsByProjectName'])->middleware('scope:projects');
     });
+});
+
+Route::prefix('v1/public')->group(function () {
+    Route::post('projects', [PublicProjectController::class, 'index']);
 });

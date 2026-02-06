@@ -85,11 +85,11 @@ class ProgramController extends Controller
      *             mediaType="multipart/form-data",
      *             @OA\Schema(
      *                 required={"name", "description", "contact_id"},
-                 @OA\Property(property="name", type="string", maxLength=255, example="Rural Education Program 2025"),
-                 @OA\Property(property="description", type="string", maxLength=2000, example="Program focused on improving education in rural areas through teacher training and equipment."),
-                 @OA\Property(property="banner_img", type="string", format="binary", description="Program banner image (OPTIONAL - JPG, PNG, GIF, WEBP - max 2MB)"),
-                 @OA\Property(property="program_url", type="string", format="url", example="https://www.education-program.org", description="Program website URL (optional)"),
-                 @OA\Property(property="contact_id", type="integer", example=1, description="Responsible contact ID (required). Program is automatically created with 'Inactive' state."),
+     *           @OA\Property(property="name", type="string", maxLength=255, example="Rural Education Program 2025"),
+     *             @OA\Property(property="description", type="string", maxLength=2000, example="Program focused on improving education in rural areas through teacher training and equipment."),
+     *             @OA\Property(property="banner_img", type="string", format="binary", description="Program banner image (OPTIONAL - JPG, PNG, GIF, WEBP - max 2MB)"),
+     *             @OA\Property(property="program_url", type="string", format="url", example="https://www.education-program.org", description="Program website URL (optional)"),
+     *             @OA\Property(property="contact_id", type="integer", example=1, description="Responsible contact ID (required). Program is automatically created with 'Inactive' state."),
      *                 @OA\Property(
      *                     property="sdg_ids[]",
      *                     type="array",

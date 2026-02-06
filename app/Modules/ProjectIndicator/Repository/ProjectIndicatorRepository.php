@@ -30,5 +30,10 @@ class ProjectIndicatorRepository extends AbstractRepository implements Repositor
     {
         $this->model->where('project_id', $projectId)->delete();
     }
+    public function getProjectIdsByIndicatorIds(array $indicatorIds): array
+    {
+        if (empty($indicatorIds)) return [];
+        return $this->model->whereIn('indicator_id', $indicatorIds)->pluck('project_id')->unique()->values()->toArray();
+    }
 
 }

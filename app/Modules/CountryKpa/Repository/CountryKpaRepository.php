@@ -23,6 +23,17 @@ class CountryKpaRepository extends Model
 		return $this->model->with(['country','kpa'])->get()->makeHidden(['id_country','id_kpa'])->toArray();
 	}
 
+	public function getByCountryAndKpa(int $countryId, int $kpaId)
+	{
+		return $this->model->where('id_country', $countryId)->where('id_kpa', $kpaId)->get();
+	}
+
+	public function getByCountry(int $countryId)
+	{
+		return $this->model->where('id_country', $countryId)->get();
+	}
+
+
 	public function getById(int $id)
 	{
 		$countryKpa = $this->model->with(['country','kpa'])->find($id);
@@ -33,33 +44,59 @@ class CountryKpaRepository extends Model
 	public function getCountryKpasByCountryId(int $countryId)
 	{
 		$countryKpas = $this->model->with(['country', 'kpa'])
-        ->where('id_country', $countryId)
-		
-        ->get();
+        ->where('id_country', $countryId)->get();
 
-    if ($countryKpas->isEmpty()) {
-        throw new RuntimeException("Country with ID not found:: {$countryId}");
-    }
-    $country = $countryKpas->first()->country;
+		if ($countryKpas->isEmpty()) throw new RuntimeException("Country with ID not found: {$countryId}");
+    	
+		$country = $countryKpas->first()->country;
 
-    $kpas = $countryKpas->map(function ($item	) {
-        return [
-			'id_ck' => $item->id,
-			'id_kpa' => $item->kpa->id,
-            'name' => $item->kpa->name,
-            'implementation' => floatval($item->kpa->implementation),
-			'strategic_outputs_count' => $item->strategic_outputs_count,
-        ];
-    })->unique('name')->values()->all();
+    	$kpas = $countryKpas->map(function ($item) {
+			return [
+				'id_ck' => $item->id,
+				'id_kpa' => $item->kpa->id,
+				'name' => $item->kpa->name,
+				'implementation' => floatval($item->kpa->implementation),
+				'strategic_outputs_count' => $item->strategic_outputs_count,
+			];
+    	})->unique('name')->values()->all();
 
-    return [
-        'country' => [
-            'id' => $country->id,
-            'name' => $country->name,
-            'currency_id' => $country->currency_id,
-        ],
-        'kpas' => $kpas, 
-    ];
+		return [
+			'country' => [
+				'id' => $country->id,
+				'name' => $country->name,
+				'currency_id' => $country->currency_id,
+			],
+			'kpas' => $kpas, 
+		];
+	}
+
+	public function getCountryKpasByCountryAndKpaId(int $countryId, int $kpaId)
+	{
+		$countryKpas = $this->model->with(['country', 'kpa'])
+        ->where('id_country', $countryId)->where('id_kpa', $kpaId)->get();
+
+		if ($countryKpas->isEmpty()) throw new RuntimeException("Country with ID not found: {$countryId}");
+    	
+		$country = $countryKpas->first()->country;
+
+    	$kpas = $countryKpas->map(function ($item) {
+			return [
+				'id_ck' => $item->id,
+				'id_kpa' => $item->kpa->id,
+				'name' => $item->kpa->name,
+				'implementation' => floatval($item->kpa->implementation),
+				'strategic_outputs_count' => $item->strategic_outputs_count,
+			];
+    	})->unique('name')->values()->all();
+
+		return [
+			'country' => [
+				'id' => $country->id,
+				'name' => $country->name,
+				'currency_id' => $country->currency_id,
+			],
+			'kpas' => $kpas, 
+		];
 	}
 	public function create(array $data): object
 	{

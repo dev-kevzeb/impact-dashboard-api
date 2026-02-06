@@ -34,4 +34,10 @@ class MeasureRepository extends AbstractRepository implements RepositoryInterfac
         return $this->model->where('strategic_output_id', $strategicOutputId)->get();
     }
 
+    public function getByStrategicOutputIds(array $strategicOutputIds){
+        $query = $this->model->whereIn('strategic_output_id', $strategicOutputIds);
+
+        return $query->orderBy('name')->get();
+    }
+
 }

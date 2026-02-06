@@ -91,7 +91,7 @@ class MeasureService
     {
         $measure = $this->measureRepository->findById($measureId);
         if (!$measure) {
-            throw new RuntimeException("Measure with ID: {$id} not found");
+            throw new RuntimeException("Measure with ID: {$measureId} not found");
         }
         return $measure->findIndicatorByName($indicatorName);
     }
@@ -112,5 +112,9 @@ class MeasureService
         if (!$removed) {
             throw new RuntimeException("The specified indicator does not exist in this measure");
         }
+    }
+    
+    public function getByStrategicOutputIds(array $strategicOutputsIds){
+        return $this->measureRepository->getByStrategicOutputIds($strategicOutputsIds);
     }
 }
