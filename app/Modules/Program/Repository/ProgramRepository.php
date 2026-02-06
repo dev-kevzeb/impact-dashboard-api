@@ -34,8 +34,8 @@ class ProgramRepository extends AbstractRepository
                 'contact',
                 'programState',
                 'sdgs'
-                // 'projects' // TODO: Uncomment when Project module exists
             ])
+            ->withCount('projects')
             ->get();
     }
 
@@ -52,8 +52,8 @@ class ProgramRepository extends AbstractRepository
                 'contact',
                 'programState',
                 'sdgs'
-                // 'projects' // TODO: Uncomment when Project module exists
             ])
+            ->withCount('projects')
             ->paginate($perPage);
     }
 
@@ -71,8 +71,8 @@ class ProgramRepository extends AbstractRepository
                 'contact',
                 'programState',
                 'sdgs'
-                // 'projects' // TODO: Uncomment when Project module exists
             ])
+            ->withCount('projects')
             ->find($id);
 
         if (!$program) {

@@ -225,4 +225,44 @@ class ProgramService
     {
         return $this->programRepository->findBy('name', $name);
     }
+
+    /**
+     * Activate or deactivate program based on projects count
+     * Business Rule: Programs auto-activate when they have projects, auto-deactivate when empty
+     * 
+     * @param int $programId
+     * @return void
+     * @throws RuntimeException
+     */
+    public function activateProgramIfNeeded(int $programId): void
+    {
+        $program = $this->programRepository->findById($programId);
+        if (!$program) {
+            throw new RuntimeException("Program with id {$programId} does not exist.");
+        }
+
+        // Count projects associated with this program
+        $projectsCount = $program->projects()->count();
+
+        // Get current state name
+        $currentState = $program->programState->name;
+
+        // Business Rule 1: If has projects and is Inactive → Activate
+        if ($projectsCount > 0 && strtolower($currentState) === 'inactive') {
+            $activeState = $this->programStateRepository->findBy('name', 'Active');
+            if ($activeState) {
+                $program->program_state_id = $activeState->id;
+                $this->programRepository->save($program);
+            }
+        }
+
+        // Business Rule 2: If no projects and is Active → Deactivate
+        if ($projectsCount === 0 && strtolower($currentState) === 'active') {
+            $inactiveState = $this->programStateRepository->findBy('name', 'Inactive');
+            if ($inactiveState) {
+                $program->program_state_id = $inactiveState->id;
+                $this->programRepository->save($program);
+            }
+        }
+    }
 }

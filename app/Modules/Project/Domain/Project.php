@@ -19,8 +19,20 @@ class Project extends Model
 {
     use HasFactory;
     protected $table = "project";
-    protected $fillable = ['name','description', 'project_url', 'start_date', 'end_date', 
-    'progress', 'comments', 'project_budget', 'contact_id', 'beneficiary_id', 'project_state_id', 'program_id'];
+    protected $fillable = [
+        'name',
+        'description',
+        'project_url',
+        'start_date',
+        'end_date',
+        'progress',
+        'comments',
+        'project_budget',
+        'contact_id',
+        'beneficiary_id',
+        'project_state_id',
+        'program_id'
+    ];
     protected $appends = ['donors_count', 'indicators_count', 'agencies_count'];
 
     public static $ERROR_NAME_EMPTY = 'The project name must not be empty';
@@ -59,8 +71,9 @@ class Project extends Model
     {
         return ProjectFactory::new();
     }
-    public static function at($program_id, $name, $description, $projectUrl, $startDate, $endDate, $progress, $comments, $projectBudget, $contact, $projectBeneficiary, $projectState): Project {
-    
+    public static function at($program_id, $name, $description, $projectUrl, $startDate, $endDate, $progress, $comments, $projectBudget, $contact, $projectBeneficiary, $projectState): Project
+    {
+
         if (empty(trim($name))) throw new \RuntimeException(self::$ERROR_NAME_EMPTY);
         if (strlen(trim($name)) < 3) throw new \RuntimeException(self::$ERROR_NAME_MIN_LENGTH);
         if (strlen(trim($name)) > 255) throw new \RuntimeException(self::$ERROR_NAME_MAX_LENGTH);
@@ -100,24 +113,24 @@ class Project extends Model
         if (!($projectState instanceof ProjectState)) throw new \RuntimeException(self::$ERROR_PROJECT_STATE_INVALID);
 
         return new self([
-            'program_id'=> $program_id,
-            'name' => trim($name), 
-            'description'=> trim($description), 
-            'project_url'=>trim($projectUrl),
-            'start_date'=> $startDate, 
-            'end_date'=> $endDate, 
-            'progress'=>$progressFloat, 
-            'comments'=>trim($comments),
-            'project_budget'=> $projectBudgetFloat, 
-            'contact_id'=> $contact->id, 
-            'beneficiary_id'=>$projectBeneficiary->id, 
-            'project_state_id'=>$projectState->id
+            'program_id' => $program_id,
+            'name' => trim($name),
+            'description' => trim($description),
+            'project_url' => trim($projectUrl),
+            'start_date' => $startDate,
+            'end_date' => $endDate,
+            'progress' => $progressFloat,
+            'comments' => trim($comments),
+            'project_budget' => $projectBudgetFloat,
+            'contact_id' => $contact->id,
+            'beneficiary_id' => $projectBeneficiary->id,
+            'project_state_id' => $projectState->id
         ]);
     }
 
     public function projectDonors()
     {
-        return $this->hasMany(ProjectDonor::class, 'project_id','id');
+        return $this->hasMany(ProjectDonor::class, 'project_id', 'id');
     }
 
     public function projectIndicators()
@@ -145,16 +158,21 @@ class Project extends Model
         return $this->belongsTo(ProjectState::class, 'project_state_id');
     }
 
+    public function program()
+    {
+        return $this->belongsTo(\App\Modules\Program\Domain\Program::class, 'program_id');
+    }
+
     public function donors()
     {
         return $this->belongsToMany(Donor::class, 'project_donor', 'project_id', 'donor_id')
-                    ->withPivot('contribution');
+            ->withPivot('contribution');
     }
 
     public function agencies()
     {
         return $this->belongsToMany(Agency::class, 'project_agency', 'project_id', 'agency_id')
-                    ->withPivot('contribution');
+            ->withPivot('contribution');
     }
 
     public function indicators()
@@ -165,18 +183,18 @@ class Project extends Model
     private static function isValidDate(string $date): bool
     {
         $date = trim($date);
-        
+
         if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
             return false;
         }
-        
+
         $dateTime = \DateTime::createFromFormat('Y-m-d', $date);
         $errors = \DateTime::getLastErrors();
-        
+
         if ($errors && ($errors['error_count'] > 0 || $errors['warning_count'] > 0)) {
             return false;
         }
-        
+
         return $dateTime && $dateTime->format('Y-m-d') === $date;
     }
-}   
+}
