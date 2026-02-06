@@ -5,7 +5,6 @@ use App\Http\Requests\StrategicOutputRequest;
 use App\Http\Resources\StrategicOutputResource;
 use App\Modules\Measure\Domain\Measure;
 use App\Modules\Measure\Service\MeasureService;
-use App\Modules\StrategicOutput\Domain\StrategicOutput;
 use App\Modules\StrategicOutput\Service\StrategicOutputService;
 use App\Http\Controllers\Controller;
 use App\Http\Responses\ApiResponse;
@@ -183,7 +182,7 @@ class StrategicOutputController extends Controller
                 StrategicOutputResource::collection($strategicOutputs)
             );
         } catch (\Exception $e) {
-            return ApiResponse::error('Internal server error', 500);statusCode: 
+            return ApiResponse::error('Internal server error', 500); 
         }
     }
 

@@ -85,6 +85,12 @@ class MeasureService
         return $this->measureRepository->getAllByStrategicOutput($id);
     }
 
+    public function getAllPaginatedMeasuresByStrategicOutputId(int $id, ?string $search, int $per_page = 10)
+    {
+        return $this->measureRepository->getAllPaginatedByStrategicOutput($id, $search, $per_page);
+    }
+
+
 
 
     public function getIndicatorOfMeasureByName(int $measureId, string $indicatorName)

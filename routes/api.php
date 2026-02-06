@@ -2,10 +2,16 @@
 
 
 use App\Modules\Auth\Controller\AuthController;
+use App\Modules\Country\Controller\PublicCountryController;
+use App\Modules\CountryKpa\Controller\PublicCountryKpaController;
 use App\Modules\Indicator\Controller\IndicatorController;
 use App\Modules\IndicatorType\Controller\IndicatorTypeController;
+use App\Modules\Kpa\Controller\PublicKpaController;
 use App\Modules\Measure\Controller\MeasureController;
+use App\Modules\Measure\Controller\PublicMeasureController;
 use App\Modules\Project\Controller\PublicProjectController;
+use App\Modules\ProjectState\Controller\PublicProjectStateController;
+use App\Modules\StrategicOutput\Controller\PublicStrategicOutputController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Models\User;
@@ -247,5 +253,22 @@ Route::prefix('v1')->group(function () {
 });
 
 Route::prefix('v1/public')->group(function () {
+
+    // Projects    
     Route::post('projects', [PublicProjectController::class, 'index']);
+
+    // Countries
+    Route::get('countries', [PublicCountryController::class, 'index']);
+
+    // CountryKPAs
+    Route::get('kpas/{id}', [PublicCountryKpaController::class, 'getAllByCountryId']);
+
+    //Strategic Outputs
+    Route::get('strategic-outputs/{id}', [PublicStrategicOutputController::class, 'getStrategicOutputsByKpaId']);
+
+    // Measures
+    Route::get('measures/{id}', [PublicMeasureController::class, 'getMMeasuresByStrategicOutputId']);
+
+    // Project-states
+    Route::get('project-states', [PublicProjectStateController::class, 'index']);
 });

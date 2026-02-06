@@ -1,12 +1,13 @@
 <?php
 namespace App\Modules\ProjectState\Controller;
+
 use App\Http\Requests\ProjectStateRequest;
 use App\Http\Resources\ProjectStateResource;
-use App\Modules\ProjectState\Domain\ProjectState;
 use App\Modules\ProjectState\Service\ProjectStateService;
 use App\Http\Controllers\Controller;
 use App\Http\Responses\ApiResponse;
-use Illuminate\Http\Request;use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use RuntimeException;
 
 /**

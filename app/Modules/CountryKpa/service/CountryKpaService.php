@@ -66,5 +66,9 @@ class CountryKpaService
     {
         return $this->repo->detachKpaFromCountry($countryId, $kpaId);
     }
+
+    public function getKpasByCountryPaginated(int $countryId, ?string $search, int $perPage) {
+        return $this->repo->paginateKpasByCountry($countryId, $search, $perPage);
+    }
 }
 

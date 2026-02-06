@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\KpaRequest;
 use App\Http\Responses\ApiResponse;
 use App\Http\Resources\KpaResource;
-use App\Modules\Kpa\Domain\Kpa;
 use App\Modules\Kpa\Service\KpaService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
