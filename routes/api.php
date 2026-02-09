@@ -38,6 +38,7 @@ use App\Modules\ProjectIndicator\Controller\ProjectIndicatorController;
 use App\Modules\Role\Controller\RoleController;
 use App\Modules\UserState\Controller\UserStateController;
 use App\Modules\User\Controller\UserController;
+use App\Modules\Stats\Controller\StatsController;
 
 
 
@@ -48,7 +49,7 @@ Route::prefix('v1')->group(function () {
 
     // Protected routes - require JWT token
     Route::middleware('jwt')->group(function () {
-            // Auth endpoints
+        // Auth endpoints
         Route::post('auth/refresh', [AuthController::class, 'refresh']);
         Route::get('auth/me', [AuthController::class, 'me']);
         Route::get('auth/permissions', [AuthController::class, 'permissions']);
@@ -249,6 +250,13 @@ Route::prefix('v1')->group(function () {
         Route::get('project-indicators/projects/by-indicator/{id}', [ProjectIndicatorController::class, 'showProjectsByIndicatorId'])->middleware('scope:projects');
         Route::get('project-indicators/indicators/by-project/{id}', [ProjectIndicatorController::class, 'showIndicatorsByProjectId'])->middleware('scope:projects');
         Route::get('project-indicators/indicators/by-project-name/{name}', [ProjectIndicatorController::class, 'showIndicatorsByProjectName'])->middleware('scope:projects');
+
+        Route::get('stats/dashboard', [StatsController::class, 'getDashboardStats'])->middleware('scope:stats');
+        Route::get('stats/programs-by-state', [StatsController::class, 'getProgramsByState'])->middleware('scope:stats');
+        Route::get('stats/projects-by-state', [StatsController::class, 'getProjectsByState'])->middleware('scope:stats');
+        Route::get('stats/projects-per-program', [StatsController::class, 'getProjectsPerProgram'])->middleware('scope:stats');
+        Route::get('stats/projects-timeline', [StatsController::class, 'getProjectsTimeline'])->middleware('scope:stats');
+        Route::get('stats/projects-progress', [StatsController::class, 'getProjectsProgress'])->middleware('scope:stats');
     });
 });
 
