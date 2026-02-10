@@ -1,12 +1,15 @@
 <?php
+
 namespace App\Modules\ProjectState\Controller;
+
 use App\Http\Requests\ProjectStateRequest;
 use App\Http\Resources\ProjectStateResource;
 use App\Modules\ProjectState\Domain\ProjectState;
 use App\Modules\ProjectState\Service\ProjectStateService;
 use App\Http\Controllers\Controller;
 use App\Http\Responses\ApiResponse;
-use Illuminate\Http\Request;use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use RuntimeException;
 
 /**
@@ -39,6 +42,7 @@ class ProjectStateController extends Controller
      *     tags={"Project States"},
      *     summary="Listar estados de proyectos",
      *     description="Obtiene todos los estados del ciclo de vida de proyectos (Planificación, En Ejecución, Finalizado, etc.)",
+     *     security={{"bearerAuth":{}}},
      *     @OA\Response(
      *         response=200,
      *         description="Lista de estados obtenida exitosamente",
@@ -85,7 +89,7 @@ class ProjectStateController extends Controller
             return ApiResponse::error($e->getMessage(), 500);
         } catch (\Exception $e) {
             return ApiResponse::error('Internal server error', 500);
-        } 
+        }
     }
 
     /**
@@ -94,6 +98,7 @@ class ProjectStateController extends Controller
      *     tags={"Project States"},
      *     summary="Obtener estado de proyecto por ID",
      *     description="Obtiene la información de un estado específico del proyecto",
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
@@ -142,6 +147,7 @@ class ProjectStateController extends Controller
      *     tags={"Project States"},
      *     summary="Crear estado de proyecto",
      *     description="Crea un nuevo estado para el ciclo de vida del proyecto. El nombre debe ser único.",
+     *     security={{"bearerAuth":{}}},
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\MediaType(
@@ -223,6 +229,7 @@ class ProjectStateController extends Controller
      *     tags={"Project States"},
      *     summary="Actualizar estado de proyecto",
      *     description="Actualiza el nombre de un estado existente. El nuevo nombre debe ser único.",
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
@@ -322,6 +329,7 @@ class ProjectStateController extends Controller
      *     tags={"Project States"},
      *     summary="Buscar estado de proyecto por nombre",
      *     description="Busca un estado específico por su nombre (búsqueda exacta, case-insensitive)",
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="name",
      *         in="query",
@@ -360,13 +368,13 @@ class ProjectStateController extends Controller
     {
         try {
             $name = request()->query('name');
-            
+
             if (!$name) {
                 return ApiResponse::error('El parámetro name es requerido', 400);
             }
-            
+
             $state = $this->projectStateService->findProjectStateByName($name);
-            
+
             return ApiResponse::success(
                 'Estado del proyecto encontrado',
                 200,

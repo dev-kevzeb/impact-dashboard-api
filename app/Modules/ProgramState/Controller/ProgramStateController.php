@@ -35,6 +35,7 @@ class ProgramStateController extends Controller
      *     tags={"Program States"},
      *     summary="List all program states",
      *     description="Retrieves the complete list of available states for programs (Inactive, Active, Completed, etc.)",
+     *     security={{"bearerAuth":{}}},
      *     @OA\Response(
      *         response=200,
      *         description="List retrieved successfully",
@@ -93,6 +94,7 @@ class ProgramStateController extends Controller
      *     tags={"Program States"},
      *     summary="Get specific state",
      *     description="Retrieves detailed information of a program state by its ID",
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
@@ -145,6 +147,7 @@ class ProgramStateController extends Controller
      *     tags={"Program States"},
      *     summary="Create new program state",
      *     description="Creates a new state for program lifecycle. The system validates that no state with the same name exists.",
+     *     security={{"bearerAuth":{}}},
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\MediaType(
@@ -219,6 +222,7 @@ class ProgramStateController extends Controller
      *     tags={"Program States"},
      *     summary="Update program state",
      *     description="Updates an existing state name. Validates that no other state with the same name exists.",
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
@@ -301,6 +305,7 @@ class ProgramStateController extends Controller
      *     tags={"Program States"},
      *     summary="Search state by name",
      *     description="Searches for a specific state by its name (exact search, case-insensitive)",
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="name",
      *         in="query",

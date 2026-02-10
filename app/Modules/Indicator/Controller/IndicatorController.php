@@ -17,16 +17,16 @@ use RuntimeException;
  *     schema="Indicator",
  *     type="object",
  *     title="Indicator",
-     description="Performance indicators associated with measures, with their type and numeric target",
-     @OA\Property(property="id", type="integer", example=1, description="Unique indicator ID"),
-     @OA\Property(property="name", type="string", example="Percentage of target achievement", description="Indicator name"),
-     @OA\Property(property="target", type="number", format="float", example=85.5, description="Numeric indicator target"),
+ *    description="Performance indicators associated with measures, with their type and numeric target",
+ *    @OA\Property(property="id", type="integer", example=1, description="Unique indicator ID"),
+ *    @OA\Property(property="name", type="string", example="Percentage of target achievement", description="Indicator name"),
+ *    @OA\Property(property="target", type="number", format="float", example=85.5, description="Numeric indicator target"),
  *     @OA\Property(
  *         property="type",
  *         type="object",
-         description="Indicator type",
-         @OA\Property(property="id", type="integer", example=1),
-         @OA\Property(property="name", type="string", example="Quantitative")
+ *         description="Indicator type",
+ *        @OA\Property(property="id", type="integer", example=1),
+ *        @OA\Property(property="name", type="string", example="Quantitative")
  *     )
  * )
  */
@@ -45,6 +45,7 @@ class IndicatorController extends Controller
      *     tags={"Indicators"},
      *     summary="List all indicators",
      *     description="Retrieves the complete list of performance indicators with their associated types",
+     *     security={{"bearerAuth":{}}},
      *     @OA\Response(
      *         response=200,
      *         description="List retrieved successfully",
@@ -99,6 +100,7 @@ class IndicatorController extends Controller
      *     tags={"Indicators"},
      *     summary="Get specific indicator",
      *     description="Retrieves details of a performance indicator by its ID, including its type",
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
@@ -152,16 +154,17 @@ class IndicatorController extends Controller
      *     tags={"Indicators"},
      *     summary="Create new indicator",
      *     description="Registers a new performance indicator associated with a specific measure",
+     *     security={{"bearerAuth":{}}},
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\MediaType(
      *             mediaType="application/json",
      *             @OA\Schema(
      *                 required={"name", "target", "type_id", "measure_id"},
-                 @OA\Property(property="name", type="string", example="Number of teachers trained annually", description="Indicator name (required)"),
-                 @OA\Property(property="target", type="number", format="float", example=100.0, description="Numeric indicator target (required)"),
-                 @OA\Property(property="type_id", type="integer", example=1, description="Indicator type ID (required, must exist in indicator_type)"),
-                 @OA\Property(property="measure_id", type="integer", example=1, description="Associated measure ID (required, must exist in measure)")
+     *           @OA\Property(property="name", type="string", example="Number of teachers trained annually", description="Indicator name (required)"),
+     *            @OA\Property(property="target", type="number", format="float", example=100.0, description="Numeric indicator target (required)"),
+     *            @OA\Property(property="type_id", type="integer", example=1, description="Indicator type ID (required, must exist in indicator_type)"),
+     *            @OA\Property(property="measure_id", type="integer", example=1, description="Associated measure ID (required, must exist in measure)")
      *             )
      *         )
      *     ),
@@ -235,6 +238,7 @@ class IndicatorController extends Controller
      *     tags={"Indicators"},
      *     summary="Update existing indicator",
      *     description="Updates information of a performance indicator, including name, target, type and associated measure",
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
@@ -248,10 +252,10 @@ class IndicatorController extends Controller
      *             mediaType="application/json",
      *             @OA\Schema(
      *                 required={"name", "target", "type_id", "measure_id"},
-                 @OA\Property(property="name", type="string", example="Number of certified teachers annually", description="Updated indicator name"),
-                 @OA\Property(property="target", type="number", format="float", example=120.0, description="Updated numeric target"),
-                 @OA\Property(property="type_id", type="integer", example=2, description="Updated indicator type ID"),
-                 @OA\Property(property="measure_id", type="integer", example=1, description="Updated associated measure ID")
+     *            @OA\Property(property="name", type="string", example="Number of certified teachers annually", description="Updated indicator name"),
+     *            @OA\Property(property="target", type="number", format="float", example=120.0, description="Updated numeric target"),
+     *            @OA\Property(property="type_id", type="integer", example=2, description="Updated indicator type ID"),
+     *            @OA\Property(property="measure_id", type="integer", example=1, description="Updated associated measure ID")
      *             )
      *         )
      *     ),
@@ -309,6 +313,7 @@ class IndicatorController extends Controller
      *     tags={"Indicators"},
      *     summary="Search indicator by name",
      *     description="Searches for a specific performance indicator by its name (exact search, case-insensitive)",
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="name",
      *         in="query",
@@ -379,14 +384,15 @@ class IndicatorController extends Controller
         }
     }
 
-    public function getIndicatorsByMeasureId(Request $request, int $measureId){
-         try {
+    public function getIndicatorsByMeasureId(Request $request, int $measureId)
+    {
+        try {
             $search = $request->get("search");
             $perPage = (int) $request->get("per_page", 10);
-        
+
             $exclude = (array) $request->input('exclude', []);
 
-            $indicators = $this->indicatorService->getIndicatorsByMeasureId( $measureId, $perPage, $search, $exclude);
+            $indicators = $this->indicatorService->getIndicatorsByMeasureId($measureId, $perPage, $search, $exclude);
 
             return ApiResponse::success(
                 'Indicators paginated list successfully uploaded',

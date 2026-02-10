@@ -40,6 +40,7 @@ class RoleController
      *     tags={"Roles"},
      *     summary="List user roles",
      *     description="Retrieves all user roles available in the system",
+     *     security={{"bearerAuth":{}}},
      *     @OA\Response(
      *         response=200,
      *         description="Role list retrieved successfully",
@@ -86,6 +87,7 @@ class RoleController
      *     tags={"Roles"},
      *     summary="Create user role",
      *     description="Creates a new user role. The name must be unique.",
+     *     security={{"bearerAuth":{}}},
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\MediaType(
@@ -158,6 +160,7 @@ class RoleController
      *     tags={"Roles"},
      *     summary="Get role by ID",
      *     description="Retrieves information of a specific user role",
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
@@ -211,6 +214,7 @@ class RoleController
      *     tags={"Roles"},
      *     summary="Update user role",
      *     description="Updates an existing role name. The new name must be unique.",
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
@@ -310,6 +314,7 @@ class RoleController
      *     tags={"Roles"},
      *     summary="Search roles by name",
      *     description="Searches user roles by search term (case-insensitive search)",
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="q",
      *         in="query",

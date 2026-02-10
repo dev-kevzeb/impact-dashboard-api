@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Modules\Contact\Controller;
 
 use App\Http\Controllers\Controller;
@@ -40,6 +41,7 @@ class ContactController extends Controller
      *     tags={"Contacts"},
      *     summary="Listar todos los contactos",
      *     description="Obtiene la lista completa de personas de contacto registradas en el sistema",
+     *     security={{"bearerAuth":{}}},
      *     @OA\Response(
      *         response=200,
      *         description="Lista obtenida exitosamente",
@@ -72,7 +74,7 @@ class ContactController extends Controller
     {
         try {
             $contacts = $this->contactService->getAllContacts();
-            
+
             return ApiResponse::success(
                 'Contact list successfully obtained',
                 200,
@@ -94,6 +96,7 @@ class ContactController extends Controller
      *     tags={"Contacts"},
      *     summary="Obtener un contacto específico",
      *     description="Obtiene la información detallada de una persona de contacto por su ID",
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
@@ -147,6 +150,7 @@ class ContactController extends Controller
      *     tags={"Contacts"},
      *     summary="Crear nuevo contacto",
      *     description="Registra una nueva persona de contacto. El email debe ser único en el sistema.",
+     *     security={{"bearerAuth":{}}},
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\MediaType(
@@ -236,6 +240,7 @@ class ContactController extends Controller
      *     tags={"Contacts"},
      *     summary="Actualizar contacto existente",
      *     description="Actualiza la información de una persona de contacto. El email debe ser único en el sistema.",
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
@@ -341,6 +346,7 @@ class ContactController extends Controller
      *     tags={"Contacts"},
      *     summary="Buscar contacto por email",
      *     description="Busca una persona de contacto específica por su dirección de email (búsqueda exacta, case-insensitive)",
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="email",
      *         in="query",

@@ -49,6 +49,7 @@ class UserController extends Controller
      *     description="Retrieve a paginated list of manageable users (excludes admin role). Admin manages the system but is not managed by the system.",
      *     operationId="getUsersList",
      *     tags={"Users"},
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="per_page",
      *         in="query",
@@ -120,6 +121,7 @@ class UserController extends Controller
      *     description="Create a new user with email, password, name and state. Roles must be assigned separately via /api/v1/user_roles",
      *     operationId="createUser",
      *     tags={"Users"},
+     *     security={{"bearerAuth":{}}},
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
@@ -212,6 +214,7 @@ class UserController extends Controller
      *     description="Search for users by name (case-insensitive)",
      *     operationId="searchUsers",
      *     tags={"Users"},
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="name",
      *         in="query",
@@ -282,6 +285,7 @@ class UserController extends Controller
      *     description="Retrieve a single user by their ID with role and state",
      *     operationId="getUserById",
      *     tags={"Users"},
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
@@ -346,6 +350,7 @@ class UserController extends Controller
      *     description="Update user information (password is optional). Roles must be updated separately via /api/v1/user_roles",
      *     operationId="updateUser",
      *     tags={"Users"},
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
@@ -618,6 +623,7 @@ class UserController extends Controller
      *     description="Toggle user state between active and inactive. Inactive users cannot login.",
      *     operationId="changeUserState",
      *     tags={"Users"},
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
