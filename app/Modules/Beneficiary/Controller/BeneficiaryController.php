@@ -104,6 +104,7 @@ class BeneficiaryController extends Controller
      *     tags={"Beneficiaries"},
      *     summary="Crear beneficiario",
      *     description="Crea un nuevo beneficiario o grupo objetivo. El nombre debe ser único.",
+     *     security={{"bearerAuth":{}}},
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\MediaType(
@@ -191,6 +192,7 @@ class BeneficiaryController extends Controller
      *     tags={"Beneficiaries"},
      *     summary="Obtener beneficiario por ID",
      *     description="Obtiene la información de un beneficiario específico",
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
@@ -244,6 +246,7 @@ class BeneficiaryController extends Controller
      *     tags={"Beneficiaries"},
      *     summary="Actualizar beneficiario",
      *     description="Actualiza el nombre de un beneficiario existente. El nuevo nombre debe ser único.",
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
@@ -351,6 +354,7 @@ class BeneficiaryController extends Controller
      *     tags={"Beneficiaries"},
      *     summary="Buscar beneficiario por nombre",
      *     description="Busca un beneficiario específico por su nombre (búsqueda exacta, case-insensitive)",
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="name",
      *         in="query",

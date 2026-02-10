@@ -27,6 +27,7 @@ class ProgramUserController extends Controller
      *     description="Get paginated list of all Program-CountryKpaUser assignments with optional filters",
      *     operationId="listProgramUsers",
      *     tags={"Program Users"},
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="per_page",
      *         in="query",
@@ -87,6 +88,7 @@ class ProgramUserController extends Controller
      *     description="Assign a CountryKpaUser to a Program",
      *     operationId="createProgramUser",
      *     tags={"Program Users"},
+     *     security={{"bearerAuth":{}}},
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
@@ -137,6 +139,7 @@ class ProgramUserController extends Controller
      *     description="Retrieve details of a specific assignment by ID",
      *     operationId="getProgramUser",
      *     tags={"Program Users"},
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
@@ -176,6 +179,7 @@ class ProgramUserController extends Controller
      *     description="Update an existing assignment",
      *     operationId="updateProgramUser",
      *     tags={"Program Users"},
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
@@ -238,6 +242,7 @@ class ProgramUserController extends Controller
      *     description="Remove an assignment between Program and CountryKpaUser",
      *     operationId="deleteProgramUser",
      *     tags={"Program Users"},
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="id",
      *         in="path",

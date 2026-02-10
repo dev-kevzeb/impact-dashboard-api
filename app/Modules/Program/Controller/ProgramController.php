@@ -27,6 +27,7 @@ class ProgramController extends Controller
      *     tags={"Programs"},
      *     summary="List all programs",
      *     description="Retrieves the complete list of programs with all their relationships loaded",
+     *     security={{"bearerAuth":{}}},
      *     @OA\Response(
      *         response=200,
      *         description="Program list retrieved successfully",
@@ -79,6 +80,7 @@ class ProgramController extends Controller
      *     tags={"Programs"},
      *     summary="Create new program",
      *     description="Creates a new program with 'Inactive' state by default (business rule). To change state, use PUT. **Arrays:** Use `sdg_ids[]=2&sdg_ids[]=5` or in form-data: `sdg_ids[0]=2, sdg_ids[1]=5`",
+     *     security={{"bearerAuth":{}}},
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\MediaType(
@@ -178,6 +180,7 @@ class ProgramController extends Controller
      *     tags={"Programs"},
      *     summary="Search program by name",
      *     description="Searches for a program by its exact name (case-insensitive)",
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="name",
      *         in="query",
@@ -249,6 +252,7 @@ class ProgramController extends Controller
      *     tags={"Programs"},
      *     summary="Get specific program",
      *     description="Retrieves complete details of a program by its ID, including all its relationships",
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
@@ -305,6 +309,7 @@ class ProgramController extends Controller
      *     tags={"Programs"},
      *     summary="Update program",
      *     description="Updates an existing program, including state changes. Use POST with _method=PUT to send files from Postman",
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="id",
      *         in="path",

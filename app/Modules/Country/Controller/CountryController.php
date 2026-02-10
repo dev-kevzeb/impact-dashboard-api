@@ -43,6 +43,7 @@ class CountryController extends Controller
      *     tags={"Countries"},
      *     summary="Listar todos los países",
      *     description="Obtiene la lista completa de países donde se ejecutan programas y proyectos, con su moneda oficial",
+     *     security={{"bearerAuth":{}}},
      *     @OA\Response(
      *         response=200,
      *         description="Lista obtenida exitosamente",
@@ -77,8 +78,8 @@ class CountryController extends Controller
             $search = $request->get("search");
             $perPage = (int) $request->get("per_page", 10);
 
-            $countries = $this->countryService->getAllCountries($search,$perPage);
-            
+            $countries = $this->countryService->getAllCountries($search, $perPage);
+
             return ApiResponse::success(
                 'Countries paginated list successfully uploaded',
                 200,
@@ -104,6 +105,7 @@ class CountryController extends Controller
      *     tags={"Countries"},
      *     summary="Obtener un país específico",
      *     description="Obtiene la información detallada de un país por su ID, incluyendo su moneda oficial",
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
@@ -157,6 +159,7 @@ class CountryController extends Controller
      *     tags={"Countries"},
      *     summary="Crear nuevo país",
      *     description="Registra un nuevo país con su moneda oficial. El nombre debe ser único en el sistema.",
+     *     security={{"bearerAuth":{}}},
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\MediaType(
@@ -216,7 +219,7 @@ class CountryController extends Controller
     public function store(CountryRequest $request): JsonResponse
     {
         try {
-            $validated= $request->validated();
+            $validated = $request->validated();
 
             $country = $this->countryService->createCountry($validated['name'], $validated['currency']);
 
@@ -224,7 +227,6 @@ class CountryController extends Controller
                 'Country created successfully',
                 new CountryResource($country)
             );
-
         } catch (RuntimeException $e) {
             // Si el error es de duplicado, retornar como error de validación (422)
             if (str_contains($e->getMessage(), 'Ya existe')) {
@@ -242,6 +244,7 @@ class CountryController extends Controller
      *     tags={"Countries"},
      *     summary="Actualizar país existente",
      *     description="Actualiza la información de un país, incluyendo su moneda oficial. El nombre debe ser único.",
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
@@ -320,7 +323,6 @@ class CountryController extends Controller
                 200,
                 new CountryResource($country)
             );
-
         } catch (RuntimeException $e) {
             // Si el error es de duplicado, retornar como error de validación (422)
             if (str_contains($e->getMessage(), 'Ya existe')) {
@@ -338,6 +340,7 @@ class CountryController extends Controller
      *     tags={"Countries"},
      *     summary="Buscar país por nombre",
      *     description="Busca un país específico por su nombre (búsqueda exacta, case-insensitive)",
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="name",
      *         in="query",
@@ -399,7 +402,6 @@ class CountryController extends Controller
                 200,
                 new CountryResource($country)
             );
-
         } catch (RuntimeException $e) {
             return ApiResponse::notFound('Country');
         } catch (\Illuminate\Validation\ValidationException $e) {

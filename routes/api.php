@@ -63,25 +63,25 @@ Route::prefix('v1')->group(function () {
         Route::put('beneficiaries/{id}', [BeneficiaryController::class, 'update'])->middleware('scope:beneficiaries:write');
 
         // API Routes para ProgramStates
-        Route::get('program_states', [ProgramStateController::class, 'index'])->middleware('scope:programs');
-        Route::post('program_states', [ProgramStateController::class, 'store'])->middleware('scope:programs:write');
-        Route::get('program_states/search', [ProgramStateController::class, 'search'])->middleware('scope:programs');
-        Route::get('program_states/{id}', [ProgramStateController::class, 'show'])->middleware('scope:programs');
-        Route::put('program_states/{id}', [ProgramStateController::class, 'update'])->middleware('scope:programs:write');
+        Route::get('program_states', [ProgramStateController::class, 'index'])->middleware('scope:program_states');
+        Route::post('program_states', [ProgramStateController::class, 'store'])->middleware('scope:program_states:write');
+        Route::get('program_states/search', [ProgramStateController::class, 'search'])->middleware('scope:program_states');
+        Route::get('program_states/{id}', [ProgramStateController::class, 'show'])->middleware('scope:program_states');
+        Route::put('program_states/{id}', [ProgramStateController::class, 'update'])->middleware('scope:program_states:write');
 
         // API Routes para Countries
-        Route::get('countries', [CountryController::class, 'index'])->middleware('scope:kpas');
-        Route::post('countries', [CountryController::class, 'store'])->middleware('scope:kpas:write');
-        Route::get('countries/search', [CountryController::class, 'search'])->middleware('scope:kpas');
-        Route::get('countries/{id}', [CountryController::class, 'show'])->middleware('scope:kpas');
-        Route::put('countries/{id}', [CountryController::class, 'update'])->middleware('scope:kpas:write');
+        Route::get('countries', [CountryController::class, 'index'])->middleware('scope:countries');
+        Route::post('countries', [CountryController::class, 'store'])->middleware('scope:countries:write');
+        Route::get('countries/search', [CountryController::class, 'search'])->middleware('scope:countries');
+        Route::get('countries/{id}', [CountryController::class, 'show'])->middleware('scope:countries');
+        Route::put('countries/{id}', [CountryController::class, 'update'])->middleware('scope:countries:write');
 
         // API Routes para Currencies
-        Route::get('currencies', [CurrencyController::class, 'index'])->middleware('scope:donors');
-        Route::post('currencies', [CurrencyController::class, 'store'])->middleware('scope:donors:write');
-        Route::get('currencies/search', [CurrencyController::class, 'search'])->middleware('scope:donors');
-        Route::get('currencies/{id}', [CurrencyController::class, 'show'])->middleware('scope:donors');
-        Route::put('currencies/{id}', [CurrencyController::class, 'update'])->middleware('scope:donors:write');
+        Route::get('currencies', [CurrencyController::class, 'index'])->middleware('scope:currencies');
+        Route::post('currencies', [CurrencyController::class, 'store'])->middleware('scope:currencies:write');
+        Route::get('currencies/search', [CurrencyController::class, 'search'])->middleware('scope:currencies');
+        Route::get('currencies/{id}', [CurrencyController::class, 'show'])->middleware('scope:currencies');
+        Route::put('currencies/{id}', [CurrencyController::class, 'update'])->middleware('scope:currencies:write');
 
         // API Routes para Kpas
         Route::get('kpas', [KpaController::class, 'index'])->middleware('scope:kpas');
@@ -102,114 +102,114 @@ Route::prefix('v1')->group(function () {
         Route::put('users/{id}', [UserController::class, 'update'])->middleware('scope:users:write');
 
         // API Routes para Roles
-        Route::get('roles', [RoleController::class, 'index'])->middleware('scope:users');
-        Route::post('roles', [RoleController::class, 'store'])->middleware('scope:users:write');
-        Route::get('roles/search', [RoleController::class, 'search'])->middleware('scope:users');
-        Route::get('roles/{id}', [RoleController::class, 'show'])->middleware('scope:users');
-        Route::put('roles/{id}', [RoleController::class, 'update'])->middleware('scope:users:write');
+        Route::get('roles', [RoleController::class, 'index'])->middleware('scope:roles');
+        Route::post('roles', [RoleController::class, 'store'])->middleware('scope:roles:write');
+        Route::get('roles/search', [RoleController::class, 'search'])->middleware('scope:roles');
+        Route::get('roles/{id}', [RoleController::class, 'show'])->middleware('scope:roles');
+        Route::put('roles/{id}', [RoleController::class, 'update'])->middleware('scope:roles:write');
 
         // API Routes para UserState 
-        Route::get('user_states', [UserStateController::class, 'index'])->middleware('scope:users');
-        Route::post('user_states', [UserStateController::class, 'store'])->middleware('scope:users:write');
-        Route::get('user_states/search', [UserStateController::class, 'search'])->middleware('scope:users');
-        Route::get('user_states/{id}', [UserStateController::class, 'show'])->middleware('scope:users');
-        Route::put('user_states/{id}', [UserStateController::class, 'update'])->middleware('scope:users:write');
+        Route::get('user_states', [UserStateController::class, 'index'])->middleware('scope:user_states');
+        Route::post('user_states', [UserStateController::class, 'store'])->middleware('scope:user_states:write');
+        Route::get('user_states/search', [UserStateController::class, 'search'])->middleware('scope:user_states');
+        Route::get('user_states/{id}', [UserStateController::class, 'show'])->middleware('scope:user_states');
+        Route::put('user_states/{id}', [UserStateController::class, 'update'])->middleware('scope:user_states:write');
 
         // API Routes para CountryKpa-Users (User assignments to CountryKpas)
-        Route::get('country_kpa_users', [CountryKpaUserController::class, 'index'])->middleware('scope:kpas');
-        Route::post('country_kpa_users', [CountryKpaUserController::class, 'store'])->middleware('scope:kpas:write');
-        Route::get('country_kpa_users/{id}', [CountryKpaUserController::class, 'show'])->middleware('scope:kpas');
-        Route::put('country_kpa_users/{id}', [CountryKpaUserController::class, 'update'])->middleware('scope:kpas:write');
-        Route::delete('country_kpa_users/{id}', [CountryKpaUserController::class, 'destroy'])->middleware('scope:kpas:write');
+        Route::get('country_kpa_users', [CountryKpaUserController::class, 'index'])->middleware('scope:country_kpa_users');
+        Route::post('country_kpa_users', [CountryKpaUserController::class, 'store'])->middleware('scope:country_kpa_users:write');
+        Route::get('country_kpa_users/{id}', [CountryKpaUserController::class, 'show'])->middleware('scope:country_kpa_users');
+        Route::put('country_kpa_users/{id}', [CountryKpaUserController::class, 'update'])->middleware('scope:country_kpa_users:write');
+        Route::delete('country_kpa_users/{id}', [CountryKpaUserController::class, 'destroy'])->middleware('scope:country_kpa_users:write');
 
         // API Routes para User-Roles (Role assignments to Users)
-        Route::get('user_roles', [UserRoleController::class, 'index'])->middleware('scope:users');
-        Route::post('user_roles', [UserRoleController::class, 'store'])->middleware('scope:users:write');
-        Route::get('user_roles/{id}', [UserRoleController::class, 'show'])->middleware('scope:users');
-        Route::put('user_roles/{id}', [UserRoleController::class, 'update'])->middleware('scope:users:write');
-        Route::delete('user_roles/{id}', [UserRoleController::class, 'destroy'])->middleware('scope:users:write');
+        Route::get('user_roles', [UserRoleController::class, 'index'])->middleware('scope:user_roles');
+        Route::post('user_roles', [UserRoleController::class, 'store'])->middleware('scope:user_roles:write');
+        Route::get('user_roles/{id}', [UserRoleController::class, 'show'])->middleware('scope:user_roles');
+        Route::put('user_roles/{id}', [UserRoleController::class, 'update'])->middleware('scope:user_roles:write');
+        Route::delete('user_roles/{id}', [UserRoleController::class, 'destroy'])->middleware('scope:user_roles:write');
 
         // API Routes para Program-Users (CountryKpaUser assignments to Programs)
-        Route::get('program_users', [ProgramUserController::class, 'index'])->middleware('scope:programs');
-        Route::post('program_users', [ProgramUserController::class, 'store'])->middleware('scope:programs:write');
-        Route::get('program_users/{id}', [ProgramUserController::class, 'show'])->middleware('scope:programs');
-        Route::put('program_users/{id}', [ProgramUserController::class, 'update'])->middleware('scope:programs:write');
-        Route::delete('program_users/{id}', [ProgramUserController::class, 'destroy'])->middleware('scope:programs:write');
+        Route::get('program_users', [ProgramUserController::class, 'index'])->middleware('scope:program_users');
+        Route::post('program_users', [ProgramUserController::class, 'store'])->middleware('scope:program_users:write');
+        Route::get('program_users/{id}', [ProgramUserController::class, 'show'])->middleware('scope:program_users');
+        Route::put('program_users/{id}', [ProgramUserController::class, 'update'])->middleware('scope:program_users:write');
+        Route::delete('program_users/{id}', [ProgramUserController::class, 'destroy'])->middleware('scope:program_users:write');
 
         // API Routes para Country-Kpas
-        Route::get('country-kpas', [CountryKpaController::class, 'index'])->middleware('scope:kpas');
-        Route::post('country-kpas', [CountryKpaController::class, 'store'])->middleware('scope:kpas:write');
-        Route::get('country-kpas/{id}', [CountryKpaController::class, 'show'])->middleware('scope:kpas');
-        Route::get('country-kpas/country/{id}', [CountryKpaController::class, 'showForCountry'])->middleware('scope:kpas');
-        Route::put('country-kpas/{id}', [CountryKpaController::class, 'update'])->middleware('scope:kpas:write');
-        Route::delete('country-kpas/{id}', [CountryKpaController::class, 'destroy'])->middleware('scope:kpas:write');
+        Route::get('country-kpas', [CountryKpaController::class, 'index'])->middleware('scope:country_kpas');
+        Route::post('country-kpas', [CountryKpaController::class, 'store'])->middleware('scope:country_kpas:write');
+        Route::get('country-kpas/{id}', [CountryKpaController::class, 'show'])->middleware('scope:country_kpas');
+        Route::get('country-kpas/country/{id}', [CountryKpaController::class, 'showForCountry'])->middleware('scope:country_kpas');
+        Route::put('country-kpas/{id}', [CountryKpaController::class, 'update'])->middleware('scope:country_kpas:write');
+        Route::delete('country-kpas/{id}', [CountryKpaController::class, 'destroy'])->middleware('scope:country_kpas:write');
 
         // API Routes para Contacts
-        Route::get('contacts', [ContactController::class, 'index'])->middleware('scope:donors');
-        Route::post('contacts', [ContactController::class, 'store'])->middleware('scope:donors:write');
-        Route::get('contacts/search', [ContactController::class, 'search'])->middleware('scope:donors');
-        Route::get('contacts/{id}', [ContactController::class, 'show'])->middleware('scope:donors');
-        Route::put('contacts/{id}', [ContactController::class, 'update'])->middleware('scope:donors:write');
+        Route::get('contacts', [ContactController::class, 'index'])->middleware('scope:contacts');
+        Route::post('contacts', [ContactController::class, 'store'])->middleware('scope:contacts:write');
+        Route::get('contacts/search', [ContactController::class, 'search'])->middleware('scope:contacts');
+        Route::get('contacts/{id}', [ContactController::class, 'show'])->middleware('scope:contacts');
+        Route::put('contacts/{id}', [ContactController::class, 'update'])->middleware('scope:contacts:write');
 
         // API Routes para ProjectStates
-        Route::get('project-states', [ProjectStateController::class, 'index'])->middleware('scope:projects');
-        Route::post('project-states', [ProjectStateController::class, 'store'])->middleware('scope:projects:write');
-        Route::get('project-states/{id}', [ProjectStateController::class, 'show'])->middleware('scope:projects');
-        Route::put('project-states/{id}', [ProjectStateController::class, 'update'])->middleware('scope:projects:write');
+        Route::get('project-states', [ProjectStateController::class, 'index'])->middleware('scope:project_states');
+        Route::post('project-states', [ProjectStateController::class, 'store'])->middleware('scope:project_states:write');
+        Route::get('project-states/{id}', [ProjectStateController::class, 'show'])->middleware('scope:project_states');
+        Route::put('project-states/{id}', [ProjectStateController::class, 'update'])->middleware('scope:project_states:write');
 
         // API Routes para SDG
-        Route::get('sdgs', [SdgController::class, 'index'])->middleware('scope:projects');
-        Route::post('sdgs', [SdgController::class, 'store'])->middleware('scope:projects:write');
-        Route::get('sdgs/search', [SdgController::class, 'search'])->middleware('scope:projects');
-        Route::get('sdgs/{id}', [SdgController::class, 'show'])->middleware('scope:projects');
-        Route::put('sdgs/{id}', [SdgController::class, 'update'])->middleware('scope:projects:write');
+        Route::get('sdgs', [SdgController::class, 'index'])->middleware('scope:sdgs');
+        Route::post('sdgs', [SdgController::class, 'store'])->middleware('scope:sdgs:write');
+        Route::get('sdgs/search', [SdgController::class, 'search'])->middleware('scope:sdgs');
+        Route::get('sdgs/{id}', [SdgController::class, 'show'])->middleware('scope:sdgs');
+        Route::put('sdgs/{id}', [SdgController::class, 'update'])->middleware('scope:sdgs:write');
 
         // API Routes para Agency
-        Route::get('agencies', [AgencyController::class, 'index'])->middleware('scope:projects');
-        Route::post('agencies', [AgencyController::class, 'store'])->middleware('scope:projects:write');
-        Route::get('agencies/search', [AgencyController::class, 'search'])->middleware('scope:projects');
-        Route::get('agencies/{id}', [AgencyController::class, 'show'])->middleware('scope:projects');
-        Route::put('agencies/{id}', [AgencyController::class, 'update'])->middleware('scope:projects:write');
-        Route::get('agencies/get/project', [AgencyController::class, 'getAgenciesExcluding'])->middleware('scope:projects');
+        Route::get('agencies', [AgencyController::class, 'index'])->middleware('scope:agencies');
+        Route::post('agencies', [AgencyController::class, 'store'])->middleware('scope:agencies:write');
+        Route::get('agencies/search', [AgencyController::class, 'search'])->middleware('scope:agencies');
+        Route::get('agencies/{id}', [AgencyController::class, 'show'])->middleware('scope:agencies');
+        Route::put('agencies/{id}', [AgencyController::class, 'update'])->middleware('scope:agencies:write');
+        Route::get('agencies/get/project', [AgencyController::class, 'getAgenciesExcluding'])->middleware('scope:agencies');
 
         // API Routes para Indicator Type
-        Route::get('indicator-types', [IndicatorTypeController::class, 'index'])->middleware('scope:projects');
-        Route::post('indicator-types', [IndicatorTypeController::class, 'store'])->middleware('scope:projects:write');
-        Route::get('indicator-types/search', [IndicatorTypeController::class, 'search'])->middleware('scope:projects');
-        Route::get('indicator-types/{id}', [IndicatorTypeController::class, 'show'])->middleware('scope:projects');
-        Route::put('indicator-types/{id}', [IndicatorTypeController::class, 'update'])->middleware('scope:projects:write');
+        Route::get('indicator-types', [IndicatorTypeController::class, 'index'])->middleware('scope:indicator_types');
+        Route::post('indicator-types', [IndicatorTypeController::class, 'store'])->middleware('scope:indicator_types:write');
+        Route::get('indicator-types/search', [IndicatorTypeController::class, 'search'])->middleware('scope:indicator_types');
+        Route::get('indicator-types/{id}', [IndicatorTypeController::class, 'show'])->middleware('scope:indicator_types');
+        Route::put('indicator-types/{id}', [IndicatorTypeController::class, 'update'])->middleware('scope:indicator_types:write');
 
         // API Routes para Indicator
-        Route::get('indicators', [IndicatorController::class, 'index'])->middleware('scope:projects');
-        Route::post('indicators', [IndicatorController::class, 'store'])->middleware('scope:projects:write');
-        Route::get('indicators/search', [IndicatorController::class, 'search'])->middleware('scope:projects');
-        Route::get('indicators/{id}', [IndicatorController::class, 'show'])->middleware('scope:projects');
-        Route::put('indicators/{id}', [IndicatorController::class, 'update'])->middleware('scope:projects:write');
-        Route::get('indicators/measure/{id}', [IndicatorController::class, 'getIndicatorsByMeasureId'])->middleware('scope:projects');
+        Route::get('indicators', [IndicatorController::class, 'index'])->middleware('scope:indicators');
+        Route::post('indicators', [IndicatorController::class, 'store'])->middleware('scope:indicators:write');
+        Route::get('indicators/search', [IndicatorController::class, 'search'])->middleware('scope:indicators');
+        Route::get('indicators/{id}', [IndicatorController::class, 'show'])->middleware('scope:indicators');
+        Route::put('indicators/{id}', [IndicatorController::class, 'update'])->middleware('scope:indicators:write');
+        Route::get('indicators/measure/{id}', [IndicatorController::class, 'getIndicatorsByMeasureId'])->middleware('scope:indicators');
 
         // API Routes para Measure
-        Route::get('measures', [MeasureController::class, 'index'])->middleware('scope:projects');
-        Route::post('measures', [MeasureController::class, 'store'])->middleware('scope:projects:write');
-        Route::put('measures/{id}', [MeasureController::class, 'update'])->middleware('scope:projects:write');
-        Route::get('measures/search', [MeasureController::class, 'search'])->middleware('scope:projects');
-        Route::get('measures/{id}', [MeasureController::class, 'show'])->middleware('scope:projects');
-        Route::get('measures/strategic-output/{id}', [MeasureController::class, 'listByStrategicOutput'])->middleware('scope:projects');
-        Route::post('measures-indicators', [MeasureController::class, 'addIndicator'])->middleware('scope:projects:write');
-        Route::get('measures-indicators/{id}', [MeasureController::class, 'showWithIndicators'])->middleware('scope:projects');
-        Route::get('measures/{id}/indicators/{name}', [MeasureController::class, 'getIndicatorByName'])->middleware('scope:projects');
-        Route::post('measures/remove-indicator', [MeasureController::class, 'removeIndicator'])->middleware('scope:projects:write');
-        Route::get('measures/get/strategic-output/{id}', [MeasureController::class, 'measuresListByStrategicOutput'])->middleware('scope:projects');
+        Route::get('measures', [MeasureController::class, 'index'])->middleware('scope:measures');
+        Route::post('measures', [MeasureController::class, 'store'])->middleware('scope:measures:write');
+        Route::put('measures/{id}', [MeasureController::class, 'update'])->middleware('scope:measures:write');
+        Route::get('measures/search', [MeasureController::class, 'search'])->middleware('scope:measures');
+        Route::get('measures/{id}', [MeasureController::class, 'show'])->middleware('scope:measures');
+        Route::get('measures/strategic-output/{id}', [MeasureController::class, 'listByStrategicOutput'])->middleware('scope:measures');
+        Route::post('measures-indicators', [MeasureController::class, 'addIndicator'])->middleware('scope:measures:write');
+        Route::get('measures-indicators/{id}', [MeasureController::class, 'showWithIndicators'])->middleware('scope:measures');
+        Route::get('measures/{id}/indicators/{name}', [MeasureController::class, 'getIndicatorByName'])->middleware('scope:measures');
+        Route::post('measures/remove-indicator', [MeasureController::class, 'removeIndicator'])->middleware('scope:measures:write');
+        Route::get('measures/get/strategic-output/{id}', [MeasureController::class, 'measuresListByStrategicOutput'])->middleware('scope:measures');
 
         // API Routes para Strategic Outputs
-        Route::get('strategic-outputs', [StrategicOutputController::class, 'index'])->middleware('scope:projects');
-        Route::post('strategic-outputs', [StrategicOutputController::class, 'store'])->middleware('scope:projects:write');
-        Route::get('strategic-outputs/search', [StrategicOutputController::class, 'search'])->middleware('scope:projects');
-        Route::get('strategic-outputs/{id}', [StrategicOutputController::class, 'show'])->middleware('scope:projects');
-        Route::put('strategic-outputs/{id}', [StrategicOutputController::class, 'update'])->middleware('scope:projects:write');
-        Route::get('strategic-outputs/country-kpa/{id}', [StrategicOutputController::class, 'showByCountryKpa'])->middleware('scope:projects');
-        Route::post('strategic-outputs-measures', [StrategicOutputController::class, 'addMeasure'])->middleware('scope:projects:write');
-        Route::post('strategic-outputs/remove-measure', [StrategicOutputController::class, 'removeMeasure'])->middleware('scope:projects:write');
-        Route::get('strategic-outputs/kpa/{id}', [StrategicOutputController::class, 'getStrategicOutputsForKpaId'])->middleware('scope:projects');
+        Route::get('strategic-outputs', [StrategicOutputController::class, 'index'])->middleware('scope:strategic_outputs');
+        Route::post('strategic-outputs', [StrategicOutputController::class, 'store'])->middleware('scope:strategic_outputs:write');
+        Route::get('strategic-outputs/search', [StrategicOutputController::class, 'search'])->middleware('scope:strategic_outputs');
+        Route::get('strategic-outputs/{id}', [StrategicOutputController::class, 'show'])->middleware('scope:strategic_outputs');
+        Route::put('strategic-outputs/{id}', [StrategicOutputController::class, 'update'])->middleware('scope:strategic_outputs:write');
+        Route::get('strategic-outputs/country-kpa/{id}', [StrategicOutputController::class, 'showByCountryKpa'])->middleware('scope:strategic_outputs');
+        Route::post('strategic-outputs-measures', [StrategicOutputController::class, 'addMeasure'])->middleware('scope:strategic_outputs:write');
+        Route::post('strategic-outputs/remove-measure', [StrategicOutputController::class, 'removeMeasure'])->middleware('scope:strategic_outputs:write');
+        Route::get('strategic-outputs/kpa/{id}', [StrategicOutputController::class, 'getStrategicOutputsForKpaId'])->middleware('scope:strategic_outputs');
 
         // API Routes para Programs
         Route::get('programs', [ProgramController::class, 'index'])->middleware('scope:programs');
@@ -227,13 +227,13 @@ Route::prefix('v1')->group(function () {
         Route::get('projects/program/{id}', [ProjectController::class, 'getProjectsByProgramId'])->middleware('scope:projects');
 
         // Listar todas las relaciones proyecto-agencia
-        Route::get('project-agencies', [ProjectAgencyController::class, 'index'])->middleware('scope:projects');
-        Route::post('project-agencies', [ProjectAgencyController::class, 'createProjectAgency'])->middleware('scope:projects:write');
-        Route::delete('project-agencies', [ProjectAgencyController::class, 'deleteProjectAgency'])->middleware('scope:projects:write');
-        Route::get('project-agencies/projects/by-agency/{id}', [ProjectAgencyController::class, 'showProjectsByAgencyId'])->middleware('scope:projects');
-        Route::get('project-agencies/projects/by-agency-name/{name}', [ProjectAgencyController::class, 'showProjectsByAgencyName'])->middleware('scope:projects');
-        Route::get('project-agencies/agencies/by-project/{id}', [ProjectAgencyController::class, 'showAgenciesByProjectId'])->middleware('scope:projects');
-        Route::get('project-agencies/agencies/by-project-name/{name}', [ProjectAgencyController::class, 'showAgenciesByProjectName'])->middleware('scope:projects');
+        Route::get('project-agencies', [ProjectAgencyController::class, 'index'])->middleware('scope:project_agencies');
+        Route::post('project-agencies', [ProjectAgencyController::class, 'createProjectAgency'])->middleware('scope:project_agencies:write');
+        Route::delete('project-agencies', [ProjectAgencyController::class, 'deleteProjectAgency'])->middleware('scope:project_agencies:write');
+        Route::get('project-agencies/projects/by-agency/{id}', [ProjectAgencyController::class, 'showProjectsByAgencyId'])->middleware('scope:project_agencies');
+        Route::get('project-agencies/projects/by-agency-name/{name}', [ProjectAgencyController::class, 'showProjectsByAgencyName'])->middleware('scope:project_agencies');
+        Route::get('project-agencies/agencies/by-project/{id}', [ProjectAgencyController::class, 'showAgenciesByProjectId'])->middleware('scope:project_agencies');
+        Route::get('project-agencies/agencies/by-project-name/{name}', [ProjectAgencyController::class, 'showAgenciesByProjectName'])->middleware('scope:project_agencies');
 
         // Listar todas las relaciones proyecto-indicador
         Route::get('project-indicators', [ProjectIndicatorController::class, 'index'])->middleware('scope:projects');

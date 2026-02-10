@@ -43,12 +43,12 @@ use RuntimeException;
 class CountryKpaUserController extends Controller
 {
     private CountryKpaUserService $service;
-    
+
     public function __construct(CountryKpaUserService $service)
     {
         $this->service = $service;
     }
-    
+
     /**
      * @OA\Get(
      *     path="/country_kpa_users",
@@ -56,6 +56,7 @@ class CountryKpaUserController extends Controller
      *     description="Retrieve a list of all user assignments with relationships loaded",
      *     operationId="getCountryKpaUsersList",
      *     tags={"CountryKpaUsers"},
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="country_kpa_id",
      *         in="query",
@@ -106,7 +107,7 @@ class CountryKpaUserController extends Controller
             if ($request->has('country_kpa_id')) {
                 $countryKpaId = (int) $request->query('country_kpa_id');
                 $assignments = $this->service->getUserRolesByCountryKpa($countryKpaId);
-                
+
                 return ApiResponse::success(
                     'UserRoles for CountryKpa retrieved successfully',
                     200,
@@ -116,12 +117,12 @@ class CountryKpaUserController extends Controller
                     ]
                 );
             }
-            
+
             // Filter by user_role_id if provided
             if ($request->has('user_role_id')) {
                 $userRoleId = (int) $request->query('user_role_id');
                 $assignments = $this->service->getCountryKpasByUserRole($userRoleId);
-                
+
                 return ApiResponse::success(
                     'CountryKpas for UserRole retrieved successfully',
                     200,
@@ -131,10 +132,10 @@ class CountryKpaUserController extends Controller
                     ]
                 );
             }
-            
+
             // Get all assignments
             $assignments = $this->service->getAllAssignments();
-            
+
             return ApiResponse::success(
                 'Assignments retrieved successfully',
                 200,
@@ -147,7 +148,7 @@ class CountryKpaUserController extends Controller
             return ApiResponse::error('Internal server error', 500);
         }
     }
-    
+
     /**
      * @OA\Post(
      *     path="/country_kpa_users",
@@ -155,6 +156,7 @@ class CountryKpaUserController extends Controller
      *     description="Create a new assignment between a User and a CountryKpa with optional role validation",
      *     operationId="createCountryKpaUserAssignment",
      *     tags={"CountryKpaUsers"},
+     *     security={{"bearerAuth":{}}},
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
@@ -209,15 +211,15 @@ class CountryKpaUserController extends Controller
     {
         try {
             $validated = $request->validated();
-            
+
             $assignment = $this->service->createAssignment(
                 $validated['country_kpa_id'],
                 $validated['user_role_id'],
                 $validated['required_role_name']
             );
-            
+
             $assignment->load(['countryKpa.country', 'countryKpa.kpa', 'userRole.user.userState', 'userRole.role']);
-            
+
             return ApiResponse::created(
                 'UserRole assigned to CountryKpa successfully',
                 new CountryKpaUserResource($assignment)
@@ -228,7 +230,7 @@ class CountryKpaUserController extends Controller
             return ApiResponse::error('Internal server error', 500);
         }
     }
-    
+
     /**
      * @OA\Get(
      *     path="/country_kpa_users/{id}",
@@ -236,6 +238,7 @@ class CountryKpaUserController extends Controller
      *     description="Retrieve a specific assignment by its ID with relationships",
      *     operationId="getCountryKpaUserById",
      *     tags={"CountryKpaUsers"},
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
@@ -276,7 +279,7 @@ class CountryKpaUserController extends Controller
     {
         try {
             $assignment = $this->service->getAssignmentById($id);
-            
+
             return ApiResponse::success(
                 'Assignment retrieved successfully',
                 200,
@@ -291,7 +294,7 @@ class CountryKpaUserController extends Controller
             return ApiResponse::error('Internal server error', 500);
         }
     }
-    
+
     /**
      * @OA\Put(
      *     path="/country_kpa_users/{id}",
@@ -299,6 +302,7 @@ class CountryKpaUserController extends Controller
      *     description="Update an existing user assignment to a different CountryKpa or different user with optional role validation",
      *     operationId="updateCountryKpaUserAssignment",
      *     tags={"CountryKpaUsers"},
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
@@ -369,16 +373,16 @@ class CountryKpaUserController extends Controller
     {
         try {
             $validated = $request->validated();
-            
+
             $assignment = $this->service->updateAssignment(
                 $id,
                 $validated['country_kpa_id'],
                 $validated['user_role_id'],
                 $validated['required_role_name']
             );
-            
+
             $assignment->load(['countryKpa.country', 'countryKpa.kpa', 'userRole.user.userState', 'userRole.role']);
-            
+
             return ApiResponse::success(
                 'Assignment updated successfully',
                 200,
@@ -393,7 +397,7 @@ class CountryKpaUserController extends Controller
             return ApiResponse::error('Internal server error', 500);
         }
     }
-    
+
     /**
      * @OA\Delete(
      *     path="/country_kpa_users/{id}",
@@ -401,6 +405,7 @@ class CountryKpaUserController extends Controller
      *     description="Permanently delete an assignment between a User and a CountryKpa",
      *     operationId="deleteCountryKpaUserAssignment",
      *     tags={"CountryKpaUsers"},
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
@@ -441,7 +446,7 @@ class CountryKpaUserController extends Controller
     {
         try {
             $this->service->removeAssignment($id);
-            
+
             return ApiResponse::success(
                 'Assignment removed successfully',
                 200

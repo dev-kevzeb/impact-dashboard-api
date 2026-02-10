@@ -50,6 +50,7 @@ class ProjectAgencyController extends Controller
      *     tags={"Project-Agencies"},
      *     summary="Listar relaciones Proyecto-Agencia",
      *     description="Obtiene todas las relaciones entre proyectos y agencias ejecutoras con sus detalles cargados",
+     *     security={{"bearerAuth":{}}},
      *     @OA\Response(
      *         response=200,
      *         description="Lista obtenida exitosamente",
@@ -106,6 +107,7 @@ class ProjectAgencyController extends Controller
      *     tags={"Project-Agencies"},
      *     summary="Obtener proyectos por ID de agencia",
      *     description="Obtiene todos los proyectos asociados a una agencia específica por su ID",
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
@@ -171,6 +173,7 @@ class ProjectAgencyController extends Controller
      *     tags={"Project-Agencies"},
      *     summary="Obtener proyectos por nombre de agencia",
      *     description="Obtiene todos los proyectos asociados a una agencia específica por su nombre",
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="name",
      *         in="path",
@@ -236,6 +239,7 @@ class ProjectAgencyController extends Controller
      *     tags={"Project-Agencies"},
      *     summary="Obtener agencias por ID de proyecto",
      *     description="Obtiene todas las agencias asociadas a un proyecto específico por su ID",
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
@@ -301,6 +305,7 @@ class ProjectAgencyController extends Controller
      *     tags={"Project-Agencies"},
      *     summary="Obtener agencias por nombre de proyecto",
      *     description="Obtiene todas las agencias asociadas a un proyecto específico por su nombre",
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="name",
      *         in="path",
@@ -366,6 +371,7 @@ class ProjectAgencyController extends Controller
      *     tags={"Project-Agencies"},
      *     summary="Crear relación Proyecto-Agencia",
      *     description="Asocia una agencia ejecutora a un proyecto específico",
+     *     security={{"bearerAuth":{}}},
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\MediaType(
@@ -415,7 +421,6 @@ class ProjectAgencyController extends Controller
                 201,
                 new ProjectAgencyResource($projectAgency)
             );
-
         } catch (\RuntimeException $e) {
             return ApiResponse::error($e->getMessage(), 400);
         } catch (\Exception $e) {
@@ -429,6 +434,7 @@ class ProjectAgencyController extends Controller
      *     tags={"Project-Agencies"},
      *     summary="Eliminar relación Proyecto-Agencia",
      *     description="Desasocia una agencia de un proyecto eliminando el registro de la relación",
+     *     security={{"bearerAuth":{}}},
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\MediaType(
@@ -472,7 +478,6 @@ class ProjectAgencyController extends Controller
                 "La relación project-agency con id {$projectAgencyId} fue eliminada correctamente.",
                 200
             );
-
         } catch (\RuntimeException $e) {
             return ApiResponse::error($e->getMessage(), 404);
         } catch (\Exception $e) {
