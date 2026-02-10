@@ -21,7 +21,7 @@ use Illuminate\Routing\Controller as BaseController;
  * )
  * 
  * @OA\Server(
- *     url="https://api.pacificecommerce.org/api/v1",
+ *     url="https://pacificecommerce.shop/api/v1",
  *     description="Servidor de Producción"
  * )
  * 

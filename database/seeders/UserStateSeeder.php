@@ -7,26 +7,22 @@ use Illuminate\Database\Seeder;
 
 class UserStateSeeder extends Seeder
 {
-    /**
-     * Seed the user states table
-     * 
-     * States:
-     * - pending: User registered, waiting for admin approval
-     * - active: User approved, can login
-     * - inactive: User suspended/deactivated
-     */
     public function run(): void
     {
         $states = [
-            ['name' => 'pending'],
-            ['name' => 'active'],
-            ['name' => 'inactive'],
+            ['id' => 1, 'name' => 'pending'],
+            ['id' => 2, 'name' => 'active'],
+            ['id' => 3, 'name' => 'inactive'],
         ];
 
         foreach ($states as $state) {
-            UserState::firstOrCreate(['name' => $state['name']], $state);
+            \DB::table('user_state')->updateOrInsert(
+                ['id' => $state['id']],
+                array_merge($state, [
+                    'created_at' => now(),
+                    'updated_at' => now()
+                ])
+            );
         }
-
-        $this->command->info('User states seeded: pending, active, inactive');
     }
 }

@@ -36,6 +36,7 @@ class CurrencyController extends Controller
      *     tags={"Currencies"},
      *     summary="Listar todas las monedas",
      *     description="Obtiene la lista completa de tipos de moneda disponibles en el sistema (USD, EUR, BOB, etc.)",
+     *     security={{"bearerAuth":{}}},
      *     @OA\Response(
      *         response=200,
      *         description="Lista obtenida exitosamente",
@@ -68,7 +69,7 @@ class CurrencyController extends Controller
     {
         try {
             $currencies = $this->currencyService->getAllCurrencies();
-            
+
             return ApiResponse::success(
                 'Currency List Successfully Obtained',
                 200,
@@ -90,6 +91,7 @@ class CurrencyController extends Controller
      *     tags={"Currencies"},
      *     summary="Obtener una moneda específica",
      *     description="Obtiene la información detallada de un tipo de moneda por su ID",
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
@@ -143,6 +145,7 @@ class CurrencyController extends Controller
      *     tags={"Currencies"},
      *     summary="Crear nueva moneda",
      *     description="Registra un nuevo tipo de moneda. El código debe ser único en el sistema (generalmente código ISO 4217 de 3 caracteres).",
+     *     security={{"bearerAuth":{}}},
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\MediaType(
@@ -203,7 +206,6 @@ class CurrencyController extends Controller
                 'Currency created successfully',
                 new CurrencyResource($currency)
             );
-
         } catch (RuntimeException $e) {
             // Si el error es de duplicado, retornar como error de validación (422)
             if (str_contains($e->getMessage(), 'Already exist')) {
@@ -221,6 +223,7 @@ class CurrencyController extends Controller
      *     tags={"Currencies"},
      *     summary="Actualizar moneda existente",
      *     description="Actualiza el código de un tipo de moneda. El código debe ser único en el sistema.",
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
@@ -294,7 +297,6 @@ class CurrencyController extends Controller
                 200,
                 new CurrencyResource($currency)
             );
-
         } catch (RuntimeException $e) {
             // Si el error es de duplicado, retornar como error de validación (422)
             if (str_contains($e->getMessage(), 'Alredy exist')) {
@@ -312,6 +314,7 @@ class CurrencyController extends Controller
      *     tags={"Currencies"},
      *     summary="Buscar moneda por código",
      *     description="Busca un tipo de moneda específico por su código ISO 4217 (búsqueda exacta, case-insensitive)",
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="code",
      *         in="query",
@@ -373,7 +376,6 @@ class CurrencyController extends Controller
                 200,
                 new CurrencyResource($currency)
             );
-
         } catch (RuntimeException $e) {
             return ApiResponse::notFound('Currency');
         } catch (\Illuminate\Validation\ValidationException $e) {

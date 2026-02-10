@@ -37,6 +37,7 @@ class KpaController extends Controller
      *     tags={"KPAs"},
      *     summary="Listar todos los KPAs",
      *     description="Obtiene la lista completa de Áreas Clave Prioritarias (Key Priority Areas) con su nivel de implementación",
+     *     security={{"bearerAuth":{}}},
      *     @OA\Response(
      *         response=200,
      *         description="Lista obtenida exitosamente",
@@ -72,7 +73,7 @@ class KpaController extends Controller
             $perPage = (int) $request->get("per_page", 10);
 
             $kpas = $this->kpaService->getKpasPaginated($search, $perPage);
-            
+
             return ApiResponse::success(
                 'KPAs paginated list successfully uploaded',
                 200,
@@ -97,6 +98,7 @@ class KpaController extends Controller
      *     tags={"KPAs"},
      *     summary="Obtener un KPA específico",
      *     description="Obtiene la información detallada de un Área Clave Prioritaria por su ID",
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
@@ -150,6 +152,7 @@ class KpaController extends Controller
      *     tags={"KPAs"},
      *     summary="Crear nuevo KPA",
      *     description="Registra una nueva Área Clave Prioritaria con su porcentaje de implementación inicial.",
+     *     security={{"bearerAuth":{}}},
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\MediaType(
@@ -220,7 +223,6 @@ class KpaController extends Controller
                 'KPA created successfully',
                 new KpaResource($kpa)
             );
-
         } catch (RuntimeException $e) {
             return ApiResponse::error($e->getMessage(), 400);
         } catch (\Illuminate\Validation\ValidationException $e) {
@@ -235,6 +237,7 @@ class KpaController extends Controller
      *     tags={"KPAs"},
      *     summary="Actualizar KPA existente",
      *     description="Actualiza la información de un Área Clave Prioritaria, incluyendo su porcentaje de implementación.",
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
@@ -313,7 +316,6 @@ class KpaController extends Controller
                 200,
                 new KpaResource($kpa)
             );
-
         } catch (RuntimeException $e) {
             return ApiResponse::error($e->getMessage(), 400);
         } catch (\Illuminate\Validation\ValidationException $e) {
@@ -327,6 +329,7 @@ class KpaController extends Controller
      *     tags={"KPAs"},
      *     summary="Buscar KPA por nombre",
      *     description="Busca un Área Clave Prioritaria específica por su nombre (búsqueda exacta, case-insensitive)",
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="name",
      *         in="query",
@@ -388,7 +391,6 @@ class KpaController extends Controller
                 200,
                 new KpaResource($kpa)
             );
-
         } catch (RuntimeException $e) {
             return ApiResponse::notFound('KPA');
         } catch (\Illuminate\Validation\ValidationException $e) {

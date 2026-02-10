@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Modules\StrategicOutput\Controller;
 
 use App\Http\Requests\StrategicOutputRequest;
@@ -67,6 +68,7 @@ class StrategicOutputController extends Controller
      *     tags={"Strategic Outputs"},
      *     summary="Listar todos los resultados estratégicos",
      *     description="Obtiene la lista completa de resultados estratégicos con sus relaciones: Country-KPA, país, KPA y medidas",
+     *     security={{"bearerAuth":{}}},
      *     @OA\Response(
      *         response=200,
      *         description="Lista obtenida exitosamente",
@@ -122,6 +124,7 @@ class StrategicOutputController extends Controller
      *     tags={"Strategic Outputs"},
      *     summary="Obtener resultado estratégico específico",
      *     description="Obtiene el detalle de un resultado estratégico por su ID, incluyendo Country-KPA, país, KPA y medidas",
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
@@ -156,9 +159,9 @@ class StrategicOutputController extends Controller
     {
         try {
             $strategicOutput = $this->strategicOutputService->getStrategicOutputById($id);
-            
+
             $strategicOutput->load(['measures']);
-            
+
             return ApiResponse::success(
                 'Strategic Output found',
                 200,
@@ -196,9 +199,9 @@ class StrategicOutputController extends Controller
                 $validated['name'],
                 $validated['id_ck']
             );
-            
+
             $strategicOutput->load(['countryKpa.country', 'countryKpa.kpa', 'measures']);
-            
+
             return ApiResponse::created(
                 'Successfully created strategic result',
                 new StrategicOutputResource($strategicOutput)
@@ -216,6 +219,7 @@ class StrategicOutputController extends Controller
      *     tags={"Strategic Outputs"},
      *     summary="Actualizar resultado estratégico",
      *     description="Actualiza un resultado estratégico existente, incluyendo su nombre y/o Country-KPA asociado",
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
@@ -271,9 +275,9 @@ class StrategicOutputController extends Controller
                 $validated['name'],
                 $validated['id_ck'] ?? null
             );
-            
+
             $strategicOutput->load(['countryKpa.country', 'countryKpa.kpa', 'measures']);
-            
+
             return ApiResponse::success(
                 'Strategic Output uploaded successfully',
                 200,
@@ -292,6 +296,7 @@ class StrategicOutputController extends Controller
      *     tags={"Strategic Outputs"},
      *     summary="Agregar medida a resultado estratégico",
      *     description="Asocia una nueva medida (indicador) a un resultado estratégico específico",
+     *     security={{"bearerAuth":{}}},
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\MediaType(
@@ -346,7 +351,6 @@ class StrategicOutputController extends Controller
                 200,
                 $strategicOutput
             );
-
         } catch (RuntimeException $e) {
             return ApiResponse::error($e->getMessage(), 400);
         } catch (\Illuminate\Validation\ValidationException $e) {
@@ -360,6 +364,7 @@ class StrategicOutputController extends Controller
      *     tags={"Strategic Outputs"},
      *     summary="Remover medida de resultado estratégico",
      *     description="Elimina una medida (indicador) asociada a un resultado estratégico específico",
+     *     security={{"bearerAuth":{}}},
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\MediaType(
@@ -417,7 +422,6 @@ class StrategicOutputController extends Controller
                 200,
                 $strategicOutput
             );
-
         } catch (RuntimeException $e) {
             return ApiResponse::error($e->getMessage(), 400);
         } catch (\Illuminate\Validation\ValidationException $e) {
@@ -430,6 +434,7 @@ class StrategicOutputController extends Controller
      *     tags={"Strategic Outputs"},
      *     summary="Buscar resultado estratégico por nombre",
      *     description="Busca un resultado estratégico específico por su nombre (búsqueda exacta, case-insensitive) con relaciones completas",
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="name",
      *         in="query",
@@ -490,7 +495,6 @@ class StrategicOutputController extends Controller
                 200,
                 new StrategicOutputResource($strategicOutput)
             );
-
         } catch (RuntimeException $e) {
             return ApiResponse::error($e->getMessage(), 400);
         } catch (\Illuminate\Validation\ValidationException $e) {
@@ -499,12 +503,13 @@ class StrategicOutputController extends Controller
     }
 
 
-    public function getStrategicOutputsForKpaId(Request $request, int $kpaId){
+    public function getStrategicOutputsForKpaId(Request $request, int $kpaId)
+    {
         try {
             $search = $request->get("search");
             $perPage = (int) $request->get("per_page", 10);
 
-            $strategic_outputs = $this->strategicOutputService->getStrategicOutputsByKpaId( $perPage, $search, $kpaId);
+            $strategic_outputs = $this->strategicOutputService->getStrategicOutputsByKpaId($perPage, $search, $kpaId);
 
             return ApiResponse::success(
                 'Strategic Outputs paginated list successfully uploaded',
@@ -522,6 +527,5 @@ class StrategicOutputController extends Controller
         } catch (\Exception $e) {
             return ApiResponse::error('Internal server error', 500);
         }
-
     }
 }

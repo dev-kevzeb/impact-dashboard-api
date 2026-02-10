@@ -51,6 +51,7 @@ class ProjectIndicatorController extends Controller
      *     tags={"Project-Indicators"},
      *     summary="Listar relaciones Proyecto-Indicador",
      *     description="Obtiene todas las relaciones entre proyectos e indicadores con sus detalles cargados",
+     *     security={{"bearerAuth":{}}},
      *     @OA\Response(
      *         response=200,
      *         description="Lista obtenida exitosamente",
@@ -81,7 +82,7 @@ class ProjectIndicatorController extends Controller
      */
     public function index()
     {
-       try{
+        try {
             $projectIndicators = $this->projectIndicatorService->getAllProjectIndicators();
             $projectIndicators->load(["project", "indicator"]);
 
@@ -93,7 +94,7 @@ class ProjectIndicatorController extends Controller
                     'total' => count($projectIndicators),
                 ]
             );
-       }catch (RuntimeException $e) {
+        } catch (RuntimeException $e) {
             return ApiResponse::error($e->getMessage(), 500);
         } catch (\Exception $e) {
             return ApiResponse::error('Error interno del servidor', 500);
@@ -106,6 +107,7 @@ class ProjectIndicatorController extends Controller
      *     tags={"Project-Indicators"},
      *     summary="Obtener proyectos por ID de indicador",
      *     description="Obtiene todos los proyectos asociados a un indicador específico por su ID",
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
@@ -147,8 +149,8 @@ class ProjectIndicatorController extends Controller
      */
     public function showProjectsByIndicatorId(int $id)
     {
-        try{
-            $projects = $this->projectIndicatorService->findProjectsByIndicatorId($id); 
+        try {
+            $projects = $this->projectIndicatorService->findProjectsByIndicatorId($id);
 
             return ApiResponse::success(
                 "Lista de proyectos para el indicatdor con id {$id} recueprada exitosamente",
@@ -171,6 +173,7 @@ class ProjectIndicatorController extends Controller
      *     tags={"Project-Indicators"},
      *     summary="Obtener indicadores por ID de proyecto",
      *     description="Obtiene todos los indicadores asociados a un proyecto específico por su ID",
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
@@ -212,17 +215,17 @@ class ProjectIndicatorController extends Controller
      */
     public function showIndicatorsByProjectId(int $id)
     {
-        try{
+        try {
             $indicators = $this->projectIndicatorService->findIndicatorsByProjectId($id);
 
             return ApiResponse::success(
                 "Lista de indicadores para el proyecto con id {$id}. recuperada exitosamente",
                 200,
                 [
-                    'indicators'=> IndicatorResource::collection($indicators),
+                    'indicators' => IndicatorResource::collection($indicators),
                     'total' => count($indicators),
                 ]
-             );
+            );
         } catch (RuntimeException $e) {
             return ApiResponse::error($e->getMessage(), 404);
         } catch (\Exception $e) {
@@ -236,6 +239,7 @@ class ProjectIndicatorController extends Controller
      *     tags={"Project-Indicators"},
      *     summary="Obtener indicadores por nombre de proyecto",
      *     description="Obtiene todos los indicadores asociados a un proyecto específico por su nombre",
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="name",
      *         in="path",
@@ -277,16 +281,16 @@ class ProjectIndicatorController extends Controller
      */
     public function showIndicatorsByPRojectName(string $name)
     {
-        try{
+        try {
             $indicators = $this->projectIndicatorService->findIndicatorsByProjectName($name);
             return ApiResponse::success(
-                    "Lista de indicadores asociadas al proyecto '{$name}' recuperada exitosamente.",
-                    200,
-                    [
-                        'indicators' => IndicatorResource::collection($indicators),
-                        'total' => count($indicators)
-                    ]
-                );  
+                "Lista de indicadores asociadas al proyecto '{$name}' recuperada exitosamente.",
+                200,
+                [
+                    'indicators' => IndicatorResource::collection($indicators),
+                    'total' => count($indicators)
+                ]
+            );
         } catch (RuntimeException $e) {
             return ApiResponse::error($e->getMessage(), 404);
         } catch (\Exception $e) {
@@ -300,6 +304,7 @@ class ProjectIndicatorController extends Controller
      *     tags={"Project-Indicators"},
      *     summary="Crear relación Proyecto-Indicador",
      *     description="Asocia un indicador de desempeño a un proyecto específico",
+     *     security={{"bearerAuth":{}}},
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\MediaType(
@@ -340,7 +345,7 @@ class ProjectIndicatorController extends Controller
      */
     public function createProjectIndicator(Request $request)
     {
-        try{
+        try {
             $projectId = $request->input('project_id');
             $indicatorId = $request->input('indicator_id');
 
@@ -357,7 +362,7 @@ class ProjectIndicatorController extends Controller
                     'projectIndicator' => new ProjectIndicatorResource($projectIndicator)
                 ]
             );
-        }  catch (RuntimeException $e) {
+        } catch (RuntimeException $e) {
             return ApiResponse::error($e->getMessage(), 400);
         } catch (\Exception $e) {
             return ApiResponse::error("Error interno del servidor. {$e}", 500);
@@ -370,6 +375,7 @@ class ProjectIndicatorController extends Controller
      *     tags={"Project-Indicators"},
      *     summary="Eliminar relación Proyecto-Indicador",
      *     description="Desasocia un indicador de un proyecto eliminando el registro de la relación",
+     *     security={{"bearerAuth":{}}},
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\MediaType(
@@ -402,7 +408,8 @@ class ProjectIndicatorController extends Controller
      *     )
      * )
      */
-    public function deleteProjectIndicator(Request $request){
+    public function deleteProjectIndicator(Request $request)
+    {
         try {
             $projectIndicatorId = $request->input('project_indicator_id');
             if (!$projectIndicatorId) throw new RuntimeException("El campo project_indicator_id es obligatorio.");
@@ -412,7 +419,6 @@ class ProjectIndicatorController extends Controller
                 "La relación project-indicator con id {$projectIndicatorId} fue eliminada correctamente.",
                 200
             );
-
         } catch (RuntimeException $e) {
             return ApiResponse::error($e->getMessage(), 404);
         } catch (\Exception $e) {

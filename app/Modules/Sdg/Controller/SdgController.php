@@ -36,6 +36,7 @@ class SdgController extends Controller
      *     tags={"SDGs"},
      *     summary="List all SDGs",
      *     description="Retrieves the complete list of UN Sustainable Development Goals (SDGs) with their images",
+     *     security={{"bearerAuth":{}}},
      *     @OA\Response(
      *         response=200,
      *         description="List retrieved successfully",
@@ -94,6 +95,7 @@ class SdgController extends Controller
      *     tags={"SDGs"},
      *     summary="Get specific SDG",
      *     description="Retrieves detailed information of a Sustainable Development Goal by its ID",
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
@@ -146,6 +148,7 @@ class SdgController extends Controller
      *     tags={"SDGs"},
      *     summary="Create new SDG",
      *     description="Uploads an SDG image (Sustainable Development Goal). The system validates that no image with the same name exists.",
+     *     security={{"bearerAuth":{}}},
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\MediaType(
@@ -242,6 +245,7 @@ class SdgController extends Controller
      *     tags={"SDGs"},
      *     summary="Update existing SDG",
      *     description="Updates the image of an existing SDG. Use POST with _method=PUT to send files from Postman",
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
@@ -342,6 +346,7 @@ class SdgController extends Controller
      *     tags={"SDGs"},
      *     summary="Search SDG by filename",
      *     description="Searches for a specific SDG by its filename",
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="filename",
      *         in="query",
