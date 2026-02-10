@@ -50,6 +50,7 @@ class CountryKpaController extends Controller
 	 *     tags={"Country-KPAs"},
 	 *     summary="Listar relaciones Country-KPA",
 	 *     description="Obtiene todas las relaciones país-KPA. Opcionalmente filtra por país específico usando parámetro ?country=X",
+	 *     security={{"bearerAuth":{}}},
 	 *     @OA\Parameter(
 	 *         name="country",
 	 *         in="query",
@@ -93,7 +94,7 @@ class CountryKpaController extends Controller
 				$countryWithKpas = $this->service->getCountryKpasByCountryId($countryId);
 				return ApiResponse::success('Country KPAs obtained', 200, $countryWithKpas);
 			}
-			
+
 			$items = $this->service->getAll();
 			return ApiResponse::success('Obtained list', 200, ['items' => $items, 'total' => count($items)]);
 		} catch (RuntimeException $e) {
@@ -107,6 +108,7 @@ class CountryKpaController extends Controller
 	 *     tags={"Country-KPAs"},
 	 *     summary="Obtener relación Country-KPA específica",
 	 *     description="Obtiene el detalle de una relación país-KPA por su ID",
+	 *     security={{"bearerAuth":{}}},
 	 *     @OA\Parameter(
 	 *         name="id",
 	 *         in="path",
@@ -149,7 +151,7 @@ class CountryKpaController extends Controller
 		}
 	}
 
-    
+
 	public function store(CountryKpaRequest $request): JsonResponse
 	{
 		try {
@@ -158,7 +160,6 @@ class CountryKpaController extends Controller
 			$created = $this->service->create($validated);
 
 			return ApiResponse::created('Country-KPA relationship created successfully', $created);
-
 		} catch (\Illuminate\Validation\ValidationException $e) {
 			return ApiResponse::validationError($e->errors());
 		} catch (RuntimeException $e) {
@@ -174,6 +175,7 @@ class CountryKpaController extends Controller
 	 *     tags={"Country-KPAs"},
 	 *     summary="Actualizar relación Country-KPA",
 	 *     description="Actualiza una relación existente país-KPA (cambia el país o KPA asociado)",
+	 *     security={{"bearerAuth":{}}},
 	 *     @OA\Parameter(
 	 *         name="id",
 	 *         in="path",
@@ -233,10 +235,8 @@ class CountryKpaController extends Controller
 			);
 		} catch (\Illuminate\Validation\ValidationException $e) {
 			return ApiResponse::validationError($e->errors());
-
 		} catch (RuntimeException $e) {
 			return ApiResponse::error($e->getMessage(), 400);
-
 		} catch (\Exception $e) {
 			return ApiResponse::error('Internal server error', 500);
 		}
@@ -248,6 +248,7 @@ class CountryKpaController extends Controller
 	 *     tags={"Country-KPAs"},
 	 *     summary="Eliminar relación Country-KPA",
 	 *     description="Desasocia un KPA de un país eliminando el registro de la relación",
+	 *     security={{"bearerAuth":{}}},
 	 *     @OA\Parameter(
 	 *         name="id",
 	 *         in="path",
@@ -283,7 +284,7 @@ class CountryKpaController extends Controller
 			return ApiResponse::error($e->getMessage(), 500);
 		}
 	}
-	
+
 	public function showForCountry($id): JsonResponse
 	{
 		try {

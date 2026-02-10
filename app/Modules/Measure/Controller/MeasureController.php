@@ -22,17 +22,17 @@ use RuntimeException;
  *     schema="Measure",
  *     type="object",
  *     title="Measure",
-     description="Measures (outcome indicators) associated with strategic outputs, with their performance indicators",
-     @OA\Property(property="id", type="integer", example=1, description="Unique measure ID"),
-     @OA\Property(property="name", type="string", example="Number of improved schools", description="Measure name (2-100 characters)"),
+ *     description="Measures (outcome indicators) associated with strategic outputs, with their performance indicators",
+ *     @OA\Property(property="id", type="integer", example=1, description="Unique measure ID"),
+ *     @OA\Property(property="name", type="string", example="Number of improved schools", description="Measure name (2-100 characters)"),
  *     @OA\Property(
  *         property="indicators",
  *         type="array",
-         description="Performance indicators associated with the measure (optional, loaded with load)",
-         @OA\Items(
-             type="object",
-             @OA\Property(property="id", type="integer", example=1),
-             @OA\Property(property="name", type="string", example="Schools with renovated infrastructure"),
+ *        description="Performance indicators associated with the measure (optional, loaded with load)",
+ *        @OA\Items(
+ *            type="object",
+ *           @OA\Property(property="id", type="integer", example=1),
+ *             @OA\Property(property="name", type="string", example="Schools with renovated infrastructure"),
  *             @OA\Property(property="target", type="number", format="float", example=50),
  *             @OA\Property(property="type_id", type="integer", example=1)
  *         )
@@ -59,6 +59,7 @@ class MeasureController extends Controller
      *     tags={"Measures"},
      *     summary="List all measures",
      *     description="Retrieves the complete list of measures (outcome indicators) without their associated indicators",
+     *     security={{"bearerAuth":{}}},
      *     @OA\Response(
      *         response=200,
      *         description="List retrieved successfully",
@@ -112,6 +113,7 @@ class MeasureController extends Controller
      *     tags={"Measures"},
      *     summary="Get specific measure",
      *     description="Retrieves details of a measure by its ID, without its associated indicators",
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
@@ -165,6 +167,7 @@ class MeasureController extends Controller
      *     tags={"Measures"},
      *     summary="Get measure with its indicators",
      *     description="Retrieves a measure with all its associated performance indicators (eager loading)",
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
@@ -216,6 +219,7 @@ class MeasureController extends Controller
      *     tags={"Measures"},
      *     summary="Get measure with indicator count",
      *     description="Retrieves a measure with its indicators and the total count of associated indicators",
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
@@ -266,6 +270,7 @@ class MeasureController extends Controller
      *     tags={"Measures"},
      *     summary="Create new measure",
      *     description="Registers a new measure associated with a specific strategic output",
+     *     security={{"bearerAuth":{}}},
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\MediaType(
@@ -332,6 +337,7 @@ class MeasureController extends Controller
      *     tags={"Measures"},
      *     summary="Update existing measure",
      *     description="Updates the name and/or associated strategic output of a measure",
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
@@ -345,8 +351,8 @@ class MeasureController extends Controller
      *             mediaType="application/json",
      *             @OA\Schema(
      *                 required={"name", "strategic_output_id"},
-                 @OA\Property(property="name", type="string", minLength=2, maxLength=100, example="Number of indirect beneficiaries", description="Updated name"),
-                 @OA\Property(property="strategic_output_id", type="integer", example=2, description="Updated strategic output ID")
+     *            @OA\Property(property="name", type="string", minLength=2, maxLength=100, example="Number of indirect beneficiaries", description="Updated name"),
+     *            @OA\Property(property="strategic_output_id", type="integer", example=2, description="Updated strategic output ID")
      *             )
      *         )
      *     ),
@@ -395,6 +401,7 @@ class MeasureController extends Controller
      *     tags={"Measures"},
      *     summary="Search indicator by name in measure",
      *     description="Retrieves a specific indicator from a measure by searching for its name",
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
@@ -455,6 +462,7 @@ class MeasureController extends Controller
      *     tags={"Measures"},
      *     summary="Add indicator to measure",
      *     description="Associates a new performance indicator with a specific measure",
+     *     security={{"bearerAuth":{}}},
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\MediaType(
@@ -522,6 +530,7 @@ class MeasureController extends Controller
      *     tags={"Measures"},
      *     summary="Remove indicator from measure",
      *     description="Removes a performance indicator associated with a specific measure",
+     *     security={{"bearerAuth":{}}},
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\MediaType(
@@ -573,6 +582,7 @@ class MeasureController extends Controller
      *     tags={"Measures"},
      *     summary="Search measure by name",
      *     description="Searches for a specific measure by its name (exact search, case-insensitive)",
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="name",
      *         in="query",
@@ -623,7 +633,7 @@ class MeasureController extends Controller
             return ApiResponse::validationError($e->errors());
         }
     }
-  
+
     public function listByStrategicOutput(int $id)
     {
         try {
@@ -634,7 +644,6 @@ class MeasureController extends Controller
                 200,
                 MeasureResource::collection($measures)
             );
-
         } catch (RuntimeException $e) {
             return ApiResponse::error($e->getMessage(), 400);
         } catch (\Exception $e) {
@@ -661,13 +670,10 @@ class MeasureController extends Controller
                     'last_page' => $measures->lastPage(),
                 ]
             );
-
         } catch (RuntimeException $e) {
             return ApiResponse::error($e->getMessage(), 400);
         } catch (\Exception $e) {
             return ApiResponse::error('Internal server error', 500);
         }
     }
-
-
 }

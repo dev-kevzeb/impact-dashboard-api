@@ -110,6 +110,7 @@ class ProjectController extends Controller
      *     tags={"Projects"},
      *     summary="Listar proyectos",
      *     description="Obtiene todos los proyectos con sus donantes asociados cargados",
+     *     security={{"bearerAuth":{}}},
      *     @OA\Response(
      *         response=200,
      *         description="Lista de proyectos obtenida exitosamente",
@@ -166,6 +167,7 @@ class ProjectController extends Controller
      *     tags={"Projects"},
      *     summary="Obtener proyecto por ID",
      *     description="Obtiene la información completa de un proyecto específico",
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
@@ -207,7 +209,7 @@ class ProjectController extends Controller
                 new ProjectResource($project)
             );
         } catch (\RuntimeException $e) {
-            return ApiResponse::error($e, 500);    
+            return ApiResponse::error($e, 500);
             //return ApiResponse::notFound('Project');
         } catch (\Exception $e) {
             return ApiResponse::error($e, 500);
@@ -220,6 +222,7 @@ class ProjectController extends Controller
      *     tags={"Projects"},
      *     summary="Crear proyecto",
      *     description="Crea un nuevo proyecto con toda su información de planificación, presupuesto y relaciones. El nombre debe ser único.",
+     *     security={{"bearerAuth":{}}},
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\MediaType(
@@ -298,7 +301,6 @@ class ProjectController extends Controller
                 'Project created successfully',
                 new ProjectResource($project)
             );
-
         } catch (\RuntimeException $e) {
             return ApiResponse::error($e->getMessage(), 400);
         } catch (\Exception $e) {
@@ -313,6 +315,7 @@ class ProjectController extends Controller
      *     tags={"Projects"},
      *     summary="Actualizar proyecto",
      *     description="Actualiza la información completa de un proyecto existente. El nombre debe ser único.",
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
@@ -405,7 +408,6 @@ class ProjectController extends Controller
                 200,
                 new ProjectResource($project)
             );
-
         } catch (\RuntimeException $e) {
             return ApiResponse::error($e->getMessage(), 400);
         } catch (\Exception $e) {
@@ -419,6 +421,7 @@ class ProjectController extends Controller
      *     tags={"Projects"},
      *     summary="Buscar proyecto por nombre",
      *     description="Busca un proyecto específico por su nombre (búsqueda exacta, case-insensitive)",
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="name",
      *         in="query",
@@ -468,7 +471,7 @@ class ProjectController extends Controller
      */
     public function search(Request $request)
     {
-        try{
+        try {
             $request->validate([
                 'name' => 'required|string|min:1',
             ]);
@@ -489,11 +492,12 @@ class ProjectController extends Controller
         }
     }
 
-    public function getProjectsByProgramId(Request $request, int $programId){
-        try{
+    public function getProjectsByProgramId(Request $request, int $programId)
+    {
+        try {
             $search = $request->get("search");
             $perPage = (int) $request->get("per_page", 10);
-            
+
             $projects = $this->projectService->findProjectByProgramIdPaginated($programId, $search, $perPage);
 
             return ApiResponse::success(
