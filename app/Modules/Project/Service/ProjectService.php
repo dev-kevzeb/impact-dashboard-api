@@ -85,12 +85,6 @@ class ProjectService
         $this->strategicOutputService = $strategicOutputService;
         $this->measureService = $measureService;
         $this->programService = $programService;
-
-        $this->countryService= $countryService;
-        $this->countryKpaService = $countryKpaService;
-        $this->kpaService = $kpaService;
-        $this->strategicOutputService = $strategicOutputService;
-        $this->measureService = $measureService;
     }
 
 
