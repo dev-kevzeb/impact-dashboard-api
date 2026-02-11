@@ -5,10 +5,10 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => [
-        'http://localhost:5173',          // (desarrollo)
-        'https://pacific-ecommerce-ui.vercel.app',  //(producción)
-    ],
+    'allowed_origins' => array_filter([
+        env('FRONTEND_URL_LOCAL'),
+        env('FRONTEND_URL_PROD'),
+    ]),
 
     'allowed_headers' => ['*'],
 
