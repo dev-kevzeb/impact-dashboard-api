@@ -31,8 +31,7 @@ class CountryKpaRepository extends Model
 	public function getByCountry(int $countryId)
 	{
 		return $this->model->where('id_country', $countryId)->get();
-	}
-
+    }
 
 	public function getById(int $id)
 	{
