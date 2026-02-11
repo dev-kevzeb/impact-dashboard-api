@@ -55,6 +55,7 @@ class UserRoleController extends Controller
      *     description="Retrieve a list of all user-role assignments with relationships loaded",
      *     operationId="getUserRolesList",
      *     tags={"UserRoles"},
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="user_id",
      *         in="query",
@@ -154,6 +155,7 @@ class UserRoleController extends Controller
      *     description="Create a new assignment between a User and a Role",
      *     operationId="createUserRoleAssignment",
      *     tags={"UserRoles"},
+     *     security={{"bearerAuth":{}}},
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
@@ -233,6 +235,7 @@ class UserRoleController extends Controller
      *     description="Retrieve a specific assignment by its ID with relationships",
      *     operationId="getUserRoleById",
      *     tags={"UserRoles"},
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
@@ -296,6 +299,7 @@ class UserRoleController extends Controller
      *     description="Update an existing user-role assignment",
      *     operationId="updateUserRoleAssignment",
      *     tags={"UserRoles"},
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
@@ -396,6 +400,7 @@ class UserRoleController extends Controller
      *     description="Permanently delete an assignment between a User and a Role",
      *     operationId="deleteUserRoleAssignment",
      *     tags={"UserRoles"},
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="id",
      *         in="path",

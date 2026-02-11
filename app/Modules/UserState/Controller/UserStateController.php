@@ -40,6 +40,7 @@ class UserStateController
      *     tags={"User States"},
      *     summary="List user states",
      *     description="Retrieves all user states available in the system",
+     *     security={{"bearerAuth":{}}},
      *     @OA\Response(
      *         response=200,
      *         description="States list retrieved successfully",
@@ -86,6 +87,7 @@ class UserStateController
      *     tags={"User States"},
      *     summary="Create user state",
      *     description="Creates a new user state. The name must be unique.",
+     *     security={{"bearerAuth":{}}},
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\MediaType(
@@ -158,6 +160,7 @@ class UserStateController
      *     tags={"User States"},
      *     summary="Get state by ID",
      *     description="Retrieves a specific user state information",
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
@@ -211,6 +214,7 @@ class UserStateController
      *     tags={"User States"},
      *     summary="Update user state",
      *     description="Updates an existing state name. The new name must be unique.",
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
@@ -310,6 +314,7 @@ class UserStateController
      *     tags={"User States"},
      *     summary="Search states by name",
      *     description="Searches user states by search term (case-insensitive search)",
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="q",
      *         in="query",

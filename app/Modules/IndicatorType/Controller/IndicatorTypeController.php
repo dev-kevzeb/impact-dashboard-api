@@ -37,6 +37,7 @@ class IndicatorTypeController extends Controller
      *     tags={"Indicator Types"},
      *     summary="Listar todos los tipos de indicador",
      *     description="Obtiene la lista completa de tipos de indicadores disponibles en el sistema (Cuantitativo, Cualitativo, etc.)",
+     *     security={{"bearerAuth":{}}},
      *     @OA\Response(
      *         response=200,
      *         description="Lista obtenida exitosamente",
@@ -67,7 +68,7 @@ class IndicatorTypeController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        try{
+        try {
             $search = $request->get("search");
             $perPage = (int) $request->get("per_page", 10);
 
@@ -84,10 +85,10 @@ class IndicatorTypeController extends Controller
                     'last_page' => $indicatorTypes->lastPage(),
                 ]
             );
-        } catch(RuntimeException $exception) {
+        } catch (RuntimeException $exception) {
             return ApiResponse::error($exception->getMessage(), 500);
         } catch (\Exception $exception) {
-            return ApiResponse::error($exception->getMessage(),500);
+            return ApiResponse::error($exception->getMessage(), 500);
         }
     }
 
@@ -97,6 +98,7 @@ class IndicatorTypeController extends Controller
      *     tags={"Indicator Types"},
      *     summary="Crear nuevo tipo de indicador",
      *     description="Registra un nuevo tipo de indicador. El nombre debe ser único en el sistema.",
+     *     security={{"bearerAuth":{}}},
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\MediaType(
@@ -145,7 +147,7 @@ class IndicatorTypeController extends Controller
      */
     public function store(IndicatorTypeRequest $request): JsonResponse
     {
-        try{
+        try {
             $validated = $request->validated();
             $indicatorType = $this->indicatorTypeService->createIndicatorType($validated['name']);
             return ApiResponse::created(
@@ -153,8 +155,8 @@ class IndicatorTypeController extends Controller
                 new IndicatorTypeResource($indicatorType),
 
             );
-        } catch(RuntimeException $exception) {
-            return ApiResponse::error($exception->getMessage(),400);
+        } catch (RuntimeException $exception) {
+            return ApiResponse::error($exception->getMessage(), 400);
         }
     }
 
@@ -164,6 +166,7 @@ class IndicatorTypeController extends Controller
      *     tags={"Indicator Types"},
      *     summary="Obtener tipo de indicador específico",
      *     description="Obtiene la información detallada de un tipo de indicador por su ID",
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
@@ -196,17 +199,17 @@ class IndicatorTypeController extends Controller
      */
     public function show(int $id): JsonResponse
     {
-        try{
+        try {
             $indicatorType = $this->indicatorTypeService->getIndicatorTypeById($id);
             return ApiResponse::success(
                 'Indicator Type found',
-                200, 
+                200,
                 new IndicatorTypeResource($indicatorType),
             );
-        } catch(RuntimeException $exception) {
+        } catch (RuntimeException $exception) {
             return ApiResponse::notFound('Indicator Type');
-        } catch(\Exception $exception) {
-            return ApiResponse::error($exception->getMessage(),400);
+        } catch (\Exception $exception) {
+            return ApiResponse::error($exception->getMessage(), 400);
         }
     }
 
@@ -216,6 +219,7 @@ class IndicatorTypeController extends Controller
      *     tags={"Indicator Types"},
      *     summary="Actualizar tipo de indicador existente",
      *     description="Actualiza el nombre de un tipo de indicador. El nombre debe ser único en el sistema.",
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
@@ -271,7 +275,7 @@ class IndicatorTypeController extends Controller
      */
     public function update(IndicatorTypeRequest $request, int $id): JsonResponse
     {
-        try{
+        try {
             $validated = $request->validated();
 
             $indicatorType = $this->indicatorTypeService->updateIndicatorType($id, $validated['name']);
@@ -281,10 +285,10 @@ class IndicatorTypeController extends Controller
                 200,
                 new IndicatorTypeResource($indicatorType),
             );
-        }catch(RuntimeException $exception) {
+        } catch (RuntimeException $exception) {
             return ApiResponse::notFound('Indicator Type');
-        } catch(\Exception $exception) {
-            return ApiResponse::error($exception->getMessage(),400);
+        } catch (\Exception $exception) {
+            return ApiResponse::error($exception->getMessage(), 400);
         }
     }
 
@@ -294,6 +298,7 @@ class IndicatorTypeController extends Controller
      *     tags={"Indicator Types"},
      *     summary="Buscar tipo de indicador por nombre",
      *     description="Busca un tipo de indicador específico por su nombre (búsqueda exacta, case-insensitive)",
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="name",
      *         in="query",
@@ -343,7 +348,7 @@ class IndicatorTypeController extends Controller
      */
     public function search(Request $request): JsonResponse
     {
-        try{
+        try {
             $request->validate([
                 'name' => 'required|string|min:1'
             ]);
@@ -355,12 +360,12 @@ class IndicatorTypeController extends Controller
                 200,
                 new IndicatorTypeResource($indicatorType),
             );
-        } catch(RuntimeException $exception) {
+        } catch (RuntimeException $exception) {
             return ApiResponse::notFound('Indicator Type');
         } catch (\Illuminate\Validation\ValidationException $e) {
             return ApiResponse::validationError($e->errors());
-        } catch(\Exception $exception) {
-            return ApiResponse::error($exception->getMessage(),400);
+        } catch (\Exception $exception) {
+            return ApiResponse::error($exception->getMessage(), 400);
         }
     }
 }

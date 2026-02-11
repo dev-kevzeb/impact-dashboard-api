@@ -100,6 +100,7 @@ class AgencyController extends Controller
      *     tags={"Agencies"},
      *     summary="Obtener agencia específica",
      *     description="Obtiene la información detallada de una agencia ejecutora por su ID",
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
@@ -153,6 +154,7 @@ class AgencyController extends Controller
      *     tags={"Agencies"},
      *     summary="Crear nueva agencia",
      *     description="Registra una nueva agencia ejecutora. El nombre debe ser único en el sistema.",
+     *     security={{"bearerAuth":{}}},
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\MediaType(
@@ -243,6 +245,7 @@ class AgencyController extends Controller
      *     tags={"Agencies"},
      *     summary="Actualizar agencia existente",
      *     description="Actualiza la información de una agencia ejecutora. El nombre debe ser único.",
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
@@ -333,6 +336,7 @@ class AgencyController extends Controller
      *     tags={"Agencies"},
      *     summary="Buscar agencia por nombre",
      *     description="Busca una agencia ejecutora específica por su nombre (búsqueda exacta, case-insensitive)",
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="name",
      *         in="query",

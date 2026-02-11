@@ -7,207 +7,101 @@ use Spatie\Permission\Models\Permission;
 
 class PermissionSeeder extends Seeder
 {
-    /**
-     * Módulos del sistema:
-     * - donors
-     * - beneficiaries
-     * - projects
-     * - programs
-     * - kpas
-     * - users
-     * - countries
-     * - agencies
-     * - indicators
-     */
     public function run(): void
     {
-        // Limpiar cache de permisos de Spatie
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
 
-        // Definir permisos por módulo
         $permissions = [
-            // ============================================
-            // PERMISO ESPECIAL: Wildcard Admin
-            // ============================================
-            [
-                'name' => '*:*',
-                'scope' => 'all',
-                'module' => 'admin',
-                'description' => 'Full system access (God mode) - Admin only',
-            ],
+            ['name' => '*:*', 'scope' => 'all', 'module' => 'admin', 'description' => 'Full system access - Admin only'],
 
-            // ============================================
-            // MÓDULO: Donors (Donantes)
-            // ============================================
-            [
-                'name' => 'donors:read',
-                'scope' => 'donors',
-                'module' => 'Donor',
-                'description' => 'View donors list and details',
-            ],
-            [
-                'name' => 'donors:write',
-                'scope' => 'donors',
-                'module' => 'Donor',
-                'description' => 'Create and edit donors',
-            ],
+            ['name' => 'donors:read', 'scope' => 'donors', 'module' => 'Donor', 'description' => 'View donors'],
+            ['name' => 'donors:write', 'scope' => 'donors', 'module' => 'Donor', 'description' => 'Create/edit donors'],
 
-            // ============================================
-            // MÓDULO: Beneficiaries (Beneficiarios)
-            // ============================================
-            [
-                'name' => 'beneficiaries:read',
-                'scope' => 'beneficiaries',
-                'module' => 'Beneficiary',
-                'description' => 'View beneficiaries list and details',
-            ],
-            [
-                'name' => 'beneficiaries:write',
-                'scope' => 'beneficiaries',
-                'module' => 'Beneficiary',
-                'description' => 'Create and edit beneficiaries',
-            ],
+            ['name' => 'beneficiaries:read', 'scope' => 'beneficiaries', 'module' => 'Beneficiary', 'description' => 'View beneficiaries'],
+            ['name' => 'beneficiaries:write', 'scope' => 'beneficiaries', 'module' => 'Beneficiary', 'description' => 'Create/edit beneficiaries'],
 
-            // ============================================
-            // MÓDULO: Projects (Proyectos)
-            // ============================================
-            [
-                'name' => 'projects:read',
-                'scope' => 'projects',
-                'module' => 'Project',
-                'description' => 'View projects list and details',
-            ],
-            [
-                'name' => 'projects:write',
-                'scope' => 'projects',
-                'module' => 'Project',
-                'description' => 'Create and edit projects',
-            ],
+            ['name' => 'programs:read', 'scope' => 'programs', 'module' => 'Program', 'description' => 'View programs'],
+            ['name' => 'programs:write', 'scope' => 'programs', 'module' => 'Program', 'description' => 'Create/edit programs'],
 
-            // ============================================
-            // MÓDULO: Programs (Programas)
-            // ============================================
-            [
-                'name' => 'programs:read',
-                'scope' => 'programs',
-                'module' => 'Program',
-                'description' => 'View programs list and details',
-            ],
-            [
-                'name' => 'programs:write',
-                'scope' => 'programs',
-                'module' => 'Program',
-                'description' => 'Create and edit programs',
-            ],
+            ['name' => 'projects:read', 'scope' => 'projects', 'module' => 'Project', 'description' => 'View projects'],
+            ['name' => 'projects:write', 'scope' => 'projects', 'module' => 'Project', 'description' => 'Create/edit projects'],
 
-            // ============================================
-            // MÓDULO: KPAs (Key Performance Areas)
-            // ============================================
-            [
-                'name' => 'kpas:read',
-                'scope' => 'kpas',
-                'module' => 'Kpa',
-                'description' => 'View KPAs list and details',
-            ],
-            [
-                'name' => 'kpas:write',
-                'scope' => 'kpas',
-                'module' => 'Kpa',
-                'description' => 'Create and edit KPAs',
-            ],
+            ['name' => 'currencies:read', 'scope' => 'currencies', 'module' => 'Currency', 'description' => 'View currencies'],
+            ['name' => 'currencies:write', 'scope' => 'currencies', 'module' => 'Currency', 'description' => 'Create/edit currencies'],
 
-            // ============================================
-            // MÓDULO: Users (Usuarios)
-            // ============================================
-            [
-                'name' => 'users:read',
-                'scope' => 'users',
-                'module' => 'User',
-                'description' => 'View users list and details',
-            ],
-            [
-                'name' => 'users:write',
-                'scope' => 'users',
-                'module' => 'User',
-                'description' => 'Create and edit users',
-            ],
+            ['name' => 'contacts:read', 'scope' => 'contacts', 'module' => 'Contact', 'description' => 'View contacts'],
+            ['name' => 'contacts:write', 'scope' => 'contacts', 'module' => 'Contact', 'description' => 'Create/edit contacts'],
 
-            // ============================================
-            // MÓDULO: Countries (Países)
-            // ============================================
-            [
-                'name' => 'countries:read',
-                'scope' => 'countries',
-                'module' => 'Country',
-                'description' => 'View countries list and details',
-            ],
-            [
-                'name' => 'countries:write',
-                'scope' => 'countries',
-                'module' => 'Country',
-                'description' => 'Create and edit countries',
-            ],
+            ['name' => 'countries:read', 'scope' => 'countries', 'module' => 'Country', 'description' => 'View countries'],
+            ['name' => 'countries:write', 'scope' => 'countries', 'module' => 'Country', 'description' => 'Create/edit countries'],
 
-            // ============================================
-            // MÓDULO: Agencies (Agencias)
-            // ============================================
-            [
-                'name' => 'agencies:read',
-                'scope' => 'agencies',
-                'module' => 'Agency',
-                'description' => 'View agencies list and details',
-            ],
-            [
-                'name' => 'agencies:write',
-                'scope' => 'agencies',
-                'module' => 'Agency',
-                'description' => 'Create and edit agencies',
-            ],
+            ['name' => 'agencies:read', 'scope' => 'agencies', 'module' => 'Agency', 'description' => 'View agencies'],
+            ['name' => 'agencies:write', 'scope' => 'agencies', 'module' => 'Agency', 'description' => 'Create/edit agencies'],
 
-            // ============================================
-            // MÓDULO: Indicators (Indicadores)
-            // ============================================
-            [
-                'name' => 'indicators:read',
-                'scope' => 'indicators',
-                'module' => 'Indicator',
-                'description' => 'View indicators list and details',
-            ],
-            [
-                'name' => 'indicators:write',
-                'scope' => 'indicators',
-                'module' => 'Indicator',
-                'description' => 'Create and edit indicators',
-            ],
+            ['name' => 'sdgs:read', 'scope' => 'sdgs', 'module' => 'Sdg', 'description' => 'View SDGs (Sustainable Development Goals)'],
+            ['name' => 'sdgs:write', 'scope' => 'sdgs', 'module' => 'Sdg', 'description' => 'Create/edit SDGs'],
 
-            // ============================================
-            // MÓDULO: Roles (Roles y Permisos)
-            // ============================================
-            [
-                'name' => 'roles:read',
-                'scope' => 'roles',
-                'module' => 'Role',
-                'description' => 'View roles and permissions',
-            ],
-            [
-                'name' => 'roles:write',
-                'scope' => 'roles',
-                'module' => 'Role',
-                'description' => 'Manage roles and permissions',
-            ],
+            ['name' => 'kpas:read', 'scope' => 'kpas', 'module' => 'Kpa', 'description' => 'View KPAs'],
+            ['name' => 'kpas:write', 'scope' => 'kpas', 'module' => 'Kpa', 'description' => 'Create/edit KPAs'],
+
+            ['name' => 'country_kpas:read', 'scope' => 'country_kpas', 'module' => 'CountryKpa', 'description' => 'View country-KPA relationships'],
+            ['name' => 'country_kpas:write', 'scope' => 'country_kpas', 'module' => 'CountryKpa', 'description' => 'Create/edit country-KPA relationships'],
+
+            ['name' => 'country_kpa_users:read', 'scope' => 'country_kpa_users', 'module' => 'CountryKpaUser', 'description' => 'View country-KPA user assignments'],
+            ['name' => 'country_kpa_users:write', 'scope' => 'country_kpa_users', 'module' => 'CountryKpaUser', 'description' => 'Assign users to country-KPAs'],
+
+            ['name' => 'strategic_outputs:read', 'scope' => 'strategic_outputs', 'module' => 'StrategicOutput', 'description' => 'View strategic outputs'],
+            ['name' => 'strategic_outputs:write', 'scope' => 'strategic_outputs', 'module' => 'StrategicOutput', 'description' => 'Create/edit strategic outputs'],
+
+            ['name' => 'measures:read', 'scope' => 'measures', 'module' => 'Measure', 'description' => 'View measures'],
+            ['name' => 'measures:write', 'scope' => 'measures', 'module' => 'Measure', 'description' => 'Create/edit measures'],
+
+            ['name' => 'indicators:read', 'scope' => 'indicators', 'module' => 'Indicator', 'description' => 'View indicators'],
+            ['name' => 'indicators:write', 'scope' => 'indicators', 'module' => 'Indicator', 'description' => 'Create/edit indicators'],
+
+            ['name' => 'indicator_types:read', 'scope' => 'indicator_types', 'module' => 'IndicatorType', 'description' => 'View indicator types'],
+            ['name' => 'indicator_types:write', 'scope' => 'indicator_types', 'module' => 'IndicatorType', 'description' => 'Create/edit indicator types'],
+
+            ['name' => 'program_states:read', 'scope' => 'program_states', 'module' => 'ProgramState', 'description' => 'View program states'],
+            ['name' => 'program_states:write', 'scope' => 'program_states', 'module' => 'ProgramState', 'description' => 'Create/edit program states'],
+
+            ['name' => 'program_users:read', 'scope' => 'program_users', 'module' => 'ProgramUser', 'description' => 'View program user assignments'],
+            ['name' => 'program_users:write', 'scope' => 'program_users', 'module' => 'ProgramUser', 'description' => 'Assign users to programs'],
+
+            ['name' => 'project_states:read', 'scope' => 'project_states', 'module' => 'ProjectState', 'description' => 'View project states'],
+            ['name' => 'project_states:write', 'scope' => 'project_states', 'module' => 'ProjectState', 'description' => 'Create/edit project states'],
+
+            ['name' => 'project_agencies:read', 'scope' => 'project_agencies', 'module' => 'ProjectAgency', 'description' => 'View project-agency relationships'],
+            ['name' => 'project_agencies:write', 'scope' => 'project_agencies', 'module' => 'ProjectAgency', 'description' => 'Assign agencies to projects'],
+
+            ['name' => 'project_indicators:read', 'scope' => 'project_indicators', 'module' => 'ProjectIndicator', 'description' => 'View project-indicator relationships'],
+            ['name' => 'project_indicators:write', 'scope' => 'project_indicators', 'module' => 'ProjectIndicator', 'description' => 'Assign indicators to projects'],
+
+            ['name' => 'users:read', 'scope' => 'users', 'module' => 'User', 'description' => 'View users'],
+            ['name' => 'users:write', 'scope' => 'users', 'module' => 'User', 'description' => 'Create/edit users, approve registrations'],
+
+            ['name' => 'roles:read', 'scope' => 'roles', 'module' => 'Role', 'description' => 'View roles'],
+            ['name' => 'roles:write', 'scope' => 'roles', 'module' => 'Role', 'description' => 'Create/edit roles'],
+
+            ['name' => 'user_states:read', 'scope' => 'user_states', 'module' => 'UserState', 'description' => 'View user states'],
+            ['name' => 'user_states:write', 'scope' => 'user_states', 'module' => 'UserState', 'description' => 'Create/edit user states'],
+
+            ['name' => 'user_roles:read', 'scope' => 'user_roles', 'module' => 'UserRole', 'description' => 'View user role assignments'],
+            ['name' => 'user_roles:write', 'scope' => 'user_roles', 'module' => 'UserRole', 'description' => 'Assign roles to users'],
         ];
 
-        // Crear permisos en la base de datos
         foreach ($permissions as $permission) {
-            Permission::create([
-                'name' => $permission['name'],
-                'guard_name' => 'api',
-                'scope' => $permission['scope'],
-                'module' => $permission['module'],
-                'description' => $permission['description'],
-            ]);
+            Permission::firstOrCreate(
+                [
+                    'name' => $permission['name'],
+                    'guard_name' => 'api',
+                ],
+                [
+                    'scope' => $permission['scope'],
+                    'module' => $permission['module'],
+                    'description' => $permission['description'],
+                ]
+            );
         }
-
-        $this->command->info('✅ ' . count($permissions) . ' permissions created successfully');
     }
 }
