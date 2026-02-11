@@ -6,8 +6,7 @@ return [
     'allowed_methods' => ['*'],
 
     'allowed_origins' => [
-        'http://localhost:5173',          // (desarrollo)
-        'https://pacific-ecommerce-ui.vercel.app',  //(producción)
+        env('FRONTEND_URL'),
     ],
 
     'allowed_headers' => ['*'],
