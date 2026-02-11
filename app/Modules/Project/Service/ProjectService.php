@@ -355,10 +355,16 @@ class ProjectService
         return collect();
     }
 
-
     public function getPublicProjects(array $filters, ?string $search, int $perPage)
     {
-        if (empty($filters)) return $this->projectRepository->getPaginated($search, $perPage);    
+        $hasAnyFilter = data_get($filters, 'country.id') || data_get($filters, 'kpa.id') || data_get($filters, 'strategic_output.id') || data_get($filters, 'measure.id') || data_get($filters, 'project_state.id');
+        if (!$hasAnyFilter) return $this->projectRepository->getPaginated($search, $perPage);
+        
+        $hasHierarchyFilters = data_get($filters, 'country.id') || data_get($filters, 'kpa.id') || data_get($filters, 'strategic_output.id') || data_get($filters, 'measure.id');
+
+        $projectStateId = data_get($filters, 'project_state.id');
+
+        if (!$hasHierarchyFilters) return $this->projectRepository->getPaginatedByState($projectStateId,$search,$perPage);
 
         $countryKpaIds = $this->getCountryKpaIds($filters);
         $strategicOutputIds = $this->getStrategicOutputIds($filters, $countryKpaIds);
@@ -369,8 +375,6 @@ class ProjectService
         if ($indicatorIds->isEmpty()) return $this->projectRepository->emptyPaginated($perPage);
     
         $projectIds = $this->projectIndicatorService->getProjectIdsByIndicatorIds($indicatorIds->unique()->values()->toArray());
-
-        $projectStateId = data_get($filters, 'project_state.id');
 
         return $this->projectRepository->paginateByIds($projectIds, $projectStateId, $search, $perPage);
     }
