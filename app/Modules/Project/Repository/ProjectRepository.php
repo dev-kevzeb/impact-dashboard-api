@@ -41,13 +41,13 @@ class ProjectRepository extends AbstractRepository implements RepositoryInterfac
         if(!empty($search)) $query->whereRaw('lower(name) LIKE lower(?)', ['%'.trim($search).'%']);
         return $query->orderBy('name')->paginate($perPage);
     }
+    
     public function getPaginatedByState(?int $projectStateId, ?string $search, int $perPage = 10) {
         $query = $this->model->query();
         if ($projectStateId !== null) $query->where('project_state_id', $projectStateId);
         if (!empty($search)) $query->whereRaw( 'lower(name) LIKE lower(?)', ['%' . trim($search) . '%']);
         return $query->orderBy('name')->paginate($perPage);
     }
-
 
     public function emptyPaginated(int $perPage)
     {
