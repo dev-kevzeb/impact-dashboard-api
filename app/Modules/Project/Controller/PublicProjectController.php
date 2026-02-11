@@ -21,13 +21,6 @@ class PublicProjectController extends Controller
     {
         try
         {
-\Log::info('REQUEST DEBUG', [
-    'query' => $request->query(),
-    'body' => $request->all(),
-    'search' => $request->query('search'),
-    'validated' => $request->validated(),
-]);
-
             $search = $request->get("search");
             $per_page = (int) $request->get("per_page", 10);
             $validated = $request->validated();
