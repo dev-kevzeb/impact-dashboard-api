@@ -5,10 +5,9 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => array_filter([
-        env('FRONTEND_URL_LOCAL'),
-        env('FRONTEND_URL_PROD'),
-    ]),
+    'allowed_origins' => [
+        env('FRONTEND_URL'),
+    ],
 
     'allowed_headers' => ['*'],
 
