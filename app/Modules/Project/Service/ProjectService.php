@@ -28,10 +28,8 @@ class ProjectService
     private ProjectStateRepository $projectStateRepository;
     private ProjectIndicatorService $projectIndicatorService;
     private IndicatorService $indicatorService;
-
     private ProjectDonorService $projectDonorService;
     private DonorService $donorService;
-
     private ProjectAgencyService $projectAgencyService;
     private AgencyService $agencyService;
     private ProgramService $programService;
@@ -45,7 +43,6 @@ class ProjectService
         IndicatorService $indicatorService,
         ProjectDonorService $projectDonorService,
         DonorService $donorService,
-
         ProjectAgencyService $projectAgencyService,
         AgencyService $agencyService,
         ProgramService $programService
@@ -76,7 +73,6 @@ class ProjectService
     {
         $project = $this->projectRepository->findById($id);
         if (!$project) throw new \RuntimeException("The project with id {$id} does not exist.");
-
         $project->load(['contact', 'beneficiary', 'projectState', 'donors', 'agencies', 'indicators.measure.strategicOutput.countryKpa.kpa']);
         $project->indicators->pluck('measure.strategicOutput.countryKpa.kpa')->filter()->unique('id')->each(fn($kpa) => $kpa->loadCount('strategicOutputs'));
 
@@ -87,8 +83,6 @@ class ProjectService
     {
         return $this->projectRepository->getPaginatedProjectsByProgramId($programId, $search, $perPage);
     }
-
-
 
     public function getProjectByName(string $name)
     {
@@ -113,35 +107,28 @@ class ProjectService
         return $this->projectAgencyService->createProjectAgency($project['id'], $agency['id'], $contribution);
     }
 
-
     public function syncIndicators(Project $project, array $indicators)
     {
         $validated = [];
         foreach ($indicators as $indicator) {
             $validated[] = $this->indicatorService->getIndicatorById($indicator['id']);
         }
-
         $this->projectIndicatorService->deleteAllByProjectId($project->id);
-
         foreach ($validated as $indicator) {
             $this->addIndicator($indicator, $project);
         }
     }
 
-
     public function syncDonors(Project $project, array $donors)
     {
         $validated = [];
-
         foreach ($donors as $donor) {
             $validated[$donor['id']] = [
                 'donor' => $this->donorService->getDonorById($donor['id']),
                 'contribution' => $donor['contribution']
             ];
         }
-
         $this->projectDonorService->deleteAllByProjectId($project->id);
-
         foreach ($validated as $item) {
             $this->addDonors($item['donor'], $project, $item['contribution']);
         }
