@@ -27,7 +27,18 @@ class CountryKpaService
     public function getCountryKpasByCountryId(int $id): array
     {
         return $this->repo->getCountryKpasByCountryId($id);
+    }    
+
+    public function getByCountryAndKpa(int $CountryId, int $kpaId)
+    {
+        return $this->repo->getByCountryAndKpa($CountryId, $kpaId);
     }
+
+    public function getByCountry(int $id)
+    {
+        return $this->repo->getByCountry($id);
+    }
+
 
     public function create(array $data): object
     {
@@ -53,6 +64,10 @@ class CountryKpaService
     public function detach(int $countryId, int $kpaId): int
     {
         return $this->repo->detachKpaFromCountry($countryId, $kpaId);
+    }
+
+    public function getKpasByCountryPaginated(int $countryId, ?string $search, int $perPage) {
+        return $this->repo->paginateKpasByCountry($countryId, $search, $perPage);
     }
 }
 
