@@ -87,11 +87,11 @@ class ProgramController extends Controller
      *             mediaType="multipart/form-data",
      *             @OA\Schema(
      *                 required={"name", "description", "contact_id", "sdg_ids"},
-                 @OA\Property(property="name", type="string", maxLength=255, example="Rural Education Program 2025"),
-                 @OA\Property(property="description", type="string", maxLength=2000, example="Program focused on improving education in rural areas through teacher training and equipment."),
-                 @OA\Property(property="banner_img", type="string", format="binary", description="Program banner image (OPTIONAL - JPG, PNG, GIF, WEBP - max 2MB)"),
-                 @OA\Property(property="program_url", type="string", format="url", example="https://www.education-program.org", description="Program website URL (optional)"),
-                 @OA\Property(property="contact_id", type="integer", example=1, description="Responsible contact ID (required). Program is automatically created with 'Inactive' state."),
+     *                 @OA\Property(property="name", type="string", maxLength=255, example="Rural Education Program 2025"),
+     *                 @OA\Property(property="description", type="string", maxLength=2000, example="Program focused on improving education in rural areas through teacher training and equipment."),
+     *                 @OA\Property(property="banner_img", type="string", format="binary", description="Program banner image (OPTIONAL - JPG, PNG, GIF, WEBP - max 2MB)"),
+     *                 @OA\Property(property="program_url", type="string", format="url", example="https://www.education-program.org", description="Program website URL (optional)"),
+     *                 @OA\Property(property="contact_id", type="integer", example=1, description="Responsible contact ID (required). Program is automatically created with 'Inactive' state."),
      *                 @OA\Property(
      *                     property="sdg_ids[]",
      *                     type="array",
@@ -157,7 +157,7 @@ class ProgramController extends Controller
                 $path,  // Path guardado en storage
                 $validated['program_url'] ?? '',
                 $validated['contact'],
-                $validated['sdg_ids'] ?? []
+                $validated['sdg_ids']  // Required by validation
             );
 
             return ApiResponse::created(
@@ -330,7 +330,7 @@ class ProgramController extends Controller
      *                 @OA\Property(property="program_url", type="string", format="url", example="https://www.updated-program.org"),
      *                 @OA\Property(property="contact_id", type="integer", example=3, description="Responsible contact ID (required)"),
      *                 @OA\Property(property="program_state_id", type="integer", example=2, description="Program state ID (required): 1=Inactive, 2=Active, 3=Completed"),
-                 @OA\Property(property="sdg_ids", type="array", @OA\Items(type="integer", example=1), description="SDG IDs (REQUIRED - at least 1, replaces existing)")
+     *                 @OA\Property(property="sdg_ids", type="array", @OA\Items(type="integer", example=1), description="SDG IDs (REQUIRED - at least 1, replaces existing)")
      *             )
      *         )
      *     ),
@@ -390,7 +390,7 @@ class ProgramController extends Controller
                 $validated['program_url'] ?? '',
                 $validated['contact'],
                 $validated['program_state_id'],
-                $validated['sdg_ids'] ?? []
+                $validated['sdg_ids']  // Required by validation
             );
 
             return ApiResponse::success(

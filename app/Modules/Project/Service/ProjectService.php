@@ -7,16 +7,22 @@ use App\Modules\Agency\Service\AgencyService;
 use App\Modules\Contact\Domain\Contact;
 use App\Modules\Contact\Repository\ContactRepository;
 use App\Modules\Beneficiary\Repository\BeneficiaryRepository;
+use App\Modules\Country\Service\CountryService;
+use App\Modules\CountryKpa\Service\CountryKpaService;
 use App\Modules\Donor\Domain\Donor;
 use App\Modules\Donor\Service\DonorService;
 use App\Modules\Indicator\Domain\Indicator;
 use App\Modules\Indicator\Service\IndicatorService;
+use App\Modules\Kpa\Service\KpaService;
+use App\Modules\Measure\Service\MeasureService;
 use App\Modules\ProjectAgency\Service\ProjectAgencyService;
 use App\Modules\ProjectIndicator\Service\ProjectIndicatorService;
 use App\Modules\ProjectState\Repository\ProjectStateRepository;
 use App\Modules\Project\Repository\ProjectRepository;
 use App\Modules\Project\Domain\Project;
 use App\Modules\ProjectDonor\Service\ProjectDonorService;
+use App\Modules\StrategicOutput\Service\StrategicOutputService;
+use Illuminate\Support\Collection;
 use App\Modules\Program\Service\ProgramService;
 
 
@@ -28,10 +34,14 @@ class ProjectService
     private ProjectStateRepository $projectStateRepository;
     private ProjectIndicatorService $projectIndicatorService;
     private IndicatorService $indicatorService;
+    private CountryService $countryService;
+    private CountryKpaService $countryKpaService;
+    private KpaService $kpaService;
+    private StrategicOutputService $strategicOutputService;
+    private MeasureService $measureService;
 
     private ProjectDonorService $projectDonorService;
     private DonorService $donorService;
-
     private ProjectAgencyService $projectAgencyService;
     private AgencyService $agencyService;
     private ProgramService $programService;
@@ -45,10 +55,14 @@ class ProjectService
         IndicatorService $indicatorService,
         ProjectDonorService $projectDonorService,
         DonorService $donorService,
-
         ProjectAgencyService $projectAgencyService,
         AgencyService $agencyService,
-        ProgramService $programService
+        ProgramService $programService,
+        CountryService $countryService,
+        CountryKpaService $countryKpaService,
+        KpaService $kpaService,
+        StrategicOutputService $strategicOutputService,
+        MeasureService $measureService,
     ) {
         $this->projectRepository = $projectRepository;
         $this->contactRepository = $contactRepository;
@@ -63,6 +77,12 @@ class ProjectService
 
         $this->projectAgencyService = $projectAgencyService;
         $this->agencyService = $agencyService;
+
+        $this->countryService= $countryService;
+        $this->countryKpaService = $countryKpaService;
+        $this->kpaService = $kpaService;
+        $this->strategicOutputService = $strategicOutputService;
+        $this->measureService = $measureService;
         $this->programService = $programService;
     }
 
@@ -76,7 +96,6 @@ class ProjectService
     {
         $project = $this->projectRepository->findById($id);
         if (!$project) throw new \RuntimeException("The project with id {$id} does not exist.");
-
         $project->load(['contact', 'beneficiary', 'projectState', 'donors', 'agencies', 'indicators.measure.strategicOutput.countryKpa.kpa']);
         $project->indicators->pluck('measure.strategicOutput.countryKpa.kpa')->filter()->unique('id')->each(fn($kpa) => $kpa->loadCount('strategicOutputs'));
 
@@ -87,8 +106,6 @@ class ProjectService
     {
         return $this->projectRepository->getPaginatedProjectsByProgramId($programId, $search, $perPage);
     }
-
-
 
     public function getProjectByName(string $name)
     {
@@ -113,35 +130,28 @@ class ProjectService
         return $this->projectAgencyService->createProjectAgency($project['id'], $agency['id'], $contribution);
     }
 
-
     public function syncIndicators(Project $project, array $indicators)
     {
         $validated = [];
         foreach ($indicators as $indicator) {
             $validated[] = $this->indicatorService->getIndicatorById($indicator['id']);
         }
-
         $this->projectIndicatorService->deleteAllByProjectId($project->id);
-
         foreach ($validated as $indicator) {
             $this->addIndicator($indicator, $project);
         }
     }
 
-
     public function syncDonors(Project $project, array $donors)
     {
         $validated = [];
-
         foreach ($donors as $donor) {
             $validated[$donor['id']] = [
                 'donor' => $this->donorService->getDonorById($donor['id']),
                 'contribution' => $donor['contribution']
             ];
         }
-
         $this->projectDonorService->deleteAllByProjectId($project->id);
-
         foreach ($validated as $item) {
             $this->addDonors($item['donor'], $project, $item['contribution']);
         }
@@ -292,5 +302,63 @@ class ProjectService
         $this->syncAgencies($project, $agencies);
 
         return $project;
+    }
+
+    private function getCountryKpaIds(array $filters)
+    {
+        $countryKpaIds = collect();
+
+        if ($countryId = data_get($filters, 'country.id')) {
+            if ($kpaId = data_get($filters, 'kpa.id')) $countryKpaIds = $this->countryKpaService->getByCountryAndKpa($countryId, $kpaId)->pluck('id');
+            else $countryKpaIds = $this->countryKpaService->getByCountry($countryId)->pluck('id');
+        }
+
+        return $countryKpaIds;
+    }
+
+    private function getStrategicOutputIds(array $filters, Collection $countryKpaIds)
+    {
+        if ($strategicOutputId = data_get($filters, 'strategic_output.id')) return collect([$strategicOutputId]);
+        if ($countryKpaIds->isNotEmpty()) return $this->strategicOutputService->getByCountryKpaIds($countryKpaIds->toArray())->pluck('id');
+        
+        return collect();
+    }
+
+    private function getMeasureIds(array $filters, Collection $strategicOutputIds)
+    {
+        if ($measureId = data_get($filters, 'measure.id')) return collect([$measureId]);
+        if ($strategicOutputIds->isNotEmpty()) return $this->measureService->getByStrategicOutputIds($strategicOutputIds->toArray())->pluck('id');
+        
+        return collect();
+    }
+
+    private function getIndicatorIds(Collection $measureIds)
+    {
+        if ($measureIds->isNotEmpty()) return $this->indicatorService->getByMeasureIds($measureIds->toArray())->pluck('id');
+        return collect();
+    }
+
+    public function getPublicProjects(array $filters, ?string $search, int $perPage)
+    {
+        $hasAnyFilter = data_get($filters, 'country.id') || data_get($filters, 'kpa.id') || data_get($filters, 'strategic_output.id') || data_get($filters, 'measure.id') || data_get($filters, 'project_state.id');
+        if (!$hasAnyFilter) return $this->projectRepository->getPaginated($search, $perPage);
+        
+        $hasHierarchyFilters = data_get($filters, 'country.id') || data_get($filters, 'kpa.id') || data_get($filters, 'strategic_output.id') || data_get($filters, 'measure.id');
+
+        $projectStateId = data_get($filters, 'project_state.id');
+
+        if (!$hasHierarchyFilters) return $this->projectRepository->getPaginatedByState($projectStateId,$search,$perPage);
+
+        $countryKpaIds = $this->getCountryKpaIds($filters);
+        $strategicOutputIds = $this->getStrategicOutputIds($filters, $countryKpaIds);
+
+        $measureIds = $this->getMeasureIds($filters, $strategicOutputIds);
+        $indicatorIds = $this->getIndicatorIds($measureIds);
+
+        if ($indicatorIds->isEmpty()) return $this->projectRepository->emptyPaginated($perPage);
+    
+        $projectIds = $this->projectIndicatorService->getProjectIdsByIndicatorIds($indicatorIds->unique()->values()->toArray());
+
+        return $this->projectRepository->paginateByIds($projectIds, $projectStateId, $search, $perPage);
     }
 }

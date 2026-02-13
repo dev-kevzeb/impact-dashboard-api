@@ -47,4 +47,10 @@ class StrategicOutputRepository extends AbstractRepository implements Repository
 
         return $query->orderBy('name')->paginate($perPage);
     }
+
+    public function getByCountryKpaIds(array $countryKpaIds){
+        $query = $this->model->whereIn('id_ck', $countryKpaIds);
+
+        return $query->orderBy('name')->get();
+    }
 }

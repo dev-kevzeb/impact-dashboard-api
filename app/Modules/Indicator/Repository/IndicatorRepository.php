@@ -28,5 +28,11 @@ class IndicatorRepository extends AbstractRepository implements RepositoryInterf
         $query->whereNotIn('id', $exclude);
         return $query->orderBy('name')->paginate($perPage);
     }
+
+    public function getByMeasureIds(array $measureIds){
+        $query = $this->model->whereIn('measure_id', $measureIds);
+
+        return $query->orderBy('name')->get();
+    }
 }
 

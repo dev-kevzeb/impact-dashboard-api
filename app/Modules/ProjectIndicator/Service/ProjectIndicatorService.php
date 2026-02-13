@@ -80,4 +80,8 @@ class ProjectIndicatorService
         $this->projectIndicatorRepository->deleteByProjectId($projectId);
     }
 
+    public function getProjectIdsByIndicatorIds(array $indicatorIds){
+        return $this->projectIndicatorRepository->getProjectIdsByIndicatorIds($indicatorIds);
+    }
+
 }
