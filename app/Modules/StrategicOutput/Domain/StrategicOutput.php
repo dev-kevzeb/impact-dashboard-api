@@ -19,7 +19,7 @@ class StrategicOutput extends Model
 
     public static $ERROR_NAME_EMPTY = 'The strategic output name must not be empty';
     public static $ERROR_NAME_MIN_LENGTH = 'The strategic output name must have at least 3 characters';
-    public static $ERROR_NAME_MAX_LENGTH = 'The strategic output name must not exceed 200 characters';
+    public static $ERROR_NAME_MAX_LENGTH = 'The strategic output name must not exceed 300 characters';
 
     public static $ERROR_MEASURES_DUPLICATED = 'Duplicate measures are not allowed in the strategic output';
     public static $ERROR_MEASURE_INVALID_INSTANCE = 'The measure must be an instance of Measure';
@@ -38,7 +38,7 @@ class StrategicOutput extends Model
         $normalizedName = preg_replace('/\s+/', ' ', trim($name));
         
         if (strlen($normalizedName) < 2) throw new RuntimeException(self::$ERROR_NAME_MIN_LENGTH);
-        if (strlen($normalizedName) > 200) throw new RuntimeException(self::$ERROR_NAME_MAX_LENGTH);
+        if (strlen($normalizedName) > 300) throw new RuntimeException(self::$ERROR_NAME_MAX_LENGTH);
         
         // Capitalizar primera letra de cada palabra
         $capitalizedName = mb_convert_case($normalizedName, MB_CASE_TITLE, "UTF-8");

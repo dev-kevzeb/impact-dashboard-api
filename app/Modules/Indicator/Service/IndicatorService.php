@@ -26,12 +26,8 @@ class IndicatorService
         $measure = $this->measureRepository->findById($measureId);
         $indicatorType = $this->indicatorTypeRepository->findById($indicatorTypeId);
 
-        if (!$measure) {
-            throw new RuntimeException("Measure not found");
-        }
-        if (!$indicatorType) {
-            throw new RuntimeException("Indicator type not found");
-        }
+        if (!$measure) throw new RuntimeException("Measure not found");
+        if (!$indicatorType) throw new RuntimeException("Indicator type not found");
 
         $indicator = Indicator::at($name, $indicatorType, $target, $measure);
         $this->indicatorRepository->save($indicator);

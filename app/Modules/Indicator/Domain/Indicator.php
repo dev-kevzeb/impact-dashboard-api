@@ -23,7 +23,7 @@ class  Indicator extends Model
     // Error constants
     public static $ERROR_NAME_EMPTY = 'the indicator name must not be empty';
     public static $ERROR_NAME_MIN_LENGTH = 'the indicator name must be at least 2 characters long';
-    public static $ERROR_NAME_MAX_LENGTH = 'the indicator name must not exceed 200 characters';
+    public static $ERROR_NAME_MAX_LENGTH = 'the indicator name must not exceed 300 characters';
     public static $ERROR_TYPE_REQUIRED = 'the indicator type must be an instance of IndicatorType';
     public static $ERROR_TARGET_INVALID = 'the indicator target must be a positive number';
     public static $ERROR_MEASURE_REQUIRED = 'the measure must be an instance of Measure';
@@ -44,7 +44,7 @@ class  Indicator extends Model
         }
         if (strlen(trim($name)) < 2) throw new RuntimeException(self::$ERROR_NAME_MIN_LENGTH);
 
-        if (strlen(trim($name)) > 200) throw new RuntimeException(self::$ERROR_NAME_MAX_LENGTH);
+        if (strlen(trim($name)) > 300) throw new RuntimeException(self::$ERROR_NAME_MAX_LENGTH);
 
         if (!$type instanceof IndicatorType) throw new RuntimeException(self::$ERROR_TYPE_REQUIRED);
 

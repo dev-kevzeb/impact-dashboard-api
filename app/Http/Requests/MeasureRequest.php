@@ -21,7 +21,7 @@ class MeasureRequest extends FormRequest
                 'required',
                 'string',
                 'min:2',
-                'max:150',
+                'max:300',
             ],
 
             'strategic_output_id' => [
@@ -38,7 +38,7 @@ class MeasureRequest extends FormRequest
             'name.required' => 'The name of the measure should not be empty',
             'name.string'   => 'The measure name must be a text string',
             'name.min'      => 'Measure name must be at least 2 characters',
-            'name.max'      => 'The measure name must not exceed 150 characters',
+            'name.max'      => 'The measure name must not exceed 300 characters',
 
             'strategic_output_id.required' => 'The strategic result is mandatory',
             'strategic_output_id.integer'  => 'The strategic result must be a numeric ID',

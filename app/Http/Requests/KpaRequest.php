@@ -23,7 +23,7 @@ class KpaRequest extends FormRequest
                 'required',
                 'string',
                 'min:2',
-                'max:100',
+                'max:300',
                 Rule::unique('kpa', 'name')->ignore($kpaId),
             ],
 
@@ -40,18 +40,19 @@ class KpaRequest extends FormRequest
     {
         return [
             // NAME
-            'name.required' => 'el nombre del KPA no debe ir vacio',
-            'name.min'      => 'el nombre del KPA debe tener al menos 2 caracteres',
-            'name.max'      => 'el nombre del KPA no debe exceder 100 caracteres',
-            'name.string'   => 'el nombre del KPA debe ser una cadena de texto',
-            'name.unique'   => 'Ya existe un KPA con ese nombre',
+            'name.required' => 'The KPA name must not be empty',
+            'name.min'      => 'The KPA name must be at least 2 characters long',
+            'name.max'      => 'The KPA name must not exceed 300 characters',
+            'name.string'   => 'The KPA name must be a text string',
+            'name.unique'   => 'A KPA with this name already exists',
 
             // IMPLEMENTATION
-            'implementation.required' => 'la implementación del KPA debe ser un número',
-            'implementation.numeric'  => 'la implementación del KPA debe ser un número',
-            'implementation.min'      => 'la implementación del KPA debe estar entre 0 y 100',
-            'implementation.max'      => 'la implementación del KPA debe estar entre 0 y 100',
+            'implementation.required' => 'The KPA implementation must be a number',
+            'implementation.numeric'  => 'The KPA implementation must be a number',
+            'implementation.min'      => 'The KPA implementation must be between 0 and 100',
+            'implementation.max'      => 'The KPA implementation must be between 0 and 100',
         ];
+
     }
 
     protected function failedValidation(\Illuminate\Contracts\Validation\Validator $validator)
