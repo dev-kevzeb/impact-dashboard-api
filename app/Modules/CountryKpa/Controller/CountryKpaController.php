@@ -151,7 +151,85 @@ class CountryKpaController extends Controller
 		}
 	}
 
-
+	/**
+	 * @OA\Post(
+	 *     path="/country_kpas",
+	 *     tags={"Country-KPAs"},
+	 *     summary="Crear relación Country-KPA",
+	 *     description="Crea una nueva relación entre un país y un KPA",
+	 *     security={{"bearerAuth":{}}},
+	 *     @OA\RequestBody(
+	 *         required=true,
+	 *         @OA\JsonContent(
+	 *             required={"id_country","id_kpa"},
+	 *             @OA\Property(
+	 *                 property="id_country",
+	 *                 type="integer",
+	 *                 example=1,
+	 *                 description="ID del país"
+	 *             ),
+	 *             @OA\Property(
+	 *                 property="id_kpa",
+	 *                 type="integer",
+	 *                 example=2,
+	 *                 description="ID del KPA"
+	 *             )
+	 *         )
+	 *     ),
+	 *     @OA\Response(
+	 *         response=201,
+	 *         description="Relación creada exitosamente",
+	 *         @OA\JsonContent(
+	 *             @OA\Property(property="success", type="boolean", example=true),
+	 *             @OA\Property(
+	 *                 property="message",
+	 *                 type="string",
+	 *                 example="Country-KPA relationship created successfully"
+	 *             ),
+	 *             @OA\Property(
+	 *                 property="data",
+	 *                 ref="#/components/schemas/CountryKpa"
+	 *             )
+	 *         )
+	 *     ),
+	 *     @OA\Response(
+	 *         response=422,
+	 *         description="Error de validación",
+	 *         @OA\JsonContent(
+	 *             @OA\Property(property="success", type="boolean", example=false),
+	 *             @OA\Property(
+	 *                 property="message",
+	 *                 type="string",
+	 *                 example="Validation error"
+	 *             ),
+	 *             @OA\Property(
+	 *                 property="errors",
+	 *                 type="object",
+	 *                 example={
+	 *                     "id_country": {"required"},
+	 *                     "id_kpa": {"required"}
+	 *                 }
+	 *             )
+	 *         )
+	 *     ),
+	 *     @OA\Response(
+	 *         response=400,
+	 *         description="Error de dominio",
+	 *         @OA\JsonContent(
+	 *             @OA\Property(property="success", type="boolean", example=false),
+	 *             @OA\Property(property="message", type="string")
+	 *         )
+	 *     ),
+	 *     @OA\Response(
+	 *         response=500,
+	 *         description="Error interno del servidor",
+	 *         @OA\JsonContent(
+	 *             @OA\Property(property="success", type="boolean", example=false),
+	 *             @OA\Property(property="message", type="string")
+	 *         )
+	 *     )
+	 * )
+	 */
 	public function store(CountryKpaRequest $request): JsonResponse
 	{
 		try {
@@ -165,7 +243,7 @@ class CountryKpaController extends Controller
 		} catch (RuntimeException $e) {
 			return ApiResponse::error($e->getMessage(), 400);
 		} catch (\Exception $e) {
-			return ApiResponse::error('Internal server error', 500);
+			return ApiResponse::error($e->getMessage(), 500);
 		}
 	}
 
@@ -285,6 +363,59 @@ class CountryKpaController extends Controller
 		}
 	}
 
+	/**
+	 * @OA\Get(
+	 *     path="/country_kpas/country/{id}",
+	 *     tags={"Country-KPAs"},
+	 *     summary="Obtener KPAs por país",
+	 *     description="Obtiene todas las relaciones Country-KPA asociadas a un país específico",
+	 *     security={{"bearerAuth":{}}},
+	 *     @OA\Parameter(
+	 *         name="id",
+	 *         in="path",
+	 *         required=true,
+	 *         description="ID del país",
+	 *         @OA\Schema(type="integer", example=1)
+	 *     ),
+	 *     @OA\Response(
+	 *         response=200,
+	 *         description="Relaciones obtenidas exitosamente",
+	 *         @OA\JsonContent(
+	 *             @OA\Property(property="success", type="boolean", example=true),
+	 *             @OA\Property(
+	 *                 property="message",
+	 *                 type="string",
+	 *                 example="Registration obtained"
+	 *             ),
+	 *             @OA\Property(
+	 *                 property="data",
+	 *                 type="array",
+	 *                 @OA\Items(ref="#/components/schemas/CountryKpa")
+	 *             )
+	 *         )
+	 *     ),
+	 *     @OA\Response(
+	 *         response=404,
+	 *         description="País sin KPAs asociados",
+	 *         @OA\JsonContent(
+	 *             @OA\Property(property="success", type="boolean", example=false),
+	 *             @OA\Property(
+	 *                 property="message",
+	 *                 type="string",
+	 *                 example="CountryKpa no encontrado"
+	 *             )
+	 *         )
+	 *     ),
+	 *     @OA\Response(
+	 *         response=500,
+	 *         description="Error interno del servidor",
+	 *         @OA\JsonContent(
+	 *             @OA\Property(property="success", type="boolean", example=false),
+	 *             @OA\Property(property="message", type="string")
+	 *         )
+	 *     )
+	 * )
+	 */
 	public function showForCountry($id): JsonResponse
 	{
 		try {

@@ -137,12 +137,12 @@ Route::prefix('v1')->group(function () {
         Route::delete('program_users/{id}', [ProgramUserController::class, 'destroy'])->middleware('scope:program_users:write');
 
         // API Routes para Country-Kpas
-        Route::get('country-kpas', [CountryKpaController::class, 'index'])->middleware('scope:country_kpas');
-        Route::post('country-kpas', [CountryKpaController::class, 'store'])->middleware('scope:country_kpas:write');
-        Route::get('country-kpas/{id}', [CountryKpaController::class, 'show'])->middleware('scope:country_kpas');
-        Route::get('country-kpas/country/{id}', [CountryKpaController::class, 'showForCountry'])->middleware('scope:country_kpas');
-        Route::put('country-kpas/{id}', [CountryKpaController::class, 'update'])->middleware('scope:country_kpas:write');
-        Route::delete('country-kpas/{id}', [CountryKpaController::class, 'destroy'])->middleware('scope:country_kpas:write');
+        Route::get('country_kpas', [CountryKpaController::class, 'index'])->middleware('scope:country_kpas');
+        Route::post('country_kpas', [CountryKpaController::class, 'store'])->middleware('scope:country_kpas:write');
+        Route::get('country_kpas/{id}', [CountryKpaController::class, 'show'])->middleware('scope:country_kpas');
+        Route::get('country_kpas/country/{id}', [CountryKpaController::class, 'showForCountry'])->middleware('scope:country_kpas');
+        Route::put('country_kpas/{id}', [CountryKpaController::class, 'update'])->middleware('scope:country_kpas:write');
+        Route::delete('country_kpas/{id}', [CountryKpaController::class, 'destroy'])->middleware('scope:country_kpas:write');
 
         // API Routes para Contacts
         Route::get('contacts', [ContactController::class, 'index'])->middleware('scope:contacts');
