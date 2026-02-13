@@ -5,16 +5,12 @@ use App\Modules\Country\Controller\PublicCountryController;
 use App\Modules\CountryKpa\Controller\PublicCountryKpaController;
 use App\Modules\Indicator\Controller\IndicatorController;
 use App\Modules\IndicatorType\Controller\IndicatorTypeController;
-use App\Modules\Kpa\Controller\PublicKpaController;
 use App\Modules\Measure\Controller\MeasureController;
 use App\Modules\Measure\Controller\PublicMeasureController;
 use App\Modules\Project\Controller\PublicProjectController;
 use App\Modules\ProjectState\Controller\PublicProjectStateController;
 use App\Modules\StrategicOutput\Controller\PublicStrategicOutputController;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Models\User;
-use Illuminate\Support\Facades\Hash;
 use App\Modules\Country\Controller\CountryController;
 use App\Modules\Currency\Controller\CurrencyController;
 use App\Modules\Kpa\Controller\KpaController;
@@ -261,6 +257,7 @@ Route::prefix('v1/public')->group(function () {
 
     // Projects    
     Route::post('projects', [PublicProjectController::class, 'index']);
+    Route::get('projects/{id}', [PublicProjectController::class, 'show']);
 
     // Countries
     Route::get('countries', [PublicCountryController::class, 'index']);
