@@ -90,9 +90,6 @@ class MeasureService
         return $this->measureRepository->getAllPaginatedByStrategicOutput($id, $search, $per_page);
     }
 
-
-
-
     public function getIndicatorOfMeasureByName(int $measureId, string $indicatorName)
     {
         $measure = $this->measureRepository->findById($measureId);

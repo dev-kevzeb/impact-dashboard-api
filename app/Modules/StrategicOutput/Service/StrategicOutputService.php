@@ -103,6 +103,3 @@ class StrategicOutputService{
         return $this->strategicOutputRepository->getByCountryKpaIds($countryKpaIds);
     }
 }
-
-
-

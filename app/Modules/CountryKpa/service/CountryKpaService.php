@@ -27,8 +27,7 @@ class CountryKpaService
     public function getCountryKpasByCountryId(int $id): array
     {
         return $this->repo->getCountryKpasByCountryId($id);
-    }
-    
+    }    
 
     public function getByCountryAndKpa(int $CountryId, int $kpaId)
     {
