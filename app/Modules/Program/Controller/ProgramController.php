@@ -79,14 +79,14 @@ class ProgramController extends Controller
      *     path="/programs",
      *     tags={"Programs"},
      *     summary="Create new program",
-     *     description="Creates a new program with 'Inactive' state by default (business rule). To change state, use PUT. **Arrays:** Use `sdg_ids[]=2&sdg_ids[]=5` or in form-data: `sdg_ids[0]=2, sdg_ids[1]=5`",
+     *     description="Creates a new program with 'Inactive' state by default (business rule). To change state, use PUT. **Arrays (REQUIRED):** Use `sdg_ids[]=2&sdg_ids[]=5` or in form-data: `sdg_ids[0]=2, sdg_ids[1]=5`. Must select at least 1 SDG.",
      *     security={{"bearerAuth":{}}},
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\MediaType(
      *             mediaType="multipart/form-data",
      *             @OA\Schema(
-     *                 required={"name", "description", "contact_id"},
+     *                 required={"name", "description", "contact_id", "sdg_ids"},
                  @OA\Property(property="name", type="string", maxLength=255, example="Rural Education Program 2025"),
                  @OA\Property(property="description", type="string", maxLength=2000, example="Program focused on improving education in rural areas through teacher training and equipment."),
                  @OA\Property(property="banner_img", type="string", format="binary", description="Program banner image (OPTIONAL - JPG, PNG, GIF, WEBP - max 2MB)"),
@@ -97,7 +97,7 @@ class ProgramController extends Controller
      *                     type="array",
      *                     @OA\Items(type="integer"),
      *                     example={2, 4, 13},
-     *                     description="Array of SDG IDs (optional). Use: sdg_ids[0]=2, sdg_ids[1]=4, sdg_ids[2]=13"
+     *                     description="Array of SDG IDs (REQUIRED - at least 1). Use: sdg_ids[0]=2, sdg_ids[1]=4, sdg_ids[2]=13"
      *                 )
      *             )
      *         )
@@ -322,7 +322,7 @@ class ProgramController extends Controller
      *         @OA\MediaType(
      *             mediaType="multipart/form-data",
      *             @OA\Schema(
-     *                 required={"name", "description", "contact_id", "program_state_id"},
+     *                 required={"name", "description", "contact_id", "program_state_id", "sdg_ids"},
      *                 @OA\Property(property="_method", type="string", example="PUT", description="HTTP method spoofing (required in Postman with form-data)"),
      *                 @OA\Property(property="name", type="string", maxLength=255, example="Rural Education Program 2025 - Updated"),
      *                 @OA\Property(property="description", type="string", maxLength=2000, example="Updated program description"),
@@ -330,7 +330,7 @@ class ProgramController extends Controller
      *                 @OA\Property(property="program_url", type="string", format="url", example="https://www.updated-program.org"),
      *                 @OA\Property(property="contact_id", type="integer", example=3, description="Responsible contact ID (required)"),
      *                 @OA\Property(property="program_state_id", type="integer", example=2, description="Program state ID (required): 1=Inactive, 2=Active, 3=Completed"),
-     *                 @OA\Property(property="sdg_ids", type="array", @OA\Items(type="integer", example=1), description="SDG IDs (replaces existing)")
+                 @OA\Property(property="sdg_ids", type="array", @OA\Items(type="integer", example=1), description="SDG IDs (REQUIRED - at least 1, replaces existing)")
      *             )
      *         )
      *     ),

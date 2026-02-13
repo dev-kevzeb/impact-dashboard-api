@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Modules\Program\Domain\Program;
 use App\Modules\Contact\Domain\Contact;
 use App\Modules\ProgramState\Domain\ProgramState;
+use App\Modules\Sdg\Domain\Sdg;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -23,10 +24,13 @@ class ProgramTest extends TestCase
     private const ERROR_NAME_UNIQUE = 'A program with this name already exists.';
     private const ERROR_DESCRIPTION_REQUIRED = 'The program description is required.';
     private const ERROR_CONTACT_REQUIRED = 'Los datos del contacto son obligatorios.';
+    private const ERROR_SDG_IDS_REQUIRED = 'You must select at least one SDG.';
+    private const ERROR_SDG_IDS_MIN = 'You must select at least one SDG.';
 
     private ProgramState $inactiveState;
     private Contact $defaultContact;
     private array $validContactData;
+    private array $testSdgs;
 
     protected function setUp(): void
     {
@@ -34,6 +38,13 @@ class ProgramTest extends TestCase
 
         $this->inactiveState = ProgramState::firstOrCreate(['name' => 'Inactive']);
         $this->defaultContact = Contact::factory()->create();
+
+        // Create test SDGs (minimum required data)
+        $this->testSdgs = [
+            Sdg::create(['image' => 'sdg_images/sdg1.png', 'filename' => 'sdg1.png']),
+            Sdg::create(['image' => 'sdg_images/sdg2.png', 'filename' => 'sdg2.png']),
+            Sdg::create(['image' => 'sdg_images/sdg3.png', 'filename' => 'sdg3.png']),
+        ];
 
         $this->validContactData = [
             'contact' => [
@@ -60,6 +71,7 @@ class ProgramTest extends TestCase
             'name' => 'Test Program ' . uniqid(),
             'description' => 'This is a valid test program description with more than ten characters',
             'program_url' => 'https://www.test-program.org',
+            'sdg_ids' => [$this->testSdgs[0]->id, $this->testSdgs[1]->id], // At least 1 SDG required
         ], $this->getContactData($this->defaultContact), $overrides);
     }
 
@@ -70,7 +82,7 @@ class ProgramTest extends TestCase
     {
         Program::factory()->count(3)->create(['program_state_id' => $this->inactiveState->id]);
 
-        $response = $this->getJson(self::BASE_URL);
+        $response = $this->getJson(self::BASE_URL, $this->authHeaders());
 
         $response->assertOk()
             ->assertJsonStructure([
@@ -88,7 +100,7 @@ class ProgramTest extends TestCase
 
     public function test_list_returns_empty_when_no_programs(): void
     {
-        $response = $this->getJson(self::BASE_URL);
+        $response = $this->getJson(self::BASE_URL, $this->authHeaders());
 
         $response->assertOk()
             ->assertJsonPath('data.total', 0);
@@ -98,7 +110,7 @@ class ProgramTest extends TestCase
     {
         Program::factory()->count(15)->create(['program_state_id' => $this->inactiveState->id]);
 
-        $response = $this->getJson(self::BASE_URL . '?per_page=5');
+        $response = $this->getJson(self::BASE_URL . '?per_page=5', $this->authHeaders());
 
         $response->assertOk()
             ->assertJsonPath('data.per_page', 5)
@@ -114,7 +126,7 @@ class ProgramTest extends TestCase
             'name' => 'Education Program 2025',
         ]);
 
-        $response = $this->postJson(self::BASE_URL, $data);
+        $response = $this->postJson(self::BASE_URL, $data, $this->authHeaders());
 
         $response->assertCreated()
             ->assertJson([
@@ -143,7 +155,7 @@ class ProgramTest extends TestCase
         $data = $this->getValidProgramData();
         unset($data['name']);
 
-        $response = $this->postJson(self::BASE_URL, $data);
+        $response = $this->postJson(self::BASE_URL, $data, $this->authHeaders());
 
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['name'])
@@ -155,7 +167,7 @@ class ProgramTest extends TestCase
         $data = $this->getValidProgramData();
         unset($data['description']);
 
-        $response = $this->postJson(self::BASE_URL, $data);
+        $response = $this->postJson(self::BASE_URL, $data, $this->authHeaders());
 
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['description'])
@@ -167,18 +179,51 @@ class ProgramTest extends TestCase
         $response = $this->postJson(self::BASE_URL, [
             'name' => 'Test Program',
             'description' => 'Test description for program'
-        ]);
+        ], $this->authHeaders());
 
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['contact'])
             ->assertJsonPath('errors.contact.0', self::ERROR_CONTACT_REQUIRED);
     }
 
+    public function test_sdg_ids_is_required_on_create(): void
+    {
+        $data = $this->getValidProgramData();
+        unset($data['sdg_ids']);
+
+        $response = $this->postJson(self::BASE_URL, $data, $this->authHeaders());
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['sdg_ids'])
+            ->assertJsonPath('errors.sdg_ids.0', self::ERROR_SDG_IDS_REQUIRED);
+    }
+
+    public function test_sdg_ids_must_have_at_least_one_sdg(): void
+    {
+        $data = $this->getValidProgramData(['sdg_ids' => []]);
+
+        $response = $this->postJson(self::BASE_URL, $data, $this->authHeaders());
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['sdg_ids'])
+            ->assertJsonPath('errors.sdg_ids.0', self::ERROR_SDG_IDS_MIN);
+    }
+
+    public function test_sdg_ids_must_be_valid_sdg_ids(): void
+    {
+        $data = $this->getValidProgramData(['sdg_ids' => [99999]]);
+
+        $response = $this->postJson(self::BASE_URL, $data, $this->authHeaders());
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['sdg_ids.0']);
+    }
+
     public function test_name_must_be_at_least_3_characters(): void
     {
         $data = $this->getValidProgramData(['name' => 'AB']);
 
-        $response = $this->postJson(self::BASE_URL, $data);
+        $response = $this->postJson(self::BASE_URL, $data, $this->authHeaders());
 
         $response->assertStatus(400)
             ->assertJsonPath('message', self::ERROR_NAME_MIN_LENGTH);
@@ -188,7 +233,7 @@ class ProgramTest extends TestCase
     {
         $data = $this->getValidProgramData(['description' => 'Short']);
 
-        $response = $this->postJson(self::BASE_URL, $data);
+        $response = $this->postJson(self::BASE_URL, $data, $this->authHeaders());
 
         $response->assertStatus(400)
             ->assertJsonPath('message', self::ERROR_DESCRIPTION_MIN_LENGTH);
@@ -202,7 +247,7 @@ class ProgramTest extends TestCase
         ]);
         $data = $this->getValidProgramData(['name' => 'Unique Program']);
 
-        $response = $this->postJson(self::BASE_URL, $data);
+        $response = $this->postJson(self::BASE_URL, $data, $this->authHeaders());
 
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['name'])
@@ -213,7 +258,7 @@ class ProgramTest extends TestCase
     {
         $data = $this->getValidProgramData(['name' => '   Trimmed Program   ']);
 
-        $response = $this->postJson(self::BASE_URL, $data);
+        $response = $this->postJson(self::BASE_URL, $data, $this->authHeaders());
 
         $response->assertCreated();
         $this->assertDatabaseHas('program', ['name' => 'Trimmed Program']);
@@ -223,7 +268,7 @@ class ProgramTest extends TestCase
     {
         $data = $this->getValidProgramData(['name' => 'New Default Program']);
 
-        $response = $this->postJson(self::BASE_URL, $data);
+        $response = $this->postJson(self::BASE_URL, $data, $this->authHeaders());
 
         $response->assertCreated();
 
@@ -238,7 +283,7 @@ class ProgramTest extends TestCase
     {
         $program = Program::factory()->create(['program_state_id' => $this->inactiveState->id]);
 
-        $response = $this->getJson(self::BASE_URL . "/{$program->id}");
+        $response = $this->getJson(self::BASE_URL . "/{$program->id}", $this->authHeaders());
 
         $response->assertOk()
             ->assertJsonPath('data.id', $program->id)
@@ -261,7 +306,7 @@ class ProgramTest extends TestCase
 
     public function test_show_returns_404_when_program_not_found(): void
     {
-        $response = $this->getJson(self::BASE_URL . "/999");
+        $response = $this->getJson(self::BASE_URL . "/999", $this->authHeaders());
 
         $response->assertStatus(404)
             ->assertJsonPath('message', 'Program not Found');
@@ -280,7 +325,7 @@ class ProgramTest extends TestCase
             'program_state_id' => $activeState->id
         ]);
 
-        $response = $this->putJson(self::BASE_URL . "/{$program->id}", $data);
+        $response = $this->putJson(self::BASE_URL . "/{$program->id}", $data, $this->authHeaders());
 
         $response->assertOk()
             ->assertJsonStructure([
@@ -308,7 +353,7 @@ class ProgramTest extends TestCase
         $data = $this->getValidProgramData();
         unset($data['name'], $data['description']);
 
-        $response = $this->putJson(self::BASE_URL . "/{$program->id}", $data);
+        $response = $this->putJson(self::BASE_URL . "/{$program->id}", $data, $this->authHeaders());
 
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['name', 'description']);
@@ -320,7 +365,7 @@ class ProgramTest extends TestCase
         $data = $this->getValidProgramData();
         unset($data['program_state_id']);
 
-        $response = $this->putJson(self::BASE_URL . "/{$program->id}", $data);
+        $response = $this->putJson(self::BASE_URL . "/{$program->id}", $data, $this->authHeaders());
 
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['program_state_id']);
@@ -343,7 +388,7 @@ class ProgramTest extends TestCase
             'program_state_id' => $state->id
         ]);
 
-        $response = $this->putJson(self::BASE_URL . "/{$program2->id}", $data);
+        $response = $this->putJson(self::BASE_URL . "/{$program2->id}", $data, $this->authHeaders());
 
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['name']);
@@ -362,7 +407,7 @@ class ProgramTest extends TestCase
             'program_state_id' => $state->id
         ]);
 
-        $response = $this->putJson(self::BASE_URL . "/{$program->id}", $data);
+        $response = $this->putJson(self::BASE_URL . "/{$program->id}", $data, $this->authHeaders());
 
         $response->assertOk();
     }
@@ -377,7 +422,7 @@ class ProgramTest extends TestCase
             'program_state_id' => $this->inactiveState->id
         ]);
 
-        $response = $this->getJson(self::BASE_URL . '/search?name=Searchable Program');
+        $response = $this->getJson(self::BASE_URL . '/search?name=Searchable Program', $this->authHeaders());
 
         $response->assertOk()
             ->assertJsonPath('data.name', 'Searchable Program');
@@ -390,7 +435,7 @@ class ProgramTest extends TestCase
             'program_state_id' => $this->inactiveState->id
         ]);
 
-        $response = $this->getJson(self::BASE_URL . '/search?name=casesensitive program');
+        $response = $this->getJson(self::BASE_URL . '/search?name=casesensitive program', $this->authHeaders());
 
         $response->assertOk()
             ->assertJsonPath('data.name', 'CaseSensitive Program');
@@ -398,14 +443,14 @@ class ProgramTest extends TestCase
 
     public function test_search_returns_404_when_not_found(): void
     {
-        $response = $this->getJson(self::BASE_URL . '/search?name=Nonexistent Program');
+        $response = $this->getJson(self::BASE_URL . '/search?name=Nonexistent Program', $this->authHeaders());
 
         $response->assertStatus(404);
     }
 
     public function test_search_requires_name_parameter(): void
     {
-        $response = $this->getJson(self::BASE_URL . '/search');
+        $response = $this->getJson(self::BASE_URL . '/search', $this->authHeaders());
 
         $response->assertStatus(400);
     }
@@ -431,7 +476,7 @@ class ProgramTest extends TestCase
     {
         $program = Program::factory()->create(['program_state_id' => $this->inactiveState->id]);
 
-        $response = $this->getJson(self::BASE_URL . "/{$program->id}");
+        $response = $this->getJson(self::BASE_URL . "/{$program->id}", $this->authHeaders());
 
         $response->assertOk()
             ->assertJsonStructure(['data' => ['projects_count']]);

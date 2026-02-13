@@ -42,7 +42,7 @@ class ProgramRequest extends FormRequest
             'program_state_id' => $this->isMethod('PUT')
                 ? 'required|integer|min:1|exists:program_state,id'
                 : 'nullable|integer|min:1|exists:program_state,id',
-            'sdg_ids' => 'nullable|array',
+            'sdg_ids' => 'required|array|min:1',
             'sdg_ids.*' => 'integer|min:1|exists:sdg,id',
         ], $this->contactRules());
     }
@@ -68,7 +68,9 @@ class ProgramRequest extends FormRequest
             'program_url.regex' => 'The program URL must use HTTP or HTTPS protocol.',
             'program_state_id.required' => 'The state ID is required (only on update).',
             'program_state_id.exists' => 'The selected state does not exist.',
+            'sdg_ids.required' => 'You must select at least one SDG.',
             'sdg_ids.array' => 'The SDGs must be an array.',
+            'sdg_ids.min' => 'You must select at least one SDG.',
             'sdg_ids.*.exists' => 'One or more selected SDGs do not exist.',
         ], $this->contactMessages());
     }
