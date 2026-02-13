@@ -209,8 +209,7 @@ class ProjectController extends Controller
                 new ProjectResource($project)
             );
         } catch (\RuntimeException $e) {
-            return ApiResponse::error($e, 500);
-            //return ApiResponse::notFound('Project');
+            return ApiResponse::notFound('Project');
         } catch (\Exception $e) {
             return ApiResponse::error($e, 500);
         }
