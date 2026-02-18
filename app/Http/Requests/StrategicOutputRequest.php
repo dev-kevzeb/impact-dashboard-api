@@ -23,7 +23,7 @@ class StrategicOutputRequest extends FormRequest
                 'required',
                 'string',
                 'min:2', 
-                'max:200',
+                'max:300',
             ],
 
             'id_ck' => [
@@ -39,7 +39,7 @@ class StrategicOutputRequest extends FormRequest
         return [
             'name.required' => 'The name of the strategic result should not be empty',
             'name.min'      => 'The name of the strategic result must be at least 3 characters',
-            'name.max'      => 'The name of the strategic result should not exceed 200 characters',
+            'name.max'      => 'The name of the strategic result should not exceed 300 characters',
             'name.string'   => 'The name of the strategic result must be a text string',
 
             'id_ck.required' => 'id_ck is required',

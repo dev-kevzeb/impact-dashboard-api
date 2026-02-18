@@ -19,7 +19,7 @@ class Measure extends Model
 
     public static $ERROR_NAME_EMPTY = 'the measure name must not be empty';
     public static $ERROR_NAME_MIN_LENGTH = 'the measure name must be at least 2 characters long';
-    public static $ERROR_NAME_MAX_LENGTH = 'the measure name must not exceed 150 characters';
+    public static $ERROR_NAME_MAX_LENGTH = 'the measure name must not exceed 300 characters';
     public static $ERROR_INDICATORS_DUPLICATED = 'duplicate indicators are not allowed in the measure';
     public static $ERROR_INDICATOR_NOT_FOUND = 'the specified indicator does not exist in this measure';
 
@@ -34,7 +34,7 @@ class Measure extends Model
 
         if ($name === '') throw new RuntimeException(self::$ERROR_NAME_EMPTY);
         if (strlen($name) < 2) throw new RuntimeException(self::$ERROR_NAME_MIN_LENGTH);
-        if (strlen($name) > 150) throw new RuntimeException(self::$ERROR_NAME_MAX_LENGTH);
+        if (strlen($name) > 300) throw new RuntimeException(self::$ERROR_NAME_MAX_LENGTH);
 
         return new self(['name' => $name, 'strategic_output_id' => $strategicOutput->id]);
     }

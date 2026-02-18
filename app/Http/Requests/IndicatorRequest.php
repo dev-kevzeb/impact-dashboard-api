@@ -17,7 +17,7 @@ class IndicatorRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => [ 'required', 'string', 'min:2', 'max:200'],
+            'name' => [ 'required', 'string', 'min:2', 'max:300'],
 
             'target' => [ 'required', 'numeric', 'gt:0'],
 
@@ -32,7 +32,7 @@ class IndicatorRequest extends FormRequest
         return [
             'name.required' => 'The indicator name must not be empty.',
             'name.min' => 'The indicator name must be at least 2 characters long.',
-            'name.max' => 'The indicator name must not exceed 200 characters.',
+            'name.max' => 'The indicator name must not exceed 300 characters.',
 
             'target.required' => 'The target is required.',
             'target.numeric' => 'The target must be a number.',

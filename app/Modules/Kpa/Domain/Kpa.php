@@ -18,7 +18,7 @@ class Kpa extends Model
 
     public static $ERROR_NAME_EMPTY = 'The KPA name must not be empty';
     public static $ERROR_NAME_MIN_LENGTH = 'The KPA name must have at least 2 characters';
-    public static $ERROR_NAME_MAX_LENGTH = 'The KPA name must not exceed 100 characters';
+    public static $ERROR_NAME_MAX_LENGTH = 'The KPA name must not exceed 300 characters';
 
     public static $ERROR_IMPLEMENTATION_NOT_NUMERIC = 'The KPA implementation must be a number';
     public static $ERROR_IMPLEMENTATION_OUT_OF_RANGE = 'The KPA implementation must be between 0 and 100';
@@ -47,7 +47,7 @@ class Kpa extends Model
         if(!is_numeric($implementation)){
             throw new RuntimeException(self::$ERROR_IMPLEMENTATION_NOT_NUMERIC);
         }
-        if($implementation < 0 || $implementation > 100){
+        if($implementation < 0 || $implementation > 300){
             throw new RuntimeException(self::$ERROR_IMPLEMENTATION_OUT_OF_RANGE);
         }
         return new Kpa(['name' => trim($name), 'implementation' => (float) $implementation]);
