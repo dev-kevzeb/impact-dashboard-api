@@ -90,10 +90,8 @@ class ProgramService
         // Save to database
         $this->programRepository->save($program);
 
-        // Synchronize M:N relationships
-        if (!empty($sdgIds)) {
-            $this->programRepository->syncSdgs($program, $sdgIds);
-        }
+        // Synchronize M:N relationships (always required, at least 1 SDG)
+        $this->programRepository->syncSdgs($program, $sdgIds);
 
         return $program->fresh(['contact', 'programState', 'sdgs']);
     }

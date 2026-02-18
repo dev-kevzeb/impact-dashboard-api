@@ -7524,7 +7524,7 @@
                     "Programs"
                 ],
                 "summary": "Create new program",
-                "description": "Creates a new program with 'Inactive' state by default (business rule). To change state, use PUT. **Arrays:** Use `sdg_ids[]=2&sdg_ids[]=5` or in form-data: `sdg_ids[0]=2, sdg_ids[1]=5`",
+                "description": "Creates a new program with 'Inactive' state by default (business rule). To change state, use PUT. **Arrays (REQUIRED):** Use `sdg_ids[]=2&sdg_ids[]=5` or in form-data: `sdg_ids[0]=2, sdg_ids[1]=5`. Must select at least 1 SDG.",
                 "operationId": "e279e3f39108a843cc1bc40116976cdc",
                 "requestBody": {
                     "required": true,
@@ -7534,7 +7534,8 @@
                                 "required": [
                                     "name",
                                     "description",
-                                    "contact_id"
+                                    "contact_id",
+                                    "sdg_ids"
                                 ],
                                 "properties": {
                                     "name": {
@@ -7564,7 +7565,7 @@
                                         "example": 1
                                     },
                                     "sdg_ids[]": {
-                                        "description": "Array of SDG IDs (optional). Use: sdg_ids[0]=2, sdg_ids[1]=4, sdg_ids[2]=13",
+                                        "description": "Array of SDG IDs (REQUIRED - at least 1). Use: sdg_ids[0]=2, sdg_ids[1]=4, sdg_ids[2]=13",
                                         "type": "array",
                                         "items": {
                                             "type": "integer"
@@ -7899,7 +7900,8 @@
                                     "name",
                                     "description",
                                     "contact_id",
-                                    "program_state_id"
+                                    "program_state_id",
+                                    "sdg_ids"
                                 ],
                                 "properties": {
                                     "_method": {
@@ -7938,7 +7940,7 @@
                                         "example": 2
                                     },
                                     "sdg_ids": {
-                                        "description": "SDG IDs (replaces existing)",
+                                        "description": "SDG IDs (REQUIRED - at least 1, replaces existing)",
                                         "type": "array",
                                         "items": {
                                             "type": "integer",
