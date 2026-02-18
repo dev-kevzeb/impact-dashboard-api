@@ -30,23 +30,22 @@ class JwtMiddleware
     public function handle(Request $request, Closure $next): Response
     {
         try {
-            // Attempt to parse and authenticate the token
             $user = JWTAuth::parseToken()->authenticate();
 
             if (!$user) {
-                return ApiResponse::error('User not found', 401)->send();
+                return ApiResponse::error('User not found', 401);
             }
 
             // Attach user to request for controllers
             $request->merge(['auth_user' => $user]);
         } catch (TokenExpiredException $e) {
-            return ApiResponse::error('Token has expired', 401)->send();
+            return ApiResponse::error('Token has expired', 401);
         } catch (TokenInvalidException $e) {
-            return ApiResponse::error('Token is invalid', 401)->send();
+            return ApiResponse::error('Token is invalid', 401);
         } catch (JWTException $e) {
-            return ApiResponse::error('Token not provided', 401)->send();
+            return ApiResponse::error('Token not provided', 401);
         } catch (\Exception $e) {
-            return ApiResponse::error('Authorization error', 401)->send();
+            return ApiResponse::error('Authorization error', 401);
         }
 
         return $next($request);
