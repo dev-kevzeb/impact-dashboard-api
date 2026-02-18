@@ -90,7 +90,6 @@ class Measure extends Model
 
 
 
-    // RELATIONSHIPS
     public function indicators()
     {
         return $this->hasMany(Indicator::class, 'measure_id', 'id');

@@ -69,6 +69,11 @@ class Country extends Model
         return $this->belongsToMany(Kpa::class, 'country_kpa', 'id_country', 'id_kpa');
     }
 
+    public function countryKpas()
+    {
+        return $this->hasMany(\App\Modules\CountryKpa\Domain\CountryKpa::class, 'id_country');
+    }
+    
     public function currency()
     {
         return $this->belongsTo(Currency::class, 'currency_id');

@@ -4,6 +4,7 @@ namespace App\Modules\CountryKpa\Controller;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\CountryKpaRequest;
+use App\Http\Resources\CountryKpaResource;
 use App\Http\Responses\ApiResponse;
 use Illuminate\Http\Request;
 use \Illuminate\Http\JsonResponse;
@@ -90,8 +91,10 @@ class CountryKpaController extends Controller
 	{
 		try {
 			if ($request->has('country')) {
+				$search = $request->get("search");
+				$perPage = (int) $request->get("per_page", 10);
 				$countryId = (int) $request->query('country');
-				$countryWithKpas = $this->service->getCountryKpasByCountryId($countryId);
+				$countryWithKpas = $this->service->getCountryKpasByCountryId($countryId, $search, $perPage);
 				return ApiResponse::success('Country KPAs obtained', 200, $countryWithKpas);
 			}
 
@@ -416,11 +419,32 @@ class CountryKpaController extends Controller
 	 *     )
 	 * )
 	 */
-	public function showForCountry($id): JsonResponse
+	public function showForCountry(Request $request, $id): JsonResponse
 	{
 		try {
-			$countryKpa = $this->service->getCountryKpasByCountryId((int)$id);
-			return ApiResponse::success('Registration obtained', 200, $countryKpa);
+			$search = $request->get("search");
+			$perPage = (int) $request->get("per_page", 10);
+			$paginator = $this->service->getKpasByCountryPaginated((int)$id, $search, $perPage);
+        	if ($paginator->isEmpty()) return ApiResponse::notFound('CountryKpa');
+        	$country = $paginator->first()->country;
+
+			return ApiResponse::success('Register obtained', 200, [
+				'country' => [
+					'id' => $country->id,
+					'name' => $country->name,
+					'currency_id' => $country->currency_id,
+				],
+
+				'kpas' => CountryKpaResource::collection($paginator),
+
+				'pagination' => [
+					'current_page' => $paginator->currentPage(),
+					'last_page' => $paginator->lastPage(),
+					'per_page' => $paginator->perPage(),
+					'total' => $paginator->total(),
+				],
+			]);
+
 		} catch (RuntimeException $e) {
 			return ApiResponse::notFound('CountryKpa');
 		} catch (\Exception $e) {
