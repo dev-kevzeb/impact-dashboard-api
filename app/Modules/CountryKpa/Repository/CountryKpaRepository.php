@@ -40,33 +40,23 @@ class CountryKpaRepository extends Model
 		if (!$countryKpa) throw new RuntimeException("CountryKpa with ID not found:{$id}");
 		return $countryKpa->makeHidden(['id_country','id_kpa']);
 	}
-	public function getCountryKpasByCountryId(int $countryId)
-	{
-		$countryKpas = $this->model->with(['country', 'kpa'])
-        ->where('id_country', $countryId)->get();
+	public function getCountryKpasByCountryId( int $countryId, ?string $search, int $perPage)
+ 	{
+		$query = $this->model
+			->with(['country', 'kpa'])
+			->withCount([
+				'strategicOutputs',
+				'strategicOutputs as measures_count' => function ($q) {$q->join('measure', 'strategic_output.id', '=', 'measure.strategic_output_id');},
+				'strategicOutputs as indicators_count' => function ($q) {$q->join('measure', 'strategic_output.id', '=', 'measure.strategic_output_id')->join('indicator', 'measure.id', '=', 'indicator.measure_id');},
+			])->where('id_country', $countryId);
 
-		if ($countryKpas->isEmpty()) throw new RuntimeException("Country with ID not found: {$countryId}");
-    	
-		$country = $countryKpas->first()->country;
+		if ($search) {
+			$query->whereHas('kpa', function ($q) use ($search) {
+			$q->whereRaw('LOWER(name) LIKE LOWER(?)', ["%{$search}%"]);
+			});
+		}
 
-    	$kpas = $countryKpas->map(function ($item) {
-			return [
-				'id_ck' => $item->id,
-				'id_kpa' => $item->kpa->id,
-				'name' => $item->kpa->name,
-				'implementation' => floatval($item->kpa->implementation),
-				'strategic_outputs_count' => $item->strategic_outputs_count,
-			];
-    	})->unique('name')->values()->all();
-
-		return [
-			'country' => [
-				'id' => $country->id,
-				'name' => $country->name,
-				'currency_id' => $country->currency_id,
-			],
-			'kpas' => $kpas, 
-		];
+		return $query->paginate($perPage);
 	}
 
 	public function getCountryKpasByCountryAndKpaId(int $countryId, int $kpaId)

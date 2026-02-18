@@ -24,9 +24,9 @@ class CountryKpaService
         return $this->repo->getById($id);
     }
 
-    public function getCountryKpasByCountryId(int $id): array
+    public function getCountryKpasByCountryId(int $id,?string $search, int $perPage): array
     {
-        return $this->repo->getCountryKpasByCountryId($id);
+        return $this->repo->getCountryKpasByCountryId($id, $search,$perPage);
     }    
 
     public function getByCountryAndKpa(int $CountryId, int $kpaId)
@@ -66,8 +66,10 @@ class CountryKpaService
         return $this->repo->detachKpaFromCountry($countryId, $kpaId);
     }
 
-    public function getKpasByCountryPaginated(int $countryId, ?string $search, int $perPage) {
-        return $this->repo->paginateKpasByCountry($countryId, $search, $perPage);
+    public function getKpasByCountryPaginated( int $countryId, ?string $search, int $perPage )
+    {
+        return $this->repo->getCountryKpasByCountryId($countryId, $search, $perPage);
     }
+
 }
 
