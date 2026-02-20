@@ -174,15 +174,22 @@ class StrategicOutputController extends Controller
         }
     }
 
-    public function showByCountryKpa($id)
+    public function showByCountryKpa(Request $request, int $id)
     {
         try {
-            $strategicOutputs = $this->strategicOutputService->getByCountryKpaId($id);
+            $perPage = (int) $request->get("per_page", 10);
+            $strategicOutputs = $this->strategicOutputService->getByCountryKpaId($id, $perPage);
 
             return ApiResponse::success(
-                'Strategic outputs for CountryKpa obtained correctly',
+                'Strategic Outputs paginated list successfully uploaded',
                 200,
-                StrategicOutputResource::collection($strategicOutputs)
+                [
+                    'strategic_outputs' => StrategicOutputResource::collection($strategicOutputs),
+                    'total' => $strategicOutputs->count(),
+                    'per_page' => $strategicOutputs->perPage(),
+                    'current_page' => $strategicOutputs->currentPage(),
+                    'last_page' => $strategicOutputs->lastPage(),
+                ]
             );
         } catch (\Exception $e) {
             return ApiResponse::error('Internal server error', 500); 

@@ -48,9 +48,9 @@ class StrategicOutputService{
         return $strategicOutput;
     }
 
-    public function getByCountryKpaId(int $id)
+    public function getByCountryKpaId(int $id, int $perPage = 10)
     {
-        return $this->strategicOutputRepository->getByCountryKpa($id);
+        return $this->strategicOutputRepository->getByCountryKpa($id, $perPage);
     }
 
 
