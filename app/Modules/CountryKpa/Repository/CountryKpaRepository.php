@@ -2,8 +2,6 @@
 
 namespace App\Modules\CountryKpa\Repository;
 
-use App\Repositories\AbstractRepository;
-use App\Repositories\RepositoryInterface;
 use App\Modules\CountryKpa\Domain\CountryKpa;
 use Illuminate\Database\Eloquent\Model;
 use \Illuminate\Pagination\LengthAwarePaginator;
@@ -95,9 +93,7 @@ class CountryKpaRepository extends Model
 		try {			
 			$id_country = $data['id_country'];
 			$id_kpa = $data['id_kpa'];	
-			$existing = $this->model->where('id_country', $id_country)
-				->where('id_kpa', $id_kpa)
-				->first();
+			$existing = $this->model->where('id_country', $id_country)->where('id_kpa', $id_kpa)->first();
 			if($existing){	
 				throw new RuntimeException("The CountryKpa relationship already exists for id_country: {$id_country} and id_kpa: {$id_kpa}");
 			}
@@ -140,16 +136,17 @@ class CountryKpaRepository extends Model
 	public function paginateKpasByCountry(int $countryId, ?string $search, int $perPage) {
 		return $this->model->where('id_country', $countryId)
 			->whereHas('kpa', function ($q) use ($search) {
-				$q->when($search, fn ($sq) =>
-					$sq->where('name', 'ILIKE', "%{$search}%")
-				);
+				$q->when($search, fn ($sq) => $sq->where('name', 'ILIKE', "%{$search}%") );
 			})
 			->with(['kpa:id,name'])->paginate($perPage)
 			->through(function ($item) {
 				return ['id'   => $item->kpa->id, 'name' => $item->kpa->name,];
 			});
 	}
-
+	public function bulkInsert(array $data): void
+	{
+		CountryKpa::insert($data);
+	}
 }
 
 
