@@ -22,4 +22,8 @@ class KpaRepository extends AbstractRepository implements RepositoryInterface
         return $query->withCount('strategicOutputs')->paginate($perPage);
     }
     
+    public function getAllIds(): array
+    {
+        return $this->model::query()->pluck('id')->toArray();
+    }
 }

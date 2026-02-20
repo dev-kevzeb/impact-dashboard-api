@@ -42,7 +42,6 @@ class CountryKpaService
 
     public function create(array $data): object
     {
-        // basic validation could be added here if needed
         return $this->repo->create($data);
     }
 

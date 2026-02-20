@@ -228,7 +228,6 @@ class CountryController extends Controller
                 new CountryResource($country)
             );
         } catch (RuntimeException $e) {
-            // Si el error es de duplicado, retornar como error de validación (422)
             if (str_contains($e->getMessage(), 'Ya existe')) {
                 return ApiResponse::validationError(['name' => [$e->getMessage()]]);
             }
