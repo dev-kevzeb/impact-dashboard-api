@@ -80,9 +80,9 @@ class MeasureService
         return $this->measureRepository->getByStrategicOutput($id, $search, $perPage);
     }
 
-    public function getAllMeasuresByStrategicOutputId(int $id)
+    public function getAllMeasuresByStrategicOutputId(int $id, int $perPage = 10)
     {
-        return $this->measureRepository->getAllByStrategicOutput($id);
+        return $this->measureRepository->getAllByStrategicOutput($id, $perPage);
     }
 
     public function getAllPaginatedMeasuresByStrategicOutputId(int $id, ?string $search, int $per_page = 10)

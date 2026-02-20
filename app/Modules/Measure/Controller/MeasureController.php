@@ -4,6 +4,7 @@ namespace App\Modules\Measure\Controller;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\MeasureRequest;
+use App\Http\Resources\IndicatorResource;
 use App\Http\Resources\MeasureResource;
 
 use App\Http\Responses\ApiResponse;
@@ -194,24 +195,38 @@ class MeasureController extends Controller
      *     )
      * )
      */
-    public function showWithIndicators(int $id)
+    public function showWithIndicators(Request $request, int $id)
     {
         try {
-            $measure = $this->measureService->getMeasureById($id);
+            $perPage = (int) $request->get("per_page", 10);
 
-            $measure->load('indicators');
+            $measure = $this->measureService->getMeasureById($id);
+            if (!$measure) throw new RuntimeException("Measure not found");
+
+            $indicators = $measure->indicators()->paginate($perPage);
 
             return ApiResponse::success(
                 'Measure with its indicators successfully recovered',
                 200,
-                new MeasureResource($measure)
+                [
+                    'measure' => new MeasureResource($measure),
+                    'indicators' => IndicatorResourcex::collection($indicators),
+                    'pagination' => [
+                        'current_page' => $indicators->currentPage(),
+                        'last_page' => $indicators->lastPage(),
+                        'per_page' => $indicators->perPage(),
+                        'total' => $indicators->total(),
+                    ]
+                ]
             );
+
         } catch (RuntimeException $e) {
             return ApiResponse::notFound('Measure');
         } catch (\Exception $e) {
             return ApiResponse::error('Internal server error', 500);
         }
-    }
+}
+
 
     /**
      * @OA\Get(
@@ -246,7 +261,7 @@ class MeasureController extends Controller
      *     )
      * )
      */
-    public function showWithIndicatorsCount(int $id)
+    public function showWithIndicatorsCount( $id)
     {
         try {
             $measure = $this->measureService->getMeasureById($id);
@@ -634,15 +649,22 @@ class MeasureController extends Controller
         }
     }
 
-    public function listByStrategicOutput(int $id)
+    public function listByStrategicOutput(Request $request, int $id)
     {
         try {
-            $measures = $this->measureService->getAllMeasuresByStrategicOutputId($id);
+            $perPage = (int) $request->get("per_page", 10);
+            $measures = $this->measureService->getAllMeasuresByStrategicOutputId($id, $perPage);
 
             return ApiResponse::success(
-                'Measure obtained correctly',
+                'Measures paginated list successfully uploaded',
                 200,
-                MeasureResource::collection($measures)
+                [
+                    'measures' => MeasureResource::collection($measures),
+                    'total' => $measures->count(),
+                    'per_page' => $measures->perPage(),
+                    'current_page' => $measures->currentPage(),
+                    'last_page' => $measures->lastPage(),
+                ]
             );
         } catch (RuntimeException $e) {
             return ApiResponse::error($e->getMessage(), 400);

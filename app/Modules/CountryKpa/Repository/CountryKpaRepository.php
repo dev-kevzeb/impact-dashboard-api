@@ -6,7 +6,7 @@ use App\Repositories\AbstractRepository;
 use App\Repositories\RepositoryInterface;
 use App\Modules\CountryKpa\Domain\CountryKpa;
 use Illuminate\Database\Eloquent\Model;
-use Ramsey\Uuid\Type\Decimal;
+use \Illuminate\Pagination\LengthAwarePaginator;
 use RuntimeException;
 
 class CountryKpaRepository extends Model
@@ -56,7 +56,10 @@ class CountryKpaRepository extends Model
 			});
 		}
 
-		return $query->paginate($perPage);
+		if ($perPage != -1) return $query->paginate($perPage);
+
+		$results = $query->get();
+		return new LengthAwarePaginator( $results, $results->count(), $results->count(), 1, ['path' => request()->url(), 'query' => request()->query()] );
 	}
 
 	public function getCountryKpasByCountryAndKpaId(int $countryId, int $kpaId)

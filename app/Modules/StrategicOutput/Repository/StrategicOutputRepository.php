@@ -32,12 +32,12 @@ class StrategicOutputRepository extends AbstractRepository implements Repository
             ->exists();
     }
 
-    public function getByCountryKpa(int $id)
+    public function getByCountryKpa(int $id, int $perPage = 10)
     {
         return $this->model
             ->where('id_ck', $id)
             ->with('measures')
-            ->get();
+            ->paginate($perPage);
     }
 
     public function paginateByCountryKpaIds(array $countryKpaIds, ?string $search, int $perPage =10){

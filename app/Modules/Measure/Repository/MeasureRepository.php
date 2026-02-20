@@ -29,9 +29,9 @@ class MeasureRepository extends AbstractRepository implements RepositoryInterfac
         return $query->orderBy('name')->paginate($perPage);
     }
 
-    public function getAllByStrategicOutput(int $strategicOutputId)
+    public function getAllByStrategicOutput(int $strategicOutputId, int $perPage = 10)
     {
-        return $this->model->where('strategic_output_id', $strategicOutputId)->get();
+        return $this->model->where('strategic_output_id', $strategicOutputId)->paginate($perPage);
     }
 
     public function getAllPaginatedByStrategicOutput(int $strategicOutputId, ?string $search, int $per_page)
@@ -49,5 +49,4 @@ class MeasureRepository extends AbstractRepository implements RepositoryInterfac
 
         return $query->orderBy('name')->get();
     }
-
 }
