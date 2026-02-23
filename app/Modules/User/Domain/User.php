@@ -4,22 +4,31 @@ namespace App\Modules\User\Domain;
 
 use App\Modules\Role\Domain\Role;
 use App\Modules\UserState\Domain\UserState;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Hash;
 use PHPOpenSourceSaver\JWTAuth\Contracts\JWTSubject;
 use RuntimeException;
 use Spatie\Permission\Traits\HasRoles;
 
-class User extends Authenticatable implements JWTSubject
+class User extends Authenticatable implements JWTSubject, MustVerifyEmail
 {
-    use HasFactory, HasRoles;
+    use HasFactory, HasRoles, Notifiable;
 
     protected $table = 'user';
-    protected $fillable = ['name', 'email', 'password', 'user_state_id'];
+    protected $fillable = ['name', 'email', 'email_verified_at', 'password', 'user_state_id'];
     protected $hidden = ['password', 'remember_token'];
+
+    /**
+     * Cast attributes to native types
+     */
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+    ];
 
     /**
      * Spatie Permission: Define guard name for permissions
@@ -206,5 +215,36 @@ class User extends Authenticatable implements JWTSubject
         // Return scopes as-is (empty array if no permissions assigned)
         // Users without roles/permissions will have no access to protected endpoints
         return $scopes;
+    }
+
+    /**
+     * Determine if the user has verified their email address.
+     *
+     * @return bool
+     */
+    public function hasVerifiedEmail(): bool
+    {
+        return !is_null($this->email_verified_at);
+    }
+
+    /**
+     * Mark the given user's email as verified.
+     *
+     * @return bool
+     */
+    public function markEmailAsVerified(): bool
+    {
+        $this->email_verified_at = $this->freshTimestamp();
+        return $this->save();
+    }
+
+    /**
+     * Send the email verification notification.
+     *
+     * @return void
+     */
+    public function sendEmailVerificationNotification(): void
+    {
+        $this->notify(new \App\Notifications\VerifyEmailNotification);
     }
 }

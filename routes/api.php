@@ -1,6 +1,7 @@
 <?php
 
 use App\Modules\Auth\Controller\AuthController;
+use App\Modules\Auth\Controller\VerificationController;
 use App\Modules\Country\Controller\PublicCountryController;
 use App\Modules\CountryKpa\Controller\PublicCountryKpaController;
 use App\Modules\Indicator\Controller\IndicatorController;
@@ -39,6 +40,13 @@ Route::prefix('v1')->group(function () {
     // Public auth routes
     Route::post('auth/login', [AuthController::class, 'login']);
     Route::post('auth/register', [AuthController::class, 'register']);
+
+    // Email verification routes (no authentication required)
+    Route::get('email/verify/{id}/{hash}', [VerificationController::class, 'verify'])
+        ->name('verification.verify');
+    Route::post('email/resend', [VerificationController::class, 'resend'])
+        ->middleware('throttle:3,1')  // 3 requests per minute
+        ->name('verification.resend');
 
     // Protected routes - require JWT token
     Route::middleware('jwt')->group(function () {

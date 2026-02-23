@@ -40,8 +40,17 @@ class AuthService
 
         $user = auth('api')->user();
 
+        // Check email verification
+        if (!$user->hasVerifiedEmail()) {
+            throw new RuntimeException('Please verify your email before logging in. Check your inbox.');
+        }
+
         // Validate user state with specific messages
         $stateName = $user->userState->name;
+
+        if ($stateName === 'unverified') {
+            throw new RuntimeException('Please verify your email before logging in. Check your inbox.');
+        }
 
         if ($stateName === 'pending') {
             throw new RuntimeException('Your account is pending approval. Please wait for admin confirmation.');
@@ -67,16 +76,16 @@ class AuthService
     }
 
     /**
-     * Register new user with pending state
+     * Register new user with unverified state
      * 
-     * Users register with pending state and cannot login until admin approves.
+     * Users register with unverified state and must verify email before admin approval.
      * Only project-manager and country-manager roles are allowed for self-registration.
      *
      * @param string $name
      * @param string $email
      * @param string $password
      * @param string $roleName Role name (project-manager or country-manager)
-     * @return array ['message', 'user'] - NO token until approval
+     * @return array ['message', 'user'] - NO token until email verified and admin approves
      * @throws RuntimeException
      */
     public function register(string $name, string $email, string $password, string $roleName): array
@@ -89,10 +98,10 @@ class AuthService
             );
         }
 
-        // Get pending state
-        $pendingState = $this->userStateRepository->findBy('name', 'pending');
-        if (!$pendingState) {
-            throw new RuntimeException('Pending state not found. Run UserStateSeeder.');
+        // Get unverified state (not pending)
+        $unverifiedState = $this->userStateRepository->findBy('name', 'unverified');
+        if (!$unverifiedState) {
+            throw new RuntimeException('Unverified state not found. Run UserStateSeeder.');
         }
 
         // Validate role exists
@@ -101,20 +110,23 @@ class AuthService
             throw new RuntimeException("Role {$roleName} not found. Run RoleSeeder.");
         }
 
-        // Create user with pending state
-        $user = User::at($name, $email, $pendingState);
+        // Create user with unverified state
+        $user = User::at($name, $email, $unverifiedState);
         $user->password = $password;  // Hashed automatically with mutator
         $this->userRepository->save($user);
 
         // Assign selected role
         $user->assignRole($role);
 
+        // Send email verification notification
+        $user->sendEmailVerificationNotification();
+
         // Load relationships for response
         $user->load('roles', 'userState');
 
-        // NO token generated - user cannot login until approved
+        // NO token generated - user cannot login until email verified and admin approves
         return [
-            'message' => 'Registration successful. Your account is pending approval by an administrator.',
+            'message' => 'Registration successful. Please check your email to verify your account.',
             'user' => new \App\Http\Resources\UserResource($user)
         ];
     }
