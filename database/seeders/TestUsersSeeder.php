@@ -17,10 +17,11 @@ class TestUsersSeeder extends Seeder
         }
 
         $admin = User::updateOrCreate(
-            ['email' => 'admin@pacific.com'],
+            ['email' => 'admin_test@yopmail.com'],
             [
                 'name' => 'Administrator',
-                'password' => 'admin123',
+                'password' => 'Password1!',
+                'email_verified_at' => now(), // Admin pre-verified
                 'user_state_id' => $activeState->id
             ]
         );

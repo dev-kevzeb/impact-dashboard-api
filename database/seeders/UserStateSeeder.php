@@ -10,9 +10,10 @@ class UserStateSeeder extends Seeder
     public function run(): void
     {
         $states = [
-            ['id' => 1, 'name' => 'pending'],
-            ['id' => 2, 'name' => 'active'],
-            ['id' => 3, 'name' => 'inactive'],
+            ['id' => 1, 'name' => 'unverified'],  // Email no verificado
+            ['id' => 2, 'name' => 'pending'],     // Email verificado, esperando admin
+            ['id' => 3, 'name' => 'active'],      // Aprobado, puede hacer login
+            ['id' => 4, 'name' => 'inactive'],    // Desactivado
         ];
 
         foreach ($states as $state) {
