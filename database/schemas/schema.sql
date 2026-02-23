@@ -67,14 +67,15 @@ ALTER TABLE user_state
 /* Table: User                                                  */
 /*==============================================================*/
 CREATE TABLE "user" (
-    id              BIGINT          NOT NULL,
-    name            VARCHAR(255)    NOT NULL,
-    email           VARCHAR(255)    NOT NULL,
-    password        VARCHAR(255)    NOT NULL,
-    remember_token  VARCHAR(100)    NULL,
-    user_state_id   BIGINT          NOT NULL,
-    created_at      TIMESTAMP       NOT NULL,
-    updated_at      TIMESTAMP       NOT NULL
+    id                  BIGINT          NOT NULL,
+    name                VARCHAR(255)    NOT NULL,
+    email               VARCHAR(255)    NOT NULL,
+    email_verified_at   TIMESTAMP       NULL,
+    password            VARCHAR(255)    NOT NULL,
+    remember_token      VARCHAR(100)    NULL,
+    user_state_id       BIGINT          NOT NULL,
+    created_at          TIMESTAMP       NOT NULL,
+    updated_at          TIMESTAMP       NOT NULL
 );
 
 ALTER TABLE "user"

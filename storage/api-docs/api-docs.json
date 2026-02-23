@@ -786,6 +786,144 @@
                 ]
             }
         },
+        "/api/v1/email/verify/{id}/{hash}": {
+            "get": {
+                "tags": [
+                    "Email Verification"
+                ],
+                "summary": "Verify user email address",
+                "description": "Verifies user email using signed URL. Changes user state from 'unverified' to 'pending'.",
+                "operationId": "6035695536866bdefb18eb40751772a8",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "User ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "hash",
+                        "in": "path",
+                        "description": "Verification hash",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Email verified successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Email verificado exitosamente"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "message": {
+                                                    "type": "string"
+                                                },
+                                                "user": {
+                                                    "type": "object"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid verification link or email already verified"
+                    },
+                    "404": {
+                        "description": "User not found"
+                    }
+                }
+            }
+        },
+        "/api/v1/email/resend": {
+            "post": {
+                "tags": [
+                    "Email Verification"
+                ],
+                "summary": "Resend verification email",
+                "description": "Resends verification email to user's email address",
+                "operationId": "423222ed427db37defbab135470faec9",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "user@example.com"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Verification email resent successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Verification email resent successfully"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "message": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Email already verified"
+                    },
+                    "404": {
+                        "description": "User not found"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                }
+            }
+        },
         "/beneficiaries": {
             "get": {
                 "tags": [
@@ -14726,6 +14864,10 @@
         {
             "name": "Program States",
             "description": "Estados de Programas"
+        },
+        {
+            "name": "Email Verification",
+            "description": "Email verification endpoints"
         },
         {
             "name": "CountryKpaUsers",
