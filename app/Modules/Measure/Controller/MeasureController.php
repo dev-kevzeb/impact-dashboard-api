@@ -210,7 +210,7 @@ class MeasureController extends Controller
                 200,
                 [
                     'measure' => new MeasureResource($measure),
-                    'indicators' => IndicatorResourcex::collection($indicators),
+                    'indicators' => IndicatorResource::collection($indicators),
                     'pagination' => [
                         'current_page' => $indicators->currentPage(),
                         'last_page' => $indicators->lastPage(),
