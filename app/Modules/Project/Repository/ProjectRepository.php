@@ -59,4 +59,8 @@ class ProjectRepository extends AbstractRepository implements RepositoryInterfac
             ->when($search, fn ($q) =>$q->where('name', 'ILIKE', "%{$search}%"))
             ->paginate($perPage);
     }
+
+    public function getByIds(array $projectIds) {
+        return $this->model->query()->whereIn('id', $projectIds)->orderBy('name')->get();
+    }
 }

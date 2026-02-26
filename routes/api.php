@@ -8,8 +8,10 @@ use App\Modules\Indicator\Controller\IndicatorController;
 use App\Modules\IndicatorType\Controller\IndicatorTypeController;
 use App\Modules\Measure\Controller\MeasureController;
 use App\Modules\Measure\Controller\PublicMeasureController;
+use App\Modules\MeasureChart\Controller\MeasureChartController;
 use App\Modules\Project\Controller\PublicProjectController;
 use App\Modules\ProjectState\Controller\PublicProjectStateController;
+use App\Modules\Statistics\Controller\StatisticsController;
 use App\Modules\StrategicOutput\Controller\PublicStrategicOutputController;
 use Illuminate\Support\Facades\Route;
 use App\Modules\Country\Controller\CountryController;
@@ -281,4 +283,10 @@ Route::prefix('v1/public')->group(function () {
 
     // Project-states
     Route::get('project-states', [PublicProjectStateController::class, 'index']);
+
+    // Statistics
+    Route::get('measure-implementation/{id}', [StatisticsController::class, 'getMeasureImplementation']);
+    Route::get('strategic-output-implementation/{id}', [StatisticsController::class, 'getStrategicOutputImplementation']);
+    Route::get('kpa-implementation/{id}', [StatisticsController::class, 'getKpaImplementation']);
+    Route::get('overall-implementation', [StatisticsController::class, 'getOverallImplementation']);
 });
