@@ -145,6 +145,32 @@ class User extends Authenticatable implements JWTSubject, MustVerifyEmail
     }
 
     /**
+     * Relationship: User has many UserRoles (explicit)
+     * Used to access countries through UserRole pivot
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function userRoles()
+    {
+        return $this->hasMany(\App\Modules\UserRole\Domain\UserRole::class, 'user_id');
+    }
+
+    /**
+     * Get all countries assigned to this user through their roles
+     *
+     * @return \Illuminate\Support\Collection
+     */
+    public function getAssignedCountries()
+    {
+        return $this->userRoles()
+            ->with('countries')
+            ->get()
+            ->pluck('countries')
+            ->flatten()
+            ->unique('id');
+    }
+
+    /**
      * Laravel Factory integration
      *
      * @return \Database\Factories\UserFactory

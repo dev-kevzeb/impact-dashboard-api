@@ -110,7 +110,8 @@ class AuthController extends Controller
                 $validated['name'],
                 $validated['email'],
                 $validated['password'],
-                $validated['role_name']
+                $validated['role_name'],
+                $validated['country_id']
             );
 
             return ApiResponse::created(

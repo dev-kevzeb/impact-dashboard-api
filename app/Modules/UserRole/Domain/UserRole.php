@@ -2,11 +2,13 @@
 
 namespace App\Modules\UserRole\Domain;
 
+use App\Modules\Country\Domain\Country;
 use App\Modules\Role\Domain\Role;
 use App\Modules\User\Domain\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class UserRole extends Model
 {
@@ -32,6 +34,32 @@ class UserRole extends Model
     public function role(): BelongsTo
     {
         return $this->belongsTo(Role::class, 'role_id');
+    }
+
+    /**
+     * Relationship: UserRole has many Countries (many-to-many via country_user_role)
+     *
+     * @return BelongsToMany
+     */
+    public function countries(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            Country::class,
+            'country_user_role',
+            'user_role_id',
+            'country_id'
+        )->withTimestamps();
+    }
+
+    /**
+     * Check if this user role has access to a specific country
+     *
+     * @param int $countryId
+     * @return bool
+     */
+    public function hasAccessToCountry(int $countryId): bool
+    {
+        return $this->countries()->where('country_id', $countryId)->exists();
     }
 
     /**

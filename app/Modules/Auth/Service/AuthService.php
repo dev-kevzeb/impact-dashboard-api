@@ -2,8 +2,10 @@
 
 namespace App\Modules\Auth\Service;
 
+use App\Modules\Country\Repository\CountryRepository;
 use App\Modules\User\Domain\User;
 use App\Modules\User\Repository\UserRepository;
+use App\Modules\UserRole\Domain\UserRole;
 use App\Modules\UserState\Repository\UserStateRepository;
 use Spatie\Permission\Models\Role;
 use RuntimeException;
@@ -12,13 +14,16 @@ class AuthService
 {
     private UserRepository $userRepository;
     private UserStateRepository $userStateRepository;
+    private CountryRepository $countryRepository;
 
     public function __construct(
         UserRepository $userRepository,
-        UserStateRepository $userStateRepository
+        UserStateRepository $userStateRepository,
+        CountryRepository $countryRepository
     ) {
         $this->userRepository = $userRepository;
         $this->userStateRepository = $userStateRepository;
+        $this->countryRepository = $countryRepository;
     }
 
     /**
@@ -85,10 +90,11 @@ class AuthService
      * @param string $email
      * @param string $password
      * @param string $roleName Role name (project-manager or country-manager)
+     * @param int $countryId Country ID for initial assignment
      * @return array ['message', 'user'] - NO token until email verified and admin approves
      * @throws RuntimeException
      */
-    public function register(string $name, string $email, string $password, string $roleName): array
+    public function register(string $name, string $email, string $password, string $roleName, int $countryId): array
     {
         // Validate allowed roles for self-registration
         $allowedRoles = ['project-manager', 'country-manager'];
@@ -110,19 +116,35 @@ class AuthService
             throw new RuntimeException("Role {$roleName} not found. Run RoleSeeder.");
         }
 
+        // Validate country exists
+        $country = $this->countryRepository->findById($countryId);
+        if (!$country) {
+            throw new RuntimeException('Country not found.');
+        }
+
         // Create user with unverified state
         $user = User::at($name, $email, $unverifiedState);
         $user->password = $password;  // Hashed automatically with mutator
         $this->userRepository->save($user);
 
-        // Assign selected role
+        // Assign selected role (creates user_role via Spatie)
         $user->assignRole($role);
+
+        // Get the UserRole record that was just created
+        $userRole = UserRole::where('user_id', $user->id)
+            ->where('role_id', $role->id)
+            ->first();
+
+        // Assign country to user role via pivot table
+        if ($userRole) {
+            $userRole->countries()->attach($countryId);
+        }
 
         // Send email verification notification
         $user->sendEmailVerificationNotification();
 
-        // Load relationships for response
-        $user->load('roles', 'userState');
+        // Load relationships for response (including countries)
+        $user->load('roles', 'userState', 'userRoles.countries');
 
         // NO token generated - user cannot login until email verified and admin approves
         return [
