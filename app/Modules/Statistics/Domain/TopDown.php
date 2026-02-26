@@ -25,8 +25,6 @@ class TopDown
     public static function calculate(float $actualValue, float $target): TopDown
     {
         if ($target <= 0) throw new RuntimeException(self::$ERROR_TARGET_ZERO);
-        
-
         if ($actualValue < 0) throw new RuntimeException(self::$ERROR_NEGATIVE_VALUES);
         
         $implementation = ($actualValue / $target) * 100;
