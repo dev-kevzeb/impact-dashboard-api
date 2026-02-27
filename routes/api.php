@@ -6,6 +6,7 @@ use App\Modules\Country\Controller\PublicCountryController;
 use App\Modules\CountryKpa\Controller\PublicCountryKpaController;
 use App\Modules\Indicator\Controller\IndicatorController;
 use App\Modules\IndicatorType\Controller\IndicatorTypeController;
+use App\Modules\Kpa\Controller\PublicKpaController;
 use App\Modules\Measure\Controller\MeasureController;
 use App\Modules\Measure\Controller\PublicMeasureController;
 use App\Modules\MeasureChart\Controller\MeasureChartController;
@@ -274,6 +275,9 @@ Route::prefix('v1/public')->group(function () {
 
     // CountryKPAs
     Route::get('kpas/{id}', [PublicCountryKpaController::class, 'getAllByCountryId']);
+    
+    // KPAs
+    Route::get('kpas', [PublicKpaController::class, 'index']);
 
     //Strategic Outputs
     Route::get('strategic-outputs/{id}', [PublicStrategicOutputController::class, 'getStrategicOutputsByKpaId']);
