@@ -94,8 +94,69 @@ class RoleService
         // Buscar roles que contengan el término de búsqueda (case-insensitive)
         // Acceso directo al modelo Eloquent para hacer consultas personalizadas
         $model = \App\Modules\Role\Domain\Role::query();
-        
+
         return $model->whereRaw("LOWER(name) LIKE LOWER(?)", ['%' . trim($searchTerm) . '%'])
-                     ->get();
+            ->get();
+    }
+
+    /**
+     * Get all permissions for a specific role
+     *
+     * @param int $roleId
+     * @return \Illuminate\Database\Eloquent\Collection
+     * @throws RuntimeException
+     */
+    public function getRolePermissions(int $roleId)
+    {
+        $role = $this->repository->findById($roleId);
+        return $role->permissions;
+    }
+
+    /**
+     * Assign a permission to a role using Spatie
+     *
+     * @param int $roleId
+     * @param int $permissionId
+     * @return Role
+     * @throws RuntimeException
+     */
+    public function assignPermissionToRole(int $roleId, int $permissionId): Role
+    {
+        $role = $this->repository->findById($roleId);
+
+        // Get the permission by ID
+        $permission = \Spatie\Permission\Models\Permission::findOrFail($permissionId);
+
+        // Use Spatie's givePermissionTo method (idempotent - won't duplicate if already assigned)
+        $role->givePermissionTo($permission);
+
+        // Refresh to load updated permissions
+        $role->refresh();
+
+        return $role;
+    }
+
+    /**
+     * Remove a permission from a role using Spatie
+     *
+     * @param int $roleId
+     * @param int $permissionId
+     * @return Role
+     * @throws RuntimeException
+     */
+    public function removePermissionFromRole(int $roleId, int $permissionId): Role
+    {
+        $role = $this->repository->findById($roleId);
+
+        // Get the permission by ID
+        $permission = \Spatie\Permission\Models\Permission::findOrFail($permissionId);
+
+        // Use Spatie's revokePermissionTo method
+        $role->revokePermissionTo($permission);
+
+        // Refresh to load updated permissions
+        $role->refresh();
+
+        return $role;
     }
 }

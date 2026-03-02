@@ -34,6 +34,7 @@ use \App\Modules\StrategicOutput\Controller\StrategicOutputController;
 use App\Modules\Project\Controller\ProjectController;
 use App\Modules\ProjectAgency\Controller\ProjectAgencyController;
 use App\Modules\ProjectIndicator\Controller\ProjectIndicatorController;
+use App\Modules\Permission\Controller\PermissionController;
 use App\Modules\Role\Controller\RoleController;
 use App\Modules\UserState\Controller\UserStateController;
 use App\Modules\User\Controller\UserController;
@@ -112,12 +113,20 @@ Route::prefix('v1')->group(function () {
         Route::get('users/{id}', [UserController::class, 'show'])->middleware('scope:users');
         Route::put('users/{id}', [UserController::class, 'update'])->middleware('scope:users:write');
 
+        // API Routes para Permissions (listar permisos disponibles)
+        Route::get('permissions', [PermissionController::class, 'index'])->middleware('scope:roles');
+
         // API Routes para Roles
         Route::get('roles', [RoleController::class, 'index'])->middleware('scope:roles');
         Route::post('roles', [RoleController::class, 'store'])->middleware('scope:roles:write');
         Route::get('roles/search', [RoleController::class, 'search'])->middleware('scope:roles');
         Route::get('roles/{id}', [RoleController::class, 'show'])->middleware('scope:roles');
         Route::put('roles/{id}', [RoleController::class, 'update'])->middleware('scope:roles:write');
+
+        // API Routes para Role Permissions (gestión de permisos de roles)
+        Route::get('roles/{roleId}/permissions', [RoleController::class, 'getPermissions'])->middleware('scope:roles');
+        Route::post('roles/{roleId}/permissions', [RoleController::class, 'assignPermission'])->middleware('scope:roles:write');
+        Route::delete('roles/{roleId}/permissions/{permissionId}', [RoleController::class, 'removePermission'])->middleware('scope:roles:write');
 
         // API Routes para UserState 
         Route::get('user_states', [UserStateController::class, 'index'])->middleware('scope:user_states');
