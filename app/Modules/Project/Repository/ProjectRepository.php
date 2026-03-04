@@ -61,6 +61,6 @@ class ProjectRepository extends AbstractRepository implements RepositoryInterfac
     }
 
     public function getByIds(array $projectIds) {
-        return $this->model->query()->whereIn('id', $projectIds)->orderBy('name')->get();
+        return $this->model->query()->with('beneficiary')->with('agencies')->with('donors')->whereIn('id', $projectIds)->orderBy('name')->get();
     }
 }

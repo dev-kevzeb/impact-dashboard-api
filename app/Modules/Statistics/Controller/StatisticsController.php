@@ -27,7 +27,7 @@ class StatisticsController extends Controller{
         } catch (RuntimeException $e) {
             return ApiResponse::error($e->getMessage(), 500);
         } catch (\Exception $e) {
-            return ApiResponse::error('Internal Server Error', 500);
+            return ApiResponse::error($e->getMessage(), 500);
         }
     }
 
@@ -43,7 +43,7 @@ class StatisticsController extends Controller{
         } catch (RuntimeException $e) {
             return ApiResponse::error($e->getMessage(), 500);
         } catch (\Exception $e) {
-            return ApiResponse::error('Internal Server Error', 500);
+            return ApiResponse::error($e->getMessage(), 500);
         }
     }
 
@@ -75,7 +75,7 @@ class StatisticsController extends Controller{
         } catch (RuntimeException $e) {
             return ApiResponse::error($e->getMessage(), 500);
         } catch (\Exception $e) {
-            return ApiResponse::error('Internal Server Error', 500);
+            return ApiResponse::error($e->getMessage(), 500);
         }
     }
 }
