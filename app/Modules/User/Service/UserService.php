@@ -103,6 +103,17 @@ class UserService
     }
 
     /**
+     * Get all users with unverified state (email not verified)
+     *
+     * @param int $perPage Number of items per page
+     * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
+     */
+    public function getUnverifiedUsers(int $perPage = 10)
+    {
+        return $this->repository->getUnverifiedUsers($perPage);
+    }
+
+    /**
      * Approve a pending user (change state from pending to active)
      * 
      * After approval, user can login with assigned role permissions.
@@ -141,10 +152,11 @@ class UserService
     }
 
     /**
-     * Reject a pending user (delete registration request)
+     * Reject a user (delete registration request)
      * 
      * This permanently removes the user from database.
-     * Use for unwanted/spam registrations.
+     * Accepts users in 'unverified' (email not verified) or 'pending' (waiting approval) states.
+     * Use for unwanted/spam registrations or incomplete sign-ups.
      *
      * @param int $id User ID
      * @return bool
@@ -154,10 +166,10 @@ class UserService
     {
         $user = $this->repository->findById($id);
 
-        // Validate user is in pending state
-        if ($user->userState->name !== 'pending') {
+        // Validate user is in unverified or pending state
+        if (!in_array($user->userState->name, ['unverified', 'pending'])) {
             throw new RuntimeException(
-                "Cannot reject user. Only pending users can be rejected. Current state: {$user->userState->name}"
+                "Cannot reject user. Only unverified/pending users can be rejected. Current state: {$user->userState->name}"
             );
         }
 

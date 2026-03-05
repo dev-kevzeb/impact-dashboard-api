@@ -42,7 +42,6 @@ class CountryService
             if (!empty($currency['id'])) {
                 $currency = $this->currencyRepository->findById($currency['id']);
                 if (!$currency) throw new RuntimeException("The specified currency does not exist");
-                
             } else {
                 $currency = $this->currencyRepository->findByCode($currencyCode);
                 if ($currency == null) {
@@ -54,12 +53,12 @@ class CountryService
             $country = Country::at($name, $currency);
             $this->countryRepository->save($country);
 
-            $kpas = $this->kpaRepository->getAllIds(); 
+            $kpas = $this->kpaRepository->getAllIds();
 
             $data = [];
 
             foreach ($kpas as $kpaId) {
-                $data[] = [ 'id_country' => $country->id, 'id_kpa' => $kpaId];
+                $data[] = ['id_country' => $country->id, 'id_kpa' => $kpaId];
             }
 
             $this->countryKpaRepository->bulkInsert($data);
@@ -79,7 +78,7 @@ class CountryService
             }
         } catch (RuntimeException $e) {
             if (!str_contains($e->getMessage(), 'not found')) {
-                throw $e; 
+                throw $e;
             }
         }
 
@@ -93,7 +92,7 @@ class CountryService
         } else {
             $currency = $this->currencyRepository->findByCode($currencyCode);
             if ($currency == null) {
-                $currency = Currency::at($currencyCode); 
+                $currency = Currency::at($currencyCode);
                 $this->currencyRepository->save($currency);
             }
         }
@@ -101,9 +100,9 @@ class CountryService
         $updatedCountry = Country::at($name, $currency);
         $country->name = $updatedCountry->name;
         $country->currency_id = $updatedCountry->currency_id;
-        
+
         $this->countryRepository->save($country);
-        
+
         return $country;
     }
 
@@ -122,7 +121,12 @@ class CountryService
         return $this->countryRepository->getPaginated($search, $perPage);
     }
 
-        public function getAllCountriesWithKpasNumber(?string $search, int $perPage = 10)
+    public function getAllCountriesForDropdown(int $perPage = 100)
+    {
+        return $this->countryRepository->getSimpleList($perPage);
+    }
+
+    public function getAllCountriesWithKpasNumber(?string $search, int $perPage = 10)
     {
         return $this->countryRepository->getPaginatedWithKpasNumber($search, $perPage);
     }
