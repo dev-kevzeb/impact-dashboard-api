@@ -3,7 +3,9 @@
 namespace App\Modules\Role\Controller;
 
 use App\Http\Requests\RoleRequest;
+use App\Http\Requests\AssignPermissionRequest;
 use App\Http\Resources\RoleResource;
+use App\Http\Resources\PermissionResource;
 use App\Http\Responses\ApiResponse;
 use App\Modules\Role\Service\RoleService;
 use Illuminate\Http\JsonResponse;
@@ -381,6 +383,201 @@ class RoleController
             return ApiResponse::validationError($e->errors());
         } catch (RuntimeException $e) {
             return ApiResponse::error($e->getMessage(), 400);
+        }
+    }
+
+    /**
+     * @OA\Get(
+     *     path="/roles/{roleId}/permissions",
+     *     tags={"Roles"},
+     *     summary="List role permissions",
+     *     description="Get all permissions assigned to a specific role",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="roleId",
+     *         in="path",
+     *         required=true,
+     *         description="Role ID",
+     *         @OA\Schema(type="integer", example=1)
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Permissions retrieved successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Role permissions retrieved successfully"),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="array",
+     *                 @OA\Items(
+     *                     type="object",
+     *                     @OA\Property(property="id", type="integer", example=1),
+     *                     @OA\Property(property="name", type="string", example="donors:read"),
+     *                     @OA\Property(property="scope", type="string", example="donors"),
+     *                     @OA\Property(property="module", type="string", example="Donor"),
+     *                     @OA\Property(property="description", type="string", example="View donors")
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Role not found",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Role not found")
+     *         )
+     *     )
+     * )
+     */
+    public function getPermissions(int $roleId): JsonResponse
+    {
+        try {
+            $permissions = $this->service->getRolePermissions($roleId);
+
+            return ApiResponse::success(
+                'Role permissions retrieved successfully',
+                200,
+                PermissionResource::collection($permissions)
+            );
+        } catch (RuntimeException $e) {
+            return ApiResponse::error($e->getMessage(), 404);
+        }
+    }
+
+    /**
+     * @OA\Post(
+     *     path="/roles/{roleId}/permissions",
+     *     tags={"Roles"},
+     *     summary="Assign permission to role",
+     *     description="Assign a specific permission to a role. If the permission is already assigned, no action is taken (idempotent).",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="roleId",
+     *         in="path",
+     *         required=true,
+     *         description="Role ID",
+     *         @OA\Schema(type="integer", example=1)
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\MediaType(
+     *             mediaType="application/json",
+     *             @OA\Schema(
+     *                 required={"permission_id"},
+     *                 @OA\Property(
+     *                     property="permission_id",
+     *                     type="integer",
+     *                     example=5,
+     *                     description="Permission ID to assign"
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Permission assigned successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Permission assigned to role successfully"),
+     *             @OA\Property(property="data", ref="#/components/schemas/Role")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Role or Permission not found",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Role not found")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Validation error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Validation error"),
+     *             @OA\Property(
+     *                 property="errors",
+     *                 type="object",
+     *                 @OA\Property(
+     *                     property="permission_id",
+     *                     type="array",
+     *                     @OA\Items(type="string", example="The specified permission does not exist in the system.")
+     *                 )
+     *             )
+     *         )
+     *     )
+     * )
+     */
+    public function assignPermission(int $roleId, AssignPermissionRequest $request): JsonResponse
+    {
+        try {
+            $validated = $request->validated();
+            $role = $this->service->assignPermissionToRole($roleId, $validated['permission_id']);
+
+            return ApiResponse::success(
+                'Permission assigned to role successfully',
+                200,
+                new RoleResource($role)
+            );
+        } catch (RuntimeException $e) {
+            return ApiResponse::error($e->getMessage(), 404);
+        }
+    }
+
+    /**
+     * @OA\Delete(
+     *     path="/roles/{roleId}/permissions/{permissionId}",
+     *     tags={"Roles"},
+     *     summary="Remove permission from role",
+     *     description="Remove a specific permission from a role",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="roleId",
+     *         in="path",
+     *         required=true,
+     *         description="Role ID",
+     *         @OA\Schema(type="integer", example=1)
+     *     ),
+     *     @OA\Parameter(
+     *         name="permissionId",
+     *         in="path",
+     *         required=true,
+     *         description="Permission ID to remove",
+     *         @OA\Schema(type="integer", example=5)
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Permission removed successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Permission removed from role successfully"),
+     *             @OA\Property(property="data", ref="#/components/schemas/Role")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Role or Permission not found",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Role not found")
+     *         )
+     *     )
+     * )
+     */
+    public function removePermission(int $roleId, int $permissionId): JsonResponse
+    {
+        try {
+            $role = $this->service->removePermissionFromRole($roleId, $permissionId);
+
+            return ApiResponse::success(
+                'Permission removed from role successfully',
+                200,
+                new RoleResource($role)
+            );
+        } catch (RuntimeException $e) {
+            return ApiResponse::error($e->getMessage(), 404);
         }
     }
 }

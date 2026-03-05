@@ -827,7 +827,7 @@
                                         },
                                         "message": {
                                             "type": "string",
-                                            "example": "Email verificado exitosamente"
+                                            "example": "Email verified successfully"
                                         },
                                         "data": {
                                             "properties": {
@@ -6868,6 +6868,69 @@
                 ]
             }
         },
+        "/permissions": {
+            "get": {
+                "tags": [
+                    "Permissions"
+                ],
+                "summary": "List all available permissions",
+                "description": "Retrieves all permissions available in the system. Use this endpoint to discover permission IDs before assigning them to roles.",
+                "operationId": "a4d8cb831cdc6e4f49bee0187f745ac7",
+                "responses": {
+                    "200": {
+                        "description": "Permissions list retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Permissions retrieved successfully"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Permission"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Internal server error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/program_states": {
             "get": {
                 "tags": [
@@ -10844,6 +10907,307 @@
                 ]
             }
         },
+        "/roles/{roleId}/permissions": {
+            "get": {
+                "tags": [
+                    "Roles"
+                ],
+                "summary": "List role permissions",
+                "description": "Get all permissions assigned to a specific role",
+                "operationId": "e5df1749909783ece2ab99bef0147ab9",
+                "parameters": [
+                    {
+                        "name": "roleId",
+                        "in": "path",
+                        "description": "Role ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Permissions retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Role permissions retrieved successfully"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer",
+                                                        "example": 1
+                                                    },
+                                                    "name": {
+                                                        "type": "string",
+                                                        "example": "donors:read"
+                                                    },
+                                                    "scope": {
+                                                        "type": "string",
+                                                        "example": "donors"
+                                                    },
+                                                    "module": {
+                                                        "type": "string",
+                                                        "example": "Donor"
+                                                    },
+                                                    "description": {
+                                                        "type": "string",
+                                                        "example": "View donors"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Role not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Role not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Roles"
+                ],
+                "summary": "Assign permission to role",
+                "description": "Assign a specific permission to a role. If the permission is already assigned, no action is taken (idempotent).",
+                "operationId": "29c3f44228b4199a31a78278b2401fdb",
+                "parameters": [
+                    {
+                        "name": "roleId",
+                        "in": "path",
+                        "description": "Role ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "permission_id"
+                                ],
+                                "properties": {
+                                    "permission_id": {
+                                        "description": "Permission ID to assign",
+                                        "type": "integer",
+                                        "example": 5
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Permission assigned successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Permission assigned to role successfully"
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/Role"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Role or Permission not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Role not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Validation error"
+                                        },
+                                        "errors": {
+                                            "properties": {
+                                                "permission_id": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "The specified permission does not exist in the system."
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/roles/{roleId}/permissions/{permissionId}": {
+            "delete": {
+                "tags": [
+                    "Roles"
+                ],
+                "summary": "Remove permission from role",
+                "description": "Remove a specific permission from a role",
+                "operationId": "943bb25d8bebd6006c9fd7a5527a672a",
+                "parameters": [
+                    {
+                        "name": "roleId",
+                        "in": "path",
+                        "description": "Role ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    },
+                    {
+                        "name": "permissionId",
+                        "in": "path",
+                        "description": "Permission ID to remove",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 5
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Permission removed successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Permission removed from role successfully"
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/Role"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Role or Permission not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Role not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/sdgs": {
             "get": {
                 "tags": [
@@ -14380,6 +14744,38 @@
                 },
                 "type": "object"
             },
+            "Permission": {
+                "title": "Permission",
+                "description": "System permissions for role-based access control",
+                "properties": {
+                    "id": {
+                        "description": "Unique permission ID",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "name": {
+                        "description": "Permission name in format {module}:{action}",
+                        "type": "string",
+                        "example": "donors:read"
+                    },
+                    "scope": {
+                        "description": "Permission scope/module",
+                        "type": "string",
+                        "example": "donors"
+                    },
+                    "module": {
+                        "description": "Module name",
+                        "type": "string",
+                        "example": "Donor"
+                    },
+                    "description": {
+                        "description": "Human-readable description",
+                        "type": "string",
+                        "example": "View donors"
+                    }
+                },
+                "type": "object"
+            },
             "ProgramState": {
                 "title": "ProgramState",
                 "description": "Program lifecycle states: Inactive, Active, Completed",
@@ -14896,6 +15292,10 @@
         {
             "name": "Measures",
             "description": "Measures"
+        },
+        {
+            "name": "Permissions",
+            "description": "Permissions"
         },
         {
             "name": "Program Users",

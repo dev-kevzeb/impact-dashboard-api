@@ -197,4 +197,19 @@ class Project extends Model
 
         return $dateTime && $dateTime->format('Y-m-d') === $date;
     }
+
+    public function getDonorsCountAttribute()
+    {
+        return $this->donors()->count();
+    }
+
+    public function getIndicatorsCountAttribute()
+    {
+        return $this->indicators()->count();
+    }
+
+    public function getAgenciesCountAttribute()
+    {
+        return $this->agencies()->count();
+    }
 }
