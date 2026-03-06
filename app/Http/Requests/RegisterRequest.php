@@ -34,6 +34,7 @@ class RegisterRequest extends FormRequest
                 Password::min(6)
             ],
             'role_name' => 'required|string|in:project-manager,country-manager',
+            'country_id' => 'required|integer|exists:country,id',
         ];
     }
 
@@ -63,6 +64,10 @@ class RegisterRequest extends FormRequest
             'role_name.required' => 'Please select a role.',
             'role_name.string' => 'The role must be a string.',
             'role_name.in' => 'Invalid role. Only project-manager and country-manager are allowed.',
+
+            'country_id.required' => 'Please select a country.',
+            'country_id.integer' => 'Invalid country selection.',
+            'country_id.exists' => 'The selected country does not exist.',
         ];
     }
 

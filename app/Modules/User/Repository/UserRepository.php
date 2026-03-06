@@ -44,6 +44,9 @@ class UserRepository extends AbstractRepository
      * 
      * Admin manages the system but is not managed by the system.
      * Only returns users with roles: project-manager, country-manager, etc.
+     * 
+     * IMPORTANT: Only shows users with "active" or "inactive" states.
+     * Users with "unverified" or "pending" states have their own endpoints.
      *
      * @param int $perPage
      * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
@@ -51,9 +54,12 @@ class UserRepository extends AbstractRepository
     public function paginateManageableUsers(int $perPage = 10)
     {
         return $this->model
-            ->with(['roles', 'userState'])
+            ->with(['roles', 'userState', 'userRoles.countries'])
             ->whereDoesntHave('roles', function ($query) {
                 $query->where('name', 'admin');
+            })
+            ->whereHas('userState', function ($query) {
+                $query->whereIn('name', ['active', 'inactive']);
             })
             ->orderBy('created_at', 'desc')
             ->paginate($perPage);
@@ -69,7 +75,7 @@ class UserRepository extends AbstractRepository
     public function findByIdWithRelations(int $id): User
     {
         $user = $this->model
-            ->with(['roles', 'userState'])
+            ->with(['roles', 'userState', 'userRoles.countries'])
             ->find($id);
 
         if (!$user) {
@@ -88,9 +94,26 @@ class UserRepository extends AbstractRepository
     public function getPendingUsers(int $perPage = 10)
     {
         return $this->model
-            ->with(['roles', 'userState'])
+            ->with(['roles', 'userState', 'userRoles.countries'])
             ->whereHas('userState', function ($query) {
                 $query->where('name', 'pending');
+            })
+            ->orderBy('created_at', 'desc')
+            ->paginate($perPage);
+    }
+
+    /**
+     * Get paginated users with unverified state (email not verified)
+     *
+     * @param int $perPage
+     * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
+     */
+    public function getUnverifiedUsers(int $perPage = 10)
+    {
+        return $this->model
+            ->with(['roles', 'userState', 'userRoles.countries'])
+            ->whereHas('userState', function ($query) {
+                $query->where('name', 'unverified');
             })
             ->orderBy('created_at', 'desc')
             ->paginate($perPage);

@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 namespace App\Modules\Country\Repository;
 
@@ -28,22 +28,38 @@ class CountryRepository extends AbstractRepository implements RepositoryInterfac
     {
         $query = $this->model->query();
         if ($search) $query->whereRaw('LOWER(name) LIKE LOWER(?)', ['%' . $search . '%']);
-        
+
         return $query
+            ->with('currency')
             ->withCount([
                 'countryKpas',
-                'countryKpas as strategic_outputs_count' => function ($q) {$q->join('strategic_output', 'country_kpa.id', '=', 'strategic_output.id_ck');},
-                'countryKpas as measures_count' => function ($q) {$q->join('strategic_output', 'country_kpa.id', '=', 'strategic_output.id_ck')->join('measure', 'strategic_output.id', '=', 'measure.strategic_output_id');},
-                'countryKpas as indicators_count' => function ($q) { $q->join('strategic_output', 'country_kpa.id', '=', 'strategic_output.id_ck') ->join('measure', 'strategic_output.id', '=', 'measure.strategic_output_id') ->join('indicator', 'measure.id', '=', 'indicator.measure_id'); }
-            ])->paginate($perPage);
+                'countryKpas as strategic_outputs_count' => function ($q) {
+                    $q->join('strategic_output', 'country_kpa.id', '=', 'strategic_output.id_ck');
+                },
+                'countryKpas as measures_count' => function ($q) {
+                    $q->join('strategic_output', 'country_kpa.id', '=', 'strategic_output.id_ck')->join('measure', 'strategic_output.id', '=', 'measure.strategic_output_id');
+                },
+                'countryKpas as indicators_count' => function ($q) {
+                    $q->join('strategic_output', 'country_kpa.id', '=', 'strategic_output.id_ck')->join('measure', 'strategic_output.id', '=', 'measure.strategic_output_id')->join('indicator', 'measure.id', '=', 'indicator.measure_id');
+                }
+            ])->orderBy('name', 'asc')->paginate($perPage);
     }
 
-    public function getPaginatedWithKpasNumber(?string $search, int $perPage = 10){
+    public function getSimpleList(int $perPage = 100)
+    {
+        return $this->model
+            ->select('id', 'name', 'currency_id')
+            ->with('currency')
+            ->orderBy('name', 'asc')
+            ->paginate($perPage);
+    }
+
+    public function getPaginatedWithKpasNumber(?string $search, int $perPage = 10)
+    {
         $query = $this->model::query();
 
-        if( $search ) $query->whereRaw('lower(name) LIKE lower(?)',['%' . $search . '%']);
+        if ($search) $query->whereRaw('lower(name) LIKE lower(?)', ['%' . $search . '%']);
 
-        return $query->withCount('kpas')->paginate($perPage);
+        return $query->withCount('kpas')->orderBy('name', 'asc')->paginate($perPage);
     }
-
 }

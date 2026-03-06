@@ -519,6 +519,67 @@ class UserController extends Controller
     }
 
     /**
+     * @OA\Get(
+     *     path="/users/unverified",
+     *     summary="Get unverified users (email not verified)",
+     *     description="Retrieve paginated list of users with unverified state. These users registered but haven't verified their email yet. Requires admin permissions (users:write or *:*).",
+     *     operationId="getUnverifiedUsers",
+     *     tags={"Users"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="per_page",
+     *         in="query",
+     *         description="Number of users per page (default: 10)",
+     *         required=false,
+     *         @OA\Schema(type="integer", example=10)
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Unverified users retrieved successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Unverified users retrieved successfully"),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="object",
+     *                 @OA\Property(
+     *                     property="users",
+     *                     type="array",
+     *                     @OA\Items(ref="#/components/schemas/User")
+     *                 ),
+     *                 @OA\Property(property="total", type="integer", example=5),
+     *                 @OA\Property(property="per_page", type="integer", example=10),
+     *                 @OA\Property(property="current_page", type="integer", example=1)
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(response=401, description="Unauthorized - Invalid or missing token"),
+     *     @OA\Response(response=403, description="Forbidden - Insufficient permissions")
+     * )
+     */
+    public function unverified(Request $request): JsonResponse
+    {
+        try {
+            $perPage = $request->query('per_page', 10);
+            $users = $this->service->getUnverifiedUsers($perPage);
+
+            return ApiResponse::success(
+                'Unverified users retrieved successfully',
+                200,
+                [
+                    'users' => UserResource::collection($users),
+                    'total' => $users->total(),
+                    'per_page' => $users->perPage(),
+                    'current_page' => $users->currentPage(),
+                    'last_page' => $users->lastPage()
+                ]
+            );
+        } catch (Exception $e) {
+            return ApiResponse::error('Internal server error', 500);
+        }
+    }
+
+    /**
      * @OA\Post(
      *     path="/users/{id}/approve",
      *     summary="Approve pending user",
@@ -571,8 +632,8 @@ class UserController extends Controller
     /**
      * @OA\Delete(
      *     path="/users/{id}/reject",
-     *     summary="Reject pending user",
-     *     description="Permanently delete a pending user registration request. Use for unwanted or spam registrations. Requires admin permissions (users:write or *:*).",
+     *     summary="Reject unverified or pending user",
+     *     description="Permanently delete a user registration. Accepts users in 'unverified' (email not verified) or 'pending' (waiting approval) states. Use for unwanted/spam registrations or incomplete sign-ups. Requires admin permissions (users:write or *:*).",
      *     operationId="rejectUser",
      *     tags={"Users"},
      *     security={{"bearerAuth":{}}},
@@ -591,7 +652,7 @@ class UserController extends Controller
      *             @OA\Property(property="message", type="string", example="User registration rejected and deleted successfully.")
      *         )
      *     ),
-     *     @OA\Response(response=400, description="User is not pending or business logic error"),
+     *     @OA\Response(response=400, description="User is not in unverified/pending state or business logic error"),
      *     @OA\Response(response=401, description="Unauthorized"),
      *     @OA\Response(response=403, description="Forbidden - Insufficient permissions"),
      *     @OA\Response(response=404, description="User not found")

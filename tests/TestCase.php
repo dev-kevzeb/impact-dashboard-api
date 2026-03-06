@@ -26,19 +26,31 @@ abstract class TestCase extends BaseTestCase
         // Get active state
         $activeState = UserState::where('name', 'active')->firstOrFail();
 
-        // Create test user
-        $user = User::factory()->create([
-            'email' => 'test@pacific.com',
-            'password' => 'password123',
-            'user_state_id' => $activeState->id
-        ]);
+        // Find or create test user (reusable across multiple authHeaders() calls in same test)
+        $user = User::firstOrCreate(
+            ['email' => 'test@pacific.com'],
+            [
+                'name' => 'Test Admin User',
+                'password' => 'password123',
+                'user_state_id' => $activeState->id
+            ]
+        );
 
-        // Assign role
+        // Assign role (check if not already assigned to avoid duplicate entry errors)
         $role = Role::where('name', $roleName)->firstOrFail();
-        \DB::table('user_role')->insert([
-            'user_id' => $user->id,
-            'role_id' => $role->id
-        ]);
+        $roleExists = \DB::table('user_role')
+            ->where('user_id', $user->id)
+            ->where('role_id', $role->id)
+            ->exists();
+
+        if (!$roleExists) {
+            \DB::table('user_role')->insert([
+                'user_id' => $user->id,
+                'role_id' => $role->id,
+                'created_at' => now(),
+                'updated_at' => now()
+            ]);
+        }
 
         // Generate JWT token
         $token = auth('api')->login($user);

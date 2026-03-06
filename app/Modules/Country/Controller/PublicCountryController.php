@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Modules\Country\Controller;
 
 use App\Http\Controllers\Controller;
@@ -23,17 +24,16 @@ class PublicCountryController extends Controller
     public function index(Request $request): JsonResponse
     {
         try {
-            $search = $request->get("search");
-            $perPage = (int) $request->get("per_page", 10);
+            $perPage = (int) $request->get("per_page", 100);
 
-            $countries = $this->countryService->getAllCountries($search,$perPage);
-            
+            $countries = $this->countryService->getAllCountriesForDropdown($perPage);
+
             return ApiResponse::success(
                 'Countries paginated list successfully uploaded',
                 200,
                 [
                     'countries' => CountryResource::collection($countries),
-                    'total' => $countries->count(),
+                    'total' => $countries->total(),
                     'per_page' => $countries->perPage(),
                     'current_page' => $countries->currentPage(),
                     'last_page' => $countries->lastPage(),
