@@ -78,4 +78,20 @@ class StatisticsController extends Controller{
             return ApiResponse::error($e->getMessage(), 500);
         }
     }
+
+    public function getAllKpasImplementation()
+    {
+        try {
+            $implementation = $this->statisticsService->getAllKpasImplementation();
+            return ApiResponse::success(
+                'All KPAs implementation retrieved successfully',
+                200,
+                $implementation
+            );
+        } catch (RuntimeException $e) {
+            return ApiResponse::error($e->getMessage(), 500);
+        } catch (\Exception $e) {
+            return ApiResponse::error($e->getMessage(), 500);
+        }
+    }
 }
