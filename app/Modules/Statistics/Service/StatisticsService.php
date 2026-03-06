@@ -318,6 +318,34 @@ class StatisticsService
         ];
     }
 
+    public function getAllKpasImplementation(): array
+    {
+        $kpas = $this->kpaRepository->getAll();
+
+        if ($kpas->isEmpty()) return [
+            "kpas" => [],
+            "resource" => [],
+        ];
+        $resource = 0;
+        $kpasData = collect();
+
+        foreach ($kpas as $kpa) {
+            $implementation = $this->getKpaImplementation($kpa->id);
+            unset($implementation['name']);
+            $kpasData->push([
+                "id" => $kpa->id,
+                "name" => $kpa->name,
+                ...$implementation
+            ]);
+            $resource += $implementation['resource'];
+        }
+
+        return [
+            "kpas"=> $kpasData->values()->toArray(),
+            "resource" => $resource
+        ];
+    }
+
     public function calculateAgenciesContribution($agencies, $progress, $weight):array{
         $donations = [];
         foreach($agencies as $agency) {

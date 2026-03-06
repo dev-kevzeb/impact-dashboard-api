@@ -302,4 +302,5 @@ Route::prefix('v1/public')->group(function () {
     Route::get('strategic-output-implementation/{id}', [StatisticsController::class, 'getStrategicOutputImplementation']);
     Route::get('kpa-implementation/{id}', [StatisticsController::class, 'getKpaImplementation']);
     Route::get('overall-implementation', [StatisticsController::class, 'getOverallImplementation']);
+    Route::get('allkpas-implementation', [StatisticsController::class, 'getAllKpasImplementation']);
 });
