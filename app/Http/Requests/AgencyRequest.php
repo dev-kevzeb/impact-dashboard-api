@@ -35,7 +35,7 @@ class AgencyRequest extends FormRequest
             ],
 
             'url' => [
-                'required',
+                'nullable',
                 'string',
                 'url',
                 'regex:/^(http|https):\/\//i',
@@ -55,9 +55,8 @@ class AgencyRequest extends FormRequest
             'name.min'      => 'Agency name must be at least 2 characters',
             'name.max'      => 'Agency name must not exceed 100 characters',
 
-            'url.required' => 'The agency URL should not be empty',
-            'url.url'      => 'Agency URL must be in valid format',
-            'url.regex'    => 'The agency URL must use HTTP or HTTPS protocol',
+            'url.url'   => 'Agency URL must be in valid format',
+            'url.regex' => 'The agency URL must use HTTP or HTTPS protocol',
 
             'is_approved.required' => 'Approval status is required',
             'is_approved.boolean'  => 'Approval status must be a boolean value',

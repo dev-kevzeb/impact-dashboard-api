@@ -220,7 +220,7 @@ class AgencyController extends Controller
 
             $agency = $this->agencyService->createAgency(
                 $validated['name'],
-                $validated['url'],
+                $validated['url'] ?? null,
                 $validated['is_approved']
             );
 
@@ -309,7 +309,7 @@ class AgencyController extends Controller
             $agency = $this->agencyService->updateAgency(
                 $id,
                 $validated['name'],
-                $validated['url'],
+                $validated['url'] ?? null,
                 $validated['is_approved']
             );
 
