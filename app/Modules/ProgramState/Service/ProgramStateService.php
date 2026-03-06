@@ -41,6 +41,11 @@ class ProgramStateService
         return $this->programStateRepository->paginate($perPage);
     }
 
+    public function getProgramStatesPaginated(?string $search, int $perPage = 10)
+    {
+        return $this->programStateRepository->getPaginated($search, $perPage);
+    }
+
     public function updateProgramState(int $id, string $name): ProgramState
     {
         $programState = $this->programStateRepository->findById($id);

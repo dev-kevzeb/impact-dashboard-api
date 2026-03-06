@@ -24,9 +24,10 @@ class PublicProjectController extends Controller
         {
             $search = $request->get("search");
             $per_page = (int) $request->get("per_page", 10);
+            $sort = $request->get("sort", "date_newest");
             $validated = $request->validated();
 
-            $projects = $this->projectService->getPublicProjects($validated, $search, $per_page);
+            $projects = $this->projectService->getPublicProjects($validated, $search, $per_page, $sort);
 
             return ApiResponse::success(
                 'Projects paginated of selected program list successfully uploaded',
