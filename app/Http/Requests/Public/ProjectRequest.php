@@ -17,6 +17,7 @@ class ProjectRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'program_id' => 'nullable|integer|exists:program,id',
 
             // COUNTRY
             'country.id'   => 'nullable|integer|exists:country,id',
@@ -43,6 +44,8 @@ class ProjectRequest extends FormRequest
     public function messages(): array
     {
         return [
+            'program_id.integer' => 'The program ID must be a valid number.',
+            'program_id.exists' => 'The selected program does not exist.',
 
             // COUNTRY
             'country.id.integer' => 'The country ID must be a valid number.',
