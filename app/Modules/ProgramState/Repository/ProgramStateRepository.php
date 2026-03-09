@@ -13,4 +13,15 @@ class ProgramStateRepository extends AbstractRepository implements RepositoryInt
     {
         parent::__construct($model);
     }
+
+    public function getPaginated(?string $search, int $perPage = 10)
+    {
+        $query = $this->model->query();
+
+        if (!empty($search)) {
+            $query->whereRaw('LOWER(name) LIKE LOWER(?)', ['%' . trim($search) . '%']);
+        }
+
+        return $query->orderBy('name')->paginate($perPage);
+    }
 }

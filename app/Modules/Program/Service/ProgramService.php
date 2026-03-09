@@ -115,6 +115,25 @@ class ProgramService
     }
 
     /**
+     * Get public programs with the same hierarchy filters used in progress
+     */
+    public function getPublicPrograms(array $filters, ?string $search, int $perPage, string $sort = 'date_newest')
+    {
+        $hasAnyFilter =
+            data_get($filters, 'country.id') ||
+            data_get($filters, 'kpa.id') ||
+            data_get($filters, 'strategic_output.id') ||
+            data_get($filters, 'measure.id') ||
+            data_get($filters, 'program_state.id');
+
+        if (!$hasAnyFilter) {
+            return $this->programRepository->getPaginated($search, $perPage, $sort);
+        }
+
+        return $this->programRepository->getPublicPaginated($filters, $search, $perPage, $sort);
+    }
+
+    /**
      * Update a program
      */
     public function updateProgram(
