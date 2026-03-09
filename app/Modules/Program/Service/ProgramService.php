@@ -7,6 +7,7 @@ use App\Modules\Program\Repository\ProgramRepository;
 use App\Modules\Contact\Repository\ContactRepository;
 use App\Modules\ProgramState\Repository\ProgramStateRepository;
 use App\Modules\Sdg\Repository\SdgRepository;
+use Illuminate\Support\Collection;
 use RuntimeException;
 
 class ProgramService
@@ -101,7 +102,128 @@ class ProgramService
      */
     public function getProgramById(int $id): Program
     {
-        return $this->programRepository->findByIdWithRelations($id);
+        $program = $this->programRepository->findByIdWithRelations($id);
+
+        // Load project relationships required for public/private detail aggregates.
+        $program->loadMissing([
+            'projects.beneficiary',
+            'projects.donors',
+            'projects.agencies',
+            'projects.indicators.measure.StrategicOutput.countryKpa.country',
+        ]);
+
+        $program->setAttribute('program_summary', $this->buildProgramSummary($program));
+
+        return $program;
+    }
+
+    /**
+     * Build aggregated detail data from all projects assigned to the program.
+     */
+    private function buildProgramSummary(Program $program): array
+    {
+        $projects = $program->projects ?? collect();
+
+        $startDate = $projects
+            ->pluck('start_date')
+            ->filter()
+            ->sort()
+            ->first();
+
+        $endDate = $projects
+            ->pluck('end_date')
+            ->filter()
+            ->sortDesc()
+            ->first();
+
+        return [
+            'start_date' => $startDate,
+            'end_date' => $endDate,
+            'geographical_focus' => $this->extractGeographicalFocus($projects),
+            'beneficiaries' => $this->extractUniqueBeneficiaries($projects),
+            'status' => $program->programState?->name,
+            'donors' => $this->extractUniqueDonors($projects),
+            'budget' => (float) $projects->sum(fn($project) => (float) ($project->project_budget ?? 0)),
+            'implementing_agencies' => $this->extractUniqueAgencies($projects),
+            'contact_person' => [
+                'id' => $program->contact?->id,
+                'first_name' => $program->contact?->first_name,
+                'last_name' => $program->contact?->last_name,
+                'title' => $program->contact?->title,
+                'email' => $program->contact?->email,
+                'phone' => $program->contact?->phone,
+            ],
+        ];
+    }
+
+    private function extractGeographicalFocus(Collection $projects): array
+    {
+        return $projects
+            ->flatMap(function ($project) {
+                return ($project->indicators ?? collect())
+                    ->map(function ($indicator) {
+                        $country = $indicator->measure?->StrategicOutput?->countryKpa?->country;
+
+                        if (!$country) {
+                            return null;
+                        }
+
+                        return [
+                            'id' => $country->id,
+                            'name' => $country->name,
+                        ];
+                    });
+            })
+            ->filter()
+            ->unique('id')
+            ->values()
+            ->all();
+    }
+
+    private function extractUniqueBeneficiaries(Collection $projects): array
+    {
+        return $projects
+            ->map(function ($project) {
+                if (!$project->beneficiary) {
+                    return null;
+                }
+
+                return [
+                    'id' => $project->beneficiary->id,
+                    'name' => $project->beneficiary->name,
+                ];
+            })
+            ->filter()
+            ->unique('id')
+            ->values()
+            ->all();
+    }
+
+    private function extractUniqueDonors(Collection $projects): array
+    {
+        return $projects
+            ->flatMap(fn($project) => $project->donors ?? collect())
+            ->map(fn($donor) => [
+                'id' => $donor->id,
+                'name' => $donor->name,
+            ])
+            ->unique('id')
+            ->values()
+            ->all();
+    }
+
+    private function extractUniqueAgencies(Collection $projects): array
+    {
+        return $projects
+            ->flatMap(fn($project) => $project->agencies ?? collect())
+            ->map(fn($agency) => [
+                'id' => $agency->id,
+                'name' => $agency->name,
+                'url' => $agency->url,
+            ])
+            ->unique('id')
+            ->values()
+            ->all();
     }
 
     /**
@@ -258,13 +380,10 @@ class ProgramService
             throw new RuntimeException("Program with id {$programId} does not exist.");
         }
 
-        // Count projects associated with this program
         $projectsCount = $program->projects()->count();
 
-        // Get current state name
         $currentState = $program->programState->name;
 
-        // Business Rule 1: If has projects and is Inactive → Activate
         if ($projectsCount > 0 && strtolower($currentState) === 'inactive') {
             $activeState = $this->programStateRepository->findBy('name', 'Active');
             if ($activeState) {
@@ -273,7 +392,6 @@ class ProgramService
             }
         }
 
-        // Business Rule 2: If no projects and is Active → Deactivate
         if ($projectsCount === 0 && strtolower($currentState) === 'active') {
             $inactiveState = $this->programStateRepository->findBy('name', 'Inactive');
             if ($inactiveState) {

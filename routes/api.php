@@ -269,6 +269,7 @@ Route::prefix('v1/public')->group(function () {
 
     // Programs
     Route::post('programs', [PublicProgramController::class, 'index']);
+    Route::get('programs/{id}', [PublicProgramController::class, 'show']);
 
     // Projects    
     Route::post('projects', [PublicProjectController::class, 'index']);
