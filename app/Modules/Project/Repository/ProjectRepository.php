@@ -42,11 +42,26 @@ class ProjectRepository extends AbstractRepository implements RepositoryInterfac
         $this->applySort($query, $sort);
         return $query->paginate($perPage);
     }
+
+    public function getPaginatedForProgram(int $programId, ?string $search, int $perPage = 10, string $sort = 'date_newest') {
+        $query = $this->model->query()->where('program_id', $programId);
+        if (!empty($search)) $query->whereRaw('lower(name) LIKE lower(?)', ['%' . trim($search) . '%']);
+        $this->applySort($query, $sort);
+        return $query->paginate($perPage);
+    }
     
     public function getPaginatedByState(?int $projectStateId, ?string $search, int $perPage = 10, string $sort = 'date_newest') {
         $query = $this->model->query();
         if ($projectStateId !== null) $query->where('project_state_id', $projectStateId);
         if (!empty($search)) $query->whereRaw( 'lower(name) LIKE lower(?)', ['%' . trim($search) . '%']);
+        $this->applySort($query, $sort);
+        return $query->paginate($perPage);
+    }
+
+    public function getPaginatedByStateForProgram(int $programId, ?int $projectStateId, ?string $search, int $perPage = 10, string $sort = 'date_newest') {
+        $query = $this->model->query()->where('program_id', $programId);
+        if ($projectStateId !== null) $query->where('project_state_id', $projectStateId);
+        if (!empty($search)) $query->whereRaw('lower(name) LIKE lower(?)', ['%' . trim($search) . '%']);
         $this->applySort($query, $sort);
         return $query->paginate($perPage);
     }
@@ -57,7 +72,18 @@ class ProjectRepository extends AbstractRepository implements RepositoryInterfac
     }
 
     public function paginateByIds(array $projectIds, ?int $projectStateId, ?string $search, int $perPage, string $sort = 'date_newest') {
-        $query = $this->model->query()->whereIn('id', $projectIds)->when($projectStateId, fn ($q) =>$q->where('project_state_id', $projectStateId))
+        $query = $this->model->query()->whereIn('id', $projectIds)
+            ->when($projectStateId, fn ($q) =>$q->where('project_state_id', $projectStateId))
+            ->when($search, fn ($q) =>$q->whereRaw('LOWER(name) LIKE LOWER(?)', ['%' . trim($search) . '%']));
+
+        $this->applySort($query, $sort);
+
+        return $query->paginate($perPage);
+    }
+
+    public function paginateByIdsForProgram(int $programId, array $projectIds, ?int $projectStateId, ?string $search, int $perPage, string $sort = 'date_newest') {
+        $query = $this->model->query()->where('program_id', $programId)->whereIn('id', $projectIds)
+            ->when($projectStateId, fn ($q) =>$q->where('project_state_id', $projectStateId))
             ->when($search, fn ($q) =>$q->whereRaw('LOWER(name) LIKE LOWER(?)', ['%' . trim($search) . '%']));
 
         $this->applySort($query, $sort);

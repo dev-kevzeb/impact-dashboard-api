@@ -45,4 +45,21 @@ class PublicProgramController extends Controller
 			return ApiResponse::error('Internal server error', 500);
 		}
 	}
+
+	public function show(int $id)
+	{
+		try {
+			$program = $this->programService->getProgramById($id);
+
+			return ApiResponse::success(
+				'Program Found',
+				200,
+				new ProgramResource($program)
+			);
+		} catch (\RuntimeException $e) {
+			return ApiResponse::notFound('Program');
+		} catch (\Exception $e) {
+			return ApiResponse::error('Internal server error', 500);
+		}
+	}
 }
