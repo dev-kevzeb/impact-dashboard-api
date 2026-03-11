@@ -83,9 +83,9 @@ class AgencyTest extends TestCase
         $response = $this->postJson(self::BASE_URL, $data, $this->authHeaders());
 
         $response->assertCreated()
-            ->assertJsonPath('data.url', null);
+            ->assertJsonPath('data.url', '');
 
-        $this->assertDatabaseHas('agency', ['name' => 'Agencia Sin URL', 'url' => null]);
+        $this->assertDatabaseHas('agency', ['name' => 'Agencia Sin URL', 'url' => '']);
     }
 
     public function test_url_validation_error_on_create(): void
@@ -163,7 +163,7 @@ class AgencyTest extends TestCase
 
         $this->assertDatabaseHas('agency', [
             'id' => $agency->id,
-            'url' => null
+            'url' => ''
         ]);
     }
 
