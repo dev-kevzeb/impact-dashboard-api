@@ -54,7 +54,7 @@ class UserRepository extends AbstractRepository
     public function paginateManageableUsers(int $perPage = 10)
     {
         return $this->model
-            ->with(['roles', 'userState', 'userRoles.countries'])
+            ->with(['roles', 'userState', 'userRoles.countryUserRole.country', 'userRoles.countryUserRole.userRole.role'])
             ->whereDoesntHave('roles', function ($query) {
                 $query->where('name', 'admin');
             })
@@ -75,7 +75,7 @@ class UserRepository extends AbstractRepository
     public function findByIdWithRelations(int $id): User
     {
         $user = $this->model
-            ->with(['roles', 'userState', 'userRoles.countries'])
+            ->with(['roles', 'userState', 'userRoles.countryUserRole.country', 'userRoles.countryUserRole.userRole.role'])
             ->find($id);
 
         if (!$user) {
@@ -94,7 +94,7 @@ class UserRepository extends AbstractRepository
     public function getPendingUsers(int $perPage = 10)
     {
         return $this->model
-            ->with(['roles', 'userState', 'userRoles.countries'])
+            ->with(['roles', 'userState', 'userRoles.countryUserRole.country', 'userRoles.countryUserRole.userRole.role'])
             ->whereHas('userState', function ($query) {
                 $query->where('name', 'pending');
             })
@@ -111,7 +111,7 @@ class UserRepository extends AbstractRepository
     public function getUnverifiedUsers(int $perPage = 10)
     {
         return $this->model
-            ->with(['roles', 'userState', 'userRoles.countries'])
+            ->with(['roles', 'userState', 'userRoles.countryUserRole.country', 'userRoles.countryUserRole.userRole.role'])
             ->whereHas('userState', function ($query) {
                 $query->where('name', 'unverified');
             })

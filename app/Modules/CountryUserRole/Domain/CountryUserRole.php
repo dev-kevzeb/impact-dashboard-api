@@ -36,6 +36,19 @@ class CountryUserRole extends Model
     }
 
     /**
+     * M:N relationship with Program via program_country_user_role pivot
+     */
+    public function programs()
+    {
+        return $this->belongsToMany(
+            \App\Modules\Program\Domain\Program::class,
+            'program_country_user_role',
+            'country_user_role_id',
+            'program_id'
+        );
+    }
+
+    /**
      * Laravel Factory integration
      *
      * @return \Database\Factories\CountryUserRoleFactory

@@ -55,7 +55,7 @@ class ProgramController extends Controller
     public function index(Request $request): JsonResponse
     {
         try {
-            $perPage = (int) $request->get("per_page", 10);
+            $perPage  = (int) $request->get('per_page', 10);
             $programs = $this->programService->getAllPrograms($perPage);
 
             return ApiResponse::success(
@@ -63,12 +63,14 @@ class ProgramController extends Controller
                 200,
                 [
                     'programs' => ProgramResource::collection($programs),
-                    'total' => $programs->count(),
+                    'total' => $programs->total(),
                     'per_page' => $programs->perPage(),
                     'current_page' => $programs->currentPage(),
                     'last_page' => $programs->lastPage(),
                 ]
             );
+        } catch (RuntimeException $e) {
+            return ApiResponse::error($e->getMessage(), 400);
         } catch (\Exception $e) {
             return ApiResponse::error('Error retrieving program list', 500);
         }
@@ -154,10 +156,10 @@ class ProgramController extends Controller
             $program = $this->programService->createProgram(
                 $validated['name'],
                 $validated['description'],
-                $path,  // Path guardado en storage
+                $path,
                 $validated['program_url'] ?? '',
                 $validated['contact'],
-                $validated['sdg_ids']  // Required by validation
+                $validated['sdg_ids']
             );
 
             return ApiResponse::created(
@@ -390,7 +392,7 @@ class ProgramController extends Controller
                 $validated['program_url'] ?? '',
                 $validated['contact'],
                 $validated['program_state_id'],
-                $validated['sdg_ids']  // Required by validation
+                $validated['sdg_ids']
             );
 
             return ApiResponse::success(

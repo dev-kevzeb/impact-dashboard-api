@@ -144,7 +144,7 @@ class AuthService
         $user->sendEmailVerificationNotification();
 
         // Load relationships for response (including countries)
-        $user->load('roles', 'userState', 'userRoles.countries');
+        $user->load('roles', 'userState', 'userRoles.countryUserRole.country', 'userRoles.countryUserRole.userRole.role');
 
         // NO token generated - user cannot login until email verified and admin approves
         return [
@@ -180,6 +180,6 @@ class AuthService
      */
     public function me(): User
     {
-        return auth('api')->user()->load('roles', 'userState');
+        return auth('api')->user()->load('roles', 'userState', 'userRoles.countryUserRole.country', 'userRoles.countryUserRole.userRole.role');
     }
 }
