@@ -16,7 +16,7 @@ class AgencyTest extends TestCase
     {
         Agency::factory()->count(3)->create();
 
-        $response = $this->getJson(self::BASE_URL);
+        $response = $this->getJson(self::BASE_URL, $this->authHeaders());
 
         $response->assertOk()
             ->assertJsonStructure([
@@ -35,7 +35,7 @@ class AgencyTest extends TestCase
 
     public function test_list_returns_empty_when_no_agencies(): void
     {
-        $response = $this->getJson(self::BASE_URL);
+        $response = $this->getJson(self::BASE_URL, $this->authHeaders());
 
         $response->assertOk()
             ->assertJsonPath('data.total', 0)
@@ -50,7 +50,7 @@ class AgencyTest extends TestCase
             'is_approved' => true
         ];
 
-        $response = $this->postJson(self::BASE_URL, $data);
+        $response = $this->postJson(self::BASE_URL, $data, $this->authHeaders());
 
         $response->assertCreated()
             ->assertJsonPath('message', 'Agency created successfully')
@@ -67,31 +67,46 @@ class AgencyTest extends TestCase
 
     public function test_validation_errors_on_create(): void
     {
-        $response = $this->postJson(self::BASE_URL, []);
+        $response = $this->postJson(self::BASE_URL, [], $this->authHeaders());
 
         $response->assertStatus(422)
-            ->assertJsonValidationErrors(['name', 'url', 'is_approved']);
+            ->assertJsonValidationErrors(['name', 'is_approved']);
     }
 
-    public function test_domain_errors_on_create(): void
+    public function test_can_create_agency_without_url(): void
     {
         $data = [
-            'name' => 'Agencia',
+            'name' => 'Agencia Sin URL',
+            'is_approved' => false
+        ];
+
+        $response = $this->postJson(self::BASE_URL, $data, $this->authHeaders());
+
+        $response->assertCreated()
+            ->assertJsonPath('data.url', '');
+
+        $this->assertDatabaseHas('agency', ['name' => 'Agencia Sin URL', 'url' => '']);
+    }
+
+    public function test_url_validation_error_on_create(): void
+    {
+        $data = [
+            'name' => 'Agencia Test',
             'url' => 'invalid-url',
             'is_approved' => true
         ];
 
-        $response = $this->postJson(self::BASE_URL, $data);
+        $response = $this->postJson(self::BASE_URL, $data, $this->authHeaders());
 
         $response->assertStatus(422)
-             ->assertJsonValidationErrors(['url']);
+            ->assertJsonValidationErrors(['url']);
     }
 
     public function test_can_show_agency(): void
     {
         $agency = Agency::factory()->create();
 
-        $response = $this->getJson(self::BASE_URL . "/{$agency->id}");
+        $response = $this->getJson(self::BASE_URL . "/{$agency->id}", $this->authHeaders());
 
         $response->assertOk()
             ->assertJson([
@@ -101,9 +116,17 @@ class AgencyTest extends TestCase
                     'id' => $agency->id,
                     'name' => $agency->name,
                     'url' => $agency->url,
-                    'is_approved' => (bool)$agency->is_approved,
+                    'is_approved' => (bool) $agency->is_approved,
                 ]
             ]);
+    }
+
+    public function test_show_returns_not_found(): void
+    {
+        $response = $this->getJson(self::BASE_URL . '/9999', $this->authHeaders());
+
+        $response->assertNotFound()
+            ->assertJsonPath('message', 'Agency not Found');
     }
 
     public function test_can_update_agency(): void
@@ -114,10 +137,10 @@ class AgencyTest extends TestCase
             'name' => 'Agencia Actualizada',
             'url' => 'https://updated.org',
             'is_approved' => false
-        ]);
+        ], $this->authHeaders());
 
         $response->assertOk()
-            ->assertJsonPath('message', 'Agency successfully updated');
+            ->assertJsonPath('message', 'Agency updated successfully');
 
         $this->assertDatabaseHas('agency', [
             'id' => $agency->id,
@@ -127,21 +150,37 @@ class AgencyTest extends TestCase
         ]);
     }
 
+    public function test_can_update_agency_removing_url(): void
+    {
+        $agency = Agency::factory()->create(['url' => 'https://original.org']);
+
+        $response = $this->putJson(self::BASE_URL . "/{$agency->id}", [
+            'name' => $agency->name,
+            'is_approved' => (bool) $agency->is_approved,
+        ], $this->authHeaders());
+
+        $response->assertOk();
+
+        $this->assertDatabaseHas('agency', [
+            'id' => $agency->id,
+            'url' => ''
+        ]);
+    }
+
     public function test_validation_errors_on_update(): void
     {
         $agency = Agency::factory()->create();
 
         $response = $this->putJson(self::BASE_URL . "/{$agency->id}", [
             'name' => '',
-            'url' => '',
             'is_approved' => null
-        ]);
+        ], $this->authHeaders());
 
         $response->assertStatus(422)
-            ->assertJsonValidationErrors(['name', 'url', 'is_approved']);
+            ->assertJsonValidationErrors(['name', 'is_approved']);
     }
 
-    public function test_domain_error_on_update(): void
+    public function test_url_validation_error_on_update(): void
     {
         $agency = Agency::factory()->create();
 
@@ -149,17 +188,17 @@ class AgencyTest extends TestCase
             'name' => 'Valid Name',
             'url' => 'notaurl',
             'is_approved' => true
-        ]);
+        ], $this->authHeaders());
 
         $response->assertStatus(422)
-             ->assertJsonValidationErrors(['url']);
+            ->assertJsonValidationErrors(['url']);
     }
 
     public function test_can_search_agency_by_name(): void
     {
-        $agency = Agency::factory()->create(['name' => 'Agencia Boliviana']);
+        Agency::factory()->create(['name' => 'Agencia Boliviana']);
 
-        $response = $this->getJson(self::BASE_URL . '/search?name=boliviana');
+        $response = $this->getJson(self::BASE_URL . '/search?name=boliviana', $this->authHeaders());
 
         $response->assertOk()
             ->assertJsonPath('data.name', 'Agencia Boliviana');
@@ -167,7 +206,7 @@ class AgencyTest extends TestCase
 
     public function test_search_returns_not_found(): void
     {
-        $response = $this->getJson(self::BASE_URL . '/search?name=xyz');
+        $response = $this->getJson(self::BASE_URL . '/search?name=xyz', $this->authHeaders());
 
         $response->assertStatus(404)
             ->assertJsonPath('message', 'Agency not Found');

@@ -22,9 +22,9 @@ class AgencyService
         }
 
         $agency = Agency::at($name, $url, $isApproved);
-        
+
         $this->agencyRepository->save($agency);
-        
+
         return $agency;
     }
 
@@ -57,8 +57,8 @@ class AgencyService
                 throw new RuntimeException("There is already an agency with the name {$name}");
             }
         } catch (RuntimeException $e) {
-            if (!str_contains($e->getMessage(), 'not Found')) {
-                throw $e; 
+            if (!str_contains(strtolower($e->getMessage()), 'not found')) {
+                throw $e;
             }
         }
 
@@ -66,9 +66,9 @@ class AgencyService
         $agency->name = $updatedAgency->name;
         $agency->url = $updatedAgency->url;
         $agency->is_approved = $updatedAgency->is_approved;
-        
+
         $this->agencyRepository->save($agency);
-        
+
         return $agency;
     }
 
@@ -77,7 +77,8 @@ class AgencyService
         return $this->agencyRepository->exists('name', $name);
     }
 
-    public function getAgenciesExcluding(int $perPage, ?string $search, ?array $exclude){
+    public function getAgenciesExcluding(int $perPage, ?string $search, ?array $exclude)
+    {
         return $this->agencyRepository->getExcluding($search, $perPage, $exclude);
     }
 
