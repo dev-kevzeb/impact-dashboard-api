@@ -25,11 +25,23 @@ class PublicCountryKpaController extends Controller
 
             $kpas = $this->service->getKpasByCountryPaginated($countryId, $search, $perPage);
 
+            $mappedKpas = collect($kpas->items())
+                ->map(function ($countryKpa) {
+                    return [
+                        'id' => data_get($countryKpa, 'kpa.id'),
+                        'name' => data_get($countryKpa, 'kpa.name'),
+                    ];
+                })
+                ->filter(function ($kpa) {
+                    return !empty($kpa['id']) && !empty($kpa['name']);
+                })
+                ->values();
+
             return ApiResponse::success(
                 'KPAs by country',
                 200,
                 [
-                    'kpas'=> $kpas->items(),
+                    'kpas'=> $mappedKpas,
                     'total' => $kpas->count(),
                     'per_page' => $kpas->perPage(),
                     'current_page' => $kpas->currentPage(),

@@ -32,7 +32,7 @@ class Agency extends Model
         parent::__construct($attributes);
     }
 
-    public static function at(string $name, ?string $url, mixed $isApproved): Agency
+    public static function at(string $name, string $url, mixed $isApproved): Agency
     {
         if (empty(trim($name))) throw new RuntimeException(self::$ERROR_NAME_EMPTY);
 
@@ -41,9 +41,8 @@ class Agency extends Model
         if (strlen($trimmedName) < 2) throw new RuntimeException(self::$ERROR_NAME_TOO_SHORT);
         if (strlen($trimmedName) > 100) throw new RuntimeException(self::$ERROR_NAME_TOO_LONG);
 
-        $trimmedUrl = null;
-        if ($url !== null) {
-            $trimmedUrl = trim($url);
+        $trimmedUrl = trim($url);
+        if ($trimmedUrl !== '') {
             if (!filter_var($trimmedUrl, FILTER_VALIDATE_URL)) throw new RuntimeException(self::$ERROR_URL_INVALID_FORMAT);
             $parsedUrl = parse_url($trimmedUrl);
             if (!isset($parsedUrl['scheme']) || !in_array($parsedUrl['scheme'], ['http', 'https'], true)) throw new RuntimeException(self::$ERROR_URL_INVALID_PROTOCOL);
@@ -63,9 +62,9 @@ class Agency extends Model
         return $this->name;
     }
 
-    public function getUrl(): ?string
+    public function getUrl(): string
     {
-        return $this->url;
+        return $this->url ?? '';
     }
 
     public function isApproved(): bool

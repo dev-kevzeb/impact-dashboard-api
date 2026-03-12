@@ -36,17 +36,34 @@ class ProjectRepository extends AbstractRepository implements RepositoryInterfac
         return $query->orderBy('name')->paginate($perPage);
     }
 
-    public function getPaginated(?string $search, int $perPage = 10){
+    public function getPaginated(?string $search, int $perPage = 10, string $sort = 'date_newest'){
         $query = $this->model::query();
         if(!empty($search)) $query->whereRaw('lower(name) LIKE lower(?)', ['%'.trim($search).'%']);
-        return $query->orderBy('name')->paginate($perPage);
+        $this->applySort($query, $sort);
+        return $query->paginate($perPage);
+    }
+
+    public function getPaginatedForProgram(int $programId, ?string $search, int $perPage = 10, string $sort = 'date_newest') {
+        $query = $this->model->query()->where('program_id', $programId);
+        if (!empty($search)) $query->whereRaw('lower(name) LIKE lower(?)', ['%' . trim($search) . '%']);
+        $this->applySort($query, $sort);
+        return $query->paginate($perPage);
     }
     
-    public function getPaginatedByState(?int $projectStateId, ?string $search, int $perPage = 10) {
+    public function getPaginatedByState(?int $projectStateId, ?string $search, int $perPage = 10, string $sort = 'date_newest') {
         $query = $this->model->query();
         if ($projectStateId !== null) $query->where('project_state_id', $projectStateId);
         if (!empty($search)) $query->whereRaw( 'lower(name) LIKE lower(?)', ['%' . trim($search) . '%']);
-        return $query->orderBy('name')->paginate($perPage);
+        $this->applySort($query, $sort);
+        return $query->paginate($perPage);
+    }
+
+    public function getPaginatedByStateForProgram(int $programId, ?int $projectStateId, ?string $search, int $perPage = 10, string $sort = 'date_newest') {
+        $query = $this->model->query()->where('program_id', $programId);
+        if ($projectStateId !== null) $query->where('project_state_id', $projectStateId);
+        if (!empty($search)) $query->whereRaw('lower(name) LIKE lower(?)', ['%' . trim($search) . '%']);
+        $this->applySort($query, $sort);
+        return $query->paginate($perPage);
     }
 
     public function emptyPaginated(int $perPage)
@@ -54,10 +71,43 @@ class ProjectRepository extends AbstractRepository implements RepositoryInterfac
         return $this->model->whereRaw('1 = 0')->paginate($perPage);
     }
 
-    public function paginateByIds(array $projectIds, ?int $projectStateId, ?string $search, int $perPage) {
-        return $this->model->query()->whereIn('id', $projectIds)->when($projectStateId, fn ($q) =>$q->where('project_state_id', $projectStateId))
-            ->when($search, fn ($q) =>$q->where('name', 'ILIKE', "%{$search}%"))
-            ->paginate($perPage);
+    public function paginateByIds(array $projectIds, ?int $projectStateId, ?string $search, int $perPage, string $sort = 'date_newest') {
+        $query = $this->model->query()->whereIn('id', $projectIds)
+            ->when($projectStateId, fn ($q) =>$q->where('project_state_id', $projectStateId))
+            ->when($search, fn ($q) =>$q->whereRaw('LOWER(name) LIKE LOWER(?)', ['%' . trim($search) . '%']));
+
+        $this->applySort($query, $sort);
+
+        return $query->paginate($perPage);
+    }
+
+    public function paginateByIdsForProgram(int $programId, array $projectIds, ?int $projectStateId, ?string $search, int $perPage, string $sort = 'date_newest') {
+        $query = $this->model->query()->where('program_id', $programId)->whereIn('id', $projectIds)
+            ->when($projectStateId, fn ($q) =>$q->where('project_state_id', $projectStateId))
+            ->when($search, fn ($q) =>$q->whereRaw('LOWER(name) LIKE LOWER(?)', ['%' . trim($search) . '%']));
+
+        $this->applySort($query, $sort);
+
+        return $query->paginate($perPage);
+    }
+
+    private function applySort($query, string $sort): void
+    {
+        switch ($sort) {
+            case 'date_oldest':
+                $query->orderBy('id', 'asc');
+                break;
+            case 'name_az':
+                $query->orderBy('name', 'asc');
+                break;
+            case 'name_za':
+                $query->orderBy('name', 'desc');
+                break;
+            case 'date_newest':
+            default:
+                $query->orderBy('id', 'desc');
+                break;
+        }
     }
 
     public function getByIds(array $projectIds) {

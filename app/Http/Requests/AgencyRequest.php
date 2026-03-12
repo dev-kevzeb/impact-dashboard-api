@@ -22,6 +22,9 @@ class AgencyRequest extends FormRequest
                 'name' => $name
             ]);
         }
+
+        // Normalize url: null or missing becomes empty string
+        $this->merge(['url' => trim((string) $this->input('url', ''))]);
     }
 
     public function rules(): array
@@ -35,10 +38,16 @@ class AgencyRequest extends FormRequest
             ],
 
             'url' => [
-                'nullable',
                 'string',
-                'url',
-                'regex:/^(http|https):\/\//i',
+                function ($attribute, $value, $fail) {
+                    if ($value === '') return; // empty string is valid (url is optional)
+                    if (!filter_var($value, FILTER_VALIDATE_URL)) {
+                        $fail('Agency URL must be in valid format');
+                    }
+                    if (!preg_match('/^(http|https):\/\//i', $value)) {
+                        $fail('The agency URL must use HTTP or HTTPS protocol');
+                    }
+                },
             ],
 
             'is_approved' => [

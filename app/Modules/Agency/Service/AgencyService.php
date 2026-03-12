@@ -15,7 +15,7 @@ class AgencyService
         $this->agencyRepository = $agencyRepository;
     }
 
-    public function createAgency(string $name, ?string $url, bool $isApproved): Agency
+    public function createAgency(string $name, string $url, bool $isApproved): Agency
     {
         if ($this->agencyRepository->exists('name', trim($name))) {
             throw new RuntimeException("There is already an agency with the name {$name}");
@@ -47,7 +47,7 @@ class AgencyService
 
 
 
-    public function updateAgency(int $id, string $name, ?string $url, bool $isApproved): Agency
+    public function updateAgency(int $id, string $name, string $url, bool $isApproved): Agency
     {
         $agency = $this->agencyRepository->findById($id);
 

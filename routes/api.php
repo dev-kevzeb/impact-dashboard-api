@@ -9,8 +9,9 @@ use App\Modules\IndicatorType\Controller\IndicatorTypeController;
 use App\Modules\Kpa\Controller\PublicKpaController;
 use App\Modules\Measure\Controller\MeasureController;
 use App\Modules\Measure\Controller\PublicMeasureController;
-use App\Modules\MeasureChart\Controller\MeasureChartController;
 use App\Modules\Project\Controller\PublicProjectController;
+use App\Modules\Program\Controller\PublicProgramController;
+use App\Modules\ProgramState\Controller\PublicProgramStateController;
 use App\Modules\ProjectState\Controller\PublicProjectStateController;
 use App\Modules\Statistics\Controller\StatisticsController;
 use App\Modules\StrategicOutput\Controller\PublicStrategicOutputController;
@@ -283,6 +284,10 @@ Route::prefix('v1')->group(function () {
 
 Route::prefix('v1/public')->group(function () {
 
+    // Programs
+    Route::post('programs', [PublicProgramController::class, 'index']);
+    Route::get('programs/{id}', [PublicProgramController::class, 'show']);
+
     // Projects    
     Route::post('projects', [PublicProjectController::class, 'index']);
     Route::get('projects/{id}', [PublicProjectController::class, 'show']);
@@ -304,6 +309,9 @@ Route::prefix('v1/public')->group(function () {
 
     // Project-states
     Route::get('project-states', [PublicProjectStateController::class, 'index']);
+
+    // Program-states
+    Route::get('program-states', [PublicProgramStateController::class, 'index']);
 
     // Statistics
     Route::get('measure-implementation/{id}', [StatisticsController::class, 'getMeasureImplementation']);
