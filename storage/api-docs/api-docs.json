@@ -5618,6 +5618,183 @@
                 ]
             }
         },
+        "/invite_programs": {
+            "get": {
+                "tags": [
+                    "Invite Program"
+                ],
+                "summary": "List invites",
+                "description": "Get paginated list of invites. Optionally filter by program_country_user_role_id and/or invited_user_role_id.",
+                "operationId": "listInvitePrograms",
+                "parameters": [
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 10
+                        }
+                    },
+                    {
+                        "name": "program_country_user_role_id",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 10
+                        }
+                    },
+                    {
+                        "name": "invited_user_role_id",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 23
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Invites retrieved successfully"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Invite Program"
+                ],
+                "summary": "Create invite",
+                "description": "Create a relation invite between a program owner assignment and an invited project-manager user role.",
+                "operationId": "createInviteProgram",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "program_country_user_role_id",
+                                    "invited_user_role_id"
+                                ],
+                                "properties": {
+                                    "program_country_user_role_id": {
+                                        "type": "integer",
+                                        "example": 10
+                                    },
+                                    "invited_user_role_id": {
+                                        "type": "integer",
+                                        "example": 23
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Invite created successfully"
+                    },
+                    "400": {
+                        "description": "Business rule error"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/invite_programs/{id}": {
+            "get": {
+                "tags": [
+                    "Invite Program"
+                ],
+                "summary": "Get invite by ID",
+                "operationId": "getInviteProgram",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Invite retrieved successfully"
+                    },
+                    "404": {
+                        "description": "Invite not found"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Invite Program"
+                ],
+                "summary": "Delete invite",
+                "description": "Remove an invite. Allowed for owner or invited user according to business rules.",
+                "operationId": "deleteInviteProgram",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Invite removed successfully"
+                    },
+                    "400": {
+                        "description": "Business rule error"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "description": "Invite not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/kpas": {
             "get": {
                 "tags": [
@@ -6922,6 +7099,164 @@
                                 }
                             }
                         }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/program_country_user_roles": {
+            "get": {
+                "tags": [
+                    "Program Country User Roles"
+                ],
+                "summary": "List program-country-user-role assignments",
+                "description": "Get paginated list of assignments. Filter by program_id or country_user_role_id.",
+                "operationId": "listProgramCountryUserRoles",
+                "parameters": [
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 10
+                        }
+                    },
+                    {
+                        "name": "program_id",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "country_user_role_id",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Assignments retrieved successfully"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Program Country User Roles"
+                ],
+                "summary": "Create a program-country-user-role assignment",
+                "description": "Link a Program to a CountryUserRole. The program and the country user role must already exist.",
+                "operationId": "createProgramCountryUserRole",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "program_id",
+                                    "country_user_role_id"
+                                ],
+                                "properties": {
+                                    "program_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "country_user_role_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Assignment created successfully"
+                    },
+                    "400": {
+                        "description": "Assignment already exists"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/program_country_user_roles/{id}": {
+            "get": {
+                "tags": [
+                    "Program Country User Roles"
+                ],
+                "summary": "Get a specific assignment",
+                "operationId": "getProgramCountryUserRole",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Assignment retrieved successfully"
+                    },
+                    "404": {
+                        "description": "Assignment not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Program Country User Roles"
+                ],
+                "summary": "Remove an assignment",
+                "description": "Unlinks a Program from a CountryUserRole. The program itself is NOT deleted.",
+                "operationId": "deleteProgramCountryUserRole",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Assignment deleted successfully"
+                    },
+                    "404": {
+                        "description": "Assignment not found"
                     }
                 },
                 "security": [
@@ -14039,6 +14374,84 @@
                 ]
             }
         },
+        "/users/unverified": {
+            "get": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Get unverified users (email not verified)",
+                "description": "Retrieve paginated list of users with unverified state. These users registered but haven't verified their email yet. Requires admin permissions (users:write or *:*).",
+                "operationId": "getUnverifiedUsers",
+                "parameters": [
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Number of users per page (default: 10)",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 10
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Unverified users retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Unverified users retrieved successfully"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "users": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "$ref": "#/components/schemas/User"
+                                                    }
+                                                },
+                                                "total": {
+                                                    "type": "integer",
+                                                    "example": 5
+                                                },
+                                                "per_page": {
+                                                    "type": "integer",
+                                                    "example": 10
+                                                },
+                                                "current_page": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - Invalid or missing token"
+                    },
+                    "403": {
+                        "description": "Forbidden - Insufficient permissions"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/users/{id}/approve": {
             "post": {
                 "tags": [
@@ -14108,8 +14521,8 @@
                 "tags": [
                     "Users"
                 ],
-                "summary": "Reject pending user",
-                "description": "Permanently delete a pending user registration request. Use for unwanted or spam registrations. Requires admin permissions (users:write or *:*).",
+                "summary": "Reject unverified or pending user",
+                "description": "Permanently delete a user registration. Accepts users in 'unverified' (email not verified) or 'pending' (waiting approval) states. Use for unwanted/spam registrations or incomplete sign-ups. Requires admin permissions (users:write or *:*).",
                 "operationId": "rejectUser",
                 "parameters": [
                     {
@@ -14145,7 +14558,7 @@
                         }
                     },
                     "400": {
-                        "description": "User is not pending or business logic error"
+                        "description": "User is not in unverified/pending state or business logic error"
                     },
                     "401": {
                         "description": "Unauthorized"
@@ -14669,6 +15082,34 @@
                             }
                         },
                         "type": "object"
+                    }
+                },
+                "type": "object"
+            },
+            "InviteProgram": {
+                "title": "InviteProgram",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "program_country_user_role_id": {
+                        "type": "integer",
+                        "example": 10
+                    },
+                    "invited_user_role_id": {
+                        "type": "integer",
+                        "example": 23
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
                     }
                 },
                 "type": "object"
@@ -15266,6 +15707,10 @@
             "description": "Email verification endpoints"
         },
         {
+            "name": "Invite Program",
+            "description": "Project-manager invitations to collaborate in a program context"
+        },
+        {
             "name": "CountryKpaUsers",
             "description": "CountryKpaUsers"
         },
@@ -15296,6 +15741,10 @@
         {
             "name": "Permissions",
             "description": "Permissions"
+        },
+        {
+            "name": "Program Country User Roles",
+            "description": "Program Country User Roles"
         },
         {
             "name": "Program Users",

@@ -4,9 +4,11 @@ namespace App\Modules\ProgramCountryUserRole\Domain;
 
 use App\Modules\Program\Domain\Program;
 use App\Modules\CountryUserRole\Domain\CountryUserRole;
+use App\Modules\InviteProgram\Domain\InviteProgram;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ProgramCountryUserRole extends Model
 {
@@ -28,6 +30,14 @@ class ProgramCountryUserRole extends Model
     public function countryUserRole(): BelongsTo
     {
         return $this->belongsTo(CountryUserRole::class, 'country_user_role_id');
+    }
+
+    /**
+     * Relationship: has many InviteProgram records
+     */
+    public function invites(): HasMany
+    {
+        return $this->hasMany(InviteProgram::class, 'program_country_user_role_id');
     }
 
     protected static function newFactory()
