@@ -68,6 +68,9 @@ class PermissionSeeder extends Seeder
             ['name' => 'program_users:read', 'scope' => 'program_users', 'module' => 'ProgramUser', 'description' => 'View program user assignments'],
             ['name' => 'program_users:write', 'scope' => 'program_users', 'module' => 'ProgramUser', 'description' => 'Assign users to programs'],
 
+            ['name' => 'program_country_user_roles:read', 'scope' => 'program_country_user_roles', 'module' => 'ProgramCountryUserRole', 'description' => 'View program-country-user-role assignments'],
+            ['name' => 'program_country_user_roles:write', 'scope' => 'program_country_user_roles', 'module' => 'ProgramCountryUserRole', 'description' => 'Assign programs to country user roles'],
+
             ['name' => 'project_states:read', 'scope' => 'project_states', 'module' => 'ProjectState', 'description' => 'View project states'],
             ['name' => 'project_states:write', 'scope' => 'project_states', 'module' => 'ProjectState', 'description' => 'Create/edit project states'],
 

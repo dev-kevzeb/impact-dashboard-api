@@ -17,7 +17,6 @@ class ProgramStateFactory extends Factory
         return [
             'name' => $this->faker->unique()->randomElement([
                 'Active',
-                'Inactive',
                 'Planned',
                 'Completed',
                 'On Hold',

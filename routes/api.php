@@ -30,6 +30,7 @@ use App\Modules\Agency\Controller\AgencyController;
 use App\Modules\CountryKpa\Controller\CountryKpaController;
 use App\Modules\CountryKpaUser\Controller\CountryKpaUserController;
 use App\Modules\ProgramUser\Controller\ProgramUserController;
+use App\Modules\ProgramCountryUserRole\Controller\ProgramCountryUserRoleController;
 use App\Modules\UserRole\Controller\UserRoleController;
 use \App\Modules\StrategicOutput\Controller\StrategicOutputController;
 use App\Modules\Project\Controller\ProjectController;
@@ -240,6 +241,12 @@ Route::prefix('v1')->group(function () {
         Route::get('programs/{id}', [ProgramController::class, 'show'])->middleware('scope:programs');
         Route::put('programs/{id}', [ProgramController::class, 'update'])->middleware('scope:programs:write');
 
+        // API Routes para Program-CountryUserRole assignments
+        Route::get('program_country_user_roles', [ProgramCountryUserRoleController::class, 'index'])->middleware('scope:program_country_user_roles');
+        Route::post('program_country_user_roles', [ProgramCountryUserRoleController::class, 'store'])->middleware('scope:program_country_user_roles:write');
+        Route::get('program_country_user_roles/{id}', [ProgramCountryUserRoleController::class, 'show'])->middleware('scope:program_country_user_roles');
+        Route::delete('program_country_user_roles/{id}', [ProgramCountryUserRoleController::class, 'destroy'])->middleware('scope:program_country_user_roles:write');
+
         // API Routes para Project
         Route::get('projects', [ProjectController::class, 'index'])->middleware('scope:projects');
         Route::post('projects', [ProjectController::class, 'store'])->middleware('scope:projects:write');
@@ -290,7 +297,7 @@ Route::prefix('v1/public')->group(function () {
 
     // CountryKPAs
     Route::get('kpas/{id}', [PublicCountryKpaController::class, 'getAllByCountryId']);
-    
+
     // KPAs
     Route::get('kpas', [PublicKpaController::class, 'index']);
 

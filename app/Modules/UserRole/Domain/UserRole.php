@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class UserRole extends Model
 {
@@ -49,6 +50,16 @@ class UserRole extends Model
             'user_role_id',
             'country_id'
         )->withTimestamps();
+    }
+
+    /**
+     * Relationship: UserRole has one CountryUserRole record
+     *
+     * @return HasOne
+     */
+    public function countryUserRole(): HasOne
+    {
+        return $this->hasOne(\App\Modules\CountryUserRole\Domain\CountryUserRole::class, 'user_role_id');
     }
 
     /**

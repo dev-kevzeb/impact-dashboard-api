@@ -171,6 +171,28 @@ class User extends Authenticatable implements JWTSubject, MustVerifyEmail
     }
 
     /**
+     * Get the CountryUserRole record for this user (Phase 1: one country per user).
+     * Resolves: User → UserRole → CountryUserRole
+     * The server derives this from the JWT — never from the request body.
+     *
+     * @return \App\Modules\CountryUserRole\Domain\CountryUserRole
+     * @throws \RuntimeException If user has no country assigned
+     */
+    public function getCountryUserRole(): \App\Modules\CountryUserRole\Domain\CountryUserRole
+    {
+        $countryUserRole = \App\Modules\CountryUserRole\Domain\CountryUserRole::whereHas(
+            'userRole',
+            fn($q) => $q->where('user_id', $this->id)
+        )->first();
+
+        if (!$countryUserRole) {
+            throw new \RuntimeException('The authenticated user has no country assigned.');
+        }
+
+        return $countryUserRole;
+    }
+
+    /**
      * Laravel Factory integration
      *
      * @return \Database\Factories\UserFactory

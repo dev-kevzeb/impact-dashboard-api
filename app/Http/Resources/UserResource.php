@@ -14,19 +14,26 @@ class UserResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        // Get countries assigned through user roles
-        $countries = [];
+        // Get country_user_role from userRoles relation
+        $countryUserRole = null;
         if ($this->relationLoaded('userRoles')) {
-            $countries = $this->userRoles
-                ->filter(fn($userRole) => $userRole->relationLoaded('countries'))
-                ->flatMap(fn($userRole) => $userRole->countries)
-                ->unique('id')
-                ->map(fn($country) => [
-                    'id' => $country->id,
-                    'name' => $country->name,
-                ])
-                ->values()
-                ->toArray();
+            foreach ($this->userRoles as $userRole) {
+                if ($userRole->relationLoaded('countryUserRole') && $userRole->countryUserRole) {
+                    $cur = $userRole->countryUserRole;
+                    $role = ($cur->relationLoaded('userRole') && $cur->userRole?->relationLoaded('role') && $cur->userRole->role)
+                        ? ['id' => $cur->userRole->role->id, 'name' => $cur->userRole->role->name]
+                        : null;
+                    $countryUserRole = [
+                        'id'      => $cur->id,
+                        'country' => ($cur->relationLoaded('country') && $cur->country) ? [
+                            'id'   => $cur->country->id,
+                            'name' => $cur->country->name,
+                        ] : null,
+                        'role'    => $role,
+                    ];
+                    break;
+                }
+            }
         }
 
         return [
@@ -40,7 +47,7 @@ class UserResource extends JsonResource
 
             'roles' => RoleResource::collection($this->whenLoaded('roles')),
             'userState' => new UserStateResource($this->whenLoaded('userState')),
-            'countries' => $countries,
+            'country_user_role' => $countryUserRole,
             'created_at' => $this->created_at?->toISOString(),
             'updated_at' => $this->updated_at?->toISOString(),
         ];

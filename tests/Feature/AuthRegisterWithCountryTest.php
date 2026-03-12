@@ -55,7 +55,7 @@ class AuthRegisterWithCountryTest extends TestCase
                         'email',
                         'roles',
                         'userState',
-                        'countries',
+                        'country_user_role',
                         'created_at',
                         'updated_at',
                     ]
@@ -63,8 +63,8 @@ class AuthRegisterWithCountryTest extends TestCase
             ])
             ->assertJsonPath('data.user.name', 'Juan Pérez')
             ->assertJsonPath('data.user.email', 'juan@test.com')
-            ->assertJsonPath('data.user.countries.0.id', $country->id)
-            ->assertJsonPath('data.user.countries.0.name', 'Honduras')
+            ->assertJsonPath('data.user.country_user_role.country.id', $country->id)
+            ->assertJsonPath('data.user.country_user_role.country.name', 'Honduras')
             ->assertJsonPath('data.user.roles.0.name', 'project-manager')
             ->assertJsonPath('data.user.userState.name', 'unverified');
 
@@ -121,7 +121,7 @@ class AuthRegisterWithCountryTest extends TestCase
             ->assertJson(['success' => true])
             ->assertJsonPath('data.user.email', 'maria@test.com')
             ->assertJsonPath('data.user.roles.0.name', 'country-manager')
-            ->assertJsonPath('data.user.countries.0.id', $country->id);
+            ->assertJsonPath('data.user.country_user_role.country.id', $country->id);
 
         // Verify country assignment
         $this->assertDatabaseHas('country_user_role', [
@@ -353,13 +353,14 @@ class AuthRegisterWithCountryTest extends TestCase
             ->assertJsonStructure([
                 'data' => [
                     'user' => [
-                        'countries' => [
-                            '*' => ['id', 'name']
+                        'country_user_role' => [
+                            'id',
+                            'country' => ['id', 'name'],
                         ]
                     ]
                 ]
             ])
-            ->assertJsonPath('data.user.countries.0', [
+            ->assertJsonPath('data.user.country_user_role.country', [
                 'id' => $country->id,
                 'name' => 'Costa Rica',
             ]);

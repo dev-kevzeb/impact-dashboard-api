@@ -33,7 +33,8 @@ class ProgramRepository extends AbstractRepository
             ->with([
                 'contact',
                 'programState',
-                'sdgs'
+                'sdgs',
+                'countryUserRoles.country',
             ])
             ->withCount('projects')
             ->get();
@@ -51,7 +52,8 @@ class ProgramRepository extends AbstractRepository
             ->with([
                 'contact',
                 'programState',
-                'sdgs'
+                'sdgs',
+                'countryUserRoles.country',
             ])
             ->withCount('projects')
             ->paginate($perPage);
@@ -152,7 +154,8 @@ class ProgramRepository extends AbstractRepository
             ->with([
                 'contact',
                 'programState',
-                'sdgs'
+                'sdgs',
+                'countryUserRoles.country',
             ])
             ->withCount('projects')
             ->find($id);

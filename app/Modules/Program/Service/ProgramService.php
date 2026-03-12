@@ -227,8 +227,8 @@ class ProgramService
     }
 
     /**
-     * Get all programs with pagination
-     * @param int $perPage Number of records per page (default: 10)
+     * Get all programs with pagination (all countries).
+     * @param int $perPage
      * @return \Illuminate\Pagination\LengthAwarePaginator
      */
     public function getAllPrograms(int $perPage = 10)

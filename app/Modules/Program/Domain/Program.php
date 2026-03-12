@@ -108,11 +108,6 @@ class Program extends Model
         return $this->programState;
     }
 
-    public function getCountry(): Country
-    {
-        return $this->country;
-    }
-
     public function getSdgs(): array
     {
         return $this->sdgs ? $this->sdgs->all() : [];
@@ -167,6 +162,19 @@ class Program extends Model
     public function projects()
     {
         return $this->hasMany(Project::class, 'program_id', 'id');
+    }
+
+    /**
+     * M:N relationship with CountryUserRole via program_country_user_role pivot
+     */
+    public function countryUserRoles()
+    {
+        return $this->belongsToMany(
+            \App\Modules\CountryUserRole\Domain\CountryUserRole::class,
+            'program_country_user_role',
+            'program_id',
+            'country_user_role_id'
+        );
     }
 
     public function getProjectsCountAttribute(): int

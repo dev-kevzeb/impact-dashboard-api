@@ -28,6 +28,8 @@ class RolePermissionSeeder extends Seeder
                 'program_states:read',
                 'program_users:read',
                 'program_users:write',
+                'program_country_user_roles:read',
+                'program_country_user_roles:write',
                 'projects:read',
                 'projects:write',
                 'project_states:read',
