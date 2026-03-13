@@ -31,6 +31,7 @@ use App\Modules\CountryKpa\Controller\CountryKpaController;
 use App\Modules\CountryKpaUser\Controller\CountryKpaUserController;
 use App\Modules\ProgramUser\Controller\ProgramUserController;
 use App\Modules\ProgramCountryUserRole\Controller\ProgramCountryUserRoleController;
+use App\Modules\InviteProgram\Controller\InviteProgramController;
 use App\Modules\UserRole\Controller\UserRoleController;
 use \App\Modules\StrategicOutput\Controller\StrategicOutputController;
 use App\Modules\Project\Controller\ProjectController;
@@ -247,6 +248,12 @@ Route::prefix('v1')->group(function () {
         Route::get('program_country_user_roles/{id}', [ProgramCountryUserRoleController::class, 'show'])->middleware('scope:program_country_user_roles');
         Route::delete('program_country_user_roles/{id}', [ProgramCountryUserRoleController::class, 'destroy'])->middleware('scope:program_country_user_roles:write');
 
+        // API Routes para InviteProgram (project-manager invitations by relation existence)
+        Route::get('invite_programs', [InviteProgramController::class, 'index'])->middleware('scope:program_country_user_roles');
+        Route::post('invite_programs', [InviteProgramController::class, 'store'])->middleware('scope:program_country_user_roles:write');
+        Route::get('invite_programs/{id}', [InviteProgramController::class, 'show'])->middleware('scope:program_country_user_roles');
+        Route::delete('invite_programs/{id}', [InviteProgramController::class, 'destroy'])->middleware('scope:program_country_user_roles:write');
+
         // API Routes para Project
         Route::get('projects', [ProjectController::class, 'index'])->middleware('scope:projects');
         Route::post('projects', [ProjectController::class, 'store'])->middleware('scope:projects:write');
@@ -254,6 +261,10 @@ Route::prefix('v1')->group(function () {
         Route::get('projects/{id}', [ProjectController::class, 'show'])->middleware('scope:projects');
         Route::put('projects/{id}', [ProjectController::class, 'update'])->middleware('scope:projects:write');
         Route::get('projects/program/{id}', [ProjectController::class, 'getProjectsByProgramId'])->middleware('scope:projects');
+        Route::get('projects/program/{programId}/kpas', [ProjectController::class, 'getProgramKpas'])->middleware('scope:projects');
+        Route::get('projects/program/{programId}/kpas/{kpaId}/strategic-outputs', [ProjectController::class, 'getProgramStrategicOutputsByKpa'])->middleware('scope:projects');
+        Route::get('projects/program/{programId}/strategic-outputs/{strategicOutputId}/measures', [ProjectController::class, 'getProgramMeasuresByStrategicOutput'])->middleware('scope:projects');
+        Route::get('projects/program/{programId}/measures/{measureId}/indicators', [ProjectController::class, 'getProgramIndicatorsByMeasure'])->middleware('scope:projects');
 
         // Listar todas las relaciones proyecto-agencia
         Route::get('project-agencies', [ProjectAgencyController::class, 'index'])->middleware('scope:project_agencies');

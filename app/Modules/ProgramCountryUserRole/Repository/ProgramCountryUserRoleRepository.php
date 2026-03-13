@@ -63,4 +63,23 @@ class ProgramCountryUserRoleRepository extends AbstractRepository
 
         return $assignment;
     }
+
+    public function findFirstOwnedAssignmentByProgramAndUserRoleIds(int $programId, array $userRoleIds): ?ProgramCountryUserRole
+    {
+        return $this->model
+            ->with('countryUserRole')
+            ->where('program_id', $programId)
+            ->whereHas('countryUserRole', function ($q) use ($userRoleIds) {
+                $q->whereIn('user_role_id', $userRoleIds);
+            })
+            ->first();
+    }
+
+    public function findFirstAssignmentByProgramId(int $programId): ?ProgramCountryUserRole
+    {
+        return $this->model
+            ->with('countryUserRole')
+            ->where('program_id', $programId)
+            ->first();
+    }
 }

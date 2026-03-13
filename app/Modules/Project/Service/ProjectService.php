@@ -21,9 +21,13 @@ use App\Modules\ProjectState\Repository\ProjectStateRepository;
 use App\Modules\Project\Repository\ProjectRepository;
 use App\Modules\Project\Domain\Project;
 use App\Modules\ProjectDonor\Service\ProjectDonorService;
+use App\Modules\ProgramCountryUserRole\Repository\ProgramCountryUserRoleRepository;
+use App\Modules\InviteProgram\Repository\InviteProgramRepository;
+use App\Modules\StrategicOutput\Repository\StrategicOutputRepository;
 use App\Modules\StrategicOutput\Service\StrategicOutputService;
-use Illuminate\Support\Collection;
 use App\Modules\Program\Service\ProgramService;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
 
 
 class ProjectService
@@ -39,6 +43,9 @@ class ProjectService
     private KpaService $kpaService;
     private StrategicOutputService $strategicOutputService;
     private MeasureService $measureService;
+    private ProgramCountryUserRoleRepository $programCountryUserRoleRepository;
+    private InviteProgramRepository $inviteProgramRepository;
+    private StrategicOutputRepository $strategicOutputRepository;
 
     private ProjectDonorService $projectDonorService;
     private DonorService $donorService;
@@ -63,6 +70,9 @@ class ProjectService
         KpaService $kpaService,
         StrategicOutputService $strategicOutputService,
         MeasureService $measureService,
+        ProgramCountryUserRoleRepository $programCountryUserRoleRepository,
+        InviteProgramRepository $inviteProgramRepository,
+        StrategicOutputRepository $strategicOutputRepository,
     ) {
         $this->projectRepository = $projectRepository;
         $this->contactRepository = $contactRepository;
@@ -84,6 +94,9 @@ class ProjectService
         $this->strategicOutputService = $strategicOutputService;
         $this->measureService = $measureService;
         $this->programService = $programService;
+        $this->programCountryUserRoleRepository = $programCountryUserRoleRepository;
+        $this->inviteProgramRepository = $inviteProgramRepository;
+        $this->strategicOutputRepository = $strategicOutputRepository;
     }
 
 
@@ -128,6 +141,123 @@ class ProjectService
     public function addAgencies(Agency $agency, Project $project, float $contribution)
     {
         return $this->projectAgencyService->createProjectAgency($project['id'], $agency['id'], $contribution);
+    }
+
+    private function strategicOutputBelongsToCountry(int $strategicOutputId, int $countryId): bool
+    {
+        return $this->strategicOutputRepository->belongsToCountry($strategicOutputId, $countryId);
+    }
+
+    private function resolveAccessibleProgramCountryId(int $programId): int
+    {
+        $user = auth('api')->user();
+        if (!$user) {
+            throw new \RuntimeException('Not authenticated.');
+        }
+
+        $authUserRoleIds = $user->userRoles()->pluck('id')->toArray();
+
+        $ownerAssignment = $this->programCountryUserRoleRepository
+            ->findFirstOwnedAssignmentByProgramAndUserRoleIds($programId, $authUserRoleIds);
+
+        if ($ownerAssignment && $ownerAssignment->countryUserRole) {
+            return (int) $ownerAssignment->countryUserRole->country_id;
+        }
+
+        if ($user->hasPermissionTo('*:*')) {
+            $firstAssignment = $this->programCountryUserRoleRepository
+                ->findFirstAssignmentByProgramId($programId);
+
+            if ($firstAssignment && $firstAssignment->countryUserRole) {
+                return (int) $firstAssignment->countryUserRole->country_id;
+            }
+
+            throw new \RuntimeException('Program has no country context assigned.');
+        }
+
+        $invite = $this->inviteProgramRepository
+            ->findFirstInviteByProgramAndInvitedRoleIds($programId, $authUserRoleIds);
+
+        if ($invite && $invite->programCountryUserRole && $invite->programCountryUserRole->countryUserRole) {
+            return (int) $invite->programCountryUserRole->countryUserRole->country_id;
+        }
+
+        throw new \RuntimeException('You do not have access to this program context.');
+    }
+
+    private function ensureIndicatorsBelongToProgramCountry(int $programId, array $indicators): void
+    {
+        if (empty($indicators)) {
+            return;
+        }
+
+        $user = auth('api')->user();
+        if ($user && $user->hasPermissionTo('*:*')) {
+            return;
+        }
+
+        $countryId = $this->resolveAccessibleProgramCountryId($programId);
+
+        foreach ($indicators as $indicatorPayload) {
+            $indicatorId = (int) ($indicatorPayload['id'] ?? 0);
+            if ($indicatorId <= 0) {
+                throw new \RuntimeException('Invalid indicator payload.');
+            }
+
+            $indicator = $this->indicatorService->getIndicatorById($indicatorId);
+            $measure = $this->measureService->getMeasureById((int) $indicator->measure_id);
+
+            if (!$this->strategicOutputBelongsToCountry((int) $measure->strategic_output_id, $countryId)) {
+                throw new \RuntimeException('Selected indicators do not belong to the program country context.');
+            }
+        }
+    }
+    private function ensureUserCanCreateProjectForProgram(int $programId): void
+    {
+        $this->resolveAccessibleProgramCountryId($programId);
+    }
+
+    public function getProgramKpasForCurrentUser(int $programId, ?string $search, int $perPage): LengthAwarePaginator
+    {
+        $countryId = $this->resolveAccessibleProgramCountryId($programId);
+        return $this->countryKpaService->getCountryKpasByCountryId($countryId, $search, $perPage);
+    }
+
+    public function getProgramStrategicOutputsForCurrentUser(int $programId, int $kpaId, ?string $search, int $perPage)
+    {
+        $countryId = $this->resolveAccessibleProgramCountryId($programId);
+
+        $countryKpas = $this->countryKpaService->getByCountryAndKpa($countryId, $kpaId);
+        if ($countryKpas->isEmpty()) {
+            throw new \RuntimeException('KPA not available for the program country context.');
+        }
+
+        $countryKpaIds = $countryKpas->pluck('id')->toArray();
+
+        return $this->strategicOutputService->getStrategicOutputsByCountryKpaIds($countryKpaIds, $search, $perPage);
+    }
+
+    public function getProgramMeasuresForCurrentUser(int $programId, int $strategicOutputId, ?string $search, int $perPage)
+    {
+        $countryId = $this->resolveAccessibleProgramCountryId($programId);
+
+        if (!$this->strategicOutputBelongsToCountry($strategicOutputId, $countryId)) {
+            throw new \RuntimeException('Strategic output not available for the program country context.');
+        }
+
+        return $this->measureService->getMeasuresByStrategicOutputId($strategicOutputId, $perPage, $search);
+    }
+
+    public function getProgramIndicatorsForCurrentUser(int $programId, int $measureId, ?string $search, int $perPage, ?array $exclude)
+    {
+        $countryId = $this->resolveAccessibleProgramCountryId($programId);
+        $measure = $this->measureService->getMeasureById($measureId);
+
+        if (!$this->strategicOutputBelongsToCountry((int) $measure->strategic_output_id, $countryId)) {
+            throw new \RuntimeException('Measure not available for the program country context.');
+        }
+
+        return $this->indicatorService->getIndicatorsByMeasureId($measureId, $perPage, $search, $exclude);
     }
 
     public function syncIndicators(Project $project, array $indicators)
@@ -193,6 +323,8 @@ class ProjectService
         array $projectState,
     ): Project {
 
+        $this->ensureUserCanCreateProjectForProgram($program_id);
+        $this->ensureIndicatorsBelongToProgramCountry($program_id, $indicators);
 
         if (empty($program_id)) throw new \RuntimeException("The program id is required.");
 

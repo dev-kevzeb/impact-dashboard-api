@@ -3,6 +3,7 @@
 namespace App\Modules\CountryKpa\Service;
 
 use App\Modules\CountryKpa\Repository\CountryKpaRepository;
+use Illuminate\Pagination\LengthAwarePaginator;
 use RuntimeException;
 
 class CountryKpaService
@@ -24,10 +25,10 @@ class CountryKpaService
         return $this->repo->getById($id);
     }
 
-    public function getCountryKpasByCountryId(int $id,?string $search, int $perPage): array
+    public function getCountryKpasByCountryId(int $id, ?string $search, int $perPage): LengthAwarePaginator
     {
-        return $this->repo->getCountryKpasByCountryId($id, $search,$perPage);
-    }    
+        return $this->repo->getCountryKpasByCountryId($id, $search, $perPage);
+    }
 
     public function getByCountryAndKpa(int $CountryId, int $kpaId)
     {
@@ -45,7 +46,7 @@ class CountryKpaService
         return $this->repo->create($data);
     }
 
-    public function delete(int $id): ?object
+    public function delete(int $id): int
     {
         return $this->repo->delete($id);
     }
