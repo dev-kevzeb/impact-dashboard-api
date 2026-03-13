@@ -55,6 +55,7 @@ class RolePermissionSeeder extends Seeder
             $countryManagerPermissions = [
                 'kpas:read',
                 'kpas:write',
+                'currencies:read',
                 'countries:read',
                 'countries:write',
                 'country_kpas:read',
@@ -69,6 +70,7 @@ class RolePermissionSeeder extends Seeder
                 'indicator_types:read',
                 'programs:read',
                 'program_states:read',
+                'program_country_user_roles:read',
                 'projects:read',
                 'project_states:read',
                 'users:read',
