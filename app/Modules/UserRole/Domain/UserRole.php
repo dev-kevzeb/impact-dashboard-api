@@ -3,12 +3,14 @@
 namespace App\Modules\UserRole\Domain;
 
 use App\Modules\Country\Domain\Country;
+use App\Modules\InviteProgram\Domain\InviteProgram;
 use App\Modules\Role\Domain\Role;
 use App\Modules\User\Domain\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class UserRole extends Model
@@ -60,6 +62,14 @@ class UserRole extends Model
     public function countryUserRole(): HasOne
     {
         return $this->hasOne(\App\Modules\CountryUserRole\Domain\CountryUserRole::class, 'user_role_id');
+    }
+
+    /**
+     * Relationship: UserRole has many program invites where this role is invited
+     */
+    public function invitePrograms(): HasMany
+    {
+        return $this->hasMany(InviteProgram::class, 'invited_user_role_id');
     }
 
     /**

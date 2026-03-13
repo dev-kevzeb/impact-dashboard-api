@@ -516,4 +516,118 @@ class ProjectController extends Controller
             return ApiResponse::error('Internal server error', 500);
         }
     }
+
+    public function getProgramKpas(Request $request, int $programId)
+    {
+        try {
+            $search = $request->get('search');
+            $perPage = (int) $request->get('per_page', 10);
+
+            /** @var \Illuminate\Pagination\LengthAwarePaginator $countryKpas */
+            $countryKpas = $this->projectService->getProgramKpasForCurrentUser($programId, $search, $perPage);
+
+            $kpas = $countryKpas->getCollection()->map(function ($countryKpa) {
+                return [
+                    'id' => $countryKpa->kpa?->id,
+                    'name' => $countryKpa->kpa?->name,
+                    'strategic_outputs_count' => (int) ($countryKpa->strategic_outputs_count ?? 0),
+                ];
+            })->values();
+
+            return ApiResponse::success(
+                'Program KPAs paginated list successfully uploaded',
+                200,
+                [
+                    'kpas' => $kpas,
+                    'total' => $countryKpas->total(),
+                    'per_page' => $countryKpas->perPage(),
+                    'current_page' => $countryKpas->currentPage(),
+                    'last_page' => $countryKpas->lastPage(),
+                ]
+            );
+        } catch (RuntimeException $e) {
+            return ApiResponse::error($e->getMessage(), 403);
+        } catch (\Exception $e) {
+            return ApiResponse::error('Internal server error', 500);
+        }
+    }
+
+    public function getProgramStrategicOutputsByKpa(Request $request, int $programId, int $kpaId)
+    {
+        try {
+            $search = $request->get('search');
+            $perPage = (int) $request->get('per_page', 10);
+
+            $strategicOutputs = $this->projectService->getProgramStrategicOutputsForCurrentUser($programId, $kpaId, $search, $perPage);
+
+            return ApiResponse::success(
+                'Program strategic outputs paginated list successfully uploaded',
+                200,
+                [
+                    'strategic_outputs' => \App\Http\Resources\StrategicOutputResource::collection($strategicOutputs),
+                    'total' => $strategicOutputs->total(),
+                    'per_page' => $strategicOutputs->perPage(),
+                    'current_page' => $strategicOutputs->currentPage(),
+                    'last_page' => $strategicOutputs->lastPage(),
+                ]
+            );
+        } catch (RuntimeException $e) {
+            return ApiResponse::error($e->getMessage(), 403);
+        } catch (\Exception $e) {
+            return ApiResponse::error('Internal server error', 500);
+        }
+    }
+
+    public function getProgramMeasuresByStrategicOutput(Request $request, int $programId, int $strategicOutputId)
+    {
+        try {
+            $search = $request->get('search');
+            $perPage = (int) $request->get('per_page', 10);
+
+            $measures = $this->projectService->getProgramMeasuresForCurrentUser($programId, $strategicOutputId, $search, $perPage);
+
+            return ApiResponse::success(
+                'Program measures paginated list successfully uploaded',
+                200,
+                [
+                    'measures' => \App\Http\Resources\MeasureResource::collection($measures),
+                    'total' => $measures->total(),
+                    'per_page' => $measures->perPage(),
+                    'current_page' => $measures->currentPage(),
+                    'last_page' => $measures->lastPage(),
+                ]
+            );
+        } catch (RuntimeException $e) {
+            return ApiResponse::error($e->getMessage(), 403);
+        } catch (\Exception $e) {
+            return ApiResponse::error('Internal server error', 500);
+        }
+    }
+
+    public function getProgramIndicatorsByMeasure(Request $request, int $programId, int $measureId)
+    {
+        try {
+            $search = $request->get('search');
+            $perPage = (int) $request->get('per_page', 10);
+            $exclude = (array) $request->input('exclude', []);
+
+            $indicators = $this->projectService->getProgramIndicatorsForCurrentUser($programId, $measureId, $search, $perPage, $exclude);
+
+            return ApiResponse::success(
+                'Program indicators paginated list successfully uploaded',
+                200,
+                [
+                    'indicators' => \App\Http\Resources\IndicatorResource::collection($indicators),
+                    'total' => $indicators->total(),
+                    'per_page' => $indicators->perPage(),
+                    'current_page' => $indicators->currentPage(),
+                    'last_page' => $indicators->lastPage(),
+                ]
+            );
+        } catch (RuntimeException $e) {
+            return ApiResponse::error($e->getMessage(), 403);
+        } catch (\Exception $e) {
+            return ApiResponse::error('Internal server error', 500);
+        }
+    }
 }

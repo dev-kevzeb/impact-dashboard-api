@@ -98,6 +98,12 @@ class StrategicOutputService{
         return $this->strategicOutputRepository->paginateByCountryKpaIds($countryKpaIds, $search, $perPage);
 
     }
+
+    public function getStrategicOutputsByCountryKpaIds(array $countryKpaIds, ?string $search, int $perPage)
+    {
+        return $this->strategicOutputRepository->paginateByCountryKpaIds($countryKpaIds, $search, $perPage);
+    }
+
     public function getByCountryKpaIds(array $countryKpaIds)
     {
         return $this->strategicOutputRepository->getByCountryKpaIds($countryKpaIds);

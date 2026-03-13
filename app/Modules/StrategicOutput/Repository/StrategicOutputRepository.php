@@ -53,4 +53,14 @@ class StrategicOutputRepository extends AbstractRepository implements Repository
 
         return $query->orderBy('name')->get();
     }
+
+    public function belongsToCountry(int $strategicOutputId, int $countryId): bool
+    {
+        return $this->model
+            ->where('id', $strategicOutputId)
+            ->whereHas('countryKpa', function ($q) use ($countryId) {
+                $q->where('id_country', $countryId);
+            })
+            ->exists();
+    }
 }
