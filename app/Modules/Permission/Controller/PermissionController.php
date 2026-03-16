@@ -75,8 +75,11 @@ class PermissionController
     public function index(): JsonResponse
     {
         try {
-            // Get all permissions from Spatie
-            $permissions = Permission::all();
+            // Hide the wildcard admin permission from the management UI.
+            $permissions = Permission::where('name', '!=', '*:*')
+                ->orderBy('module')
+                ->orderBy('name')
+                ->get();
 
             return ApiResponse::success(
                 'Permissions retrieved successfully',

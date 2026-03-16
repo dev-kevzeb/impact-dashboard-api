@@ -5,6 +5,7 @@ namespace App\Modules\Role\Service;
 use App\Modules\Role\Domain\Role;
 use App\Modules\Role\Repository\RoleRepository;
 use RuntimeException;
+use Spatie\Permission\Models\Permission;
 
 class RoleService
 {
@@ -40,7 +41,7 @@ class RoleService
      */
     public function updateRole(int $id, string $name): Role
     {
-        $Role = $this->repository->findById($id);
+        $Role = $this->repository->findManageableById($id);
 
         $updated = Role::at($name);
         $Role->name = $updated->name;
@@ -68,7 +69,7 @@ class RoleService
      */
     public function getAllRoles()
     {
-        return $this->repository->getAll();
+        return $this->repository->getManageableRoles();
     }
 
     /**
@@ -80,7 +81,7 @@ class RoleService
      */
     public function findRoleById(int $id): Role
     {
-        return $this->repository->findById($id);
+        return $this->repository->findManageableById($id);
     }
 
     /**
@@ -91,12 +92,7 @@ class RoleService
      */
     public function searchRoles(string $searchTerm)
     {
-        // Buscar roles que contengan el término de búsqueda (case-insensitive)
-        // Acceso directo al modelo Eloquent para hacer consultas personalizadas
-        $model = \App\Modules\Role\Domain\Role::query();
-
-        return $model->whereRaw("LOWER(name) LIKE LOWER(?)", ['%' . trim($searchTerm) . '%'])
-            ->get();
+        return $this->repository->searchManageableRoles($searchTerm);
     }
 
     /**
@@ -108,7 +104,7 @@ class RoleService
      */
     public function getRolePermissions(int $roleId)
     {
-        $role = $this->repository->findById($roleId);
+        $role = $this->repository->findManageableById($roleId);
         return $role->permissions;
     }
 
@@ -122,10 +118,13 @@ class RoleService
      */
     public function assignPermissionToRole(int $roleId, int $permissionId): Role
     {
-        $role = $this->repository->findById($roleId);
+        $role = $this->repository->findManageableById($roleId);
 
-        // Get the permission by ID
-        $permission = \Spatie\Permission\Models\Permission::findOrFail($permissionId);
+        $permission = Permission::findOrFail($permissionId);
+
+        if ($permission->name === '*:*') {
+            throw new RuntimeException('The wildcard permission cannot be managed through this endpoint.');
+        }
 
         // Use Spatie's givePermissionTo method (idempotent - won't duplicate if already assigned)
         $role->givePermissionTo($permission);
@@ -146,10 +145,13 @@ class RoleService
      */
     public function removePermissionFromRole(int $roleId, int $permissionId): Role
     {
-        $role = $this->repository->findById($roleId);
+        $role = $this->repository->findManageableById($roleId);
 
-        // Get the permission by ID
-        $permission = \Spatie\Permission\Models\Permission::findOrFail($permissionId);
+        $permission = Permission::findOrFail($permissionId);
+
+        if ($permission->name === '*:*') {
+            throw new RuntimeException('The wildcard permission cannot be managed through this endpoint.');
+        }
 
         // Use Spatie's revokePermissionTo method
         $role->revokePermissionTo($permission);
