@@ -236,6 +236,26 @@ class ProgramService
         return $this->programRepository->paginateWithRelations($perPage);
     }
 
+    public function getAccessibleProgramsForCurrentUser(int $perPage = 10, ?string $search = null)
+    {
+        $user = auth('api')->user();
+        if (!$user) {
+            throw new RuntimeException('Not authenticated.');
+        }
+
+        if ($user->hasPermissionTo('*:*')) {
+            $programs = $this->programRepository->paginateWithRelations($perPage);
+            $programs->getCollection()->transform(function ($program) {
+                $program->setAttribute('can_edit', 1);
+                return $program;
+            });
+            return $programs;
+        }
+
+        $userRoleIds = $user->userRoles()->pluck('id')->toArray();
+        return $this->programRepository->paginateAccessibleByUserRoleIds($userRoleIds, $perPage, $search);
+    }
+
     /**
      * Get public programs with the same hierarchy filters used in progress
      */
@@ -268,6 +288,18 @@ class ProgramService
         int $programStateId,
         array $sdgIds = []
     ): Program {
+        $user = auth('api')->user();
+        if (!$user) {
+            throw new RuntimeException('Not authenticated.');
+        }
+
+        if (!$user->hasPermissionTo('*:*')) {
+            $userRoleIds = $user->userRoles()->pluck('id')->toArray();
+            if (!$this->programRepository->isEditableByUserRoleIds($id, $userRoleIds)) {
+                throw new RuntimeException('You do not have permission to edit this program.');
+            }
+        }
+
         // Get existing program
         $program = $this->programRepository->findById($id);
 

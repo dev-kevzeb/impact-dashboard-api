@@ -3,7 +3,7 @@
 namespace Tests\Unit\Project;
 
 
-use App\Models\Project;
+use App\Modules\Project\Domain\Project;
 use App\Modules\Agency\Domain\Agency;
 use App\Modules\Beneficiary\Domain\Beneficiary;
 use App\Modules\Contact\Domain\Contact;
@@ -58,6 +58,7 @@ class ProjectTest extends TestCase
     private function createValidProject(array $overrides = []): Project
     {
         $defaults = [
+            'program_id' => 1,
             'name' => 'Proyecto de Desarrollo Rural',
             'description' => 'Descripción válida del proyecto de desarrollo rural con más de 10 caracteres',
             'projectUrl' => 'https://proyecto.example.com',
@@ -66,18 +67,28 @@ class ProjectTest extends TestCase
             'progress' => 75.5,
             'comments' => 'Comentarios del proyecto en progreso',
             'projectBudget' => 500000.0,
-            'shared' => true,
+            'weight' => 0.5,
             'contact' => $this->validContact,
             'projectBeneficiary' => $this->validProjectBeneficiary,
             'projectState' => $this->validProjectState,
-            'country' => $this->validCountry,
-            'agency' => $this->validAgency,
-            'indicator' => $this->validIndicator,
-            'projectDonor' => $this->validDonors
         ];
 
-        $params = array_merge($defaults, $overrides);
-        return Project::at(...array_values($params));
+        $p = array_merge($defaults, $overrides);
+        return Project::at(
+            $p['program_id'],
+            $p['name'],
+            $p['description'],
+            $p['projectUrl'],
+            $p['startDate'],
+            $p['endDate'],
+            $p['progress'],
+            $p['comments'],
+            $p['projectBudget'],
+            $p['weight'],
+            $p['contact'],
+            $p['projectBeneficiary'],
+            $p['projectState']
+        );
     }
     
     // bloque de código, el manejo de errores, forma en que manejamos el error, "CLOSURE"
@@ -264,16 +275,63 @@ class ProjectTest extends TestCase
         );
     }
 
-    public function test_invalid_indicator_throws_runtime_exception()
+    // Tests de validación de weight
+
+    public function test_weight_below_zero_throws_runtime_exception()
     {
         $this->shouldThrowAndAssert(
             function () {
-                $this->createValidProject(['indicator' => 'not a indicator']);
+                $this->createValidProject(['weight' => -0.1]);
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals(Project::$ERROR_INDICATOR_INVALID, $exception->getMessage());
+                $this->assertEquals(Project::$ERROR_WEIGHT_INVALID, $exception->getMessage());
             }
         );
     }
+
+    public function test_weight_above_one_throws_runtime_exception()
+    {
+        $this->shouldThrowAndAssert(
+            function () {
+                $this->createValidProject(['weight' => 1.1]);
+            },
+            RuntimeException::class,
+            function ($exception) {
+                $this->assertEquals(Project::$ERROR_WEIGHT_INVALID, $exception->getMessage());
+            }
+        );
+    }
+
+    public function test_weight_not_numeric_throws_runtime_exception()
+    {
+        $this->shouldThrowAndAssert(
+            function () {
+                $this->createValidProject(['weight' => 'heavy']);
+            },
+            RuntimeException::class,
+            function ($exception) {
+                $this->assertEquals(Project::$ERROR_WEIGHT_INVALID, $exception->getMessage());
+            }
+        );
+    }
+
+    public function test_weight_zero_is_valid()
+    {
+        $project = $this->createValidProject(['weight' => 0]);
+        $this->assertEquals(0.0, (float) $project->weight);
+    }
+
+    public function test_weight_one_is_valid()
+    {
+        $project = $this->createValidProject(['weight' => 1]);
+        $this->assertEquals(1.0, (float) $project->weight);
+    }
+
+    public function test_weight_decimal_is_stored()
+    {
+        $project = $this->createValidProject(['weight' => 0.3333]);
+        $this->assertEquals(0.3333, (float) $project->weight);
+    }
+
 }

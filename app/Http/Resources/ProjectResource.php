@@ -25,6 +25,7 @@ class ProjectResource extends JsonResource
             'progress' => $this->progress,
             'comments'=> $this->comments,
             'budget' => $this->project_budget,
+            'weight' => $this->weight,
 
             'contact' => new ContactResource($this->whenLoaded('contact')),
             'beneficiary' => new BeneficiaryResource($this->whenLoaded('beneficiary')),

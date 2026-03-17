@@ -28,6 +28,7 @@ class Project extends Model
         'progress',
         'comments',
         'project_budget',
+        'weight',
         'contact_id',
         'beneficiary_id',
         'project_state_id',
@@ -57,6 +58,7 @@ class Project extends Model
     public static $ERROR_COMMENTS_MAX_LENGTH = 'The comments must not exceed 1000 characters';
 
     public static $ERROR_PROJECT_BUDGET_INVALID = 'The project budget must be a number greater than 0';
+    public static $ERROR_WEIGHT_INVALID = 'The project weight must be a number between 0 and 1';
 
     public static $ERROR_INDICATOR_INVALID = 'The indicator must be an instance of Indicator';
     public static $ERROR_AGENCY_INVALID = 'The agency must be an instance of Agency';
@@ -71,7 +73,7 @@ class Project extends Model
     {
         return ProjectFactory::new();
     }
-    public static function at($program_id, $name, $description, $projectUrl, $startDate, $endDate, $progress, $comments, $projectBudget, $contact, $projectBeneficiary, $projectState): Project
+    public static function at($program_id, $name, $description, $projectUrl, $startDate, $endDate, $progress, $comments, $projectBudget, $weight, $contact, $projectBeneficiary, $projectState): Project
     {
 
         if (empty(trim($name))) throw new \RuntimeException(self::$ERROR_NAME_EMPTY);
@@ -108,6 +110,10 @@ class Project extends Model
         $projectBudgetFloat = (float) $projectBudget;
         if ($projectBudgetFloat < 0) throw new \RuntimeException(self::$ERROR_PROJECT_BUDGET_INVALID);
 
+        if (!is_numeric($weight)) throw new \RuntimeException(self::$ERROR_WEIGHT_INVALID);
+        $weightFloat = (float) $weight;
+        if ($weightFloat < 0 || $weightFloat > 1) throw new \RuntimeException(self::$ERROR_WEIGHT_INVALID);
+
         if (!($contact instanceof Contact)) throw new \RuntimeException(self::$ERROR_CONTACT_INVALID);
         if (!($projectBeneficiary instanceof Beneficiary)) throw new \RuntimeException(self::$ERROR_PROJECT_BENEFICIARY_INVALID);
         if (!($projectState instanceof ProjectState)) throw new \RuntimeException(self::$ERROR_PROJECT_STATE_INVALID);
@@ -122,6 +128,7 @@ class Project extends Model
             'progress' => $progressFloat,
             'comments' => trim($comments),
             'project_budget' => $projectBudgetFloat,
+            'weight' => $weightFloat,
             'contact_id' => $contact->id,
             'beneficiary_id' => $projectBeneficiary->id,
             'project_state_id' => $projectState->id

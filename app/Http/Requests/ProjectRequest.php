@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use App\Http\Responses\ApiResponse;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
+use Illuminate\Support\Facades\DB;
 
 class ProjectRequest extends FormRequest
 {
@@ -25,6 +26,7 @@ class ProjectRequest extends FormRequest
             'progress' => 'required|numeric|min:0|max:100',
             'comments' => 'nullable|string|max:1000',
             'budget' => 'required|numeric|gte:0',
+            'weight' => 'required|numeric|between:0,1',
 
             // INDICATORS
             'indicators' => 'required|array|min:1',
@@ -102,6 +104,10 @@ class ProjectRequest extends FormRequest
             'budget.required' => 'The project budget is required.',
             'budget.numeric' => 'The project budget must be a valid number.',
             'budget.gt' => 'The project budget must be greater than 0.',
+
+            'weight.required' => 'The project weight is required.',
+            'weight.numeric' => 'The project weight must be a number.',
+            'weight.between' => 'The project weight must be between 0 and 1.',
 
             // CONTACT
             'contact.first_name.required' => 'The contact first name is required.',
@@ -203,6 +209,36 @@ class ProjectRequest extends FormRequest
             'agencies.*.contribution.min' => 'The agency contribution cannot be negative.',
 
         ];
+    }
+
+    public function withValidator($validator): void
+    {
+        $validator->after(function ($validator) {
+            if ($validator->errors()->isNotEmpty()) {
+                return;
+            }
+
+            $programId = (int) $this->input('program_id');
+            $weight = (float) $this->input('weight');
+
+            if ($programId <= 0) {
+                return;
+            }
+
+            $excludeProjectId = $this->isMethod('put') ? (int) $this->route('id') : null;
+
+            $sumQuery = DB::table('project')->where('program_id', $programId);
+            if (!empty($excludeProjectId)) {
+                $sumQuery->where('id', '!=', $excludeProjectId);
+            }
+
+            $currentSum = (float) $sumQuery->sum('weight');
+            $newTotal = round($currentSum + $weight, 4);
+
+            if ($newTotal > 1) {
+                $validator->errors()->add('weight', 'The sum of project weights for this program cannot exceed 1.');
+            }
+        });
     }
 
 
