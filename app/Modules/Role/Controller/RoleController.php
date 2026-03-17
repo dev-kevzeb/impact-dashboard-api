@@ -522,6 +522,10 @@ class RoleController
                 new RoleResource($role)
             );
         } catch (RuntimeException $e) {
+            if (str_contains($e->getMessage(), 'wildcard permission')) {
+                return ApiResponse::error($e->getMessage(), 400);
+            }
+
             return ApiResponse::error($e->getMessage(), 404);
         }
     }
@@ -577,6 +581,10 @@ class RoleController
                 new RoleResource($role)
             );
         } catch (RuntimeException $e) {
+            if (str_contains($e->getMessage(), 'wildcard permission')) {
+                return ApiResponse::error($e->getMessage(), 400);
+            }
+
             return ApiResponse::error($e->getMessage(), 404);
         }
     }
