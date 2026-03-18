@@ -115,4 +115,10 @@ return [
         'name' => env('MAIL_FROM_NAME', 'Example'),
     ],
 
+    // Comma-separated list in .env: ADMIN_NOTIFICATION_EMAILS=admin1@site.com,admin2@site.com
+    'admin_notification_emails' => array_values(array_filter(array_map(
+        'trim',
+        explode(',', (string) env('ADMIN_NOTIFICATION_EMAILS', ''))
+    ))),
+
 ];

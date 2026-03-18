@@ -2,6 +2,8 @@
 
 namespace App\Modules\User\Service;
 
+use App\Notifications\AccountApprovedNotification;
+use App\Notifications\AccountRejectedNotification;
 use App\Modules\User\Domain\User;
 use App\Modules\User\Repository\UserRepository;
 use App\Modules\UserState\Repository\UserStateRepository;
@@ -148,6 +150,9 @@ class UserService
         $user->user_state_id = $activeState->id;
         $this->repository->save($user);
 
+        // Notify user that account is now approved and can login.
+        $user->notify(new AccountApprovedNotification());
+
         return $user->fresh(['roles', 'userState']);
     }
 
@@ -177,6 +182,9 @@ class UserService
         if ($user->roles()->where('name', 'admin')->exists()) {
             throw new RuntimeException('Cannot manage admin users through this endpoint.');
         }
+
+        // Notify user before deleting the registration.
+        $user->notify(new AccountRejectedNotification());
 
         // Delete user (hard delete)
         return $this->repository->delete($user);
