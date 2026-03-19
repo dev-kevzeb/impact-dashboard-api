@@ -2,10 +2,13 @@
 
 namespace Tests\Feature;
 
+use App\Notifications\AccountApprovedNotification;
+use App\Notifications\AccountRejectedNotification;
 use App\Modules\User\Domain\User;
 use App\Modules\Role\Domain\Role;
 use App\Modules\UserState\Domain\UserState;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 
 class UserUnverifiedTest extends TestCase
@@ -142,6 +145,8 @@ class UserUnverifiedTest extends TestCase
 
     public function test_can_reject_unverified_user(): void
     {
+        Notification::fake();
+
         // Create unverified user
         $unverifiedUser = User::factory()->create([
             'name' => 'Unverified User',
@@ -172,10 +177,14 @@ class UserUnverifiedTest extends TestCase
             'id' => $unverifiedUser->id,
             'email' => 'unverified@test.com'
         ]);
+
+        Notification::assertSentTo($unverifiedUser, AccountRejectedNotification::class);
     }
 
     public function test_can_reject_pending_user(): void
     {
+        Notification::fake();
+
         // Create pending user
         $pendingUser = User::factory()->create([
             'name' => 'Pending User',
@@ -206,6 +215,8 @@ class UserUnverifiedTest extends TestCase
             'id' => $pendingUser->id,
             'email' => 'pending@test.com'
         ]);
+
+        Notification::assertSentTo($pendingUser, AccountRejectedNotification::class);
     }
 
     public function test_cannot_reject_active_user(): void
@@ -269,5 +280,33 @@ class UserUnverifiedTest extends TestCase
         $this->assertEquals('User 2', $returnedUsers[0]['name']);
         $this->assertEquals('User 3', $returnedUsers[1]['name']);
         $this->assertEquals('User 1', $returnedUsers[2]['name']);
+    }
+
+    public function test_can_approve_pending_user_and_send_account_approved_email(): void
+    {
+        Notification::fake();
+
+        $pendingUser = User::factory()->create([
+            'name' => 'Pending Approval User',
+            'email' => 'pending-approve@test.com',
+            'user_state_id' => $this->pendingState->id,
+        ]);
+
+        $pendingUser->roles()->attach($this->projectManagerRole->id);
+
+        $response = $this->postJson(self::REJECT_URL . "/{$pendingUser->id}/approve", [], $this->authHeaders());
+
+        $response->assertOk()
+            ->assertJson([
+                'success' => true,
+                'message' => 'User approved successfully. They can now login.',
+            ]);
+
+        $this->assertDatabaseHas('user', [
+            'id' => $pendingUser->id,
+            'user_state_id' => $this->activeState->id,
+        ]);
+
+        Notification::assertSentTo($pendingUser, AccountApprovedNotification::class);
     }
 }

@@ -4,11 +4,15 @@ namespace App\Modules\Auth\Controller;
 
 use App\Http\Controllers\Controller;
 use App\Http\Responses\ApiResponse;
+use App\Modules\User\Domain\User;
+use App\Notifications\PendingRegistrationForAdminNotification;
+use App\Notifications\EmailVerifiedAwaitingApprovalNotification;
 use App\Modules\User\Repository\UserRepository;
 use App\Modules\UserState\Repository\UserStateRepository;
 use Illuminate\Auth\Events\Verified;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Notification;
 
 /**
  * @OA\Tag(
@@ -98,6 +102,45 @@ class VerificationController extends Controller
             $pendingState = $this->userStateRepository->findBy('name', 'pending');
             $user->user_state_id = $pendingState->id;
             $this->userRepository->save($user);
+
+            // Notify user that email is verified and awaiting admin approval
+            $user->notify(new EmailVerifiedAwaitingApprovalNotification());
+
+            $requestedRole = $user->roles()->pluck('name')->implode(', ');
+            $pendingNotification = new PendingRegistrationForAdminNotification(
+                $user->name,
+                $user->email,
+                $requestedRole !== '' ? $requestedRole : 'N/A'
+            );
+
+            // Notify active admin users that a new registration requires review.
+            $admins = User::whereHas('roles', function ($query) {
+                $query->where('name', 'admin');
+            })->whereHas('userState', function ($query) {
+                $query->where('name', 'active');
+            })->get();
+
+            if ($admins->isNotEmpty()) {
+                Notification::send($admins, $pendingNotification);
+            }
+
+            // Also notify configured admin inboxes (useful when admin mailbox is not a user account).
+            $adminUserEmails = $admins->pluck('email')
+                ->filter()
+                ->map(fn ($email) => strtolower(trim((string) $email)))
+                ->unique()
+                ->values()
+                ->all();
+
+            $configuredAdminEmails = collect(config('mail.admin_notification_emails', []))
+                ->filter()
+                ->map(fn ($email) => strtolower(trim((string) $email)))
+                ->unique()
+                ->reject(fn ($email) => in_array($email, $adminUserEmails, true));
+
+            foreach ($configuredAdminEmails as $adminEmail) {
+                Notification::route('mail', $adminEmail)->notify($pendingNotification);
+            }
 
             // Fire Laravel Verified event (for observers/listeners)
             event(new Verified($user));
