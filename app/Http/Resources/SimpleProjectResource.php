@@ -20,6 +20,7 @@ class SimpleProjectResource extends JsonResource
             'progress' => $this->progress,
             'comments'=> $this->comments,
             'budget' => $this->project_budget,
+            'weight' => $this->weight,
             
             'project_state' => new ProjectStateResource($this->whenLoaded('projectState')),
 

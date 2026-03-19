@@ -113,4 +113,15 @@ class ProjectRepository extends AbstractRepository implements RepositoryInterfac
     public function getByIds(array $projectIds) {
         return $this->model->query()->with('beneficiary')->with('agencies')->with('donors')->whereIn('id', $projectIds)->orderBy('name')->get();
     }
+
+    public function getProgramWeightSum(int $programId, ?int $excludeProjectId = null): float
+    {
+        $query = $this->model->query()->where('program_id', $programId);
+
+        if ($excludeProjectId !== null) {
+            $query->where('id', '!=', $excludeProjectId);
+        }
+
+        return (float) $query->sum('weight');
+    }
 }

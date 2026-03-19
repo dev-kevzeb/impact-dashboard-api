@@ -77,6 +77,34 @@ class InviteProgramService
         return $this->repository->findByIdWithRelations($id);
     }
 
+    public function getInviteCandidatesForOwner(int $programCountryUserRoleId, int $perPage = 10, ?string $search = null)
+    {
+        $authUser = auth('api')->user();
+        if (!$authUser) {
+            throw new RuntimeException('Not authenticated.');
+        }
+
+        $ownerAssignment = ProgramCountryUserRole::query()
+            ->with('countryUserRole')
+            ->find($programCountryUserRoleId);
+
+        if (!$ownerAssignment || !$ownerAssignment->countryUserRole) {
+            throw new RuntimeException('Program owner assignment not found.');
+        }
+
+        $authUserRoleIds = $authUser->userRoles()->pluck('id')->toArray();
+
+        if (!in_array($ownerAssignment->countryUserRole->user_role_id, $authUserRoleIds, true)) {
+            throw new RuntimeException('Only the program owner can invite project managers.');
+        }
+
+        return $this->repository->paginateInviteCandidates(
+            (int) $ownerAssignment->countryUserRole->user_role_id,
+            $perPage,
+            $search
+        );
+    }
+
     public function removeInvite(int $id): void
     {
         $authUser = auth('api')->user();

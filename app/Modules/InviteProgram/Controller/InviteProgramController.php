@@ -3,7 +3,9 @@
 namespace App\Modules\InviteProgram\Controller;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\InviteCandidatesRequest;
 use App\Http\Requests\InviteProgramRequest;
+use App\Http\Resources\InviteCandidateResource;
 use App\Http\Resources\InviteProgramResource;
 use App\Http\Responses\ApiResponse;
 use App\Modules\InviteProgram\Service\InviteProgramService;
@@ -75,6 +77,36 @@ class InviteProgramController extends Controller
                 'last_page' => $invites->lastPage(),
             ]
         );
+    }
+
+    public function candidates(InviteCandidatesRequest $request): JsonResponse
+    {
+        try {
+            $validated = $request->validated();
+            $perPage = (int) ($validated['per_page'] ?? 10);
+            $search = $validated['search'] ?? null;
+            $programCountryUserRoleId = (int) $validated['program_country_user_role_id'];
+
+            $candidates = $this->service->getInviteCandidatesForOwner(
+                $programCountryUserRoleId,
+                $perPage,
+                $search
+            );
+
+            return ApiResponse::success(
+                'Invite candidates retrieved successfully',
+                200,
+                [
+                    'candidates' => InviteCandidateResource::collection($candidates),
+                    'total' => $candidates->total(),
+                    'per_page' => $candidates->perPage(),
+                    'current_page' => $candidates->currentPage(),
+                    'last_page' => $candidates->lastPage(),
+                ]
+            );
+        } catch (RuntimeException $e) {
+            return ApiResponse::error($e->getMessage(), 400);
+        }
     }
 
     /**

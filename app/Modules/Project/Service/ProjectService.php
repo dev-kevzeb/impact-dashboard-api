@@ -32,6 +32,9 @@ use Illuminate\Support\Collection;
 
 class ProjectService
 {
+    private const WEIGHT_PRECISION = 4;
+    private const MAX_PROGRAM_WEIGHT = 1.0;
+
     private ProjectRepository $projectRepository;
     private ContactRepository $contactRepository;
     private BeneficiaryRepository $beneficiaryRepository;
@@ -217,6 +220,16 @@ class ProjectService
         $this->resolveAccessibleProgramCountryId($programId);
     }
 
+    private function ensureProgramWeightLimit(int $programId, float $weight, ?int $excludeProjectId = null): void
+    {
+        $currentSum = $this->projectRepository->getProgramWeightSum($programId, $excludeProjectId);
+        $total = round($currentSum + $weight, self::WEIGHT_PRECISION);
+
+        if ($total > self::MAX_PROGRAM_WEIGHT) {
+            throw new \RuntimeException('The sum of project weights for this program cannot exceed 1.');
+        }
+    }
+
     public function getProgramKpasForCurrentUser(int $programId, ?string $search, int $perPage): LengthAwarePaginator
     {
         $countryId = $this->resolveAccessibleProgramCountryId($programId);
@@ -315,6 +328,7 @@ class ProjectService
         float $progress,
         string $comments,
         float $budget,
+        float $weight,
         array $indicators,
         array $donors,
         array $agencies,
@@ -327,6 +341,7 @@ class ProjectService
         $this->ensureIndicatorsBelongToProgramCountry($program_id, $indicators);
 
         if (empty($program_id)) throw new \RuntimeException("The program id is required.");
+        $this->ensureProgramWeightLimit($program_id, $weight);
 
         $normalizedName = preg_replace('/\s+/', ' ', trim($name));
         $capitalizedName = mb_convert_case($normalizedName, MB_CASE_TITLE, "UTF-8");
@@ -366,6 +381,7 @@ class ProjectService
             $progress,
             $comments,
             $budget,
+            $weight,
             $contact,
             $beneficiary,
             $projectState
@@ -383,12 +399,14 @@ class ProjectService
         return $project;
     }
 
-    public function updateProject(int $id, int $program_id, string $name, string $description, ?string $projectUrl, string $startDate, string $endDate, float $progress, string $comments, float $budget, array $indicators, array $donors, array $agencies,  array $contact, array $beneficiary, array $projectState): Project
+    public function updateProject(int $id, int $program_id, string $name, string $description, ?string $projectUrl, string $startDate, string $endDate, float $progress, string $comments, float $budget, float $weight, array $indicators, array $donors, array $agencies,  array $contact, array $beneficiary, array $projectState): Project
     {
         if (empty($program_id)) throw new \RuntimeException("The program id is required.");
 
         $project = $this->findProjectById($id);
         if (empty($project)) throw new \RuntimeException("The project with id {$id} does not exist.");
+
+        $this->ensureProgramWeightLimit($program_id, $weight, $id);
 
         $normalizedName = preg_replace('/\s+/', ' ', trim($name));
         $capitalizedName = mb_convert_case($normalizedName, MB_CASE_TITLE, "UTF-8");
@@ -422,6 +440,7 @@ class ProjectService
         $project->progress = $progress;
         $project->comments = $comments;
         $project->project_budget = $budget;
+        $project->weight = $weight;
 
         $project->contact_id = $contact_founded->id;
         $project->beneficiary_id = $beneficiary->id;

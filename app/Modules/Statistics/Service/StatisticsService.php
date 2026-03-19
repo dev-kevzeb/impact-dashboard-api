@@ -69,22 +69,39 @@ class StatisticsService
 
         $chartData = [];
         $total = $projects->count();
+        $weightSum = (float) $projects->sum(fn($project) => (float) ($project->weight ?? 0));
         $resource = 0;
 
         $agenciesContribution = [];
 
         foreach ($projects as $project) {
+            $effectiveWeight = $weightSum > 0
+                ? ((float) ($project->weight ?? 0) / $weightSum)
+                : (1 / $total);
+
             $chartData[] = [
                 'implementation' => $project->progress/100,
-                'weight' => 1/$total,
+                'weight' => $effectiveWeight,
             ];
             $resource += $project->project_budget;
         }
 
         $implementation = BottomUp::calculate($chartData)->value();
 
-        $allDonorsContributions = $projects->flatMap(function ($project) use ($total) {return $this->calculateDonorsContribution($project->donors, $project->progress/100, 1/$total);});
-        $allAgenciesContributions = $projects->flatMap(function ($project) use ($total) {return $this->calculateAgenciesContribution($project->agencies, $project->progress/100, 1/$total);});
+        $allDonorsContributions = $projects->flatMap(function ($project) use ($total, $weightSum) {
+            $effectiveWeight = $weightSum > 0
+                ? ((float) ($project->weight ?? 0) / $weightSum)
+                : (1 / $total);
+
+            return $this->calculateDonorsContribution($project->donors, $project->progress/100, $effectiveWeight);
+        });
+        $allAgenciesContributions = $projects->flatMap(function ($project) use ($total, $weightSum) {
+            $effectiveWeight = $weightSum > 0
+                ? ((float) ($project->weight ?? 0) / $weightSum)
+                : (1 / $total);
+
+            return $this->calculateAgenciesContribution($project->agencies, $project->progress/100, $effectiveWeight);
+        });
 
         $donorsContribution = $allDonorsContributions->groupBy('id')->map(function ($group) use ($implementation) {
             return [
