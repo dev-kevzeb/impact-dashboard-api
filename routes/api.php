@@ -249,6 +249,7 @@ Route::prefix('v1')->group(function () {
         Route::delete('program_country_user_roles/{id}', [ProgramCountryUserRoleController::class, 'destroy'])->middleware('scope:program_country_user_roles:write');
 
         // API Routes para InviteProgram (project-manager invitations by relation existence)
+        Route::get('invite_programs/candidates', [InviteProgramController::class, 'candidates'])->middleware('scope:program_country_user_roles');
         Route::get('invite_programs', [InviteProgramController::class, 'index'])->middleware('scope:program_country_user_roles');
         Route::post('invite_programs', [InviteProgramController::class, 'store'])->middleware('scope:program_country_user_roles:write');
         Route::get('invite_programs/{id}', [InviteProgramController::class, 'show'])->middleware('scope:program_country_user_roles');

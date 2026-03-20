@@ -41,6 +41,7 @@ class ProjectTest extends TestCase
             'progress' => 25,
             'comments' => 'Comentarios',
             'budget' => 5000,
+            'weight' => 0.5,
 
             'contact' => [
                 'first_name' => $contact->first_name,
@@ -127,6 +128,7 @@ class ProjectTest extends TestCase
             'progress' => 25,
             'comments' => 'Comentarios',
             'budget' => 5000,
+            'weight' => 0.5,
 
             'contact' => [
                 'first_name' => 'Andres',
@@ -240,6 +242,7 @@ class ProjectTest extends TestCase
             'progress' => $project->progress,
             'comments' => $project->comments,
             'project_budget' => $project->project_budget,
+            'weight' => 0.5,
 
             'contact' => [
                 'id' => $project->contact_id,

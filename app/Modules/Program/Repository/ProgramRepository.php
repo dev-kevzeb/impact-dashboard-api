@@ -4,6 +4,7 @@ namespace App\Modules\Program\Repository;
 
 use App\Repositories\AbstractRepository;
 use App\Modules\Program\Domain\Program;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Repository para Program
@@ -57,6 +58,60 @@ class ProgramRepository extends AbstractRepository
             ])
             ->withCount('projects')
             ->paginate($perPage);
+    }
+
+    public function paginateAccessibleByUserRoleIds(array $userRoleIds, int $perPage = 10, ?string $search = null)
+    {
+        $userRoleIds = array_values(array_unique(array_map('intval', $userRoleIds)));
+        if (empty($userRoleIds)) {
+            return $this->model->whereRaw('1 = 0')->paginate($perPage);
+        }
+
+        $idsSql = implode(',', $userRoleIds);
+
+        $accessSubquery = DB::table('program_country_user_role as pcur')
+            ->leftJoin('country_user_role as cur', 'cur.id', '=', 'pcur.country_user_role_id')
+            ->leftJoin('invite_program as ip', 'ip.program_country_user_role_id', '=', 'pcur.id')
+            ->where(function ($q) use ($userRoleIds) {
+                $q->whereIn('cur.user_role_id', $userRoleIds)
+                    ->orWhereIn('ip.invited_user_role_id', $userRoleIds);
+            })
+            ->select('pcur.program_id')
+            ->selectRaw("MAX(CASE WHEN cur.user_role_id IN ({$idsSql}) THEN 1 ELSE 0 END) as can_edit")
+            ->groupBy('pcur.program_id');
+
+        return $this->model
+            ->joinSub($accessSubquery, 'access_programs', function ($join) {
+                $join->on('program.id', '=', 'access_programs.program_id');
+            })
+            ->with([
+                'contact',
+                'programState',
+                'sdgs',
+                'countryUserRoles.country',
+            ])
+            ->withCount('projects')
+            ->when($search, function ($query) use ($search) {
+                $query->whereRaw('LOWER(program.name) LIKE LOWER(?)', ['%' . trim($search) . '%']);
+            })
+            ->select('program.*')
+            ->selectRaw('CAST(access_programs.can_edit AS integer) as can_edit')
+            ->orderBy('program.id', 'desc')
+            ->paginate($perPage);
+    }
+
+    public function isEditableByUserRoleIds(int $programId, array $userRoleIds): bool
+    {
+        $userRoleIds = array_values(array_unique(array_map('intval', $userRoleIds)));
+        if (empty($userRoleIds)) {
+            return false;
+        }
+
+        return DB::table('program_country_user_role as pcur')
+            ->join('country_user_role as cur', 'cur.id', '=', 'pcur.country_user_role_id')
+            ->where('pcur.program_id', $programId)
+            ->whereIn('cur.user_role_id', $userRoleIds)
+            ->exists();
     }
 
     /**

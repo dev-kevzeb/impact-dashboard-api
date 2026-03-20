@@ -32,6 +32,7 @@ class ProjectFactory extends Factory
             'comments' => $this->faker->text(200),
 
             'project_budget' => $this->faker->randomFloat(2, 1000, 50000),
+            'weight' => $this->faker->randomFloat(4, 0, 1),
 
             'contact_id' => Contact::factory(),
             'beneficiary_id' => Beneficiary::factory(),

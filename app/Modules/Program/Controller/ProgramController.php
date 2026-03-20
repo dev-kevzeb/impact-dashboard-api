@@ -56,7 +56,8 @@ class ProgramController extends Controller
     {
         try {
             $perPage  = (int) $request->get('per_page', 10);
-            $programs = $this->programService->getAllPrograms($perPage);
+            $search = $request->get('search');
+            $programs = $this->programService->getAccessibleProgramsForCurrentUser($perPage, $search);
 
             return ApiResponse::success(
                 'Programs paginated list successfully uploaded',
