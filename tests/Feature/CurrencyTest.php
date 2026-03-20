@@ -12,18 +12,25 @@ class CurrencyTest extends TestCase
 
     private const BASE_URL = '/api/v1/currencies';
 
-    private const ERROR_CODE_EMPTY  = 'el código de moneda no debe ir vacío';
-    private const ERROR_CODE_LENGTH = 'el código de moneda debe tener exactamente 3 caracteres';
-    private const ERROR_CODE_FORMAT = 'el código de moneda debe contener solo letras (sin números ni símbolos)';
-    private const ERROR_CODE_INVALID = 'The currency code must be a valid ISO 4217 code';
-    private const ERROR_CODE_UNIQUE = 'Esta moneda ya existe en el sistema';
+    private const ERROR_CODE_EMPTY  = 'The currency code must not be empty';
+    private const ERROR_CODE_LENGTH = 'The currency code must be exactly 3 characters';
+    private const ERROR_CODE_FORMAT = 'The currency code must contain only uppercase letters (no numbers or symbols)';
+    private const ERROR_CODE_UNIQUE = 'This currency already exists in the system';
+
+    private array $headers;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->headers = $this->authHeaders('admin');
+    }
 
     /** LISTAR */
     public function test_can_list_currencies(): void
     {
         Currency::factory()->count(3)->create();
 
-        $response = $this->getJson(self::BASE_URL);
+        $response = $this->getJson(self::BASE_URL, $this->headers);
 
         $response->assertOk()
                  ->assertJsonStructure([
@@ -43,7 +50,7 @@ class CurrencyTest extends TestCase
     /** LISTAR VACÍO */
     public function test_list_returns_empty_when_no_currencies(): void
     {
-        $response = $this->getJson(self::BASE_URL);
+        $response = $this->getJson(self::BASE_URL, $this->headers);
 
         $response->assertOk()
                  ->assertJsonPath('data.total', 0)
@@ -55,12 +62,12 @@ class CurrencyTest extends TestCase
     {
         $response = $this->postJson(self::BASE_URL, [
             'code' => 'USD'
-        ]);
+        ], $this->headers);
 
         $response->assertCreated()
                  ->assertJson([
                      'success' => true,
-                     'message' => 'Moneda creada exitosamente',
+                     'message' => 'Currency created successfully',
                  ])
                  ->assertJsonStructure([
                      'data' => ['id', 'code']
@@ -74,7 +81,7 @@ class CurrencyTest extends TestCase
     /** ERROR - CODE REQUERIDO */
     public function test_code_is_required(): void
     {
-        $response = $this->postJson(self::BASE_URL, []);
+        $response = $this->postJson(self::BASE_URL, [], $this->headers);
 
         $response->assertStatus(422)
                  ->assertJsonValidationErrors(['code'])
@@ -86,7 +93,7 @@ class CurrencyTest extends TestCase
     {
         $response = $this->postJson(self::BASE_URL, [
             'code' => 'US'
-        ]);
+        ], $this->headers);
 
         $response->assertStatus(422)
                  ->assertJsonValidationErrors(['code'])
@@ -97,7 +104,7 @@ class CurrencyTest extends TestCase
     {
         $response = $this->postJson(self::BASE_URL, [
             'code' => 'USDDDD'
-        ]);
+        ], $this->headers);
 
         $response->assertStatus(422)
                  ->assertJsonValidationErrors(['code'])
@@ -109,23 +116,32 @@ class CurrencyTest extends TestCase
     {
         $response = $this->postJson(self::BASE_URL, [
             'code' => 'U5D'
-        ]);
+        ], $this->headers);
 
         $response->assertStatus(422)
                  ->assertJsonValidationErrors(['code'])
                  ->assertJsonPath('errors.code.0', self::ERROR_CODE_FORMAT);
     }
 
-    /** ERROR - CÓDIGO ISO INVÁLIDO */
-    public function test_code_must_be_valid_iso_4217(): void
+    /** CREAR - CÓDIGO PERSONALIZADO */
+    public function test_can_create_custom_currency_not_iso(): void
     {
         $response = $this->postJson(self::BASE_URL, [
             'code' => 'XYZ'
-        ]);
+        ], $this->headers);
 
-        $response->assertStatus(400)
-                 ->assertJson(['success' => false])
-                 ->assertJsonPath('message', self::ERROR_CODE_INVALID);
+        $response->assertCreated()
+                 ->assertJson([
+                     'success' => true,
+                     'message' => 'Currency created successfully',
+                 ])
+                 ->assertJsonStructure([
+                     'data' => ['id', 'code']
+                 ]);
+
+        $this->assertDatabaseHas('currency', [
+            'code' => 'XYZ'
+        ]);
     }
 
     /** ERROR - UNICIDAD */
@@ -133,7 +149,7 @@ class CurrencyTest extends TestCase
     {
         Currency::factory()->create(['code' => 'USD']);
 
-        $response = $this->postJson(self::BASE_URL, ['code' => 'USD']);
+        $response = $this->postJson(self::BASE_URL, ['code' => 'USD'], $this->headers);
 
         $response->assertStatus(422)
                  ->assertJsonValidationErrors(['code'])
@@ -145,11 +161,13 @@ class CurrencyTest extends TestCase
     {
         $response = $this->postJson(self::BASE_URL, [
             'code' => '   usd   '
-        ]);
+        ], $this->headers);
 
-        $response->assertCreated();
+        $response->assertStatus(422)
+                 ->assertJsonValidationErrors(['code'])
+                 ->assertJsonPath('errors.code.0', self::ERROR_CODE_FORMAT);
 
-        $this->assertDatabaseHas('currency', [
+        $this->assertDatabaseMissing('currency', [
             'code' => 'USD',
         ]);
     }
@@ -159,7 +177,7 @@ class CurrencyTest extends TestCase
     {
         $response = $this->postJson(self::BASE_URL, [
             'code' => '   '
-        ]);
+        ], $this->headers);
 
         $response->assertStatus(422)
                  ->assertJsonValidationErrors(['code']);
@@ -170,12 +188,12 @@ class CurrencyTest extends TestCase
     {
         $currency = Currency::factory()->create(['code' => 'EUR']);
 
-        $response = $this->getJson(self::BASE_URL . "/{$currency->id}");
+        $response = $this->getJson(self::BASE_URL . "/{$currency->id}", $this->headers);
 
         $response->assertOk()
                  ->assertJson([
                      'success' => true,
-                     'message' => 'Moneda encontrada',
+                     'message' => 'Currency found',
                      'data' => [
                          'id' => $currency->id,
                          'code' => 'EUR'
@@ -186,7 +204,7 @@ class CurrencyTest extends TestCase
     /** MOSTRAR - NO EXISTE */
     public function test_returns_404_when_currency_not_found(): void
     {
-        $response = $this->getJson(self::BASE_URL . '/99999');
+        $response = $this->getJson(self::BASE_URL . '/99999', $this->headers);
 
         $response->assertNotFound()
                  ->assertJson(['success' => false]);
@@ -199,12 +217,12 @@ class CurrencyTest extends TestCase
 
         $response = $this->putJson(self::BASE_URL . "/{$currency->id}", [
             'code' => 'EUR'
-        ]);
+        ], $this->headers);
 
         $response->assertOk()
                  ->assertJson([
                      'success' => true,
-                     'message' => 'Moneda actualizada exitosamente',
+                     'message' => 'Currency uploaded successfully',
                  ]);
 
         $this->assertDatabaseHas('currency', [
@@ -221,7 +239,7 @@ class CurrencyTest extends TestCase
 
         $response = $this->putJson(self::BASE_URL . "/{$second->id}", [
             'code' => 'USD'
-        ]);
+        ], $this->headers);
 
         $response->assertStatus(422)
                  ->assertJsonValidationErrors(['code'])
@@ -235,27 +253,37 @@ class CurrencyTest extends TestCase
 
         $response = $this->putJson(self::BASE_URL . "/{$currency->id}", [
             'code' => '   eur   '
-        ]);
+        ], $this->headers);
 
-        $response->assertOk();
+        $response->assertStatus(422)
+                 ->assertJsonValidationErrors(['code'])
+                 ->assertJsonPath('errors.code.0', self::ERROR_CODE_FORMAT);
 
         $this->assertDatabaseHas('currency', [
             'id' => $currency->id,
-            'code' => 'EUR'
+            'code' => 'USD'
         ]);
     }
 
-    /** UPDATE - ISO INVÁLIDO */
-    public function test_update_must_be_valid_iso(): void
+    /** UPDATE - CÓDIGO PERSONALIZADO */
+    public function test_can_update_to_custom_uppercase_code(): void
     {
         $currency = Currency::factory()->create(['code' => 'USD']);
 
         $response = $this->putJson(self::BASE_URL . "/{$currency->id}", [
             'code' => 'ABC'
-        ]);
+        ], $this->headers);
 
-        $response->assertStatus(400)
-                 ->assertJsonPath('message', self::ERROR_CODE_INVALID);
+        $response->assertOk()
+                 ->assertJson([
+                     'success' => true,
+                     'message' => 'Currency uploaded successfully',
+                 ]);
+
+        $this->assertDatabaseHas('currency', [
+            'id' => $currency->id,
+            'code' => 'ABC'
+        ]);
     }
 
 }
