@@ -6,6 +6,7 @@ use App\Modules\InviteProgram\Domain\InviteProgram;
 use App\Modules\InviteProgram\Repository\InviteProgramRepository;
 use App\Modules\ProgramCountryUserRole\Domain\ProgramCountryUserRole;
 use App\Modules\UserRole\Domain\UserRole;
+use App\Notifications\ProgramInvitationNotification;
 use RuntimeException;
 
 class InviteProgramService
@@ -64,7 +65,17 @@ class InviteProgramService
 
         $this->repository->save($invite);
 
-        return $this->repository->findByIdWithRelations($invite->id);
+        $invite = $this->repository->findByIdWithRelations($invite->id);
+
+        // Notify the invited user by email
+        $invitedUser = $invite->invitedUserRole->user ?? null;
+        if ($invitedUser) {
+            $programName = $invite->programCountryUserRole->program->name ?? 'N/A';
+            $countryName = $invite->programCountryUserRole->countryUserRole->country->name ?? 'N/A';
+            $invitedUser->notify(new ProgramInvitationNotification($programName, $countryName));
+        }
+
+        return $invite;
     }
 
     public function getAllInvites(int $perPage = 10, ?int $programCountryUserRoleId = null, ?int $invitedUserRoleId = null)
