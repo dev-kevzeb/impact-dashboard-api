@@ -23,9 +23,8 @@ class CurrencyRequest extends FormRequest
             'code' => [
                 'required',
                 'string',
-                'min:3',
-                'max:3',
-                'regex:/^[A-Za-z]+$/',
+                'size:3',
+                'regex:/^[A-Z]{3}$/',
                 Rule::unique('currency', 'code')->ignore($currencyId),
             ],
         ];
@@ -34,12 +33,11 @@ class CurrencyRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'code.required' => 'el código de moneda no debe ir vacío',
-            'code.string'   => 'el código de moneda debe contener solo letras (sin números ni símbolos)',
-            'code.regex'    => 'el código de moneda debe contener solo letras (sin números ni símbolos)',
-            'code.min'      => 'el código de moneda debe tener exactamente 3 caracteres',
-            'code.max'      => 'el código de moneda debe tener exactamente 3 caracteres',
-            'code.unique'   => 'Esta moneda ya existe en el sistema',
+            'code.required' => 'The currency code must not be empty',
+            'code.string'   => 'The currency code must contain only uppercase letters (no numbers or symbols)',
+            'code.regex'    => 'The currency code must contain only uppercase letters (no numbers or symbols)',
+            'code.size'     => 'The currency code must be exactly 3 characters',
+            'code.unique'   => 'This currency already exists in the system',
         ];
     }
 

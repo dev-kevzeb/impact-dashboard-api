@@ -17,25 +17,11 @@ class Currency extends Model
     public static $ERROR_CODE_EMPTY = 'The currency code should not be empty';
     public static $ERROR_CODE_LENGTH = 'Currency code must be exactly 3 characters';
     public static $ERROR_CODE_FORMAT = 'Currency code must contain only letters (no numbers or symbols)';
-    public static $ERROR_CODE_INVALID = 'The currency code must be a valid ISO 4217 code';
 
     protected static function newFactory()
     {
         return CurrencyFactory::new();
     }
-    
-    private static array $validCodes = [
-        'USD', 'EUR', 'GBP', 'JPY', 'CHF', 'CAD', 'AUD', 'CNY', 'BOB', 
-        'BRL', 'ARS', 'PEN', 'CLP', 'COP', 'UYU', 'PYG', 'VES', 'CRC', 
-        'GTQ', 'HNL', 'NIO', 'PAB', 'DOP', 'CUP', 'HTG', 'JMD', 'TTD', 
-        'BBD', 'MXN', 'KRW', 'SGD', 'HKD', 'THB', 'MYR', 'IDR', 'PHP', 
-        'VND', 'INR', 'PKR', 'BDT', 'LKR', 'NPR', 'BTN', 'RUB', 'UAH', 
-        'PLN', 'CZK', 'HUF', 'RON', 'BGN', 'HRK', 'SEK', 'NOK', 'DKK', 
-        'ISK', 'ZAR', 'EGP', 'NGN', 'KES', 'GHS', 'MAD', 'TND', 'DZD',
-        'XOF', 'XAF', 'ETB', 'UGX', 'TZS', 'RWF', 'ZMW', 'BWP', 'NAD', 
-        'SZL', 'LSL', 'MWK', 'MZN', 'AOA', 'CVE', 'GMD', 'GNF', 'LRD', 
-        'SLL', 'STN', 'SOL'
-    ];
     
     public function __construct(array $attributes = [])
     {
@@ -49,7 +35,6 @@ class Currency extends Model
         
         if (strlen($trimmedCode) !== 3) throw new RuntimeException(self::$ERROR_CODE_LENGTH);
         if (!ctype_alpha($trimmedCode))  throw new RuntimeException(self::$ERROR_CODE_FORMAT);
-        if (!in_array($trimmedCode, self::$validCodes, true)) throw new RuntimeException(self::$ERROR_CODE_INVALID);
         
         return new Currency(['code' => $trimmedCode]);
     }

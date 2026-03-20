@@ -57,7 +57,7 @@ class CurrencyService
                 throw new RuntimeException("There is already another currency with the code: {$normalizedCode}");
             }
         } catch (RuntimeException $e) {
-            if (!str_contains($e->getMessage(), 'Not found')) {
+            if (stripos($e->getMessage(), 'not found') === false) {
                 throw $e; 
             }
         }

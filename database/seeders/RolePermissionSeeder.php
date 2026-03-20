@@ -14,10 +14,37 @@ class RolePermissionSeeder extends Seeder
 
         $admin = Role::where('name', 'admin')->where('guard_name', 'api')->first();
         if ($admin) {
-            $wildcardPermission = Permission::where('name', '*:*')->first();
-            if ($wildcardPermission) {
-                $admin->syncPermissions([$wildcardPermission]);
-            }
+            $adminPermissions = [
+                'users:read',
+                'users:write',
+                'user_states:read',
+                'user_states:write',
+                'program_states:read',
+                'program_states:write',
+                'project_states:read',
+                'project_states:write',
+                'measures:read',
+                'measures:write',
+                'sdgs:read',
+                'sdgs:write',
+                'countries:read',
+                'countries:write',
+                'currencies:read',
+                'currencies:write',
+                'donors:read',
+                'donors:write',
+                'beneficiaries:read',
+                'beneficiaries:write',
+                'kpas:read',
+                'kpas:write',
+                'indicator_types:read',
+                'indicator_types:write',
+                'agencies:read',
+                'agencies:write',
+            ];
+
+            $permissions = Permission::whereIn('name', $adminPermissions)->get();
+            $admin->syncPermissions($permissions);
         }
 
         $projectManager = Role::where('name', 'project-manager')->where('guard_name', 'api')->first();
@@ -32,7 +59,10 @@ class RolePermissionSeeder extends Seeder
                 'program_country_user_roles:write',
                 'projects:read',
                 'projects:write',
+                'kpas:read',
+                'kpas:write',
                 'project_states:read',
+                'project_states:write',
                 'project_agencies:read',
                 'project_agencies:write',
                 'project_indicators:read',
@@ -40,8 +70,11 @@ class RolePermissionSeeder extends Seeder
                 'beneficiaries:read',
                 'beneficiaries:write',
                 'donors:read',
+                'donors:write',
                 'agencies:read',
                 'sdgs:read',
+                'strategic_outputs:read',
+                'measures:read',
                 'indicators:read',
                 'indicator_types:read',
             ];
@@ -69,9 +102,11 @@ class RolePermissionSeeder extends Seeder
                 'indicators:read',
                 'indicator_types:read',
                 'programs:read',
+                'programs:write',
                 'program_states:read',
                 'program_country_user_roles:read',
                 'projects:read',
+                'projects:write',
                 'project_states:read',
                 'users:read',
                 'users:write',
