@@ -261,6 +261,7 @@ Route::prefix('v1')->group(function () {
         Route::get('projects/search', [ProjectController::class, 'search'])->middleware('scope:projects');
         Route::get('projects/{id}', [ProjectController::class, 'show'])->middleware('scope:projects');
         Route::put('projects/{id}', [ProjectController::class, 'update'])->middleware('scope:projects:write');
+        Route::delete('projects/{id}', [ProjectController::class, 'destroy'])->middleware('scope:projects:write');
         Route::get('projects/program/{id}', [ProjectController::class, 'getProjectsByProgramId'])->middleware('scope:projects');
         Route::get('projects/program/{programId}/kpas', [ProjectController::class, 'getProgramKpas'])->middleware('scope:projects');
         Route::get('projects/program/{programId}/kpas/{kpaId}/strategic-outputs', [ProjectController::class, 'getProgramStrategicOutputsByKpa'])->middleware('scope:projects');
