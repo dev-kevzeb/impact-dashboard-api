@@ -241,6 +241,7 @@ Route::prefix('v1')->group(function () {
         Route::get('programs/search', [ProgramController::class, 'search'])->middleware('scope:programs');
         Route::get('programs/{id}', [ProgramController::class, 'show'])->middleware('scope:programs');
         Route::put('programs/{id}', [ProgramController::class, 'update'])->middleware('scope:programs:write');
+        Route::delete('programs/{id}', [ProgramController::class, 'destroy'])->middleware('scope:programs:write');
 
         // API Routes para Program-CountryUserRole assignments
         Route::get('program_country_user_roles', [ProgramCountryUserRoleController::class, 'index'])->middleware('scope:program_country_user_roles');
