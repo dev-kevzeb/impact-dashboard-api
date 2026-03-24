@@ -46,6 +46,7 @@ use App\Modules\Stats\Controller\StatsController;
 Route::prefix('v1')->group(function () {
     // Public auth routes
     Route::post('auth/login', [AuthController::class, 'login']);
+    Route::get('auth/captcha/challenge', [AuthController::class, 'captchaChallenge']);
     Route::post('auth/register', [AuthController::class, 'register']);
 
     // Email verification routes (no authentication required)

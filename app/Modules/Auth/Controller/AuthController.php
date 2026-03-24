@@ -6,9 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegisterRequest;
 use App\Http\Resources\UserResource;
+use App\Modules\Auth\Service\AltchaCaptchaService;
 use App\Modules\Auth\Service\AuthService;
 use App\Http\Responses\ApiResponse;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Validation\ValidationException;
 use RuntimeException;
 use PHPOpenSourceSaver\JWTAuth\Exceptions\TokenExpiredException;
 use PHPOpenSourceSaver\JWTAuth\Exceptions\TokenInvalidException;
@@ -16,10 +18,12 @@ use PHPOpenSourceSaver\JWTAuth\Exceptions\TokenInvalidException;
 class AuthController extends Controller
 {
     private AuthService $authService;
+    private AltchaCaptchaService $altchaCaptchaService;
 
-    public function __construct(AuthService $authService)
+    public function __construct(AuthService $authService, AltchaCaptchaService $altchaCaptchaService)
     {
         $this->authService = $authService;
+        $this->altchaCaptchaService = $altchaCaptchaService;
     }
 
     /**
@@ -106,6 +110,8 @@ class AuthController extends Controller
     {
         try {
             $validated = $request->validated();
+            $this->altchaCaptchaService->assertValidPayload($validated['altcha']);
+
             $result = $this->authService->register(
                 $validated['name'],
                 $validated['email'],
@@ -118,8 +124,32 @@ class AuthController extends Controller
                 $result['message'],
                 ['user' => $result['user']]
             );
+        } catch (ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation error',
+                'errors' => $e->errors(),
+            ], 422);
         } catch (RuntimeException $e) {
             return ApiResponse::error($e->getMessage(), 400);
+        }
+    }
+
+    /**
+     * @OA\Get(
+     *     path="/auth/captcha/challenge",
+     *     tags={"Authentication"},
+     *     summary="Get ALTCHA challenge",
+     *     @OA\Response(response=200, description="Challenge generated"),
+     *     @OA\Response(response=500, description="Captcha configuration error")
+     * )
+     */
+    public function captchaChallenge(): JsonResponse
+    {
+        try {
+            return response()->json($this->altchaCaptchaService->createChallenge());
+        } catch (RuntimeException $e) {
+            return ApiResponse::error($e->getMessage(), 500);
         }
     }
 
