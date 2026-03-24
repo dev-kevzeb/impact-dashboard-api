@@ -413,4 +413,52 @@ class ProgramController extends Controller
             return ApiResponse::error('Error updating program', 500);
         }
     }
+
+    /**
+     * @OA\Delete(
+     *     path="/programs/{id}",
+     *     tags={"Programs"},
+     *     summary="Delete program",
+     *     description="Deletes a program and its cascading relationships. Fails if the program still has associated projects.",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="Program ID to delete",
+     *         @OA\Schema(type="integer", example=1)
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Program deleted successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Program deleted successfully")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Business validation error (e.g. program has projects)",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Cannot delete a program that still has associated projects.")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal server error"
+     *     )
+     * )
+     */
+    public function destroy(int $id): JsonResponse
+    {
+        try {
+            $this->programService->deleteProgram($id);
+            return ApiResponse::success('Program deleted successfully', 200);
+        } catch (RuntimeException $e) {
+            return ApiResponse::error($e->getMessage(), 400);
+        } catch (\Exception $e) {
+            return ApiResponse::error('Internal server error', 500);
+        }
+    }
 }

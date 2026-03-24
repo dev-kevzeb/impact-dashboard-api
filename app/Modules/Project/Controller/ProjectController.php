@@ -519,6 +519,22 @@ class ProjectController extends Controller
         }
     }
 
+    public function destroy(int $id)
+    {
+        try {
+            $this->projectService->deleteProject($id);
+
+            return ApiResponse::success(
+                'Project deleted successfully',
+                200
+            );
+        } catch (RuntimeException $e) {
+            return ApiResponse::error($e->getMessage(), 400);
+        } catch (\Exception $e) {
+            return ApiResponse::error('Internal server error', 500);
+        }
+    }
+
     public function getProgramKpas(Request $request, int $programId)
     {
         try {

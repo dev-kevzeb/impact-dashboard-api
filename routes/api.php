@@ -242,6 +242,7 @@ Route::prefix('v1')->group(function () {
         Route::get('programs/search', [ProgramController::class, 'search'])->middleware('scope:programs');
         Route::get('programs/{id}', [ProgramController::class, 'show'])->middleware('scope:programs');
         Route::put('programs/{id}', [ProgramController::class, 'update'])->middleware('scope:programs:write');
+        Route::delete('programs/{id}', [ProgramController::class, 'destroy'])->middleware('scope:programs:write');
 
         // API Routes para Program-CountryUserRole assignments
         Route::get('program_country_user_roles', [ProgramCountryUserRoleController::class, 'index'])->middleware('scope:program_country_user_roles');
@@ -262,6 +263,7 @@ Route::prefix('v1')->group(function () {
         Route::get('projects/search', [ProjectController::class, 'search'])->middleware('scope:projects');
         Route::get('projects/{id}', [ProjectController::class, 'show'])->middleware('scope:projects');
         Route::put('projects/{id}', [ProjectController::class, 'update'])->middleware('scope:projects:write');
+        Route::delete('projects/{id}', [ProjectController::class, 'destroy'])->middleware('scope:projects:write');
         Route::get('projects/program/{id}', [ProjectController::class, 'getProjectsByProgramId'])->middleware('scope:projects');
         Route::get('projects/program/{programId}/kpas', [ProjectController::class, 'getProgramKpas'])->middleware('scope:projects');
         Route::get('projects/program/{programId}/kpas/{kpaId}/strategic-outputs', [ProjectController::class, 'getProgramStrategicOutputsByKpa'])->middleware('scope:projects');

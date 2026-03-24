@@ -21,11 +21,13 @@ use App\Modules\ProjectState\Repository\ProjectStateRepository;
 use App\Modules\Project\Repository\ProjectRepository;
 use App\Modules\Project\Domain\Project;
 use App\Modules\ProjectDonor\Service\ProjectDonorService;
+use App\Modules\Program\Domain\Program;
 use App\Modules\ProgramCountryUserRole\Repository\ProgramCountryUserRoleRepository;
 use App\Modules\InviteProgram\Repository\InviteProgramRepository;
 use App\Modules\StrategicOutput\Repository\StrategicOutputRepository;
 use App\Modules\StrategicOutput\Service\StrategicOutputService;
 use App\Modules\Program\Service\ProgramService;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 
@@ -453,6 +455,39 @@ class ProjectService
         $this->syncAgencies($project, $agencies);
 
         return $project;
+    }
+
+    public function deleteProject(int $id): void
+    {
+        $project = $this->findProjectById($id);
+
+        $this->resolveAccessibleProgramCountryId((int) $project->program_id);
+
+        DB::transaction(function () use ($project): void {
+            $programId = (int) $project->program_id;
+            $contactId = $project->contact_id ? (int) $project->contact_id : null;
+
+            $project->delete();
+
+            if ($contactId !== null) {
+                $usedByAnotherProject = Project::query()
+                    ->where('contact_id', $contactId)
+                    ->exists();
+
+                $usedByProgram = Program::query()
+                    ->where('contact_id', $contactId)
+                    ->exists();
+
+                if (!$usedByAnotherProject && !$usedByProgram) {
+                    $contact = $this->contactRepository->findOneBy('id', $contactId);
+                    if ($contact) {
+                        $contact->delete();
+                    }
+                }
+            }
+
+            $this->programService->activateProgramIfNeeded($programId);
+        });
     }
 
     private function getCountryKpaIds(array $filters)

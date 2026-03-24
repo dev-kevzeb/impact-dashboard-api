@@ -5,9 +5,12 @@ namespace App\Modules\Program\Service;
 use App\Modules\Program\Domain\Program;
 use App\Modules\Program\Repository\ProgramRepository;
 use App\Modules\Contact\Repository\ContactRepository;
+use App\Modules\Project\Domain\Project;
 use App\Modules\ProgramState\Repository\ProgramStateRepository;
 use App\Modules\Sdg\Repository\SdgRepository;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use RuntimeException;
 
 class ProgramService
@@ -387,6 +390,53 @@ class ProgramService
         $this->programRepository->syncSdgs($program, $sdgIds);
 
         return $program->fresh(['contact', 'programState', 'sdgs']);
+    }
+
+    /**
+     * Delete a program and its cascading relationships.
+     * Blocks if the program still has associated projects.
+     */
+    public function deleteProgram(int $id): void
+    {
+        $user = auth('api')->user();
+        if (!$user) {
+            throw new RuntimeException('Not authenticated.');
+        }
+
+        if (!$user->hasPermissionTo('*:*')) {
+            $userRoleIds = $user->userRoles()->pluck('id')->toArray();
+            if (!$this->programRepository->isEditableByUserRoleIds($id, $userRoleIds)) {
+                throw new RuntimeException('You do not have permission to delete this program.');
+            }
+        }
+
+        $program = $this->programRepository->findById($id);
+
+        if ($program->projects()->count() > 0) {
+            throw new RuntimeException('Cannot delete a program that still has associated projects.');
+        }
+
+        $contactId = $program->contact_id ? (int) $program->contact_id : null;
+        $bannerImg = $program->banner_img;
+
+        DB::transaction(function () use ($program, $contactId): void {
+            $program->delete();
+
+            if ($contactId !== null) {
+                $usedByAnotherProgram = Program::query()->where('contact_id', $contactId)->exists();
+                $usedByProject = Project::query()->where('contact_id', $contactId)->exists();
+                if (!$usedByAnotherProgram && !$usedByProject) {
+                    $contact = $this->contactRepository->findOneBy('id', $contactId);
+                    if ($contact) {
+                        $contact->delete();
+                    }
+                }
+            }
+        });
+
+        if ($bannerImg) {
+            Storage::disk('public')->delete($bannerImg);
+        }
     }
 
     /**
