@@ -35,6 +35,7 @@ class RegisterRequest extends FormRequest
             ],
             'role_name' => 'required|string|in:project-manager,country-manager',
             'country_id' => 'required|integer|exists:country,id',
+            'altcha' => 'required|string',
         ];
     }
 
@@ -68,6 +69,9 @@ class RegisterRequest extends FormRequest
             'country_id.required' => 'Please select a country.',
             'country_id.integer' => 'Invalid country selection.',
             'country_id.exists' => 'The selected country does not exist.',
+
+            'altcha.required' => 'Captcha is required.',
+            'altcha.string' => 'Captcha payload must be a string.',
         ];
     }
 
@@ -84,7 +88,7 @@ class RegisterRequest extends FormRequest
         throw new HttpResponseException(
             response()->json([
                 'success' => false,
-                'message' => 'Error de validación',
+                'message' => 'Validation error',
                 'errors' => $validator->errors()
             ], 422)
         );

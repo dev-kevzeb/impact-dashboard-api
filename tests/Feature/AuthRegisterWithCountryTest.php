@@ -2,6 +2,9 @@
 
 namespace Tests\Feature;
 
+use AltchaOrg\Altcha\Altcha;
+use AltchaOrg\Altcha\ChallengeOptions;
+use AltchaOrg\Altcha\Hasher\Algorithm;
 use App\Modules\Country\Domain\Country;
 use App\Modules\Role\Domain\Role;
 use App\Modules\User\Domain\User;
@@ -20,9 +23,53 @@ class AuthRegisterWithCountryTest extends TestCase
     {
         parent::setUp();
 
+        config([
+            'services.altcha.hmac_key' => 'test-altcha-hmac-key-12345678901234567890',
+            'services.altcha.expire_seconds' => 300,
+            'services.altcha.max_number' => 1000,
+        ]);
+
         // Seed required data
         $this->seed(\Database\Seeders\UserStateSeeder::class);
         $this->seed(\Database\Seeders\RoleSeeder::class);
+    }
+
+    private function postRegister(array $payload)
+    {
+        if (!array_key_exists('altcha', $payload)) {
+            $payload['altcha'] = $this->generateValidAltchaPayload();
+        }
+
+        return $this->postJson(self::BASE_URL, $payload);
+    }
+
+    private function generateValidAltchaPayload(): string
+    {
+        $altcha = new Altcha((string) config('services.altcha.hmac_key'));
+        $challenge = $altcha->createChallenge(new ChallengeOptions(
+            maxNumber: (int) config('services.altcha.max_number', 1000),
+            expires: now()->addSeconds((int) config('services.altcha.expire_seconds', 300)),
+        ));
+
+        $algorithm = Algorithm::from($challenge->algorithm);
+        $solution = $altcha->solveChallenge(
+            $challenge->challenge,
+            $challenge->salt,
+            $algorithm,
+            $challenge->maxNumber,
+        );
+
+        $this->assertNotNull($solution, 'Failed to generate ALTCHA solution for test payload.');
+
+        $payload = [
+            'algorithm' => $challenge->algorithm,
+            'challenge' => $challenge->challenge,
+            'number' => $solution->number,
+            'salt' => $challenge->salt,
+            'signature' => $challenge->signature,
+        ];
+
+        return base64_encode(json_encode($payload, JSON_THROW_ON_ERROR));
     }
 
     /**
@@ -41,7 +88,7 @@ class AuthRegisterWithCountryTest extends TestCase
             'country_id' => $country->id,
         ];
 
-        $response = $this->postJson(self::BASE_URL, $payload);
+        $response = $this->postRegister($payload);
 
         $response->assertCreated()
             ->assertJson(['success' => true])
@@ -115,7 +162,7 @@ class AuthRegisterWithCountryTest extends TestCase
             'country_id' => $country->id,
         ];
 
-        $response = $this->postJson(self::BASE_URL, $payload);
+        $response = $this->postRegister($payload);
 
         $response->assertCreated()
             ->assertJson(['success' => true])
@@ -143,7 +190,7 @@ class AuthRegisterWithCountryTest extends TestCase
             // country_id missing
         ];
 
-        $response = $this->postJson(self::BASE_URL, $payload);
+        $response = $this->postRegister($payload);
 
         $response->assertStatus(422)
             ->assertJson(['success' => false])
@@ -169,7 +216,7 @@ class AuthRegisterWithCountryTest extends TestCase
             'country_id' => 99999, // Non-existent country
         ];
 
-        $response = $this->postJson(self::BASE_URL, $payload);
+        $response = $this->postRegister($payload);
 
         $response->assertStatus(422)
             ->assertJson(['success' => false])
@@ -198,7 +245,7 @@ class AuthRegisterWithCountryTest extends TestCase
             'country_id' => 'invalid', // String instead of integer
         ];
 
-        $response = $this->postJson(self::BASE_URL, $payload);
+        $response = $this->postRegister($payload);
 
         $response->assertStatus(422)
             ->assertJson(['success' => false])
@@ -220,7 +267,7 @@ class AuthRegisterWithCountryTest extends TestCase
             'country_id' => null,
         ];
 
-        $response = $this->postJson(self::BASE_URL, $payload);
+        $response = $this->postRegister($payload);
 
         $response->assertStatus(422)
             ->assertJson(['success' => false])
@@ -243,7 +290,7 @@ class AuthRegisterWithCountryTest extends TestCase
             'country_id' => $country->id,
         ];
 
-        $response = $this->postJson(self::BASE_URL, $payload);
+        $response = $this->postRegister($payload);
         $response->assertCreated();
 
         $user = User::where('email', 'juan@test.com')->first();
@@ -271,7 +318,7 @@ class AuthRegisterWithCountryTest extends TestCase
             'country_id' => $country->id,
         ];
 
-        $response1 = $this->postJson(self::BASE_URL, $payload1);
+        $response1 = $this->postRegister($payload1);
         $response1->assertCreated();
 
         // Register second user with same country
@@ -284,7 +331,7 @@ class AuthRegisterWithCountryTest extends TestCase
             'country_id' => $country->id,
         ];
 
-        $response2 = $this->postJson(self::BASE_URL, $payload2);
+        $response2 = $this->postRegister($payload2);
         $response2->assertCreated();
 
         // Verify both users have the same country
@@ -314,7 +361,7 @@ class AuthRegisterWithCountryTest extends TestCase
             'country_id' => $country->id,
         ];
 
-        $this->postJson(self::BASE_URL, $payload);
+        $this->postRegister($payload);
 
         $user = User::where('email', 'test@test.com')->first();
         $userRole = $user->userRoles()->first();
@@ -347,7 +394,7 @@ class AuthRegisterWithCountryTest extends TestCase
             'country_id' => $country->id,
         ];
 
-        $response = $this->postJson(self::BASE_URL, $payload);
+        $response = $this->postRegister($payload);
 
         $response->assertCreated()
             ->assertJsonStructure([
@@ -382,7 +429,7 @@ class AuthRegisterWithCountryTest extends TestCase
             'country_id' => $country->id,
         ];
 
-        $this->postJson(self::BASE_URL, $payload);
+        $this->postRegister($payload);
 
         $user = User::where('email', 'test@test.com')->first();
 
@@ -419,7 +466,7 @@ class AuthRegisterWithCountryTest extends TestCase
             'country_id' => $country->id,
         ];
 
-        $response = $this->postJson(self::BASE_URL, $payload);
+        $response = $this->postRegister($payload);
 
         $response->assertStatus(422)
             ->assertJson(['success' => false])
@@ -443,7 +490,7 @@ class AuthRegisterWithCountryTest extends TestCase
             'country_id' => $country->id,
         ];
 
-        $this->postJson(self::BASE_URL, $payload);
+        $this->postRegister($payload);
 
         $user = User::where('email', 'test@test.com')->first();
         $userRole = $user->userRoles()->first();
@@ -480,7 +527,7 @@ class AuthRegisterWithCountryTest extends TestCase
             'country_id' => $country->id,
         ];
 
-        $this->postJson(self::BASE_URL, $payload);
+        $this->postRegister($payload);
 
         $user = User::where('email', 'test@test.com')->first();
         $userRole = $user->userRoles()->first();
@@ -488,5 +535,95 @@ class AuthRegisterWithCountryTest extends TestCase
         // Try to attach the same country again manually
         $this->expectException(\Illuminate\Database\QueryException::class);
         $userRole->countries()->attach($country->id);
+
+    }
+
+    public function test_cannot_register_without_altcha(): void
+    {
+        $country = Country::factory()->create();
+
+        $payload = [
+            'name' => 'No Captcha',
+            'email' => 'nocaptcha@test.com',
+            'password' => 'password123',
+            'password_confirmation' => 'password123',
+            'role_name' => 'project-manager',
+            'country_id' => $country->id,
+            'altcha' => null,
+        ];
+
+        $response = $this->postJson(self::BASE_URL, $payload);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors('altcha')
+            ->assertJsonPath('errors.altcha.0', 'Captcha is required.');
+    }
+
+    public function test_cannot_register_with_invalid_altcha_payload(): void
+    {
+        $country = Country::factory()->create();
+
+        $payload = [
+            'name' => 'Invalid Captcha',
+            'email' => 'invalidcaptcha@test.com',
+            'password' => 'password123',
+            'password_confirmation' => 'password123',
+            'role_name' => 'project-manager',
+            'country_id' => $country->id,
+            'altcha' => base64_encode('{"invalid":true}'),
+        ];
+
+        $response = $this->postJson(self::BASE_URL, $payload);
+
+        $response->assertStatus(422)
+            ->assertJsonPath('success', false)
+            ->assertJsonPath('message', 'Validation error')
+            ->assertJsonPath('errors.altcha.0', 'Captcha validation failed. Please try again.');
+    }
+
+    public function test_cannot_reuse_altcha_payload(): void
+    {
+        $country = Country::factory()->create();
+        $altchaPayload = $this->generateValidAltchaPayload();
+
+        $firstPayload = [
+            'name' => 'First User',
+            'email' => 'first-altcha@test.com',
+            'password' => 'password123',
+            'password_confirmation' => 'password123',
+            'role_name' => 'project-manager',
+            'country_id' => $country->id,
+            'altcha' => $altchaPayload,
+        ];
+
+        $secondPayload = [
+            'name' => 'Second User',
+            'email' => 'second-altcha@test.com',
+            'password' => 'password123',
+            'password_confirmation' => 'password123',
+            'role_name' => 'project-manager',
+            'country_id' => $country->id,
+            'altcha' => $altchaPayload,
+        ];
+
+        $this->postJson(self::BASE_URL, $firstPayload)->assertCreated();
+
+        $this->postJson(self::BASE_URL, $secondPayload)
+            ->assertStatus(422)
+            ->assertJsonPath('errors.altcha.0', 'Captcha already used. Please retry.');
+    }
+
+    public function test_can_get_altcha_challenge(): void
+    {
+        $response = $this->getJson('/api/v1/auth/captcha/challenge');
+
+        $response->assertOk()
+            ->assertJsonStructure([
+                'algorithm',
+                'challenge',
+                'salt',
+                'signature',
+                'maxnumber',
+            ]);
     }
 }

@@ -35,4 +35,10 @@ return [
         ],
     ],
 
+    'altcha' => [
+        'hmac_key' => env('ALTCHA_HMAC_KEY'),
+        'expire_seconds' => (int) env('ALTCHA_EXPIRE_SECONDS', 300),
+        'max_number' => (int) env('ALTCHA_MAX_NUMBER', 100000),
+    ],
+
 ];
