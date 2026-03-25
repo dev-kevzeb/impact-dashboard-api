@@ -120,4 +120,13 @@ class MeasureService
     public function getByStrategicOutputIds(array $strategicOutputsIds){
         return $this->measureRepository->getByStrategicOutputIds($strategicOutputsIds);
     }
+
+    public function deleteMeasure(int $id): void
+    {
+        $measure = $this->measureRepository->findById($id);
+        if ($measure->indicators()->count() > 0) {
+            throw new RuntimeException('Cannot delete a measure that has associated indicators.');
+        }
+        $measure->delete();
+    }
 }

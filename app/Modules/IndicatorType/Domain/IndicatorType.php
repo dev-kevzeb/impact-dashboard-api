@@ -2,9 +2,11 @@
 
 namespace App\Modules\IndicatorType\Domain;
 
+use App\Modules\Indicator\Domain\Indicator;
 use Database\Factories\IndicatorTypeFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use RuntimeException;
 
 class IndicatorType extends Model
@@ -40,5 +42,10 @@ class IndicatorType extends Model
     public function getName(): string
     {
         return $this->name;
+    }
+
+    public function indicators(): HasMany
+    {
+        return $this->hasMany(Indicator::class, 'type_id', 'id');
     }
 }

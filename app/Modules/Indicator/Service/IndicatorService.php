@@ -87,4 +87,15 @@ class IndicatorService
     public function getByMeasureIds(array $measuresIds){
         return $this->indicatorRepository->getByMeasureIds($measuresIds);
     }
+
+    public function deleteIndicator(int $id): void
+    {
+        $indicator = $this->indicatorRepository->findById($id);
+
+        if ($indicator->projects()->count() > 0) {
+            throw new RuntimeException('Cannot delete an indicator that is assigned to one or more projects.');
+        }
+
+        $indicator->delete();
+    }
 }

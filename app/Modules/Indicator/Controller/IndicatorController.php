@@ -411,4 +411,52 @@ class IndicatorController extends Controller
             return ApiResponse::error('Internal server error', 500);
         }
     }
+
+    /**
+     * @OA\Delete(
+     *     path="/indicators/{id}",
+     *     tags={"Indicators"},
+     *     summary="Delete indicator",
+     *     description="Deletes an indicator. Fails if the indicator is currently assigned to one or more projects.",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="Indicator ID to delete",
+     *         @OA\Schema(type="integer", example=1)
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Indicator deleted successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Indicator deleted successfully")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Business validation error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Cannot delete an indicator that is assigned to one or more projects.")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal server error"
+     *     )
+     * )
+     */
+    public function destroy(int $id): JsonResponse
+    {
+        try {
+            $this->indicatorService->deleteIndicator($id);
+            return ApiResponse::success('Indicator deleted successfully', 200);
+        } catch (RuntimeException $e) {
+            return ApiResponse::error($e->getMessage(), 400);
+        } catch (\Exception $e) {
+            return ApiResponse::error('Internal server error', 500);
+        }
+    }
 }

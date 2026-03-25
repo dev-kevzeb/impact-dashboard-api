@@ -698,4 +698,28 @@ class MeasureController extends Controller
             return ApiResponse::error('Internal server error', 500);
         }
     }
+
+    /**
+     * @OA\Delete(
+     *     path="/measures/{id}",
+     *     tags={"Measures"},
+     *     summary="Eliminar medida",
+     *     description="Elimina una medida. No se puede eliminar si tiene indicadores asociados.",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\Response(response=200, description="Medida eliminada exitosamente"),
+     *     @OA\Response(response=400, description="Error: medida tiene indicadores o no encontrada")
+     * )
+     */
+    public function destroy(int $id): JsonResponse
+    {
+        try {
+            $this->measureService->deleteMeasure($id);
+            return ApiResponse::success('Measure deleted successfully', 200);
+        } catch (RuntimeException $e) {
+            return ApiResponse::error($e->getMessage(), 400);
+        } catch (\Exception $e) {
+            return ApiResponse::error('Internal server error', 500);
+        }
+    }
 }

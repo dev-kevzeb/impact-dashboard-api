@@ -368,4 +368,37 @@ class IndicatorTypeController extends Controller
             return ApiResponse::error($exception->getMessage(), 400);
         }
     }
+
+    /**
+     * @OA\Delete(
+     *     path="/indicator-types/{id}",
+     *     tags={"Indicator Types"},
+     *     summary="Eliminar tipo de indicador",
+     *     description="Elimina un tipo de indicador. No se puede eliminar si está asignado a indicadores existentes.",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="ID del tipo de indicador a eliminar",
+     *         @OA\Schema(type="integer", example=1)
+     *     ),
+     *     @OA\Response(response=200, description="Tipo de indicador eliminado exitosamente",
+     *         @OA\JsonContent(@OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Indicator Type deleted successfully"))
+     *     ),
+     *     @OA\Response(response=400, description="Error: tipo asignado a indicadores o no encontrado")
+     * )
+     */
+    public function destroy(int $id): JsonResponse
+    {
+        try {
+            $this->indicatorTypeService->deleteIndicatorType($id);
+            return ApiResponse::success('Indicator Type deleted successfully', 200);
+        } catch (RuntimeException $e) {
+            return ApiResponse::error($e->getMessage(), 400);
+        } catch (\Exception $e) {
+            return ApiResponse::error('Internal server error', 500);
+        }
+    }
 }
