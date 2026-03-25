@@ -195,6 +195,7 @@ Route::prefix('v1')->group(function () {
         Route::get('agencies/search', [AgencyController::class, 'search'])->middleware('scope:agencies');
         Route::get('agencies/{id}', [AgencyController::class, 'show'])->middleware('scope:agencies');
         Route::put('agencies/{id}', [AgencyController::class, 'update'])->middleware('scope:agencies:write');
+        Route::delete('agencies/{id}', [AgencyController::class, 'destroy'])->middleware('scope:agencies:write');
         Route::get('agencies/get/project', [AgencyController::class, 'getAgenciesExcluding'])->middleware('scope:agencies');
 
         // API Routes para Indicator Type

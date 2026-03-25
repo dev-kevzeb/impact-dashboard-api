@@ -599,7 +599,9 @@
                                     "email",
                                     "password",
                                     "password_confirmation",
-                                    "role_name"
+                                    "role_name",
+                                    "country_id",
+                                    "altcha"
                                 ],
                                 "properties": {
                                     "name": {
@@ -627,6 +629,16 @@
                                             "country-manager"
                                         ],
                                         "example": "project-manager"
+                                    },
+                                    "country_id": {
+                                        "description": "Country identifier.",
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "altcha": {
+                                        "description": "Base64 ALTCHA payload solved by the widget.",
+                                        "type": "string",
+                                        "example": "eyJhbGdvcml0aG0iOiJTSEEtMjU2IiwiY2hhbGxlbmdlIjoiLi4uIiwibnVtYmVyIjo0Mjg1Nywic2FsdCI6Ii4uLiIsInNpZ25hdHVyZSI6Ii4uLiJ9"
                                     }
                                 },
                                 "type": "object"
@@ -670,7 +682,89 @@
                         "description": "Business logic error"
                     },
                     "422": {
-                        "description": "Validation error"
+                        "description": "Validation error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Validation error"
+                                        },
+                                        "errors": {
+                                            "properties": {
+                                                "altcha": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "Captcha validation failed. Please try again."
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/captcha/challenge": {
+            "get": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Get ALTCHA challenge",
+                "operationId": "02cfe1c8f7b2ee622a03c8f3207697bb",
+                "responses": {
+                    "200": {
+                        "description": "Challenge generated",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "required": [
+                                        "algorithm",
+                                        "challenge",
+                                        "salt",
+                                        "signature",
+                                        "maxnumber"
+                                    ],
+                                    "properties": {
+                                        "algorithm": {
+                                            "type": "string",
+                                            "example": "SHA-256"
+                                        },
+                                        "challenge": {
+                                            "type": "string",
+                                            "example": "f1cc4e53f5f4d4..."
+                                        },
+                                        "salt": {
+                                            "type": "string",
+                                            "example": "a2b3c4d5e6..."
+                                        },
+                                        "signature": {
+                                            "type": "string",
+                                            "example": "YjA4YWQ1Yj..."
+                                        },
+                                        "maxnumber": {
+                                            "type": "integer",
+                                            "example": 100000
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Captcha configuration error"
                     }
                 }
             }
@@ -8541,6 +8635,76 @@
                                 }
                             }
                         }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Programs"
+                ],
+                "summary": "Delete program",
+                "description": "Deletes a program and its cascading relationships. Fails if the program still has associated projects.",
+                "operationId": "a7a57a2163b0baf1c4a912171bd59d83",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Program ID to delete",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Program deleted successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Program deleted successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Business validation error (e.g. program has projects)",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Cannot delete a program that still has associated projects."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error"
                     }
                 },
                 "security": [
