@@ -708,7 +708,8 @@ class MeasureController extends Controller
      *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
      *     @OA\Response(response=200, description="Medida eliminada exitosamente"),
-     *     @OA\Response(response=400, description="Error: medida tiene indicadores o no encontrada")
+     *     @OA\Response(response=400, description="Error: medida tiene indicadores o no encontrada"),
+     *     @OA\Response(response=500, description="Internal server error")
      * )
      */
     public function destroy(int $id): JsonResponse
