@@ -203,6 +203,7 @@ Route::prefix('v1')->group(function () {
         Route::get('indicator-types/search', [IndicatorTypeController::class, 'search'])->middleware('scope:indicator_types');
         Route::get('indicator-types/{id}', [IndicatorTypeController::class, 'show'])->middleware('scope:indicator_types');
         Route::put('indicator-types/{id}', [IndicatorTypeController::class, 'update'])->middleware('scope:indicator_types:write');
+        Route::delete('indicator-types/{id}', [IndicatorTypeController::class, 'destroy'])->middleware('scope:indicator_types:write');
 
         // API Routes para Indicator
         Route::get('indicators', [IndicatorController::class, 'index'])->middleware('scope:indicators');
@@ -210,12 +211,14 @@ Route::prefix('v1')->group(function () {
         Route::get('indicators/search', [IndicatorController::class, 'search'])->middleware('scope:indicators');
         Route::get('indicators/{id}', [IndicatorController::class, 'show'])->middleware('scope:indicators');
         Route::put('indicators/{id}', [IndicatorController::class, 'update'])->middleware('scope:indicators:write');
+        Route::delete('indicators/{id}', [IndicatorController::class, 'destroy'])->middleware('scope:indicators:write');
         Route::get('indicators/measure/{id}', [IndicatorController::class, 'getIndicatorsByMeasureId'])->middleware('scope:indicators');
 
         // API Routes para Measure
         Route::get('measures', [MeasureController::class, 'index'])->middleware('scope:measures');
         Route::post('measures', [MeasureController::class, 'store'])->middleware('scope:measures:write');
         Route::put('measures/{id}', [MeasureController::class, 'update'])->middleware('scope:measures:write');
+        Route::delete('measures/{id}', [MeasureController::class, 'destroy'])->middleware('scope:measures:write');
         Route::get('measures/search', [MeasureController::class, 'search'])->middleware('scope:measures');
         Route::get('measures/{id}', [MeasureController::class, 'show'])->middleware('scope:measures');
         Route::get('measures/strategic-output/{id}', [MeasureController::class, 'listByStrategicOutput'])->middleware('scope:measures');
