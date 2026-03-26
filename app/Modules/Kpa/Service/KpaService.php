@@ -75,4 +75,13 @@ class KpaService
     public function getKpasPaginated(?string $search, int $perPage){
         return $this->kpaRepository->getPaginated($search, $perPage);
     }
+
+    public function deleteKpa(int $id): void
+    {
+        $kpa = $this->kpaRepository->findById($id);
+        if ($kpa->countries()->count() > 0) {
+            throw new RuntimeException('Cannot delete a KPA that is assigned to countries.');
+        }
+        $kpa->delete();
+    }
 }

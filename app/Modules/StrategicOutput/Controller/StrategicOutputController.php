@@ -9,6 +9,7 @@ use App\Modules\Measure\Service\MeasureService;
 use App\Modules\StrategicOutput\Service\StrategicOutputService;
 use App\Http\Controllers\Controller;
 use App\Http\Responses\ApiResponse;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use RuntimeException;
 
@@ -531,6 +532,28 @@ class StrategicOutputController extends Controller
             );
         } catch (RuntimeException $e) {
             return ApiResponse::error($e->getMessage(), 500);
+        } catch (\Exception $e) {
+            return ApiResponse::error('Internal server error', 500);
+        }
+    }
+
+    /**
+     * @OA\Delete(
+     *     path="/strategic-outputs/{id}",
+     *     summary="Delete a strategic output",
+     *     tags={"StrategicOutputs"},
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\Response(response=200, description="Strategic output deleted successfully"),
+     *     @OA\Response(response=400, description="Business rule violation or not found")
+     * )
+     */
+    public function destroy(int $id): JsonResponse
+    {
+        try {
+            $this->strategicOutputService->deleteStrategicOutput($id);
+            return ApiResponse::success('Strategic output deleted successfully', 200);
+        } catch (RuntimeException $e) {
+            return ApiResponse::error($e->getMessage(), 400);
         } catch (\Exception $e) {
             return ApiResponse::error('Internal server error', 500);
         }
