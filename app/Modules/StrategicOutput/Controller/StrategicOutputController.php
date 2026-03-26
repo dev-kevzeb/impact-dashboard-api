@@ -544,7 +544,8 @@ class StrategicOutputController extends Controller
      *     tags={"StrategicOutputs"},
      *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
      *     @OA\Response(response=200, description="Strategic output deleted successfully"),
-     *     @OA\Response(response=400, description="Business rule violation or not found")
+     *     @OA\Response(response=400, description="Business rule violation or not found"),
+     *     @OA\Response(response=500, description="Internal server error")
      * )
      */
     public function destroy(int $id): JsonResponse

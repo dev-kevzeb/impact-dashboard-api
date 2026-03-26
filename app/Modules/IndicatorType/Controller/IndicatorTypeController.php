@@ -387,7 +387,8 @@ class IndicatorTypeController extends Controller
      *         @OA\JsonContent(@OA\Property(property="success", type="boolean", example=true),
      *             @OA\Property(property="message", type="string", example="Indicator Type deleted successfully"))
      *     ),
-     *     @OA\Response(response=400, description="Error: tipo asignado a indicadores o no encontrado")
+     *     @OA\Response(response=400, description="Error: tipo asignado a indicadores o no encontrado"),
+     *     @OA\Response(response=500, description="Internal server error")
      * )
      */
     public function destroy(int $id): JsonResponse
