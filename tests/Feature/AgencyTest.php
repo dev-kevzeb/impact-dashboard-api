@@ -3,6 +3,9 @@
 namespace Tests\Feature;
 
 use App\Modules\Agency\Domain\Agency;
+use App\Modules\Program\Domain\Program;
+use App\Modules\Project\Domain\Project;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -207,6 +210,48 @@ class AgencyTest extends TestCase
     public function test_search_returns_not_found(): void
     {
         $response = $this->getJson(self::BASE_URL . '/search?name=xyz', $this->authHeaders());
+
+        $response->assertStatus(404)
+            ->assertJsonPath('message', 'Agency not Found');
+    }
+
+    public function test_can_delete_agency_without_relations(): void
+    {
+        $agency = Agency::factory()->create();
+
+        $response = $this->deleteJson(self::BASE_URL . "/{$agency->id}", [], $this->authHeaders());
+
+        $response->assertOk()
+            ->assertJsonPath('message', 'Agency deleted successfully');
+
+        $this->assertDatabaseMissing('agency', ['id' => $agency->id]);
+    }
+
+    public function test_cannot_delete_agency_with_project_relations(): void
+    {
+        $agency = Agency::factory()->create();
+        $program = Program::factory()->create();
+        $project = Project::factory()->create(['program_id' => $program->id]);
+
+        DB::table('project_agency')->insert([
+            'project_id' => $project->id,
+            'agency_id' => $agency->id,
+            'contribution' => 0,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $response = $this->deleteJson(self::BASE_URL . "/{$agency->id}", [], $this->authHeaders());
+
+        $response->assertStatus(409)
+            ->assertJsonPath('success', false);
+
+        $this->assertDatabaseHas('agency', ['id' => $agency->id]);
+    }
+
+    public function test_delete_returns_not_found_for_non_existent_agency(): void
+    {
+        $response = $this->deleteJson(self::BASE_URL . '/999999', [], $this->authHeaders());
 
         $response->assertStatus(404)
             ->assertJsonPath('message', 'Agency not Found');

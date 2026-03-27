@@ -86,4 +86,15 @@ class AgencyService
     {
         return $this->agencyRepository->getPaginated($perPage, $search);
     }
+
+    public function deleteAgency(int $id): void
+    {
+        $this->agencyRepository->findById($id);
+
+        if ($this->agencyRepository->hasRelations($id)) {
+            throw new RuntimeException('The agency cannot be deleted because it is related to other records.');
+        }
+
+        $this->agencyRepository->delete($id);
+    }
 }

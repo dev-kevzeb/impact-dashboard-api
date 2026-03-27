@@ -45,4 +45,19 @@ class AgencyRepository extends AbstractRepository implements RepositoryInterface
         if( $search ) $query->whereRaw('lower(name) LIKE lower(?)',['%' . $search . '%']);
         return $query->paginate($perPage);
     }
+
+    public function hasRelations(int $agencyId): bool
+    {
+        return $this->model
+            ->newQuery()
+            ->whereKey($agencyId)
+            ->whereHas('projectAgencies')
+            ->exists();
+    }
+
+    public function delete(int $id): void
+    {
+        $agency = $this->findById($id);
+        $agency->delete();
+    }
 }
