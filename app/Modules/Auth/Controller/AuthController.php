@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegisterRequest;
 use App\Http\Resources\UserResource;
-use App\Modules\Auth\Service\AltchaCaptchaService;
 use App\Modules\Auth\Service\AuthService;
 use App\Http\Responses\ApiResponse;
 use Illuminate\Http\JsonResponse;
@@ -18,12 +17,10 @@ use PHPOpenSourceSaver\JWTAuth\Exceptions\TokenInvalidException;
 class AuthController extends Controller
 {
     private AuthService $authService;
-    private AltchaCaptchaService $altchaCaptchaService;
 
-    public function __construct(AuthService $authService, AltchaCaptchaService $altchaCaptchaService)
+    public function __construct(AuthService $authService)
     {
         $this->authService = $authService;
-        $this->altchaCaptchaService = $altchaCaptchaService;
     }
 
     /**
@@ -74,7 +71,7 @@ class AuthController extends Controller
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
-    *             required={"name", "email", "password", "password_confirmation", "role_name", "country_id", "altcha"},
+    *             required={"name", "email", "password", "password_confirmation", "role_name", "country_id"},
      *             @OA\Property(property="name", type="string", example="John Doe"),
      *             @OA\Property(property="email", type="string", format="email", example="john@example.com"),
      *             @OA\Property(property="password", type="string", example="password123"),
@@ -86,8 +83,7 @@ class AuthController extends Controller
      *                 example="project-manager",
      *                 description="Role to assign (only project-manager and country-manager allowed)"
     *             ),
-    *             @OA\Property(property="country_id", type="integer", example=1, description="Country identifier."),
-    *             @OA\Property(property="altcha", type="string", example="eyJhbGdvcml0aG0iOiJTSEEtMjU2IiwiY2hhbGxlbmdlIjoiLi4uIiwibnVtYmVyIjo0Mjg1Nywic2FsdCI6Ii4uLiIsInNpZ25hdHVyZSI6Ii4uLiJ9", description="Base64 ALTCHA payload solved by the widget.")
+    *             @OA\Property(property="country_id", type="integer", example=1, description="Country identifier.")
      *         )
      *     ),
      *     @OA\Response(
@@ -115,9 +111,9 @@ class AuthController extends Controller
     *                 property="errors",
     *                 type="object",
     *                 @OA\Property(
-    *                     property="altcha",
+    *                     property="email",
     *                     type="array",
-    *                     @OA\Items(type="string", example="Captcha validation failed. Please try again.")
+    *                     @OA\Items(type="string", example="This email is already registered.")
     *                 )
     *             )
     *         )
@@ -128,7 +124,6 @@ class AuthController extends Controller
     {
         try {
             $validated = $request->validated();
-            $this->altchaCaptchaService->assertValidPayload($validated['altcha']);
 
             $result = $this->authService->register(
                 $validated['name'],
@@ -153,34 +148,7 @@ class AuthController extends Controller
         }
     }
 
-    /**
-     * @OA\Get(
-     *     path="/auth/captcha/challenge",
-     *     tags={"Authentication"},
-     *     summary="Get ALTCHA challenge",
-        *     @OA\Response(
-        *         response=200,
-        *         description="Challenge generated",
-        *         @OA\JsonContent(
-        *             required={"algorithm", "challenge", "salt", "signature", "maxnumber"},
-        *             @OA\Property(property="algorithm", type="string", example="SHA-256"),
-        *             @OA\Property(property="challenge", type="string", example="f1cc4e53f5f4d4..."),
-        *             @OA\Property(property="salt", type="string", example="a2b3c4d5e6..."),
-        *             @OA\Property(property="signature", type="string", example="YjA4YWQ1Yj..."),
-        *             @OA\Property(property="maxnumber", type="integer", example=100000)
-        *         )
-        *     ),
-     *     @OA\Response(response=500, description="Captcha configuration error")
-     * )
-     */
-    public function captchaChallenge(): JsonResponse
-    {
-        try {
-            return response()->json($this->altchaCaptchaService->createChallenge());
-        } catch (RuntimeException $e) {
-            return ApiResponse::error($e->getMessage(), 500);
-        }
-    }
+
 
     /**
      * @OA\Post(
