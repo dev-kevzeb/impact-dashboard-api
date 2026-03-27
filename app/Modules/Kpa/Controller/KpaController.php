@@ -399,4 +399,27 @@ class KpaController extends Controller
             return ApiResponse::error('Internal server error', 500);
         }
     }
+
+    /**
+     * @OA\Delete(
+     *     path="/kpas/{id}",
+     *     summary="Delete a KPA",
+     *     tags={"KPAs"},
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\Response(response=200, description="KPA deleted successfully"),
+     *     @OA\Response(response=400, description="Business rule violation or not found"),
+     *     @OA\Response(response=500, description="Internal server error")
+     * )
+     */
+    public function destroy(int $id): JsonResponse
+    {
+        try {
+            $this->kpaService->deleteKpa($id);
+            return ApiResponse::success('KPA deleted successfully', 200);
+        } catch (RuntimeException $e) {
+            return ApiResponse::error($e->getMessage(), 400);
+        } catch (\Exception $e) {
+            return ApiResponse::error('Internal server error', 500);
+        }
+    }
 }

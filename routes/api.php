@@ -105,6 +105,7 @@ Route::prefix('v1')->group(function () {
         Route::get('kpas/search', [KpaController::class, 'search'])->middleware('scope:kpas');
         Route::get('kpas/{id}', [KpaController::class, 'show'])->middleware('scope:kpas');
         Route::put('kpas/{id}', [KpaController::class, 'update'])->middleware('scope:kpas:write');
+        Route::delete('kpas/{id}', [KpaController::class, 'destroy'])->middleware('scope:kpas:write');
 
         // API Routes para Users
         Route::get('users/pending', [UserController::class, 'pending'])->middleware('scope:users:write');
@@ -234,6 +235,7 @@ Route::prefix('v1')->group(function () {
         Route::get('strategic-outputs/search', [StrategicOutputController::class, 'search'])->middleware('scope:strategic_outputs');
         Route::get('strategic-outputs/{id}', [StrategicOutputController::class, 'show'])->middleware('scope:strategic_outputs');
         Route::put('strategic-outputs/{id}', [StrategicOutputController::class, 'update'])->middleware('scope:strategic_outputs:write');
+        Route::delete('strategic-outputs/{id}', [StrategicOutputController::class, 'destroy'])->middleware('scope:strategic_outputs:write');
         Route::get('strategic-outputs/country-kpa/{id}', [StrategicOutputController::class, 'showByCountryKpa'])->middleware('scope:strategic_outputs');
         Route::post('strategic-outputs-measures', [StrategicOutputController::class, 'addMeasure'])->middleware('scope:strategic_outputs:write');
         Route::post('strategic-outputs/remove-measure', [StrategicOutputController::class, 'removeMeasure'])->middleware('scope:strategic_outputs:write');
