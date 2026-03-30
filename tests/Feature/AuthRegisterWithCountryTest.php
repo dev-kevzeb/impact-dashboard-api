@@ -2,15 +2,15 @@
 
 namespace Tests\Feature;
 
-use AltchaOrg\Altcha\Altcha;
-use AltchaOrg\Altcha\ChallengeOptions;
-use AltchaOrg\Altcha\Hasher\Algorithm;
 use App\Modules\Country\Domain\Country;
 use App\Modules\Role\Domain\Role;
+use App\Modules\Auth\Service\RecaptchaService;
 use App\Modules\User\Domain\User;
 use App\Modules\UserRole\Domain\UserRole;
 use App\Modules\UserState\Domain\UserState;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
 
 class AuthRegisterWithCountryTest extends TestCase
@@ -23,53 +23,44 @@ class AuthRegisterWithCountryTest extends TestCase
     {
         parent::setUp();
 
-        config([
-            'services.altcha.hmac_key' => 'test-altcha-hmac-key-12345678901234567890',
-            'services.altcha.expire_seconds' => 300,
-            'services.altcha.max_number' => 1000,
-        ]);
+        config()->set('services.recaptcha.secret_key', 'test-secret');
+        config()->set('services.recaptcha.expected_hostname', 'localhost');
+
+        $this->fakeRecaptchaSuccess();
 
         // Seed required data
         $this->seed(\Database\Seeders\UserStateSeeder::class);
         $this->seed(\Database\Seeders\RoleSeeder::class);
     }
 
+    private function fakeRecaptchaSuccess(): void
+    {
+        Http::fake([
+            'https://www.google.com/recaptcha/api/siteverify' => Http::response([
+                'success' => true,
+                'hostname' => 'localhost',
+            ], 200),
+        ]);
+    }
+
+    private function fakeRecaptchaFailure(): void
+    {
+        Http::fake([
+            'https://www.google.com/recaptcha/api/siteverify' => Http::response([
+                'success' => false,
+                'hostname' => 'localhost',
+                'error-codes' => ['invalid-input-response'],
+            ], 200),
+        ]);
+    }
+
     private function postRegister(array $payload)
     {
-        if (!array_key_exists('altcha', $payload)) {
-            $payload['altcha'] = $this->generateValidAltchaPayload();
+        if (!array_key_exists('g-recaptcha-response', $payload)) {
+            $payload['g-recaptcha-response'] = 'test-recaptcha-token';
         }
 
         return $this->postJson(self::BASE_URL, $payload);
-    }
-
-    private function generateValidAltchaPayload(): string
-    {
-        $altcha = new Altcha((string) config('services.altcha.hmac_key'));
-        $challenge = $altcha->createChallenge(new ChallengeOptions(
-            maxNumber: (int) config('services.altcha.max_number', 1000),
-            expires: now()->addSeconds((int) config('services.altcha.expire_seconds', 300)),
-        ));
-
-        $algorithm = Algorithm::from($challenge->algorithm);
-        $solution = $altcha->solveChallenge(
-            $challenge->challenge,
-            $challenge->salt,
-            $algorithm,
-            $challenge->maxNumber,
-        );
-
-        $this->assertNotNull($solution, 'Failed to generate ALTCHA solution for test payload.');
-
-        $payload = [
-            'algorithm' => $challenge->algorithm,
-            'challenge' => $challenge->challenge,
-            'number' => $solution->number,
-            'salt' => $challenge->salt,
-            'signature' => $challenge->signature,
-        ];
-
-        return base64_encode(json_encode($payload, JSON_THROW_ON_ERROR));
     }
 
     /**
@@ -200,6 +191,64 @@ class AuthRegisterWithCountryTest extends TestCase
         $this->assertDatabaseMissing('user', [
             'email' => 'juan@test.com',
         ]);
+    }
+
+    /**
+     * Test: Cannot register without reCAPTCHA token
+     */
+    public function test_cannot_register_without_recaptcha_token(): void
+    {
+        $country = Country::factory()->create();
+
+        $payload = [
+            'name' => 'Juan Pérez',
+            'email' => 'juan@test.com',
+            'password' => 'password123',
+            'password_confirmation' => 'password123',
+            'role_name' => 'project-manager',
+            'country_id' => $country->id,
+            'g-recaptcha-response' => null,
+        ];
+
+        $response = $this->postRegister($payload);
+
+        $response->assertStatus(422)
+            ->assertJson(['success' => false])
+            ->assertJsonValidationErrors('g-recaptcha-response')
+            ->assertJsonPath('errors.g-recaptcha-response.0', 'reCAPTCHA validation is required.');
+    }
+
+    /**
+     * Test: Cannot register with invalid reCAPTCHA token
+     */
+    public function test_cannot_register_with_invalid_recaptcha_token(): void
+    {
+        $this->mock(RecaptchaService::class, function ($mock) {
+            $mock->shouldReceive('verify')
+                ->once()
+                ->andThrow(ValidationException::withMessages([
+                    'g-recaptcha-response' => ['reCAPTCHA validation failed. Please try again.'],
+                ]));
+        });
+
+        $country = Country::factory()->create();
+
+        $payload = [
+            'name' => 'Juan Pérez',
+            'email' => 'juan@test.com',
+            'password' => 'password123',
+            'password_confirmation' => 'password123',
+            'role_name' => 'project-manager',
+            'country_id' => $country->id,
+            'g-recaptcha-response' => 'invalid-recaptcha-token',
+        ];
+
+        $response = $this->postRegister($payload);
+
+        $response->assertStatus(422)
+            ->assertJson(['success' => false])
+            ->assertJsonValidationErrors('g-recaptcha-response')
+            ->assertJsonPath('errors.g-recaptcha-response.0', 'reCAPTCHA validation failed. Please try again.');
     }
 
     /**
@@ -538,92 +587,4 @@ class AuthRegisterWithCountryTest extends TestCase
 
     }
 
-    public function test_cannot_register_without_altcha(): void
-    {
-        $country = Country::factory()->create();
-
-        $payload = [
-            'name' => 'No Captcha',
-            'email' => 'nocaptcha@test.com',
-            'password' => 'password123',
-            'password_confirmation' => 'password123',
-            'role_name' => 'project-manager',
-            'country_id' => $country->id,
-            'altcha' => null,
-        ];
-
-        $response = $this->postJson(self::BASE_URL, $payload);
-
-        $response->assertStatus(422)
-            ->assertJsonValidationErrors('altcha')
-            ->assertJsonPath('errors.altcha.0', 'Captcha is required.');
-    }
-
-    public function test_cannot_register_with_invalid_altcha_payload(): void
-    {
-        $country = Country::factory()->create();
-
-        $payload = [
-            'name' => 'Invalid Captcha',
-            'email' => 'invalidcaptcha@test.com',
-            'password' => 'password123',
-            'password_confirmation' => 'password123',
-            'role_name' => 'project-manager',
-            'country_id' => $country->id,
-            'altcha' => base64_encode('{"invalid":true}'),
-        ];
-
-        $response = $this->postJson(self::BASE_URL, $payload);
-
-        $response->assertStatus(422)
-            ->assertJsonPath('success', false)
-            ->assertJsonPath('message', 'Validation error')
-            ->assertJsonPath('errors.altcha.0', 'Captcha validation failed. Please try again.');
-    }
-
-    public function test_cannot_reuse_altcha_payload(): void
-    {
-        $country = Country::factory()->create();
-        $altchaPayload = $this->generateValidAltchaPayload();
-
-        $firstPayload = [
-            'name' => 'First User',
-            'email' => 'first-altcha@test.com',
-            'password' => 'password123',
-            'password_confirmation' => 'password123',
-            'role_name' => 'project-manager',
-            'country_id' => $country->id,
-            'altcha' => $altchaPayload,
-        ];
-
-        $secondPayload = [
-            'name' => 'Second User',
-            'email' => 'second-altcha@test.com',
-            'password' => 'password123',
-            'password_confirmation' => 'password123',
-            'role_name' => 'project-manager',
-            'country_id' => $country->id,
-            'altcha' => $altchaPayload,
-        ];
-
-        $this->postJson(self::BASE_URL, $firstPayload)->assertCreated();
-
-        $this->postJson(self::BASE_URL, $secondPayload)
-            ->assertStatus(422)
-            ->assertJsonPath('errors.altcha.0', 'Captcha already used. Please retry.');
-    }
-
-    public function test_can_get_altcha_challenge(): void
-    {
-        $response = $this->getJson('/api/v1/auth/captcha/challenge');
-
-        $response->assertOk()
-            ->assertJsonStructure([
-                'algorithm',
-                'challenge',
-                'salt',
-                'signature',
-                'maxnumber',
-            ]);
-    }
 }

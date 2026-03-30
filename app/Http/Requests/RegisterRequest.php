@@ -35,7 +35,7 @@ class RegisterRequest extends FormRequest
             ],
             'role_name' => 'required|string|in:project-manager,country-manager',
             'country_id' => 'required|integer|exists:country,id',
-            'altcha' => 'required|string',
+            'g-recaptcha-response' => 'required|string',
         ];
     }
 
@@ -70,8 +70,8 @@ class RegisterRequest extends FormRequest
             'country_id.integer' => 'Invalid country selection.',
             'country_id.exists' => 'The selected country does not exist.',
 
-            'altcha.required' => 'Captcha is required.',
-            'altcha.string' => 'Captcha payload must be a string.',
+            'g-recaptcha-response.required' => 'reCAPTCHA validation is required.',
+            'g-recaptcha-response.string' => 'Invalid reCAPTCHA token format.',
         ];
     }
 

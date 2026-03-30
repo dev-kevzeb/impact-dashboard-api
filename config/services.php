@@ -34,11 +34,10 @@ return [
             'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
         ],
     ],
-
-    'altcha' => [
-        'hmac_key' => env('ALTCHA_HMAC_KEY'),
-        'expire_seconds' => (int) env('ALTCHA_EXPIRE_SECONDS', 300),
-        'max_number' => (int) env('ALTCHA_MAX_NUMBER', 100000),
-    ],
+        'recaptcha' => [
+            'site_key' => env('RECAPTCHA_SITE_KEY'),
+            'secret_key' => env('RECAPTCHA_SECRET_KEY'),
+            'expected_hostname' => env('RECAPTCHA_EXPECTED_HOSTNAME'),
+        ],
 
 ];
