@@ -104,6 +104,7 @@ Route::prefix('v1')->group(function () {
         Route::get('kpas/search', [KpaController::class, 'search'])->middleware('scope:kpas');
         Route::get('kpas/{id}', [KpaController::class, 'show'])->middleware('scope:kpas');
         Route::put('kpas/{id}', [KpaController::class, 'update'])->middleware('scope:kpas:write');
+        Route::delete('kpas/{id}', [KpaController::class, 'destroy'])->middleware('scope:kpas:write');
 
         // API Routes para Users
         Route::get('users/pending', [UserController::class, 'pending'])->middleware('scope:users:write');
@@ -203,6 +204,7 @@ Route::prefix('v1')->group(function () {
         Route::get('indicator-types/search', [IndicatorTypeController::class, 'search'])->middleware('scope:indicator_types');
         Route::get('indicator-types/{id}', [IndicatorTypeController::class, 'show'])->middleware('scope:indicator_types');
         Route::put('indicator-types/{id}', [IndicatorTypeController::class, 'update'])->middleware('scope:indicator_types:write');
+        Route::delete('indicator-types/{id}', [IndicatorTypeController::class, 'destroy'])->middleware('scope:indicator_types:write');
 
         // API Routes para Indicator
         Route::get('indicators', [IndicatorController::class, 'index'])->middleware('scope:indicators');
@@ -210,12 +212,14 @@ Route::prefix('v1')->group(function () {
         Route::get('indicators/search', [IndicatorController::class, 'search'])->middleware('scope:indicators');
         Route::get('indicators/{id}', [IndicatorController::class, 'show'])->middleware('scope:indicators');
         Route::put('indicators/{id}', [IndicatorController::class, 'update'])->middleware('scope:indicators:write');
+        Route::delete('indicators/{id}', [IndicatorController::class, 'destroy'])->middleware('scope:indicators:write');
         Route::get('indicators/measure/{id}', [IndicatorController::class, 'getIndicatorsByMeasureId'])->middleware('scope:indicators');
 
         // API Routes para Measure
         Route::get('measures', [MeasureController::class, 'index'])->middleware('scope:measures');
         Route::post('measures', [MeasureController::class, 'store'])->middleware('scope:measures:write');
         Route::put('measures/{id}', [MeasureController::class, 'update'])->middleware('scope:measures:write');
+        Route::delete('measures/{id}', [MeasureController::class, 'destroy'])->middleware('scope:measures:write');
         Route::get('measures/search', [MeasureController::class, 'search'])->middleware('scope:measures');
         Route::get('measures/{id}', [MeasureController::class, 'show'])->middleware('scope:measures');
         Route::get('measures/strategic-output/{id}', [MeasureController::class, 'listByStrategicOutput'])->middleware('scope:measures');
@@ -231,6 +235,7 @@ Route::prefix('v1')->group(function () {
         Route::get('strategic-outputs/search', [StrategicOutputController::class, 'search'])->middleware('scope:strategic_outputs');
         Route::get('strategic-outputs/{id}', [StrategicOutputController::class, 'show'])->middleware('scope:strategic_outputs');
         Route::put('strategic-outputs/{id}', [StrategicOutputController::class, 'update'])->middleware('scope:strategic_outputs:write');
+        Route::delete('strategic-outputs/{id}', [StrategicOutputController::class, 'destroy'])->middleware('scope:strategic_outputs:write');
         Route::get('strategic-outputs/country-kpa/{id}', [StrategicOutputController::class, 'showByCountryKpa'])->middleware('scope:strategic_outputs');
         Route::post('strategic-outputs-measures', [StrategicOutputController::class, 'addMeasure'])->middleware('scope:strategic_outputs:write');
         Route::post('strategic-outputs/remove-measure', [StrategicOutputController::class, 'removeMeasure'])->middleware('scope:strategic_outputs:write');

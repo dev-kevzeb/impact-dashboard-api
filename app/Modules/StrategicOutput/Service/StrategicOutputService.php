@@ -4,6 +4,7 @@ namespace App\Modules\StrategicOutput\Service;
 use App\Modules\CountryKpa\Repository\CountryKpaRepository;
 use App\Modules\StrategicOutput\Domain\StrategicOutput;
 use App\Modules\StrategicOutput\Repository\StrategicOutputRepository;
+use RuntimeException;
 
 class StrategicOutputService{
 
@@ -107,5 +108,14 @@ class StrategicOutputService{
     public function getByCountryKpaIds(array $countryKpaIds)
     {
         return $this->strategicOutputRepository->getByCountryKpaIds($countryKpaIds);
+    }
+
+    public function deleteStrategicOutput(int $id): void
+    {
+        $strategicOutput = $this->strategicOutputRepository->findById($id);
+        if ($strategicOutput->measures()->count() > 0) {
+            throw new RuntimeException('Cannot delete a strategic output that has associated measures.');
+        }
+        $strategicOutput->delete();
     }
 }

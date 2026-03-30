@@ -53,4 +53,13 @@ class IndicatorTypeService
     {
         return $this->indicatorTypeRepository->getPaginated($perPage, $search);
     }
+
+    public function deleteIndicatorType(int $id): void
+    {
+        $indicatorType = $this->indicatorTypeRepository->findById($id);
+        if ($indicatorType->indicators()->count() > 0) {
+            throw new RuntimeException('Cannot delete an indicator type that is assigned to one or more indicators.');
+        }
+        $indicatorType->delete();
+    }
 }
