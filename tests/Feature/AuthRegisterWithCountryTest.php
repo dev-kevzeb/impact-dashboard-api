@@ -4,10 +4,13 @@ namespace Tests\Feature;
 
 use App\Modules\Country\Domain\Country;
 use App\Modules\Role\Domain\Role;
+use App\Modules\Auth\Service\RecaptchaService;
 use App\Modules\User\Domain\User;
 use App\Modules\UserRole\Domain\UserRole;
 use App\Modules\UserState\Domain\UserState;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
 
 class AuthRegisterWithCountryTest extends TestCase
@@ -20,13 +23,43 @@ class AuthRegisterWithCountryTest extends TestCase
     {
         parent::setUp();
 
+        config()->set('services.recaptcha.secret_key', 'test-secret');
+        config()->set('services.recaptcha.expected_hostname', 'localhost');
+
+        $this->fakeRecaptchaSuccess();
+
         // Seed required data
         $this->seed(\Database\Seeders\UserStateSeeder::class);
         $this->seed(\Database\Seeders\RoleSeeder::class);
     }
 
+    private function fakeRecaptchaSuccess(): void
+    {
+        Http::fake([
+            'https://www.google.com/recaptcha/api/siteverify' => Http::response([
+                'success' => true,
+                'hostname' => 'localhost',
+            ], 200),
+        ]);
+    }
+
+    private function fakeRecaptchaFailure(): void
+    {
+        Http::fake([
+            'https://www.google.com/recaptcha/api/siteverify' => Http::response([
+                'success' => false,
+                'hostname' => 'localhost',
+                'error-codes' => ['invalid-input-response'],
+            ], 200),
+        ]);
+    }
+
     private function postRegister(array $payload)
     {
+        if (!array_key_exists('g-recaptcha-response', $payload)) {
+            $payload['g-recaptcha-response'] = 'test-recaptcha-token';
+        }
+
         return $this->postJson(self::BASE_URL, $payload);
     }
 
@@ -158,6 +191,64 @@ class AuthRegisterWithCountryTest extends TestCase
         $this->assertDatabaseMissing('user', [
             'email' => 'juan@test.com',
         ]);
+    }
+
+    /**
+     * Test: Cannot register without reCAPTCHA token
+     */
+    public function test_cannot_register_without_recaptcha_token(): void
+    {
+        $country = Country::factory()->create();
+
+        $payload = [
+            'name' => 'Juan Pérez',
+            'email' => 'juan@test.com',
+            'password' => 'password123',
+            'password_confirmation' => 'password123',
+            'role_name' => 'project-manager',
+            'country_id' => $country->id,
+            'g-recaptcha-response' => null,
+        ];
+
+        $response = $this->postRegister($payload);
+
+        $response->assertStatus(422)
+            ->assertJson(['success' => false])
+            ->assertJsonValidationErrors('g-recaptcha-response')
+            ->assertJsonPath('errors.g-recaptcha-response.0', 'reCAPTCHA validation is required.');
+    }
+
+    /**
+     * Test: Cannot register with invalid reCAPTCHA token
+     */
+    public function test_cannot_register_with_invalid_recaptcha_token(): void
+    {
+        $this->mock(RecaptchaService::class, function ($mock) {
+            $mock->shouldReceive('verify')
+                ->once()
+                ->andThrow(ValidationException::withMessages([
+                    'g-recaptcha-response' => ['reCAPTCHA validation failed. Please try again.'],
+                ]));
+        });
+
+        $country = Country::factory()->create();
+
+        $payload = [
+            'name' => 'Juan Pérez',
+            'email' => 'juan@test.com',
+            'password' => 'password123',
+            'password_confirmation' => 'password123',
+            'role_name' => 'project-manager',
+            'country_id' => $country->id,
+            'g-recaptcha-response' => 'invalid-recaptcha-token',
+        ];
+
+        $response = $this->postRegister($payload);
+
+        $response->assertStatus(422)
+            ->assertJson(['success' => false])
+            ->assertJsonValidationErrors('g-recaptcha-response')
+            ->assertJsonPath('errors.g-recaptcha-response.0', 'reCAPTCHA validation failed. Please try again.');
     }
 
     /**
