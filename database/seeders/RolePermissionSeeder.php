@@ -3,8 +3,8 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 
 class RolePermissionSeeder extends Seeder
 {
@@ -15,7 +15,32 @@ class RolePermissionSeeder extends Seeder
         $admin = Role::where('name', 'admin')->where('guard_name', 'api')->first();
         if ($admin) {
             $adminPermissions = [
-                '*:*',
+                'users:read',
+                'users:write',
+                'user_states:read',
+                'user_states:write',
+                'program_states:read',
+                'program_states:write',
+                'project_states:read',
+                'project_states:write',
+                'measures:read',
+                'measures:write',
+                'sdgs:read',
+                'sdgs:write',
+                'countries:read',
+                'countries:write',
+                'currencies:read',
+                'currencies:write',
+                'donors:read',
+                'donors:write',
+                'beneficiaries:read',
+                'beneficiaries:write',
+                'kpas:read',
+                'kpas:write',
+                'indicator_types:read',
+                'indicator_types:write',
+                'agencies:read',
+                'agencies:write',
             ];
 
             $permissions = Permission::whereIn('name', $adminPermissions)->get();
@@ -53,6 +78,13 @@ class RolePermissionSeeder extends Seeder
                 'indicators:read',
                 'indicators:write',
                 'indicator_types:read',
+                'indicator_types:write',
+                'countries:read',
+                'countries:write',
+                'country_kpas:read',
+                'country_kpas:write',
+                'country_kpa_users:read',
+                'country_kpa_users:write',
             ];
 
             $permissions = Permission::whereIn('name', $projectManagerPermissions)->get();
