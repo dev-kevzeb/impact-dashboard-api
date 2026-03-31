@@ -44,5 +44,10 @@ class IndicatorRepository extends AbstractRepository implements RepositoryInterf
     {
         return $this->model->where('measure_id', $measureId)->pluck('target')->toArray();
     }
+
+    public function getWithTypeByMeasureId(int $measureId)
+    {
+        return $this->model->where('measure_id', $measureId)->with('type')->get();
+    }
 }
 

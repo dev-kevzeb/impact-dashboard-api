@@ -40,8 +40,8 @@ class StatisticsService
         $measure = $this->measureRepository->findById($measureId);
         if (!$measure) throw new \RuntimeException("Measure not found");
 
-        $indicators = $this->indicatorRepository->getIdsByMeasure($measureId);
-        if(empty($indicators)) return [
+        $indicators = $this->indicatorRepository->getWithTypeByMeasureId($measureId);
+        if ($indicators->isEmpty()) return [
             "name" => $measure->name,
             "implementation" => 0,
             "resource" => 0,
@@ -50,14 +50,37 @@ class StatisticsService
             "donors" => []
         ];
 
-        $projectIds = $this->projectIndicatorRepository->getProjectIdsByIndicatorIds($indicators);
-        if(empty($projectIds)) {
-            $targets = $this->indicatorRepository->getTargetsByMeasureId($measureId);
-            $target = array_sum($targets);
-            
+        $isBottomUp = (bool) ($indicators->first()->type->is_bottom_up ?? true);
+
+        if (!$isBottomUp) {
+            // TOP-DOWN: implementation = avg(actual_value / target * 100) over indicators
+            $tdTotal = 0;
+            $tdCount = 0;
+            foreach ($indicators as $indicator) {
+                if ($indicator->actual_value !== null && $indicator->target > 0) {
+                    $tdTotal += TopDown::calculate((float) $indicator->actual_value, (float) $indicator->target)->value();
+                    $tdCount++;
+                }
+            }
+            $implementation = $tdCount > 0 ? round($tdTotal / $tdCount, 2) : 0;
+
             return [
                 "name" => $measure->name,
-                "implementation" => TopDown::calculate($target/5, $target)->value(),
+                "implementation" => $implementation,
+                "resource" => 0,
+                "beneficiaries" => [],
+                "agencies" => [],
+                "donors" => []
+            ];
+        }
+
+        // BOTTOM-UP: implementation = Σ(θ_i × W_i) × 100, using project.weight directly
+        $indicatorIds = $indicators->pluck('id')->toArray();
+        $projectIds = $this->projectIndicatorRepository->getProjectIdsByIndicatorIds($indicatorIds);
+        if (empty($projectIds)) {
+            return [
+                "name" => $measure->name,
+                "implementation" => 0,
                 "resource" => 0,
                 "beneficiaries" => [],
                 "agencies" => [],
@@ -68,39 +91,31 @@ class StatisticsService
         $projects = $this->projectRepository->getByIds($projectIds);
 
         $chartData = [];
-        $total = $projects->count();
-        $weightSum = (float) $projects->sum(fn($project) => (float) ($project->weight ?? 0));
         $resource = 0;
 
-        $agenciesContribution = [];
-
         foreach ($projects as $project) {
-            $effectiveWeight = $weightSum > 0
-                ? ((float) ($project->weight ?? 0) / $weightSum)
-                : (1 / $total);
-
             $chartData[] = [
-                'implementation' => $project->progress/100,
-                'weight' => $effectiveWeight,
+                'implementation' => $project->progress / 100,
+                'weight' => (float) ($project->weight ?? 0),
             ];
             $resource += $project->project_budget;
         }
 
         $implementation = BottomUp::calculate($chartData)->value();
 
-        $allDonorsContributions = $projects->flatMap(function ($project) use ($total, $weightSum) {
-            $effectiveWeight = $weightSum > 0
-                ? ((float) ($project->weight ?? 0) / $weightSum)
-                : (1 / $total);
-
-            return $this->calculateDonorsContribution($project->donors, $project->progress/100, $effectiveWeight);
+        $allDonorsContributions = $projects->flatMap(function ($project) {
+            return $this->calculateDonorsContribution(
+                $project->donors,
+                $project->progress / 100,
+                (float) ($project->weight ?? 0)
+            );
         });
-        $allAgenciesContributions = $projects->flatMap(function ($project) use ($total, $weightSum) {
-            $effectiveWeight = $weightSum > 0
-                ? ((float) ($project->weight ?? 0) / $weightSum)
-                : (1 / $total);
-
-            return $this->calculateAgenciesContribution($project->agencies, $project->progress/100, $effectiveWeight);
+        $allAgenciesContributions = $projects->flatMap(function ($project) {
+            return $this->calculateAgenciesContribution(
+                $project->agencies,
+                $project->progress / 100,
+                (float) ($project->weight ?? 0)
+            );
         });
 
         $donorsContribution = $allDonorsContributions->groupBy('id')->map(function ($group) use ($implementation) {
@@ -110,8 +125,8 @@ class StatisticsService
                 'contribution' => $implementation > 0 ? round($group->sum('contribution') / $implementation * 100, 2) : 0
             ];
         })->values()->toArray();
-        
-        $agenciesContribution = $allAgenciesContributions->groupBy('id')->map(function ($group)use ($implementation) {
+
+        $agenciesContribution = $allAgenciesContributions->groupBy('id')->map(function ($group) use ($implementation) {
             return [
                 'id' => $group->first()['id'],
                 'name' => $group->first()['name'],
@@ -121,7 +136,7 @@ class StatisticsService
 
         $beneficiaries = $projects->map(fn($project) => $project->beneficiary)->filter()->unique('id')->values();
 
-         return [
+        return [
             "name" => $measure->name,
             "implementation" => $implementation,
             "resource" => $resource,
@@ -217,7 +232,7 @@ class StatisticsService
             "donors" => []
         ];
 
-        $total = 0;
+        $weightedTotal = 0;
         $measures = 0;
         $resource = 0;
         $beneficiaries = collect();
@@ -226,8 +241,9 @@ class StatisticsService
 
         foreach ($strategicOutputs as $so) {
             $implementation = $this->getStrategicOutputImplementation($so->id);
-            $total += $implementation['implementation'];
-            $measures += $implementation['total'];
+            $soMeasureCount = $implementation['total'];
+            $weightedTotal += $implementation['implementation'] * $soMeasureCount;
+            $measures += $soMeasureCount;
             $resource += $implementation['resource'];
             $beneficiaries = $beneficiaries->merge($implementation['beneficiaries']);
             $agenciesRaw = $agenciesRaw->merge($implementation['agencies']);
@@ -259,7 +275,7 @@ class StatisticsService
         
         return [
             "name" => "{$measures} measures",
-            "implementation" => $total / $strategicOutputs->count(),
+            "implementation" => $measures > 0 ? round($weightedTotal / $measures, 2) : 0,
             "total" => $measures,
             "resource" => $resource,
             "beneficiaries" => $beneficiaries,
@@ -281,7 +297,7 @@ class StatisticsService
             "donors" => []
         ];
 
-        $total = 0;
+        $weightedTotal = 0;
         $measures = 0;
         $resource = 0;
 
@@ -291,8 +307,9 @@ class StatisticsService
 
         foreach ($kpas as $kpa) {
             $implementation = $this->getKpaImplementation($kpa->id);
-            $total += $implementation['implementation'];
-            $measures += $implementation['total'];
+            $kpaMeasureCount = $implementation['total'];
+            $weightedTotal += $implementation['implementation'] * $kpaMeasureCount;
+            $measures += $kpaMeasureCount;
             $resource += $implementation['resource'];
             
             $kpaBeneficiaries[] = [
@@ -327,7 +344,7 @@ class StatisticsService
 
         return [
             "name" => "{$measures} measures ",
-            "implementation" => $total / $kpas->count(),
+            "implementation" => $measures > 0 ? round($weightedTotal / $measures, 2) : 0,
             "resource" => $resource,
             "beneficiaries" => $kpaBeneficiaries,
             "agencies" => $agenciesContribution,

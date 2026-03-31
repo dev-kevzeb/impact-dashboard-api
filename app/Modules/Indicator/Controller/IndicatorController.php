@@ -219,6 +219,7 @@ class IndicatorController extends Controller
                 $validated['target'],
                 $validated['type_id'],
                 $validated['measure_id'],
+                $validated['actual_value'] ?? null,
             );
 
             return ApiResponse::created(
@@ -293,6 +294,7 @@ class IndicatorController extends Controller
                 $validated['target'],
                 $validated['type_id'],
                 $validated['measure_id'],
+                $validated['actual_value'] ?? null,
             );
 
             return ApiResponse::success(

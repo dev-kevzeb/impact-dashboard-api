@@ -100,6 +100,34 @@ class ProgramRepository extends AbstractRepository
             ->paginate($perPage);
     }
 
+    public function paginateByCountryIds(array $countryIds, int $perPage = 10, ?string $search = null)
+    {
+        $countryIds = array_values(array_unique(array_map('intval', $countryIds)));
+        if (empty($countryIds)) {
+            return $this->model->whereRaw('1 = 0')->paginate($perPage);
+        }
+
+        return $this->model
+            ->join('program_country_user_role as pcur', 'pcur.program_id', '=', 'program.id')
+            ->join('country_user_role as cur', 'cur.id', '=', 'pcur.country_user_role_id')
+            ->whereIn('cur.country_id', $countryIds)
+            ->with([
+                'contact',
+                'programState',
+                'sdgs',
+                'countryUserRoles.country',
+            ])
+            ->withCount('projects')
+            ->when($search, function ($query) use ($search) {
+                $query->whereRaw('LOWER(program.name) LIKE LOWER(?)', ['%' . trim($search) . '%']);
+            })
+            ->select('program.*')
+            ->selectRaw('0 as can_edit')
+            ->groupBy('program.id')
+            ->orderBy('program.id', 'desc')
+            ->paginate($perPage);
+    }
+
     public function isEditableByUserRoleIds(int $programId, array $userRoleIds): bool
     {
         $userRoleIds = array_values(array_unique(array_map('intval', $userRoleIds)));

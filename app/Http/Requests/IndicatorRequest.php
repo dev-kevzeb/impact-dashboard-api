@@ -21,6 +21,8 @@ class IndicatorRequest extends FormRequest
 
             'target' => [ 'required', 'numeric', 'gt:0'],
 
+            'actual_value' => [ 'nullable', 'numeric', 'min:0'],
+
             'type_id' => [ 'required', 'integer', Rule::exists('indicator_type', 'id')],
 
             'measure_id' => [ 'required', 'integer', Rule::exists('measure', 'id')],

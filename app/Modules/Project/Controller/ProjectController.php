@@ -278,6 +278,11 @@ class ProjectController extends Controller
         try {
             $validated = $request->validated();
 
+            $userPermissions = auth()->user()->getAllPermissions()->pluck('name')->toArray();
+            $isAdmin = in_array('*:*', $userPermissions);
+            $hasWeightPerm = $isAdmin || in_array('projects:weight', $userPermissions);
+            $weight = $hasWeightPerm ? (float) $validated['weight'] : 0.0;
+
             $project = $this->projectService->createProject(
                 $validated['program_id'],
                 $validated['name'],
@@ -288,7 +293,7 @@ class ProjectController extends Controller
                 $validated['progress'],
                 $validated['comments'] ?? '',
                 $validated['budget'],
-                $validated['weight'],
+                $weight,
                 $validated['indicators'],
                 $validated['donors'],
                 $validated['agencies'],
@@ -384,6 +389,19 @@ class ProjectController extends Controller
         try {
             $validated = $request->validated();
 
+            $userPermissions = auth()->user()->getAllPermissions()->pluck('name')->toArray();
+            $isAdmin = in_array('*:*', $userPermissions);
+            $hasWeightPerm = $isAdmin || in_array('projects:weight', $userPermissions);
+
+            if ($hasWeightPerm && !$isAdmin) {
+                $project = $this->projectService->updateProjectWeight($id, (float) ($validated['weight'] ?? 0));
+                return ApiResponse::success('Project weight updated successfully', 200, new ProjectResource($project));
+            }
+
+            $weight = $hasWeightPerm
+                ? (float) $validated['weight']
+                : (float) $this->projectService->findProjectById($id)->weight;
+
             $project = $this->projectService->updateProject(
                 $id,
                 $validated['program_id'],
@@ -395,7 +413,7 @@ class ProjectController extends Controller
                 $validated['progress'],
                 $validated['comments'] ?? '',
                 $validated['budget'],
-                $validated['weight'],
+                $weight,
                 $validated['indicators'],
                 $validated['donors'],
                 $validated['agencies'],

@@ -401,6 +401,18 @@ class ProjectService
         return $project;
     }
 
+    public function updateProjectWeight(int $id, float $weight): Project
+    {
+        $project = $this->findProjectById($id);
+        if (!$project) throw new \RuntimeException("The project with id {$id} does not exist.");
+
+        $this->ensureProgramWeightLimit((int) $project->program_id, $weight, $id);
+        $project->weight = $weight;
+        $this->projectRepository->save($project);
+
+        return $project;
+    }
+
     public function updateProject(int $id, int $program_id, string $name, string $description, ?string $projectUrl, string $startDate, string $endDate, float $progress, string $comments, float $budget, float $weight, array $indicators, array $donors, array $agencies,  array $contact, array $beneficiary, array $projectState): Project
     {
         if (empty($program_id)) throw new \RuntimeException("The program id is required.");

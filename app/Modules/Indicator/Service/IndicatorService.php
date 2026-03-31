@@ -21,7 +21,7 @@ class IndicatorService
         $this->measureRepository = $measureRepository;
     }
 
-    public function createIndicator(string $name, float $target, int $indicatorTypeId, int $measureId): Indicator
+    public function createIndicator(string $name, float $target, int $indicatorTypeId, int $measureId, ?float $actualValue = null): Indicator
     {
         $measure = $this->measureRepository->findById($measureId);
         $indicatorType = $this->indicatorTypeRepository->findById($indicatorTypeId);
@@ -30,6 +30,7 @@ class IndicatorService
         if (!$indicatorType) throw new RuntimeException("Indicator type not found");
 
         $indicator = Indicator::at($name, $indicatorType, $target, $measure);
+        $indicator->actual_value = $actualValue;
         $this->indicatorRepository->save($indicator);
 
         return $indicator;
@@ -52,7 +53,7 @@ class IndicatorService
         return $this->indicatorRepository->getAll();
     }
 
-    public function updateIndicator(int $id, string $name, float $target, int $indicatorTypeId, int $measureId): Indicator
+    public function updateIndicator(int $id, string $name, float $target, int $indicatorTypeId, int $measureId, ?float $actualValue = null): Indicator
     {
         $measure = $this->measureRepository->findById($measureId);
         $indicator = $this->indicatorRepository->findById($id);
@@ -72,6 +73,7 @@ class IndicatorService
 
         $indicator->name = $updatedIndicator->name;
         $indicator->target = $updatedIndicator->target;
+        $indicator->actual_value = $actualValue;
         $indicator->type_id = $updatedIndicator->type_id;
         $indicator->measure_id = $updatedIndicator->measure_id;
 

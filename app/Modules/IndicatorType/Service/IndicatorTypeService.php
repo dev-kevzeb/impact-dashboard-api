@@ -14,11 +14,11 @@ class IndicatorTypeService
     {
         $this->indicatorTypeRepository = $indicatorTypeRepository;
     }
-    public function createIndicatorType(string $name): IndicatorType
+    public function createIndicatorType(string $name, bool $isBottomUp = true): IndicatorType
     {
         if($this->indicatorTypeRepository->existsByName(trim($name))) throw new RuntimeException("There is already a type of indicator with that name");
 
-        $indicatorType = IndicatorType::at($name);
+        $indicatorType = IndicatorType::at($name, $isBottomUp);
         $this->indicatorTypeRepository->save( $indicatorType);
         return $indicatorType;
     }
@@ -38,11 +38,12 @@ class IndicatorTypeService
         return $this->indicatorTypeRepository->getAll();
     }
 
-    public function updateIndicatorType(int $id, string $name): IndicatorType
+    public function updateIndicatorType(int $id, string $name, bool $isBottomUp = true): IndicatorType
     {
         $indicatorType = $this->indicatorTypeRepository->findById($id);
-        $updateIndicatorType = IndicatorType::at($name);
+        $updateIndicatorType = IndicatorType::at($name, $isBottomUp);
         $indicatorType->name = $updateIndicatorType->name;
+        $indicatorType->is_bottom_up = $updateIndicatorType->is_bottom_up;
 
         $this->indicatorTypeRepository->save($indicatorType);
 
