@@ -17,12 +17,19 @@ class IndicatorTypeTest extends TestCase
     private const ERROR_NAME_UNIQUE = 'Ya existe un tipo de indicador con ese nombre';
 
     private const ERROR_STRING = 'El nombre debe ser una cadena de texto';
+    private array $headers;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->headers = $this->authHeaders('project-manager');
+    }
 
     public function test_can_list_indicator_types(): void
     {
         IndicatorType::factory()->count(3)->create();
 
-        $response = $this->getJson(self::BASE_URL);
+        $response = $this->getJson(self::BASE_URL, $this->headers);
 
         $response->assertOk()
         ->assertJsonStructure([
@@ -42,7 +49,7 @@ class IndicatorTypeTest extends TestCase
      //LISTAR VACÍO
     public function test_list_returns_empty_when_no_indicator_types(): void
     {
-        $response = $this->getJson(self::BASE_URL);
+        $response = $this->getJson(self::BASE_URL, $this->headers);
         $response->assertOk()
                  ->assertJsonPath('data.total', 0)
                  ->assertJsonCount(0, 'data.indicator_types');
@@ -54,12 +61,12 @@ class IndicatorTypeTest extends TestCase
     {
         $data = ['name' => 'valid indicator type'];
 
-        $response = $this->postJson(self::BASE_URL, $data);
+        $response = $this->postJson(self::BASE_URL, $data, $this->headers);
 
         $response->assertCreated()
             ->assertJson([
                 'success'=> true,
-                'message' => "Tipo de indicador creado exitosamente",
+                'message' => 'Indicator Type created successfully',
             ])
             ->assertJsonStructure([
                 'data' => ['id', 'name']
@@ -74,7 +81,7 @@ class IndicatorTypeTest extends TestCase
 
     public function test_name_is_required(): void
     {
-        $response = $this->postJson(self::BASE_URL, []);
+        $response = $this->postJson(self::BASE_URL, [], $this->headers);
 
         $response->assertStatus(422)
         ->assertJsonValidationErrors(['name'])
@@ -85,7 +92,7 @@ class IndicatorTypeTest extends TestCase
 
     public function test_name_must_be_at_least_two_characters(): void
     {
-        $response = $this->postJson(self::BASE_URL, [ 'name' => 'A']);
+        $response = $this->postJson(self::BASE_URL, [ 'name' => 'A'], $this->headers);
 
         $response->assertStatus(422)
         ->assertJsonValidationErrors(['name'])
@@ -99,7 +106,7 @@ class IndicatorTypeTest extends TestCase
         IndicatorType::factory()->create(['name'=> 'Tipo de indicador Existente']);
 
         $data = ['name'=> 'Tipo de indicador Existente'];
-        $response = $this->postJson(self::BASE_URL, $data);
+        $response = $this->postJson(self::BASE_URL, $data, $this->headers);
 
         $response->assertStatus(422)
                 ->assertJsonValidationErrors(['name'])
@@ -110,7 +117,7 @@ class IndicatorTypeTest extends TestCase
     {
          $data = ['name' => str_repeat('A', 256)];
 
-        $response = $this->postJson(self::BASE_URL, $data);
+        $response = $this->postJson(self::BASE_URL, $data, $this->headers);
 
         $response->assertStatus(422)
                  ->assertJsonValidationErrors(['name'])
@@ -122,7 +129,7 @@ class IndicatorTypeTest extends TestCase
     {
         $response = $this->postJson(self::BASE_URL, [
             'name' => '   Nuevo Indicador   '
-        ]);
+        ], $this->headers);
 
         $response->assertCreated();
 
@@ -135,7 +142,7 @@ class IndicatorTypeTest extends TestCase
     {
         $response = $this->postJson(self::BASE_URL, [
             'name' => '   '
-        ]);
+        ], $this->headers);
 
         $response->assertStatus(422)
                  ->assertJsonValidationErrors(['name']);
@@ -143,7 +150,7 @@ class IndicatorTypeTest extends TestCase
 
     public function test_name_must_be_string_not_number(): void
     {
-        $response = $this->postJson(self::BASE_URL, ['name' => 12345]);
+        $response = $this->postJson(self::BASE_URL, ['name' => 12345], $this->headers);
 
         $response->assertStatus(422)
                  ->assertJsonValidationErrors(['name'])
@@ -154,12 +161,12 @@ class IndicatorTypeTest extends TestCase
     {
         $indicatorType = IndicatorType::factory()->create();
 
-        $response= $this->getJson(self::BASE_URL."/{$indicatorType->id}");
+        $response= $this->getJson(self::BASE_URL."/{$indicatorType->id}", $this->headers);
 
         $response->assertOk()
                  ->assertJson([
                      'success' => true,
-                     'message' => 'Tipo de indicador encontrado',
+                     'message' => 'Indicator Type found',
                      'data' => [
                          'id' => $indicatorType->id,
                          'name' => $indicatorType->name
@@ -173,12 +180,12 @@ class IndicatorTypeTest extends TestCase
 
         $response = $this->putJson(self::BASE_URL."/$indicatorType->id", [
             'name' => 'Actualizado'
-        ]);
+        ], $this->headers);
 
         $response->assertOk()
                  ->assertJson([
                      'success' => true,
-                     'message' => 'Tipo de indicador actualizado exitosamente'
+                     'message' => 'Indicator Type uploaded successfully'
                 ]);
 
         $this->assertDatabaseHas('indicator_type', [
@@ -194,7 +201,7 @@ class IndicatorTypeTest extends TestCase
 
         $response = $this->putJson(self::BASE_URL."/$t2->id", [
             'name' => 'Tipo 1'
-        ]);
+        ], $this->headers);
 
         $response->assertStatus(422)
                  ->assertJsonValidationErrors(['name'])
@@ -207,7 +214,7 @@ class IndicatorTypeTest extends TestCase
 
         $response = $this->putJson(self::BASE_URL."/$indicatorType->id", [
             'name' => '   Nombre Limpio   '
-        ]);
+        ], $this->headers);
 
         $response->assertOk();
 
@@ -223,7 +230,7 @@ class IndicatorTypeTest extends TestCase
 
         $response = $this->putJson(self::BASE_URL."/$indicatorType->id", [
             'name' => 12345
-        ]);
+        ], $this->headers);
 
         $response->assertStatus(422)
                  ->assertJsonValidationErrors(['name'])
