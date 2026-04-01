@@ -11,8 +11,6 @@ use App\Modules\Statistics\Domain\TopDown;
 use App\Modules\Project\Repository\ProjectRepository;
 use App\Modules\ProjectIndicator\Repository\ProjectIndicatorRepository;
 use App\Modules\StrategicOutput\Repository\StrategicOutputRepository;
-use Dom\Implementation;
-use Log;
 
 class StatisticsService
 {
@@ -53,12 +51,11 @@ class StatisticsService
         $isBottomUp = (bool) ($indicators->first()->type->is_bottom_up ?? true);
 
         if (!$isBottomUp) {
-            // TOP-DOWN: implementation = avg(actual_value / target * 100) over indicators
             $tdTotal = 0;
             $tdCount = 0;
             foreach ($indicators as $indicator) {
-                if ($indicator->actual_value !== null && $indicator->target > 0) {
-                    $tdTotal += TopDown::calculate((float) $indicator->actual_value, (float) $indicator->target)->value();
+                if ($indicator->target > 0) {
+                    $tdTotal += (new TopDown((float) ($indicator->actual_value ?? 0.0), (float) $indicator->target))->value();
                     $tdCount++;
                 }
             }
@@ -74,7 +71,6 @@ class StatisticsService
             ];
         }
 
-        // BOTTOM-UP: implementation = Σ(θ_i × W_i) × 100, using project.weight directly
         $indicatorIds = $indicators->pluck('id')->toArray();
         $projectIds = $this->projectIndicatorRepository->getProjectIdsByIndicatorIds($indicatorIds);
         if (empty($projectIds)) {
@@ -101,7 +97,7 @@ class StatisticsService
             $resource += $project->project_budget;
         }
 
-        $implementation = BottomUp::calculate($chartData)->value();
+        $implementation = (new BottomUp($chartData))->value();
 
         $allDonorsContributions = $projects->flatMap(function ($project) {
             return $this->calculateDonorsContribution(

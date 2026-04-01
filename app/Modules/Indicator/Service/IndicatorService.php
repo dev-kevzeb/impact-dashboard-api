@@ -21,7 +21,7 @@ class IndicatorService
         $this->measureRepository = $measureRepository;
     }
 
-    public function createIndicator(string $name, float $target, int $indicatorTypeId, int $measureId, ?float $actualValue = null): Indicator
+    public function createIndicator(string $name, float $target, int $indicatorTypeId, int $measureId, float $actualValue = 0.0): Indicator
     {
         $measure = $this->measureRepository->findById($measureId);
         $indicatorType = $this->indicatorTypeRepository->findById($indicatorTypeId);
@@ -53,7 +53,7 @@ class IndicatorService
         return $this->indicatorRepository->getAll();
     }
 
-    public function updateIndicator(int $id, string $name, float $target, int $indicatorTypeId, int $measureId, ?float $actualValue = null): Indicator
+    public function updateIndicator(int $id, string $name, float $target, int $indicatorTypeId, int $measureId, float $actualValue = 0.0): Indicator
     {
         $measure = $this->measureRepository->findById($measureId);
         $indicator = $this->indicatorRepository->findById($id);
