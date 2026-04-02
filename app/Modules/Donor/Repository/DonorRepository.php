@@ -29,5 +29,20 @@ class DonorRepository extends AbstractRepository implements RepositoryInterface
         $query->whereNotIn('id', $exclude);
         return $query->orderBy('name')->paginate($perPage);
     }
+
+    public function hasRelations(int $donorId): bool
+    {
+        return $this->model
+            ->newQuery()
+            ->whereKey($donorId)
+            ->whereHas('projectDonors')
+            ->exists();
+    }
+
+    public function delete(int $id): void
+    {
+        $donor = $this->findById($id);
+        $donor->delete();
+    }
     
 }

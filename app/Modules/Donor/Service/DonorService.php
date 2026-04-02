@@ -4,18 +4,15 @@ namespace App\Modules\Donor\Service;
 
 use App\Modules\Donor\Domain\Donor;
 use App\Modules\Donor\Repository\DonorRepository;
-use App\Modules\Project\Repository\ProjectRepository;
 use RuntimeException;
 
 class DonorService
 {
     private DonorRepository $donorRepository;
-    //private ProjectRepository $projectRepository;
 
-    public function __construct(DonorRepository $donorRepository, ProjectRepository $projectRepository)
+    public function __construct(DonorRepository $donorRepository)
     {
         $this->donorRepository = $donorRepository;
-        $this->projectRepository = $projectRepository;
     }
 
     public function createDonor(string $name): Donor
@@ -60,5 +57,16 @@ class DonorService
 
     public function getDonorsExcluding(int $perPage, ?string $search, ?array $exclude){
         return $this->donorRepository->getExcluding($search, $perPage, $exclude);
+    }
+
+    public function deleteDonor(int $id): void
+    {
+        $this->donorRepository->findById($id);
+
+        if ($this->donorRepository->hasRelations($id)) {
+            throw new RuntimeException('The donor cannot be deleted because it is related to other records.');
+        }
+
+        $this->donorRepository->delete($id);
     }
 }

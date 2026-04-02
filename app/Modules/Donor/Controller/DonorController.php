@@ -443,4 +443,28 @@ class DonorController extends Controller
             return ApiResponse::error($e->getMessage(), 500);
         }
     }
+
+    public function destroy(int $id): JsonResponse
+    {
+        try {
+            $this->donorService->deleteDonor($id);
+
+            return ApiResponse::success(
+                'Donor deleted successfully',
+                200
+            );
+        } catch (RuntimeException $e) {
+            if (str_contains(strtolower($e->getMessage()), 'not found')) {
+                return ApiResponse::notFound('Donor');
+            }
+
+            if (str_contains(strtolower($e->getMessage()), 'cannot be deleted')) {
+                return ApiResponse::error($e->getMessage(), 409);
+            }
+
+            return ApiResponse::error($e->getMessage(), 400);
+        } catch (\Exception $e) {
+            return ApiResponse::error('Internal server error', 500);
+        }
+    }
 }

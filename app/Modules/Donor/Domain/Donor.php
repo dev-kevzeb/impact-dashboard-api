@@ -2,6 +2,7 @@
 
 namespace App\Modules\Donor\Domain;
 
+use App\Modules\ProjectDonor\Domain\ProjectDonor;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use \App\Modules\Project\Domain\Project;
 use Illuminate\Database\Eloquent\Model;
@@ -43,5 +44,10 @@ class Donor extends Model
     public function getName(): string
     {
         return $this->name;
+    }
+
+    public function projectDonors()
+    {
+        return $this->hasMany(ProjectDonor::class, 'donor_id', 'id');
     }
 }

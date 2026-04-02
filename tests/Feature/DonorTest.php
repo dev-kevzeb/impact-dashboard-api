@@ -3,6 +3,9 @@
 namespace Tests\Feature;
 
 use App\Modules\Donor\Domain\Donor;
+use App\Modules\Program\Domain\Program;
+use App\Modules\Project\Domain\Project;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -25,7 +28,7 @@ class DonorTest extends TestCase
     {
         Donor::factory()->count(3)->create();
 
-        $response = $this->getJson(self::BASE_URL);
+        $response = $this->getJson(self::BASE_URL, $this->authHeaders());
 
         $response->assertOk()
                  ->assertJsonStructure([
@@ -50,7 +53,7 @@ class DonorTest extends TestCase
     {
         $data = ['name' => 'Nuevo Donante'];
 
-        $response = $this->postJson(self::BASE_URL, $data);
+        $response = $this->postJson(self::BASE_URL, $data, $this->authHeaders());
 
         $response->assertCreated()
                  ->assertJson([
@@ -74,7 +77,7 @@ class DonorTest extends TestCase
     {
         $data = [];
 
-        $response = $this->postJson(self::BASE_URL, $data);
+        $response = $this->postJson(self::BASE_URL, $data, $this->authHeaders());
 
         $response->assertStatus(422)
                  ->assertJsonValidationErrors(['name'])
@@ -89,7 +92,7 @@ class DonorTest extends TestCase
     {
         $data = ['name' => 'A'];
 
-        $response = $this->postJson(self::BASE_URL, $data);
+        $response = $this->postJson(self::BASE_URL, $data, $this->authHeaders());
 
         $response->assertStatus(422)
                 ->assertJsonValidationErrors(['name'])
@@ -105,7 +108,7 @@ class DonorTest extends TestCase
         Donor::factory()->create(['name' => 'Donante Existente']);
 
         $data = ['name' => 'Donante Existente'];
-        $response = $this->postJson(self::BASE_URL, $data);
+        $response = $this->postJson(self::BASE_URL, $data, $this->authHeaders());
 
         $response->assertStatus(422)
                  ->assertJsonValidationErrors(['name'])
@@ -120,7 +123,7 @@ class DonorTest extends TestCase
     {
         $data = ['name' => str_repeat('A', 256)];
 
-        $response = $this->postJson(self::BASE_URL, $data);
+        $response = $this->postJson(self::BASE_URL, $data, $this->authHeaders());
 
         $response->assertStatus(422)
                  ->assertJsonValidationErrors(['name'])
@@ -135,7 +138,7 @@ class DonorTest extends TestCase
     {
         $donor = Donor::factory()->create();
 
-        $response = $this->getJson(self::BASE_URL . "/{$donor->id}");
+        $response = $this->getJson(self::BASE_URL . "/{$donor->id}", $this->authHeaders());
 
         $response->assertOk()
                  ->assertJson([
@@ -157,7 +160,7 @@ class DonorTest extends TestCase
         $donor = Donor::factory()->create(['name' => 'Nombre Original']);
         $data = ['name' => 'Nombre Actualizado'];
 
-        $response = $this->putJson(self::BASE_URL . "/{$donor->id}", $data);
+        $response = $this->putJson(self::BASE_URL . "/{$donor->id}", $data, $this->authHeaders());
 
         $response->assertOk()
                  ->assertJson([
@@ -186,7 +189,7 @@ class DonorTest extends TestCase
         $donor2 = Donor::factory()->create(['name' => 'Donante Sur']);
 
         $data = ['name' => 'Donante Norte'];
-        $response = $this->putJson(self::BASE_URL . "/{$donor2->id}", $data);
+        $response = $this->putJson(self::BASE_URL . "/{$donor2->id}", $data, $this->authHeaders());
 
         $response->assertStatus(422)
                  ->assertJsonValidationErrors(['name'])
@@ -201,7 +204,7 @@ class DonorTest extends TestCase
     {
         $data = ['name' => '  Donante   con Espacios  '];
 
-        $response = $this->postJson(self::BASE_URL, $data);
+        $response = $this->postJson(self::BASE_URL, $data, $this->authHeaders());
 
         $response->assertCreated();
         $this->assertDatabaseHas('donor', [
@@ -217,7 +220,7 @@ class DonorTest extends TestCase
     {
         $data = ['name' => '   '];
 
-        $response = $this->postJson(self::BASE_URL, $data);
+        $response = $this->postJson(self::BASE_URL, $data, $this->authHeaders());
 
         $response->assertStatus(422)
                  ->assertJsonValidationErrors(['name']);
@@ -233,7 +236,8 @@ class DonorTest extends TestCase
 
         $response = $this->putJson(
             self::BASE_URL . "/{$donor->id}",
-            ['name' => 'Mismo Nombre']
+            ['name' => 'Mismo Nombre'],
+            $this->authHeaders()
         );
 
         $response->assertOk();
@@ -251,7 +255,7 @@ class DonorTest extends TestCase
     {
         $data = ['name' => 12345];
 
-        $response = $this->postJson(self::BASE_URL, $data);
+        $response = $this->postJson(self::BASE_URL, $data, $this->authHeaders());
 
         $response->assertStatus(422)
                  ->assertJsonValidationErrors(['name'])
@@ -264,7 +268,7 @@ class DonorTest extends TestCase
      */
     public function test_list_returns_empty_when_no_donors(): void
     {
-        $response = $this->getJson(self::BASE_URL);
+        $response = $this->getJson(self::BASE_URL, $this->authHeaders());
 
         $response->assertOk()
                  ->assertJsonPath('data.total', 0)
@@ -279,7 +283,7 @@ class DonorTest extends TestCase
     {
         $donor = Donor::factory()->create(['name' => 'Donante Buscable']);
 
-        $response = $this->getJson(self::BASE_URL . '/search?name=Donante Buscable');
+        $response = $this->getJson(self::BASE_URL . '/search?name=Donante Buscable', $this->authHeaders());
 
         $response->assertOk()
                  ->assertJson([
@@ -300,7 +304,7 @@ class DonorTest extends TestCase
     {
         $donor = Donor::factory()->create(['name' => 'Donante Especial']);
 
-        $response = $this->getJson(self::BASE_URL . '/search?name=donante especial');
+        $response = $this->getJson(self::BASE_URL . '/search?name=donante especial', $this->authHeaders());
 
         $response->assertOk()
                  ->assertJson([
@@ -318,7 +322,7 @@ class DonorTest extends TestCase
      */
     public function test_search_returns_404_when_donor_not_found(): void
     {
-        $response = $this->getJson(self::BASE_URL . '/search?name=No Existe');
+        $response = $this->getJson(self::BASE_URL . '/search?name=No Existe', $this->authHeaders());
 
         $response->assertNotFound()
                  ->assertJson(['success' => false]);
@@ -330,9 +334,51 @@ class DonorTest extends TestCase
      */
     public function test_search_requires_name_parameter(): void
     {
-        $response = $this->getJson(self::BASE_URL . '/search');
+        $response = $this->getJson(self::BASE_URL . '/search', $this->authHeaders());
 
         $response->assertStatus(422)
                  ->assertJsonValidationErrors(['name']);
+    }
+
+    public function test_can_delete_donor_without_relations(): void
+    {
+        $donor = Donor::factory()->create();
+
+        $response = $this->deleteJson(self::BASE_URL . "/{$donor->id}", [], $this->authHeaders());
+
+        $response->assertOk()
+            ->assertJsonPath('message', 'Donor deleted successfully');
+
+        $this->assertDatabaseMissing('donor', ['id' => $donor->id]);
+    }
+
+    public function test_cannot_delete_donor_with_project_relations(): void
+    {
+        $donor = Donor::factory()->create();
+        $program = Program::factory()->create();
+        $project = Project::factory()->create(['program_id' => $program->id]);
+
+        DB::table('project_donor')->insert([
+            'project_id' => $project->id,
+            'donor_id' => $donor->id,
+            'contribution' => 10,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $response = $this->deleteJson(self::BASE_URL . "/{$donor->id}", [], $this->authHeaders());
+
+        $response->assertStatus(409)
+            ->assertJsonPath('success', false);
+
+        $this->assertDatabaseHas('donor', ['id' => $donor->id]);
+    }
+
+    public function test_delete_returns_not_found_for_non_existent_donor(): void
+    {
+        $response = $this->deleteJson(self::BASE_URL . '/999999', [], $this->authHeaders());
+
+        $response->assertStatus(404)
+            ->assertJsonPath('message', 'Donor not Found');
     }
 }
