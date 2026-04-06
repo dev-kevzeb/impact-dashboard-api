@@ -68,6 +68,7 @@ Route::prefix('v1')->group(function () {
         Route::get('donors/search', [DonorController::class, 'search'])->middleware('scope:donors');
         Route::get('donors/{id}', [DonorController::class, 'show'])->middleware('scope:donors');
         Route::put('donors/{id}', [DonorController::class, 'update'])->middleware('scope:donors:write');
+        Route::delete('donors/{id}', [DonorController::class, 'destroy'])->middleware('scope:donors:write');
         Route::get('donors/get/project', [DonorController::class, 'getDonorsExcluding'])->middleware('scope:donors');
 
         // API Routes para Beneficiaries
