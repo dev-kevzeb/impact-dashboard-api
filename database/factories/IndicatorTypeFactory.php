@@ -14,6 +14,7 @@ class IndicatorTypeFactory extends Factory
     {
         return [
             'name' => $this->faker->unique()->company(),
+            'is_bottom_up' => true,
         ];
     }
 }

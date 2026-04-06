@@ -18,7 +18,7 @@ class  Indicator extends Model
     protected $table = 'indicator';
 
     // Allowed fields
-    protected $fillable = ['name', 'type_id', 'target', 'measure_id'];
+    protected $fillable = ['name', 'type_id', 'target', 'actual_value', 'measure_id'];
 
     // Error constants
     public static $ERROR_NAME_EMPTY = 'the indicator name must not be empty';

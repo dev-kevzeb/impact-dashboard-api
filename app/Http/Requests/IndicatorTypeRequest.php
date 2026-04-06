@@ -24,6 +24,7 @@ class IndicatorTypeRequest extends FormRequest
                 'max:255',
                 Rule::unique('indicator_type', 'name')->ignore($indicatorTypeId),
             ],
+            'is_bottom_up' => ['nullable', 'boolean'],
         ];
     }
 

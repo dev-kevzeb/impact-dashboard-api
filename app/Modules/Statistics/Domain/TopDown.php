@@ -6,29 +6,21 @@ use RuntimeException;
 
 class TopDown
 {
-    public static string $ERROR_TARGET_ZERO = 'Target must be greater than zero';
-    public static string $ERROR_NEGATIVE_VALUES = 'Values cannot be negative';
+    public const ERROR_TARGET_ZERO = 'Target must be greater than zero';
+    public const ERROR_NEGATIVE_VALUES = 'Values cannot be negative';
 
     private float $result;
 
-    private function __construct(float $result)
-    {
-        $this->result = $result;
-    }
-
     /**
-     * Factory method for Top-Down calculation
-     *
-     * @param float $actualValue  αₓ  (current observed value)
-     * @param float $target       Tₓ  (target value)
+     * @param float $actualValue αₓ (current observed value)
+     * @param float $target Tₓ (target value)
      */
-    public static function calculate(float $actualValue, float $target): TopDown
+    public function __construct(float $actualValue, float $target)
     {
-        if ($target <= 0) throw new RuntimeException(self::$ERROR_TARGET_ZERO);
-        if ($actualValue < 0) throw new RuntimeException(self::$ERROR_NEGATIVE_VALUES);
-        
-        $implementation = ($actualValue / $target) * 100;
-        return new TopDown(round($implementation, 2));
+        if ($target <= 0) throw new RuntimeException(self::ERROR_TARGET_ZERO);
+        if ($actualValue < 0) throw new RuntimeException(self::ERROR_NEGATIVE_VALUES);
+
+        $this->result = round(($actualValue / $target) * 100, 2);
     }
 
     public function value(): float

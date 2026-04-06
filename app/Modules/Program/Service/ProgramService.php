@@ -255,6 +255,18 @@ class ProgramService
             return $programs;
         }
 
+        if ($user->hasPermissionTo('programs:view_by_country')) {
+            $countryIds = $user->userRoles()
+                ->with('countries')
+                ->get()
+                ->flatMap(fn($userRole) => $userRole->countries->pluck('id'))
+                ->unique()
+                ->values()
+                ->toArray();
+
+            return $this->programRepository->paginateByCountryIds($countryIds, $perPage, $search);
+        }
+
         $userRoleIds = $user->userRoles()->pluck('id')->toArray();
         return $this->programRepository->paginateAccessibleByUserRoleIds($userRoleIds, $perPage, $search);
     }

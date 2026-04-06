@@ -13,7 +13,7 @@ class IndicatorType extends Model
 {
     use HasFactory;
     protected $table = 'indicator_type';
-    protected $fillable = ['name'];
+    protected $fillable = ['name', 'is_bottom_up'];
 
     public static $ERROR_NAME_EMPTY = 'The indicator type name must not be empty';
     public static $ERROR_NAME_MIN_LENGTH = 'The indicator type name must have at least 2 characters';
@@ -30,13 +30,13 @@ class IndicatorType extends Model
         parent::__construct($attributes);
     }
 
-    public static function at(string $name): IndicatorType
+    public static function at(string $name, bool $isBottomUp = true): IndicatorType
     {
         if (empty(trim($name))) throw new RuntimeException(self::$ERROR_NAME_EMPTY);
         if (strlen(trim($name)) < 2) throw new RuntimeException(self::$ERROR_NAME_MIN_LENGTH);
         if (strlen(trim($name)) > 100) throw new RuntimeException(self::$ERROR_NAME_MAX_LENGTH);
         
-        return new IndicatorType(['name' => trim($name)]);
+        return new IndicatorType(['name' => trim($name), 'is_bottom_up' => $isBottomUp]);
     }
 
     public function getName(): string

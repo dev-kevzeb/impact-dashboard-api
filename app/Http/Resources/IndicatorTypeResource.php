@@ -12,6 +12,7 @@ class IndicatorTypeResource extends JsonResource
         return [
             "id"=> $this->id,
             "name"=> $this->name,
+            "is_bottom_up" => (bool) $this->is_bottom_up,
         ];
     }
 

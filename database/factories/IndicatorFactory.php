@@ -19,6 +19,7 @@ class IndicatorFactory extends Factory
             'type_id' => IndicatorType::factory(),
             'measure_id' => Measure::factory(),
             'target' => $this->faker->numberBetween(1, 100),
+            'actual_value' => null,
         ];
     }
 }
