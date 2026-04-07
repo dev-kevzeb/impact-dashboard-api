@@ -28,8 +28,6 @@ use App\Modules\ProjectState\Controller\ProjectStateController;
 use App\Modules\Contact\Controller\ContactController;
 use App\Modules\Agency\Controller\AgencyController;
 use App\Modules\CountryKpa\Controller\CountryKpaController;
-use App\Modules\CountryKpaUser\Controller\CountryKpaUserController;
-use App\Modules\ProgramUser\Controller\ProgramUserController;
 use App\Modules\ProgramCountryUserRole\Controller\ProgramCountryUserRoleController;
 use App\Modules\InviteProgram\Controller\InviteProgramController;
 use App\Modules\UserRole\Controller\UserRoleController;
@@ -141,26 +139,12 @@ Route::prefix('v1')->group(function () {
         Route::get('user_states/{id}', [UserStateController::class, 'show'])->middleware('scope:user_states');
         Route::put('user_states/{id}', [UserStateController::class, 'update'])->middleware('scope:user_states:write');
 
-        // API Routes para CountryKpa-Users (User assignments to CountryKpas)
-        Route::get('country_kpa_users', [CountryKpaUserController::class, 'index'])->middleware('scope:country_kpa_users');
-        Route::post('country_kpa_users', [CountryKpaUserController::class, 'store'])->middleware('scope:country_kpa_users:write');
-        Route::get('country_kpa_users/{id}', [CountryKpaUserController::class, 'show'])->middleware('scope:country_kpa_users');
-        Route::put('country_kpa_users/{id}', [CountryKpaUserController::class, 'update'])->middleware('scope:country_kpa_users:write');
-        Route::delete('country_kpa_users/{id}', [CountryKpaUserController::class, 'destroy'])->middleware('scope:country_kpa_users:write');
-
         // API Routes para User-Roles (Role assignments to Users)
         Route::get('user_roles', [UserRoleController::class, 'index'])->middleware('scope:user_roles');
         Route::post('user_roles', [UserRoleController::class, 'store'])->middleware('scope:user_roles:write');
         Route::get('user_roles/{id}', [UserRoleController::class, 'show'])->middleware('scope:user_roles');
         Route::put('user_roles/{id}', [UserRoleController::class, 'update'])->middleware('scope:user_roles:write');
         Route::delete('user_roles/{id}', [UserRoleController::class, 'destroy'])->middleware('scope:user_roles:write');
-
-        // API Routes para Program-Users (CountryKpaUser assignments to Programs)
-        Route::get('program_users', [ProgramUserController::class, 'index'])->middleware('scope:program_users');
-        Route::post('program_users', [ProgramUserController::class, 'store'])->middleware('scope:program_users:write');
-        Route::get('program_users/{id}', [ProgramUserController::class, 'show'])->middleware('scope:program_users');
-        Route::put('program_users/{id}', [ProgramUserController::class, 'update'])->middleware('scope:program_users:write');
-        Route::delete('program_users/{id}', [ProgramUserController::class, 'destroy'])->middleware('scope:program_users:write');
 
         // API Routes para Country-Kpas
         Route::get('country_kpas', [CountryKpaController::class, 'index'])->middleware('scope:country_kpas');
