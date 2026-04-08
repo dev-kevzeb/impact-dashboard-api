@@ -119,7 +119,6 @@ Control de acceso:
 
 ```bash
 composer install
-npm install
 ```
 
 2. Configurar entorno:

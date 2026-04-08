@@ -149,7 +149,8 @@ class IndicatorTypeController extends Controller
     {
         try {
             $validated = $request->validated();
-            $indicatorType = $this->indicatorTypeService->createIndicatorType($validated['name']);
+            $isBottomUp = isset($validated['is_bottom_up']) ? (bool) $validated['is_bottom_up'] : true;
+            $indicatorType = $this->indicatorTypeService->createIndicatorType($validated['name'], $isBottomUp);
             return ApiResponse::created(
                 'Indicator Type created successfully',
                 new IndicatorTypeResource($indicatorType),
@@ -277,8 +278,9 @@ class IndicatorTypeController extends Controller
     {
         try {
             $validated = $request->validated();
+            $isBottomUp = isset($validated['is_bottom_up']) ? (bool) $validated['is_bottom_up'] : true;
 
-            $indicatorType = $this->indicatorTypeService->updateIndicatorType($id, $validated['name']);
+            $indicatorType = $this->indicatorTypeService->updateIndicatorType($id, $validated['name'], $isBottomUp);
 
             return ApiResponse::success(
                 'Indicator Type uploaded successfully',

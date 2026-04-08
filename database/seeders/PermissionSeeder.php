@@ -22,9 +22,13 @@ class PermissionSeeder extends Seeder
 
             ['name' => 'programs:read', 'scope' => 'programs', 'module' => 'Program', 'description' => 'View programs'],
             ['name' => 'programs:write', 'scope' => 'programs', 'module' => 'Program', 'description' => 'Create/edit programs'],
+            ['name' => 'programs:view_by_country', 'scope' => 'programs', 'module' => 'Program', 'description' => 'View programs filtered by assigned country'],
 
             ['name' => 'projects:read', 'scope' => 'projects', 'module' => 'Project', 'description' => 'View projects'],
             ['name' => 'projects:write', 'scope' => 'projects', 'module' => 'Project', 'description' => 'Create/edit projects'],
+            ['name' => 'projects:create', 'scope' => 'projects', 'module' => 'Project', 'description' => 'Create new projects'],
+            ['name' => 'projects:delete', 'scope' => 'projects', 'module' => 'Project', 'description' => 'Delete projects'],
+            ['name' => 'projects:weight', 'scope' => 'projects', 'module' => 'Project', 'description' => 'Edit project weight'],
 
             ['name' => 'currencies:read', 'scope' => 'currencies', 'module' => 'Currency', 'description' => 'View currencies'],
             ['name' => 'currencies:write', 'scope' => 'currencies', 'module' => 'Currency', 'description' => 'Create/edit currencies'],
