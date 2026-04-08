@@ -110,6 +110,7 @@ class RolePermissionSeeder extends Seeder
                 'measures:read',
                 'measures:write',
                 'indicators:read',
+                'indicators:write',
                 'indicator_types:read',
                 'programs:read',
                 'programs:view_by_country',
