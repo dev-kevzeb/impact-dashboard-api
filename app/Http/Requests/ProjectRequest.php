@@ -45,9 +45,9 @@ class ProjectRequest extends FormRequest
             'agencies.*.name' => 'required|string|min:2|max:150',
             'agencies.*.contribution' => 'required|numeric|min:0',
 
-            'contact.first_name' => 'required|string|min:2|max:50|regex:/^[a-zA-ZÀ-ÿñÑ\s\'\-\.,\/]+$/u',
-            'contact.last_name'  => 'required|string|min:2|max:50|regex:/^[a-zA-ZÀ-ÿñÑ\s\'\-\.,\/]+$/u',
-            'contact.title'      => 'required|string|min:2|max:100|regex:/^[a-zA-ZÀ-ÿñÑ\s\'\-\.,\/]+$/u',
+            'contact.first_name' => 'required|string|min:2|max:50',
+            'contact.last_name'  => 'required|string|min:2|max:50',
+            'contact.title'      => 'required|string|min:2|max:100',
             'contact.email'      => 'required|email|max:254',
             'contact.phone'      => 'nullable|string|regex:/^(\+?\d{1,4})?[\s\-]?\(?\d{1,4}\)?[\s\-]?\d+(\s?\-?\d+)*$/',
 

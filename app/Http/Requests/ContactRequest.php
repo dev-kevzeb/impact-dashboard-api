@@ -22,7 +22,6 @@ class ContactRequest extends FormRequest
                 'string',
                 'min:2',
                 'max:50',
-                'regex:/^[a-zA-ZÀ-ÿñÑ\s\'\-\.,\/]+$/u',
             ],
 
             'last_name' => [
@@ -30,7 +29,6 @@ class ContactRequest extends FormRequest
                 'string',
                 'min:2',
                 'max:50',
-                'regex:/^[a-zA-ZÀ-ÿñÑ\s\'\-\.,\/]+$/u',
             ],
 
             'title' => [
@@ -38,7 +36,6 @@ class ContactRequest extends FormRequest
                 'string',
                 'min:2',
                 'max:100',
-                'regex:/^[a-zA-ZÀ-ÿñÑ\s\'\-\.,\/]+$/u',
             ],
 
             'email' => [
@@ -60,27 +57,27 @@ class ContactRequest extends FormRequest
     {
         return [
 
-            'first_name.required' => 'el nombre del contacto no debe ir vacío',
-            'first_name.min' => 'el nombre del contacto debe tener al menos 2 caracteres',
-            'first_name.max' => 'el nombre del contacto no debe exceder 50 caracteres',
-            'first_name.regex' => 'el nombre del contacto contiene caracteres no válidos',
+            'first_name.required' => 'The contact first name must not be empty',
+            'first_name.min' => 'The contact first name must be at least 2 characters',
+            'first_name.max' => 'The contact first name must not exceed 50 characters',
+            'first_name.regex' => 'The contact first name contains invalid characters',
 
-            'last_name.required' => 'el apellido del contacto no debe ir vacío',
-            'last_name.min' => 'el apellido del contacto debe tener al menos 2 caracteres',
-            'last_name.max' => 'el apellido del contacto no debe exceder 50 caracteres',
-            'last_name.regex' => 'el apellido del contacto contiene caracteres no válidos',
+            'last_name.required' => 'The contact last name must not be empty',
+            'last_name.min' => 'The contact last name must be at least 2 characters',
+            'last_name.max' => 'The contact last name must not exceed 50 characters',
+            'last_name.regex' => 'The contact last name contains invalid characters',
 
-            'title.required' => 'el título del contacto no debe ir vacío',
-            'title.min' => 'el título del contacto debe tener al menos 2 caracteres',
-            'title.max' => 'el título del contacto no debe exceder 100 caracteres',
-            'title.regex' => 'el título del contacto contiene caracteres no válidos',
+            'title.required' => 'The contact title must not be empty',
+            'title.min' => 'The contact title must be at least 2 characters',
+            'title.max' => 'The contact title must not exceed 100 characters',
+            'title.regex' => 'The contact title contains invalid characters',
 
-            'email.required' => 'el email del contacto no debe ir vacío',
-            'email.email' => 'el email del contacto debe tener un formato válido',
-            'email.max' => 'el email del contacto excede la longitud máxima permitida (254 caracteres)',
+            'email.required' => 'The contact email must not be empty',
+            'email.email' => 'The contact email must be a valid email address',
+            'email.max' => 'The contact email must not exceed 254 characters',
 
-            'phone.required' => 'el teléfono es obligatorio',
-            'phone.regex' => 'el formato del teléfono no es válido - use formato internacional',
+            'phone.required' => 'The phone number is required',
+            'phone.regex' => 'The phone number format is invalid - use international format',
         ];
     }
 
