@@ -53,8 +53,6 @@ class RolePermissionSeeder extends Seeder
                 'programs:read',
                 'programs:write',
                 'program_states:read',
-                'program_users:read',
-                'program_users:write',
                 'program_country_user_roles:read',
                 'program_country_user_roles:write',
                 'projects:read',
@@ -85,8 +83,6 @@ class RolePermissionSeeder extends Seeder
                 'countries:write',
                 'country_kpas:read',
                 'country_kpas:write',
-                'country_kpa_users:read',
-                'country_kpa_users:write',
             ];
 
             $permissions = Permission::whereIn('name', $projectManagerPermissions)->get();
@@ -103,8 +99,6 @@ class RolePermissionSeeder extends Seeder
                 'countries:write',
                 'country_kpas:read',
                 'country_kpas:write',
-                'country_kpa_users:read',
-                'country_kpa_users:write',
                 'strategic_outputs:read',
                 'strategic_outputs:write',
                 'measures:read',

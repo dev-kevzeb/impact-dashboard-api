@@ -45,32 +45,15 @@ return new class extends Migration
         DB::table('user_role')->update(['model_type' => 'App\\Modules\\User\\Domain\\User']);
 
         // 6. Cambiar primary key de user_role (Spatie espera PK compuesta)
-        // PROBLEMA: country_kpa_user referencia user_role.id (FK)
-        // SOLUCIÓN: Dropear FK temporalmente, cambiar PK, recrear FK
+        // NOTE: El flujo legacy de asignaciones fue removido.
         // NOTE: SQLite doesn't support modifying PKs, skip for tests
 
         if (DB::getDriverName() === 'pgsql') {
-            // Dropear FK desde country_kpa_user
-            Schema::table('country_kpa_user', function (Blueprint $table) {
-                $table->dropForeign('country_kpa_user_user_role_id_foreign');
-            });
-
             // Eliminar PK actual (Laravel la nombra user_role_pkey)
             DB::statement('ALTER TABLE user_role DROP CONSTRAINT user_role_pkey');
 
             // Crear nueva PK compuesta (role_id, user_id, model_type)
             DB::statement('ALTER TABLE user_role ADD CONSTRAINT user_role_pkey PRIMARY KEY(role_id, user_id, model_type)');
-
-            // Agregar índice único en 'id' para permitir la FK desde country_kpa_user
-            DB::statement('ALTER TABLE user_role ADD CONSTRAINT user_role_id_unique UNIQUE(id)');
-
-            // Recrear FK desde country_kpa_user
-            Schema::table('country_kpa_user', function (Blueprint $table) {
-                $table->foreign('user_role_id')
-                    ->references('id')
-                    ->on('user_role')
-                    ->onDelete('cascade');
-            });
         }
         // For SQLite (tests), we keep the original PK structure
         // Spatie will work fine with it as long as model_type column exists
@@ -84,25 +67,9 @@ return new class extends Migration
         // Revertir cambios en orden inverso
 
         if (DB::getDriverName() === 'pgsql') {
-            // 1. Dropear FK desde country_kpa_user
-            Schema::table('country_kpa_user', function (Blueprint $table) {
-                $table->dropForeign('country_kpa_user_user_role_id_foreign');
-            });
-
-            // 2. Eliminar índice único de id
-            DB::statement('ALTER TABLE user_role DROP CONSTRAINT IF EXISTS user_role_id_unique');
-
-            // 3. Restaurar PK original de user_role
+            // 1. Restaurar PK original de user_role
             DB::statement('ALTER TABLE user_role DROP CONSTRAINT user_role_pkey');
             DB::statement('ALTER TABLE user_role ADD CONSTRAINT user_role_pkey PRIMARY KEY(id)');
-
-            // 4. Recrear FK desde country_kpa_user
-            Schema::table('country_kpa_user', function (Blueprint $table) {
-                $table->foreign('user_role_id')
-                    ->references('id')
-                    ->on('user_role')
-                    ->onDelete('cascade');
-            });
         }
 
         // 5. Eliminar model_type de user_role

@@ -51,9 +51,6 @@ class PermissionSeeder extends Seeder
             ['name' => 'country_kpas:read', 'scope' => 'country_kpas', 'module' => 'CountryKpa', 'description' => 'View country-KPA relationships'],
             ['name' => 'country_kpas:write', 'scope' => 'country_kpas', 'module' => 'CountryKpa', 'description' => 'Create/edit country-KPA relationships'],
 
-            ['name' => 'country_kpa_users:read', 'scope' => 'country_kpa_users', 'module' => 'CountryKpaUser', 'description' => 'View country-KPA user assignments'],
-            ['name' => 'country_kpa_users:write', 'scope' => 'country_kpa_users', 'module' => 'CountryKpaUser', 'description' => 'Assign users to country-KPAs'],
-
             ['name' => 'strategic_outputs:read', 'scope' => 'strategic_outputs', 'module' => 'StrategicOutput', 'description' => 'View strategic outputs'],
             ['name' => 'strategic_outputs:write', 'scope' => 'strategic_outputs', 'module' => 'StrategicOutput', 'description' => 'Create/edit strategic outputs'],
 
@@ -68,9 +65,6 @@ class PermissionSeeder extends Seeder
 
             ['name' => 'program_states:read', 'scope' => 'program_states', 'module' => 'ProgramState', 'description' => 'View program states'],
             ['name' => 'program_states:write', 'scope' => 'program_states', 'module' => 'ProgramState', 'description' => 'Create/edit program states'],
-
-            ['name' => 'program_users:read', 'scope' => 'program_users', 'module' => 'ProgramUser', 'description' => 'View program user assignments'],
-            ['name' => 'program_users:write', 'scope' => 'program_users', 'module' => 'ProgramUser', 'description' => 'Assign users to programs'],
 
             ['name' => 'program_country_user_roles:read', 'scope' => 'program_country_user_roles', 'module' => 'ProgramCountryUserRole', 'description' => 'View program-country-user-role assignments'],
             ['name' => 'program_country_user_roles:write', 'scope' => 'program_country_user_roles', 'module' => 'ProgramCountryUserRole', 'description' => 'Assign programs to country user roles'],
