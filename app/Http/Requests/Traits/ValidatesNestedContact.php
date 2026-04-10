@@ -18,21 +18,18 @@ trait ValidatesNestedContact
                 'string',
                 'min:2',
                 'max:50',
-                'regex:/^[a-zA-ZÀ-ÿñÑ\s\'\-\.,\/]+$/u',
             ],
             'contact.last_name' => [
                 'required_without:contact.id',
                 'string',
                 'min:2',
                 'max:50',
-                'regex:/^[a-zA-ZÀ-ÿñÑ\s\'\-\.,\/]+$/u',
             ],
             'contact.title' => [
                 'required_without:contact.id',
                 'string',
                 'min:2',
                 'max:100',
-                'regex:/^[a-zA-ZÀ-ÿñÑ\s\'\-\.,\/]+$/u',
             ],
             'contact.email' => [
                 'required_without:contact.id',
