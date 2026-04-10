@@ -30,6 +30,7 @@ use App\Modules\Agency\Controller\AgencyController;
 use App\Modules\CountryKpa\Controller\CountryKpaController;
 use App\Modules\ProgramCountryUserRole\Controller\ProgramCountryUserRoleController;
 use App\Modules\InviteProgram\Controller\InviteProgramController;
+use App\Modules\ProjectInviteUser\Controller\ProjectInviteUserController;
 use App\Modules\UserRole\Controller\UserRoleController;
 use \App\Modules\StrategicOutput\Controller\StrategicOutputController;
 use App\Modules\Project\Controller\ProjectController;
@@ -246,6 +247,12 @@ Route::prefix('v1')->group(function () {
         Route::post('invite_programs', [InviteProgramController::class, 'store'])->middleware('scope:program_country_user_roles:write');
         Route::get('invite_programs/{id}', [InviteProgramController::class, 'show'])->middleware('scope:program_country_user_roles');
         Route::delete('invite_programs/{id}', [InviteProgramController::class, 'destroy'])->middleware('scope:program_country_user_roles:write');
+
+        // API Routes para ProjectInviteUser
+        Route::get('project_invite_users', [ProjectInviteUserController::class, 'index'])->middleware('scope:projects');
+        Route::post('project_invite_users', [ProjectInviteUserController::class, 'store'])->middleware('scope:projects:write');
+        Route::get('project_invite_users/{id}', [ProjectInviteUserController::class, 'show'])->middleware('scope:projects');
+        Route::delete('project_invite_users/{id}', [ProjectInviteUserController::class, 'destroy'])->middleware('scope:projects:write');
 
         // API Routes para Project
         Route::get('projects', [ProjectController::class, 'index'])->middleware('scope:projects');

@@ -39,7 +39,8 @@ class ProjectResource extends JsonResource
             'strategic_output' => new StrategicOutputResource($this->indicators->first()?->measure?->strategicOutput),
             'kpa' => new KpaResource($this->indicators->first()?->measure?->strategicOutput?->countryKpa?->kpa),
 
-            'program_id' => $this->program_id
+            'program_id' => $this->program_id,
+            'can_edit' => (bool) ($this->can_edit ?? false),
         ];
     }
 

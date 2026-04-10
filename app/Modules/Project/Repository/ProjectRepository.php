@@ -36,6 +36,16 @@ class ProjectRepository extends AbstractRepository implements RepositoryInterfac
         return $query->orderBy('name')->paginate($perPage);
     }
 
+    public function getIdsByProgramId(int $programId): array
+    {
+        return $this->model
+            ->where('program_id', $programId)
+            ->pluck('id')
+            ->map(fn ($id) => (int) $id)
+            ->values()
+            ->toArray();
+    }
+
     public function getPaginated(?string $search, int $perPage = 10, string $sort = 'date_newest'){
         $query = $this->model::query();
         if(!empty($search)) $query->whereRaw('lower(name) LIKE lower(?)', ['%'.trim($search).'%']);
@@ -72,7 +82,7 @@ class ProjectRepository extends AbstractRepository implements RepositoryInterfac
     }
 
     public function paginateByIds(array $projectIds, ?int $projectStateId, ?string $search, int $perPage, string $sort = 'date_newest') {
-        $query = $this->model->query()->whereIn('id', $projectIds)
+        $query = $this->model->query()->with('projectState')->whereIn('id', $projectIds)
             ->when($projectStateId, fn ($q) =>$q->where('project_state_id', $projectStateId))
             ->when($search, fn ($q) =>$q->whereRaw('LOWER(name) LIKE LOWER(?)', ['%' . trim($search) . '%']));
 
@@ -82,7 +92,7 @@ class ProjectRepository extends AbstractRepository implements RepositoryInterfac
     }
 
     public function paginateByIdsForProgram(int $programId, array $projectIds, ?int $projectStateId, ?string $search, int $perPage, string $sort = 'date_newest') {
-        $query = $this->model->query()->where('program_id', $programId)->whereIn('id', $projectIds)
+        $query = $this->model->query()->with('projectState')->where('program_id', $programId)->whereIn('id', $projectIds)
             ->when($projectStateId, fn ($q) =>$q->where('project_state_id', $projectStateId))
             ->when($search, fn ($q) =>$q->whereRaw('LOWER(name) LIKE LOWER(?)', ['%' . trim($search) . '%']));
 

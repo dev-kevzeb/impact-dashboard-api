@@ -21,6 +21,7 @@ use App\Modules\ProjectState\Repository\ProjectStateRepository;
 use App\Modules\Project\Repository\ProjectRepository;
 use App\Modules\Project\Domain\Project;
 use App\Modules\ProjectDonor\Service\ProjectDonorService;
+use App\Modules\ProjectInviteUser\Service\ProjectInviteUserService;
 use App\Modules\Program\Domain\Program;
 use App\Modules\ProgramCountryUserRole\Repository\ProgramCountryUserRoleRepository;
 use App\Modules\InviteProgram\Repository\InviteProgramRepository;
@@ -57,6 +58,7 @@ class ProjectService
     private ProjectAgencyService $projectAgencyService;
     private AgencyService $agencyService;
     private ProgramService $programService;
+    private ProjectInviteUserService $projectInviteUserService;
 
     public function __construct(
         ProjectRepository $projectRepository,
@@ -70,6 +72,7 @@ class ProjectService
         ProjectAgencyService $projectAgencyService,
         AgencyService $agencyService,
         ProgramService $programService,
+        ProjectInviteUserService $projectInviteUserService,
         CountryService $countryService,
         CountryKpaService $countryKpaService,
         KpaService $kpaService,
@@ -99,6 +102,7 @@ class ProjectService
         $this->strategicOutputService = $strategicOutputService;
         $this->measureService = $measureService;
         $this->programService = $programService;
+        $this->projectInviteUserService = $projectInviteUserService;
         $this->programCountryUserRoleRepository = $programCountryUserRoleRepository;
         $this->inviteProgramRepository = $inviteProgramRepository;
         $this->strategicOutputRepository = $strategicOutputRepository;
@@ -114,21 +118,39 @@ class ProjectService
     {
         $project = $this->projectRepository->findById($id);
         if (!$project) throw new \RuntimeException("The project with id {$id} does not exist.");
+
+        $this->projectInviteUserService->ensureCanViewProject($project);
+
         $project->load(['contact', 'beneficiary', 'projectState', 'donors', 'agencies', 'indicators.measure.strategicOutput.countryKpa.kpa']);
         $project->indicators->pluck('measure.strategicOutput.countryKpa.kpa')->filter()->unique('id')->each(fn($kpa) => $kpa->loadCount('strategicOutputs'));
+
+        $this->projectInviteUserService->applyProjectAccess($project);
 
         return $project;
     }
 
     public function findProjectByProgramIdPaginated(int $programId, ?string $search, int $perPage)
     {
-        return $this->projectRepository->getPaginatedProjectsByProgramId($programId, $search, $perPage);
+        $visibleProjectIds = $this->projectInviteUserService->getVisibleProjectIdsForProgram($programId);
+
+        if ($visibleProjectIds === null) {
+            $projects = $this->projectRepository->getPaginatedProjectsByProgramId($programId, $search, $perPage);
+        } elseif (empty($visibleProjectIds)) {
+            $projects = $this->projectRepository->emptyPaginated($perPage);
+        } else {
+            $projects = $this->projectRepository->paginateByIdsForProgram($programId, $visibleProjectIds, null, $search, $perPage);
+        }
+
+        return $this->projectInviteUserService->applyProjectAccessToPaginator($projects);
     }
 
     public function getProjectByName(string $name)
     {
         $project = $this->projectRepository->findByName($name);
         if (!$project) throw new \RuntimeException("The project with name {$name} does not exist.");
+
+        $this->projectInviteUserService->ensureCanViewProject($project);
+        $this->projectInviteUserService->applyProjectAccess($project);
 
         return $project;
     }
@@ -391,6 +413,8 @@ class ProjectService
 
         $project = $this->projectRepository->saveReturn($project);
 
+        $this->attachCurrentCountryUserRoleToProject($project);
+
         $this->syncIndicators($project, $indicators);
         $this->syncDonors($project, $donors);
         $this->syncAgencies($project, $agencies);
@@ -419,6 +443,8 @@ class ProjectService
 
         $project = $this->findProjectById($id);
         if (empty($project)) throw new \RuntimeException("The project with id {$id} does not exist.");
+
+        $this->projectInviteUserService->ensureCanEditProject($project);
 
         $this->ensureProgramWeightLimit($program_id, $weight, $id);
 
@@ -460,6 +486,9 @@ class ProjectService
         $project->beneficiary_id = $beneficiary->id;
         $project->project_state_id = $projectState->id;
 
+        // Virtual access flag injected for API responses must never be persisted.
+        unset($project->can_edit);
+
         $this->projectRepository->save($project);
 
         $this->syncIndicators($project, $indicators);
@@ -472,6 +501,8 @@ class ProjectService
     public function deleteProject(int $id): void
     {
         $project = $this->findProjectById($id);
+
+        $this->projectInviteUserService->ensureCanEditProject($project);
 
         $this->resolveAccessibleProgramCountryId((int) $project->program_id);
 
@@ -534,6 +565,22 @@ class ProjectService
     {
         if ($measureIds->isNotEmpty()) return $this->indicatorService->getByMeasureIds($measureIds->toArray())->pluck('id');
         return collect();
+    }
+
+    private function attachCurrentCountryUserRoleToProject(Project $project): void
+    {
+        $user = auth('api')->user();
+        if (!$user) {
+            return;
+        }
+
+        try {
+            $countryUserRole = $user->getCountryUserRole();
+        } catch (\RuntimeException $e) {
+            return;
+        }
+
+        $this->projectInviteUserService->attachProject($project, $countryUserRole);
     }
 
     public function getPublicProjects(array $filters, ?string $search, int $perPage, string $sort = 'date_newest')

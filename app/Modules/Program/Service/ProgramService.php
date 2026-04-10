@@ -6,6 +6,7 @@ use App\Modules\Program\Domain\Program;
 use App\Modules\Program\Repository\ProgramRepository;
 use App\Modules\Contact\Repository\ContactRepository;
 use App\Modules\Project\Domain\Project;
+use App\Modules\ProjectInviteUser\Repository\ProjectInviteUserRepository;
 use App\Modules\ProgramState\Repository\ProgramStateRepository;
 use App\Modules\Sdg\Repository\SdgRepository;
 use Illuminate\Support\Collection;
@@ -19,17 +20,20 @@ class ProgramService
     private ContactRepository $contactRepository;
     private ProgramStateRepository $programStateRepository;
     private SdgRepository $sdgRepository;
+    private ProjectInviteUserRepository $projectInviteUserRepository;
 
     public function __construct(
         ProgramRepository $programRepository,
         ContactRepository $contactRepository,
         ProgramStateRepository $programStateRepository,
-        SdgRepository $sdgRepository
+        SdgRepository $sdgRepository,
+        ProjectInviteUserRepository $projectInviteUserRepository
     ) {
         $this->programRepository = $programRepository;
         $this->contactRepository = $contactRepository;
         $this->programStateRepository = $programStateRepository;
         $this->sdgRepository = $sdgRepository;
+        $this->projectInviteUserRepository = $projectInviteUserRepository;
     }
 
     /**
@@ -252,7 +256,8 @@ class ProgramService
                 $program->setAttribute('can_edit', 1);
                 return $program;
             });
-            return $programs;
+
+            return $this->applyVisibleProjectsCount($programs, $user);
         }
 
         if ($user->hasPermissionTo('programs:view_by_country')) {
@@ -264,11 +269,50 @@ class ProgramService
                 ->values()
                 ->toArray();
 
-            return $this->programRepository->paginateByCountryIds($countryIds, $perPage, $search);
+            $programs = $this->programRepository->paginateByCountryIds($countryIds, $perPage, $search);
+
+            return $this->applyVisibleProjectsCount($programs, $user);
         }
 
         $userRoleIds = $user->userRoles()->pluck('id')->toArray();
-        return $this->programRepository->paginateAccessibleByUserRoleIds($userRoleIds, $perPage, $search);
+        $programs = $this->programRepository->paginateAccessibleByUserRoleIds($userRoleIds, $perPage, $search);
+
+        return $this->applyVisibleProjectsCount($programs, $user);
+    }
+
+    private function applyVisibleProjectsCount($programs, $user)
+    {
+        $countryUserRole = null;
+
+        $programs->getCollection()->transform(function ($program) use ($user, &$countryUserRole) {
+            if ($user->hasPermissionTo('*:*') || $user->hasPermissionTo('programs:view_by_country') || (bool) ($program->can_edit ?? false)) {
+                $program->setAttribute('visible_projects_count', (int) ($program->projects_count ?? 0));
+
+                return $program;
+            }
+
+            if (!$countryUserRole) {
+                try {
+                    $countryUserRole = $user->getCountryUserRole();
+                } catch (RuntimeException) {
+                    $program->setAttribute('visible_projects_count', 0);
+
+                    return $program;
+                }
+            }
+
+            $program->setAttribute(
+                'visible_projects_count',
+                $this->projectInviteUserRepository->countProjectsByProgramAndCountryUserRole(
+                    (int) $program->id,
+                    (int) $countryUserRole->id
+                )
+            );
+
+            return $program;
+        });
+
+        return $programs;
     }
 
     /**
