@@ -400,4 +400,178 @@ class StatisticsService
         return $donations;
     }
 
+    public function getCountryKpaImplementation(int $countryId, int $kpaId): array
+    {
+        $countryKpa = $this->countryKpaRepository->getByCountryAndKpa($countryId, $kpaId)->first();
+        if (!$countryKpa) return [
+            "name" => "0 measures",
+            "implementation" => 0,
+            "total" => 0,
+            "resource" => 0,
+            "beneficiaries" => [],
+            "agencies" => [],
+            "donors" => []
+        ];
+
+        $strategicOutputs = $this->strategicOutputRepository->getByCountryKpaIds([$countryKpa->id]);
+
+        if ($strategicOutputs->isEmpty()) return [
+            "name" => "0 measures",
+            "implementation" => 0,
+            "total" => 0,
+            "resource" => 0,
+            "beneficiaries" => [],
+            "agencies" => [],
+            "donors" => []
+        ];
+
+        $weightedTotal = 0;
+        $measures = 0;
+        $resource = 0;
+        $beneficiaries = collect();
+        $agenciesRaw = collect();
+        $donorsRaw = collect();
+
+        foreach ($strategicOutputs as $so) {
+            $implementation = $this->getStrategicOutputImplementation($so->id);
+            $soMeasureCount = $implementation['total'];
+            $weightedTotal += $implementation['implementation'] * $soMeasureCount;
+            $measures += $soMeasureCount;
+            $resource += $implementation['resource'];
+            $beneficiaries = $beneficiaries->merge($implementation['beneficiaries']);
+            $agenciesRaw = $agenciesRaw->merge($implementation['agencies']);
+            $donorsRaw = $donorsRaw->merge($implementation['donors']);
+        }
+
+        $beneficiaries = $beneficiaries->unique('id')->values();
+        $totalCombinedContribution = $agenciesRaw->sum('contribution') + $donorsRaw->sum('contribution');
+
+        $agenciesContribution = $agenciesRaw->groupBy('id')->map(function ($group) use ($totalCombinedContribution) {
+            $sum = $group->sum('contribution');
+
+            return [
+                'id' => $group->first()['id'],
+                'name' => $group->first()['name'],
+                'contribution' => $totalCombinedContribution > 0 ? round(($sum / $totalCombinedContribution) * 100, 2) : 0
+            ];
+        })->values()->toArray();
+
+        $donorsContribution = $donorsRaw->groupBy('id')->map(function ($group) use ($totalCombinedContribution) {
+            $sum = $group->sum('contribution');
+
+            return [
+                'id' => $group->first()['id'],
+                'name' => $group->first()['name'],
+                'contribution' => $totalCombinedContribution > 0 ? round(($sum / $totalCombinedContribution) * 100, 2) : 0
+            ];
+        })->values()->toArray();
+        
+        return [
+            "name" => "{$measures} measures",
+            "implementation" => $measures > 0 ? round($weightedTotal / $measures, 2) : 0,
+            "total" => $measures,
+            "resource" => $resource,
+            "beneficiaries" => $beneficiaries,
+            "agencies" => $agenciesContribution,
+            "donors" => $donorsContribution
+        ];
+    }
+
+    public function getCountryOverallImplementation(int $countryId): array
+    {
+        $countryKpas = $this->countryKpaRepository->getByCountry($countryId);
+
+        if ($countryKpas->isEmpty()) return [
+            "name" => "0 measures",
+            "implementation" => 0,
+            "resource" => 0,
+            "beneficiaries" => [],
+            "agencies" => [],
+            "donors" => []
+        ];
+
+        $weightedTotal = 0;
+        $measures = 0;
+        $resource = 0;
+
+        $kpaBeneficiaries = [];
+        $agenciesRaw = collect();
+        $donorsRaw = collect();
+
+        foreach ($countryKpas as $countryKpa) {
+            $implementation = $this->getCountryKpaImplementation($countryId, $countryKpa->id_kpa);
+            $kpaMeasureCount = $implementation['total'];
+            $weightedTotal += $implementation['implementation'] * $kpaMeasureCount;
+            $measures += $kpaMeasureCount;
+            $resource += $implementation['resource'];
+            
+            $kpaBeneficiaries[] = [
+                "name" => $countryKpa->kpa->name,
+                "beneficiaries" => $implementation['beneficiaries']
+            ];
+            $agenciesRaw = $agenciesRaw->merge($implementation['agencies']);
+            $donorsRaw = $donorsRaw->merge($implementation['donors']);
+        }
+
+        $totalCombinedContribution = $agenciesRaw->sum('contribution') + $donorsRaw->sum('contribution');
+
+        $agenciesContribution = $agenciesRaw->groupBy('id')->map(function ($group) use ($totalCombinedContribution) {
+            $sum = $group->sum('contribution');
+
+            return [
+                'id' => $group->first()['id'],
+                'name' => $group->first()['name'],
+                'contribution' => $totalCombinedContribution > 0 ? round(($sum / $totalCombinedContribution) * 100, 2) : 0
+            ];
+        })->values()->toArray();
+
+        $donorsContribution = $donorsRaw->groupBy('id')->map(function ($group) use ($totalCombinedContribution) {
+            $sum = $group->sum('contribution');
+
+            return [
+                'id' => $group->first()['id'],
+                'name' => $group->first()['name'],
+                'contribution' => $totalCombinedContribution > 0 ? round(($sum / $totalCombinedContribution) * 100, 2) : 0
+            ];
+        })->values()->toArray();
+
+        return [
+            "name" => "{$measures} measures ",
+            "implementation" => $measures > 0 ? round($weightedTotal / $measures, 2) : 0,
+            "resource" => $resource,
+            "beneficiaries" => $kpaBeneficiaries,
+            "agencies" => $agenciesContribution,
+            "donors" => $donorsContribution
+        ];
+    }
+
+    public function getCountryAllKpasImplementation(int $countryId): array
+    {
+        $countryKpas = $this->countryKpaRepository->getByCountry($countryId);
+
+        if ($countryKpas->isEmpty()) return [
+            "kpas" => [],
+            "resource" => [],
+        ];
+        
+        $resource = 0;
+        $kpasData = collect();
+
+        foreach ($countryKpas as $countryKpa) {
+            $implementation = $this->getCountryKpaImplementation($countryId, $countryKpa->id_kpa);
+            unset($implementation['name']);
+            $kpasData->push([
+                "id" => $countryKpa->id_kpa,
+                "name" => $countryKpa->kpa->name,
+                ...$implementation
+            ]);
+            $resource += $implementation['resource'];
+        }
+
+        return [
+            "kpas"=> $kpasData->values()->toArray(),
+            "resource" => $resource
+        ];
+    }
+
 }

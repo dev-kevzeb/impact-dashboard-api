@@ -340,4 +340,6 @@ Route::prefix('v1/public')->group(function () {
     Route::get('kpa-implementation/{id}', [StatisticsController::class, 'getKpaImplementation']);
     Route::get('overall-implementation', [StatisticsController::class, 'getOverallImplementation']);
     Route::get('allkpas-implementation', [StatisticsController::class, 'getAllKpasImplementation']);
+    Route::get('country-overall-implementation/{countryId}', [StatisticsController::class, 'getCountryOverallImplementation']);
+    Route::get('country-allkpas-implementation/{countryId}', [StatisticsController::class, 'getCountryAllKpasImplementation']);
 });
