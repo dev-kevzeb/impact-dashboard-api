@@ -278,7 +278,7 @@ class ProjectController extends Controller
         try {
             $validated = $request->validated();
 
-            $userPermissions = auth()->user()->getAllPermissions()->pluck('name')->toArray();
+            $userPermissions = auth('api')->user()->getAllPermissions()->pluck('name')->toArray();
             $isAdmin = in_array('*:*', $userPermissions);
             $hasWeightPerm = $isAdmin || in_array('projects:weight', $userPermissions);
             $weight = $hasWeightPerm ? (float) $validated['weight'] : 0.0;
@@ -389,7 +389,7 @@ class ProjectController extends Controller
         try {
             $validated = $request->validated();
 
-            $userPermissions = auth()->user()->getAllPermissions()->pluck('name')->toArray();
+            $userPermissions = auth('api')->user()->getAllPermissions()->pluck('name')->toArray();
             $isAdmin = in_array('*:*', $userPermissions);
             $hasWeightPerm = $isAdmin || in_array('projects:weight', $userPermissions);
 
@@ -524,7 +524,7 @@ class ProjectController extends Controller
                 200,
                 [
                     'projects' => SimpleProjectResource::collection($projects),
-                    'total' => $projects->count(),
+                    'total' => $projects->total(),
                     'per_page' => $projects->perPage(),
                     'current_page' => $projects->currentPage(),
                     'last_page' => $projects->lastPage(),

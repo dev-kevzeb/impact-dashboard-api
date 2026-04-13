@@ -24,7 +24,8 @@ class SimpleProjectResource extends JsonResource
             
             'project_state' => new ProjectStateResource($this->whenLoaded('projectState')),
 
-            'program_id' => $this->program_id
+            'program_id' => $this->program_id,
+            'can_edit' => (bool) ($this->can_edit ?? false),
         ];
     }
 

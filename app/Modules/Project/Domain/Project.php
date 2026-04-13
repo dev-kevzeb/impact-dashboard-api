@@ -10,6 +10,7 @@ use App\Modules\Indicator\Domain\Indicator;
 use App\Modules\ProjectAgency\Domain\ProjectAgency;
 use App\Modules\ProjectDonor\Domain\ProjectDonor;
 use App\Modules\ProjectIndicator\Domain\ProjectIndicator;
+use App\Modules\ProjectInviteUser\Domain\ProjectInviteUser;
 use App\Modules\ProjectState\Domain\ProjectState;
 use Database\Factories\ProjectFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -148,6 +149,11 @@ class Project extends Model
     public function projectAgencies()
     {
         return $this->hasMany(ProjectAgency::class, 'project_id', 'id');
+    }
+
+    public function projectInviteUsers()
+    {
+        return $this->hasMany(ProjectInviteUser::class, 'project_id', 'id');
     }
 
     public function contact()

@@ -44,19 +44,12 @@ return new class extends Migration
         // 5. Poblar model_type en registros existentes
         DB::table('user_role')->update(['model_type' => 'App\\Modules\\User\\Domain\\User']);
 
-        // 6. Cambiar primary key de user_role (Spatie espera PK compuesta)
-        // NOTE: El flujo legacy de asignaciones fue removido.
-        // NOTE: SQLite doesn't support modifying PKs, skip for tests
-
+        // 6. Mantener PK en user_role.id para compatibilidad con FKs de módulos de dominio
+        // y agregar unicidad sobre la combinación usada por Spatie.
+        // NOTE: SQLite no requiere este ajuste explícito.
         if (DB::getDriverName() === 'pgsql') {
-            // Eliminar PK actual (Laravel la nombra user_role_pkey)
-            DB::statement('ALTER TABLE user_role DROP CONSTRAINT user_role_pkey');
-
-            // Crear nueva PK compuesta (role_id, user_id, model_type)
-            DB::statement('ALTER TABLE user_role ADD CONSTRAINT user_role_pkey PRIMARY KEY(role_id, user_id, model_type)');
+            DB::statement('CREATE UNIQUE INDEX IF NOT EXISTS uq_user_role_spatie_triplet ON user_role(role_id, user_id, model_type)');
         }
-        // For SQLite (tests), we keep the original PK structure
-        // Spatie will work fine with it as long as model_type column exists
     }
 
     /**
@@ -67,9 +60,7 @@ return new class extends Migration
         // Revertir cambios en orden inverso
 
         if (DB::getDriverName() === 'pgsql') {
-            // 1. Restaurar PK original de user_role
-            DB::statement('ALTER TABLE user_role DROP CONSTRAINT user_role_pkey');
-            DB::statement('ALTER TABLE user_role ADD CONSTRAINT user_role_pkey PRIMARY KEY(id)');
+            DB::statement('DROP INDEX IF EXISTS uq_user_role_spatie_triplet');
         }
 
         // 5. Eliminar model_type de user_role
