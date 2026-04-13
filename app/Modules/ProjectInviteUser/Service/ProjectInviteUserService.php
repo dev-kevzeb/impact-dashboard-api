@@ -34,7 +34,7 @@ class ProjectInviteUserService
         return $this->repository->findByIdWithRelations($relation->id);
     }
 
-    public function getVisibleProjectIdsForProgram(int $programId): ?array
+    public function hasFullProgramAccess(int $programId): bool
     {
         $user = auth('api')->user();
         if (!$user) {
@@ -42,7 +42,7 @@ class ProjectInviteUserService
         }
 
         if ($user->hasPermissionTo('*:*')) {
-            return null;
+            return true;
         }
 
         $authUserRoleIds = $user->userRoles()->pluck('id')->toArray();
@@ -50,9 +50,21 @@ class ProjectInviteUserService
         $ownerAssignment = $this->programCountryUserRoleRepository
             ->findFirstOwnedAssignmentByProgramAndUserRoleIds($programId, $authUserRoleIds);
 
-        if ($ownerAssignment) {
-            return null;
+        return (bool) $ownerAssignment;
+    }
+
+    public function getVisibleProjectIdsForProgram(int $programId): array
+    {
+        if ($this->hasFullProgramAccess($programId)) {
+            return [];
         }
+
+        $user = auth('api')->user();
+        if (!$user) {
+            throw new RuntimeException('Not authenticated.');
+        }
+
+        $authUserRoleIds = $user->userRoles()->pluck('id')->toArray();
 
         $invite = $this->inviteProgramRepository
             ->findFirstInviteByProgramAndInvitedRoleIds($programId, $authUserRoleIds);

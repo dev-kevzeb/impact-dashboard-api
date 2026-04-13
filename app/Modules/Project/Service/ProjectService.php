@@ -131,9 +131,10 @@ class ProjectService
 
     public function findProjectByProgramIdPaginated(int $programId, ?string $search, int $perPage)
     {
+        $hasFullAccess = $this->projectInviteUserService->hasFullProgramAccess($programId);
         $visibleProjectIds = $this->projectInviteUserService->getVisibleProjectIdsForProgram($programId);
 
-        if ($visibleProjectIds === null) {
+        if ($hasFullAccess) {
             $projects = $this->projectRepository->getPaginatedProjectsByProgramId($programId, $search, $perPage);
         } elseif (empty($visibleProjectIds)) {
             $projects = $this->projectRepository->emptyPaginated($perPage);
