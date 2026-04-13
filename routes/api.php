@@ -1,6 +1,7 @@
 <?php
 
 use App\Modules\Auth\Controller\AuthController;
+use App\Modules\Auth\Controller\PasswordResetController;
 use App\Modules\Auth\Controller\VerificationController;
 use App\Modules\Country\Controller\PublicCountryController;
 use App\Modules\CountryKpa\Controller\PublicCountryKpaController;
@@ -46,6 +47,9 @@ Route::prefix('v1')->group(function () {
     // Public auth routes
     Route::post('auth/login', [AuthController::class, 'login']);
     Route::post('auth/register', [AuthController::class, 'register']);
+    Route::post('auth/forgot-password', [PasswordResetController::class, 'forgotPassword'])
+        ->middleware('throttle:5,1');
+    Route::post('auth/reset-password', [PasswordResetController::class, 'resetPassword']);
 
     // Email verification routes (no authentication required)
     Route::get('email/verify/{id}/{hash}', [VerificationController::class, 'verify'])
