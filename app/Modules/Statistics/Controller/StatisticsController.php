@@ -94,4 +94,36 @@ class StatisticsController extends Controller{
             return ApiResponse::error($e->getMessage(), 500);
         }
     }
+
+    public function getCountryOverallImplementation(int $countryId)
+    {
+        try {
+            $implementation = $this->statisticsService->getCountryOverallImplementation($countryId);
+            return ApiResponse::success(
+                'Country overall implementation retrieved successfully',
+                200,
+                $implementation
+            );
+        } catch (RuntimeException $e) {
+            return ApiResponse::error($e->getMessage(), 500);
+        } catch (\Exception $e) {
+            return ApiResponse::error($e->getMessage(), 500);
+        }
+    }
+
+    public function getCountryAllKpasImplementation(int $countryId)
+    {
+        try {
+            $implementation = $this->statisticsService->getCountryAllKpasImplementation($countryId);
+            return ApiResponse::success(
+                'Country all KPAs implementation retrieved successfully',
+                200,
+                $implementation
+            );
+        } catch (RuntimeException $e) {
+            return ApiResponse::error($e->getMessage(), 500);
+        } catch (\Exception $e) {
+            return ApiResponse::error($e->getMessage(), 500);
+        }
+    }
 }
