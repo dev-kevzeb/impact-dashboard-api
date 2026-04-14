@@ -91,11 +91,25 @@ class CountryKpaController extends Controller
 	{
 		try {
 			if ($request->has('country')) {
+				$countryId = (int) $request->query('country');
+				
+				// Verify user has access to this country
+				if (!$this->service->userHasAccessToCountry($countryId)) {
+					return ApiResponse::error('Access denied to this country', 403);
+				}
+				
 				$search = $request->get("search");
 				$perPage = (int) $request->get("per_page", 10);
-				$countryId = (int) $request->query('country');
 				$countryWithKpas = $this->service->getCountryKpasByCountryId($countryId, $search, $perPage);
 				return ApiResponse::success('Country KPAs obtained', 200, $countryWithKpas);
+			}
+
+			// Only admins can see all countries' KPAs without filter
+			$user = auth('api')->user();
+			$isAdmin = $user && $user->roles && $user->roles->contains(fn($role) => strtolower($role->name) === 'admin');
+			
+			if (!$isAdmin) {
+				return ApiResponse::error('Only administrators can view all countries', 403);
 			}
 
 			$items = $this->service->getAll();
@@ -146,6 +160,12 @@ class CountryKpaController extends Controller
 	{
 		try {
 			$countryKpa = $this->service->getById((int)$id);
+			
+			// Verify user has access to this country
+			if (isset($countryKpa->id_country) && !$this->service->userHasAccessToCountry($countryKpa->id_country)) {
+				return ApiResponse::error('Access denied to this country', 403);
+			}
+			
 			return ApiResponse::success('Registration obtained', 200, $countryKpa);
 		} catch (RuntimeException $e) {
 			return ApiResponse::notFound('CountryKpa');
@@ -236,6 +256,14 @@ class CountryKpaController extends Controller
 	public function store(CountryKpaRequest $request): JsonResponse
 	{
 		try {
+			// Only admins can create country-KPA relationships
+			$user = auth('api')->user();
+			$isAdmin = $user && $user->roles && $user->roles->contains(fn($role) => strtolower($role->name) === 'admin');
+			
+			if (!$isAdmin) {
+				return ApiResponse::error('Only administrators can create country-KPA relationships', 403);
+			}
+			
 			$validated = $request->validated();
 
 			$created = $this->service->create($validated);
@@ -305,7 +333,20 @@ class CountryKpaController extends Controller
 	public function update(CountryKpaRequest $request, int $id): JsonResponse
 	{
 		try {
+			// Verify user has access to the country being updated
+			$countryKpa = $this->service->getById($id);
+			if (isset($countryKpa->id_country) && !$this->service->userHasAccessToCountry($countryKpa->id_country)) {
+				return ApiResponse::error('Access denied to this country', 403);
+			}
+			
 			$validated = $request->validated();
+
+			// Also verify access to the new country if it's being changed
+			if (isset($validated['id_country']) && $validated['id_country'] !== $countryKpa->id_country) {
+				if (!$this->service->userHasAccessToCountry($validated['id_country'])) {
+					return ApiResponse::error('Access denied to the target country', 403);
+				}
+			}
 
 			$updated = $this->service->update($id, $validated);
 
@@ -359,6 +400,12 @@ class CountryKpaController extends Controller
 	public function destroy($id): JsonResponse
 	{
 		try {
+			// Verify user has access to the country before deleting
+			$countryKpa = $this->service->getById($id);
+			if (isset($countryKpa->id_country) && !$this->service->userHasAccessToCountry($countryKpa->id_country)) {
+				return ApiResponse::error('Access denied to this country', 403);
+			}
+			
 			$deleted = $this->service->delete((int)$id);
 			return ApiResponse::success('Deleted', 200, $deleted);
 		} catch (RuntimeException $e) {
@@ -422,6 +469,11 @@ class CountryKpaController extends Controller
 	public function showForCountry(Request $request, $id): JsonResponse
 	{
 		try {
+			// Verify user has access to this country
+			if (!$this->service->userHasAccessToCountry((int)$id)) {
+				return ApiResponse::error('Access denied to this country', 403);
+			}
+			
 			$search = $request->get("search");
 			$perPage = (int) $request->get("per_page", 10);
 			$paginator = $this->service->getKpasByCountryPaginated((int)$id, $search, $perPage);

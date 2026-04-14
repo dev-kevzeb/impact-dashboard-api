@@ -6,7 +6,9 @@ return [
     'allowed_methods' => ['*'],
 
     'allowed_origins' => [
-        env('FRONTEND_URL'),
+        env('FRONTEND_URL', 'http://localhost:5173'),
+        'http://localhost:5173',
+        'http://localhost:3000',
     ],
 
     'allowed_headers' => ['*'],
