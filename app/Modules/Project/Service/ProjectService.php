@@ -132,14 +132,18 @@ class ProjectService
     public function findProjectByProgramIdPaginated(int $programId, ?string $search, int $perPage)
     {
         $hasFullAccess = $this->projectInviteUserService->hasFullProgramAccess($programId);
-        $visibleProjectIds = $this->projectInviteUserService->getVisibleProjectIdsForProgram($programId);
+        $hasCountryViewAccess = $this->projectInviteUserService->canViewProgramByCountry($programId);
 
-        if ($hasFullAccess) {
+        if ($hasFullAccess || $hasCountryViewAccess) {
             $projects = $this->projectRepository->getPaginatedProjectsByProgramId($programId, $search, $perPage);
-        } elseif (empty($visibleProjectIds)) {
-            $projects = $this->projectRepository->emptyPaginated($perPage);
         } else {
-            $projects = $this->projectRepository->paginateByIdsForProgram($programId, $visibleProjectIds, null, $search, $perPage);
+            $visibleProjectIds = $this->projectInviteUserService->getVisibleProjectIdsForProgram($programId);
+
+            if (empty($visibleProjectIds)) {
+                $projects = $this->projectRepository->emptyPaginated($perPage);
+            } else {
+                $projects = $this->projectRepository->paginateByIdsForProgram($programId, $visibleProjectIds, null, $search, $perPage);
+            }
         }
 
         return $this->projectInviteUserService->applyProjectAccessToPaginator($projects);

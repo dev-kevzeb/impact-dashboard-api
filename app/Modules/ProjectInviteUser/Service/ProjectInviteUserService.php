@@ -53,6 +53,29 @@ class ProjectInviteUserService
         return (bool) $ownerAssignment;
     }
 
+    public function canViewProgramByCountry(int $programId): bool
+    {
+        $user = auth('api')->user();
+        if (!$user) {
+            throw new RuntimeException('Not authenticated.');
+        }
+
+        if (!$user->hasPermissionTo('programs:view_by_country')) {
+            return false;
+        }
+
+        $countryIds = $user->userRoles()
+            ->with('countries')
+            ->get()
+            ->flatMap(fn($userRole) => $userRole->countries->pluck('id'))
+            ->unique()
+            ->values()
+            ->toArray();
+
+        return $this->programCountryUserRoleRepository
+            ->existsByProgramAndCountryIds($programId, $countryIds);
+    }
+
     public function getVisibleProjectIdsForProgram(int $programId): array
     {
         if ($this->hasFullProgramAccess($programId)) {
@@ -95,6 +118,10 @@ class ProjectInviteUserService
             ->findFirstOwnedAssignmentByProgramAndUserRoleIds((int) $project->program_id, $authUserRoleIds);
 
         if ($ownerAssignment) {
+            return true;
+        }
+
+        if ($this->canViewProgramByCountry((int) $project->program_id)) {
             return true;
         }
 
