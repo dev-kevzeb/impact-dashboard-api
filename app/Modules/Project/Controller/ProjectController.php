@@ -531,7 +531,7 @@ class ProjectController extends Controller
                 ]
             );
         } catch (RuntimeException $e) {
-            return ApiResponse::error($e->getMessage(), 500);
+            return ApiResponse::error($e->getMessage(), 400);
         } catch (\Exception $e) {
             return ApiResponse::error('Internal server error', 500);
         }

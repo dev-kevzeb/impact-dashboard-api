@@ -82,4 +82,20 @@ class ProgramCountryUserRoleRepository extends AbstractRepository
             ->where('program_id', $programId)
             ->first();
     }
+
+    public function existsByProgramAndCountryIds(int $programId, array $countryIds): bool
+    {
+        $countryIds = array_values(array_unique(array_map('intval', $countryIds)));
+
+        if (empty($countryIds)) {
+            return false;
+        }
+
+        return $this->model
+            ->where('program_id', $programId)
+            ->whereHas('countryUserRole', function ($q) use ($countryIds) {
+                $q->whereIn('country_id', $countryIds);
+            })
+            ->exists();
+    }
 }
