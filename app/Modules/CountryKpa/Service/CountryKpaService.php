@@ -15,6 +15,50 @@ class CountryKpaService
         $this->repo = $repo;
     }
 
+    /**
+     * Validate if the authenticated user has access to a specific country
+     * 
+     * @param int $countryId The country ID to check access for
+     * @return bool True if user has access, false otherwise
+     * @throws RuntimeException If no user is authenticated
+     */
+    public function userHasAccessToCountry(int $countryId): bool
+    {
+        $user = auth('api')->user();
+        if (!$user) {
+            throw new RuntimeException('No authenticated user found');
+        }
+
+        // Admin users have access to all countries
+        if ($user->roles && $user->roles->contains(fn($role) => strtolower($role->name) === 'admin')) {
+            return true;
+        }
+
+        // Non-admin users can only access their assigned country.
+        // The authenticated User object does not expose a direct country_user_role relation,
+        // so we resolve it from the loaded userRoles -> countryUserRole relationship or fallback to helper.
+        if ($user->relationLoaded('userRoles')) {
+            foreach ($user->userRoles as $userRole) {
+                if ($userRole->relationLoaded('countryUserRole') && $userRole->countryUserRole) {
+                    if ($userRole->countryUserRole->country_id === $countryId) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        if (method_exists($user, 'getCountryUserRole')) {
+            try {
+                $countryUserRole = $user->getCountryUserRole();
+                return $countryUserRole->country_id === $countryId;
+            } catch (RuntimeException $e) {
+                // no assigned country
+            }
+        }
+
+        return false;
+    }
+
     public function getAll(): array
     {
         return $this->repo->getAll();
