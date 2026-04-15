@@ -2,6 +2,7 @@
 
 namespace App\Modules\UserRole\Service;
 
+use App\Modules\Role\Domain\Role;
 use App\Modules\UserRole\Domain\UserRole;
 use App\Modules\UserRole\Repository\UserRoleRepository;
 use RuntimeException;
@@ -25,6 +26,8 @@ class UserRoleService
      */
     public function createAssignment(int $userId, int $roleId): UserRole
     {
+        $this->assertCanAssignRole($roleId);
+
         // Check if assignment already exists
         if ($this->repository->assignmentExists($userId, $roleId)) {
             throw new RuntimeException('This user already has this role assigned');
@@ -51,6 +54,8 @@ class UserRoleService
      */
     public function updateAssignment(int $id, int $userId, int $roleId): UserRole
     {
+        $this->assertCanAssignRole($roleId);
+
         $assignment = $this->repository->findById($id);
 
         // Check if new combination would be duplicate (excluding current record)
@@ -64,6 +69,25 @@ class UserRoleService
         $this->repository->save($assignment);
 
         return $assignment;
+    }
+
+    /**
+     * Only admins can assign the admin role through user_roles endpoints.
+     * This keeps admin-account creation/assignment exclusive.
+     */
+    private function assertCanAssignRole(int $roleId): void
+    {
+        $targetRole = Role::find($roleId);
+
+        if (!$targetRole || $targetRole->name !== 'admin') {
+            return;
+        }
+
+        $actor = auth('api')->user();
+
+        if (!$actor || !$actor->hasRole('admin')) {
+            throw new RuntimeException('Only admin users can assign the admin role.');
+        }
     }
 
     /**

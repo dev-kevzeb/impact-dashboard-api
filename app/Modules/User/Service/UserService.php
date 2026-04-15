@@ -2,6 +2,8 @@
 
 namespace App\Modules\User\Service;
 
+use App\Notifications\AdminAccountEnabledNotification;
+use App\Modules\Role\Domain\Role;
 use App\Notifications\AccountApprovedNotification;
 use App\Notifications\AccountRejectedNotification;
 use App\Modules\User\Domain\User;
@@ -34,6 +36,54 @@ class UserService
         $this->repository->save($user);
 
         return $user;
+    }
+
+    /**
+     * Create a new admin user from admin panel flow.
+     *
+     * Rules:
+     * - Only authenticated admins can create other admins.
+     * - User is created as active + email verified.
+     * - No country assignment is created.
+     * - Sends activation email (without credentials).
+     *
+     * @param string $name
+     * @param string $email
+     * @param string $password
+     * @return User
+     * @throws RuntimeException
+     */
+    public function createAdminUser(string $name, string $email, string $password): User
+    {
+        $actor = auth('api')->user();
+
+        if (!$actor || !$actor->hasRole('admin')) {
+            throw new RuntimeException('Only admin users can create admin accounts.');
+        }
+
+        $activeState = $this->userStateRepository->findBy('name', 'active');
+        if (!$activeState) {
+            throw new RuntimeException('Active state not found. Run UserStateSeeder.');
+        }
+
+        $adminRole = Role::where('name', 'admin')->first();
+        if (!$adminRole) {
+            throw new RuntimeException('Admin role not found. Run RoleSeeder.');
+        }
+
+        $user = User::at($name, $email, $activeState);
+        $user->password = $password;
+        $user->email_verified_at = now();
+
+        $this->repository->save($user);
+
+        // Assign admin role immediately so the account starts enabled.
+        $user->assignRole('admin');
+
+        // Notify the created admin that the account is enabled for login.
+        $user->notify(new AdminAccountEnabledNotification());
+
+        return $user->fresh(['roles', 'userState']);
     }
 
     public function updateUser(int $id, string $name, string $email, int $userStateId, ?string $password = null): User
@@ -113,6 +163,56 @@ class UserService
     public function getUnverifiedUsers(int $perPage = 10)
     {
         return $this->repository->getUnverifiedUsers($perPage);
+    }
+
+    /**
+     * Get admin users excluding authenticated admin.
+     *
+     * @param int $perPage
+     * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
+     * @throws RuntimeException
+     */
+    public function getAdminsExcludingAuthenticated(int $perPage = 10)
+    {
+        $actor = auth('api')->user();
+
+        if (!$actor || !$actor->hasRole('admin')) {
+            throw new RuntimeException('Only admin users can list admin accounts.');
+        }
+
+        return $this->repository->paginateAdminsExcludingUser((int) $actor->id, $perPage);
+    }
+
+    /**
+     * Delete an admin user while preserving at least one active admin.
+     *
+     * @param int $id
+     * @return bool
+     * @throws RuntimeException
+     */
+    public function deleteAdminUser(int $id): bool
+    {
+        $actor = auth('api')->user();
+
+        if (!$actor || !$actor->hasRole('admin')) {
+            throw new RuntimeException('Only admin users can delete admin accounts.');
+        }
+
+        if ((int) $actor->id === $id) {
+            throw new RuntimeException('You cannot delete your own admin account.');
+        }
+
+        $targetAdmin = $this->repository->findAdminByIdWithRelations($id);
+
+        if ($targetAdmin->userState?->name === 'active') {
+            $activeAdmins = $this->repository->countActiveAdmins();
+
+            if ($activeAdmins <= 1) {
+                throw new RuntimeException('Cannot delete the last active admin account. At least one active admin must remain.');
+            }
+        }
+
+        return $this->repository->delete($targetAdmin);
     }
 
     /**

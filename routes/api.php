@@ -116,6 +116,9 @@ Route::prefix('v1')->group(function () {
         Route::post('users/{id}/approve', [UserController::class, 'approve'])->middleware('scope:users:write');
         Route::delete('users/{id}/reject', [UserController::class, 'reject'])->middleware('scope:users:write');
         Route::put('users/{id}/state', [UserController::class, 'changeUserState'])->middleware('scope:users:write');
+        Route::get('users/admins', [UserController::class, 'admins'])->middleware('scope:users:write');
+        Route::post('users/admins', [UserController::class, 'storeAdmin'])->middleware('scope:users:write');
+        Route::delete('users/admins/{id}', [UserController::class, 'destroyAdmin'])->middleware('scope:users:write');
         Route::get('users', [UserController::class, 'index'])->middleware('scope:users');
         Route::post('users', [UserController::class, 'store'])->middleware('scope:users:write');
         Route::get('users/search', [UserController::class, 'search'])->middleware('scope:users');
