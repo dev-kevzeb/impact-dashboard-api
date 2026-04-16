@@ -3,6 +3,7 @@
 namespace App\Modules\User\Controller;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\CreateAdminUserRequest;
 use App\Http\Requests\UserRequest;
 use App\Http\Resources\UserResource;
 use App\Http\Responses\ApiResponse;
@@ -201,6 +202,84 @@ class UserController extends Controller
                 new UserResource($user)
             );
         } catch (RuntimeException $e) {
+            return ApiResponse::error($e->getMessage(), 400);
+        } catch (Exception $e) {
+            return ApiResponse::error('Internal server error', 500);
+        }
+    }
+
+    /**
+     * Create a new admin user.
+     *
+     * This endpoint is exclusive for authenticated admins and bypasses
+     * public registration requirements (country, recaptcha, email verification flow).
+     */
+    public function storeAdmin(CreateAdminUserRequest $request): JsonResponse
+    {
+        try {
+            $validated = $request->validated();
+
+            $user = $this->service->createAdminUser(
+                $validated['name'],
+                $validated['email'],
+                $validated['password']
+            );
+
+            return ApiResponse::created(
+                'Admin user created successfully. The account is active and ready to login.',
+                new UserResource($user)
+            );
+        } catch (RuntimeException $e) {
+            return ApiResponse::error($e->getMessage(), 400);
+        } catch (Exception $e) {
+            return ApiResponse::error('Internal server error', 500);
+        }
+    }
+
+    /**
+     * Get paginated admin users excluding the authenticated admin.
+     */
+    public function admins(Request $request): JsonResponse
+    {
+        try {
+            $perPage = (int) $request->get('per_page', 10);
+            $users = $this->service->getAdminsExcludingAuthenticated($perPage);
+
+            return ApiResponse::success(
+                'Admin users retrieved successfully',
+                200,
+                [
+                    'users' => UserResource::collection($users),
+                    'total' => $users->total(),
+                    'per_page' => $users->perPage(),
+                    'current_page' => $users->currentPage(),
+                    'last_page' => $users->lastPage(),
+                ]
+            );
+        } catch (RuntimeException $e) {
+            return ApiResponse::error($e->getMessage(), 400);
+        } catch (Exception $e) {
+            return ApiResponse::error('Internal server error', 500);
+        }
+    }
+
+    /**
+     * Delete an admin account with safety constraints.
+     */
+    public function destroyAdmin(int $id): JsonResponse
+    {
+        try {
+            $this->service->deleteAdminUser($id);
+
+            return ApiResponse::success(
+                'Admin user deleted successfully.',
+                200
+            );
+        } catch (RuntimeException $e) {
+            if (str_contains(strtolower($e->getMessage()), 'not found')) {
+                return ApiResponse::notFound($e->getMessage());
+            }
+
             return ApiResponse::error($e->getMessage(), 400);
         } catch (Exception $e) {
             return ApiResponse::error('Internal server error', 500);

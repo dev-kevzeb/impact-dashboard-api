@@ -120,6 +120,69 @@ class UserRepository extends AbstractRepository
     }
 
     /**
+     * Get paginated admin users excluding the authenticated admin.
+     *
+     * @param int $excludedUserId
+     * @param int $perPage
+     * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
+     */
+    public function paginateAdminsExcludingUser(int $excludedUserId, int $perPage = 10)
+    {
+        return $this->model
+            ->with(['roles', 'userState'])
+            ->where('id', '!=', $excludedUserId)
+            ->whereHas('roles', function ($query) {
+                $query->where('name', 'admin');
+            })
+            ->whereHas('userState', function ($query) {
+                $query->whereIn('name', ['active', 'inactive']);
+            })
+            ->orderBy('created_at', 'desc')
+            ->paginate($perPage);
+    }
+
+    /**
+     * Find admin user by ID with relationships.
+     *
+     * @param int $id
+     * @return User
+     * @throws \RuntimeException
+     */
+    public function findAdminByIdWithRelations(int $id): User
+    {
+        $user = $this->model
+            ->with(['roles', 'userState'])
+            ->where('id', $id)
+            ->whereHas('roles', function ($query) {
+                $query->where('name', 'admin');
+            })
+            ->first();
+
+        if (!$user) {
+            throw new \RuntimeException("Admin user with ID {$id} not found");
+        }
+
+        return $user;
+    }
+
+    /**
+     * Count active admin users.
+     *
+     * @return int
+     */
+    public function countActiveAdmins(): int
+    {
+        return $this->model
+            ->whereHas('roles', function ($query) {
+                $query->where('name', 'admin');
+            })
+            ->whereHas('userState', function ($query) {
+                $query->where('name', 'active');
+            })
+            ->count();
+    }
+
+    /**
      * Delete user (hard delete)
      *
      * @param User $user
