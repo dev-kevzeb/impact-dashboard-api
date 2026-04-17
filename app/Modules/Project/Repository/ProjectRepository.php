@@ -5,6 +5,7 @@ namespace App\Modules\Project\Repository;
 use App\Modules\Project\Domain\Project as P;
 use App\Repositories\AbstractRepository;
 use App\Repositories\RepositoryInterface;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
 class ProjectRepository extends AbstractRepository implements RepositoryInterface
@@ -34,6 +35,113 @@ class ProjectRepository extends AbstractRepository implements RepositoryInterfac
         $query = $this->model->where('program_id', $programId)->with('projectState');
         if(!empty($search)) $query->whereRaw('lower(name) LIKE lower(?)', ['%'.trim($search).'%']);
         return $query->orderBy('name')->paginate($perPage);
+    }
+
+    public function getDashboardProjectsPaginated(?string $search, int $perPage = 10)
+    {
+        return $this->buildDashboardProjectsQuery($search)
+            ->orderBy('id', 'desc')
+            ->paginate($perPage);
+    }
+
+    public function getDashboardProjectsPaginatedByCountryIds(array $countryIds, ?string $search, int $perPage = 10)
+    {
+        $countryIds = array_values(array_unique(array_map('intval', $countryIds)));
+
+        if (empty($countryIds)) {
+            return $this->buildDashboardProjectsQuery($search)
+                ->whereRaw('1 = 0')
+                ->paginate($perPage);
+        }
+
+        return $this->buildDashboardProjectsQuery($search)
+            ->whereHas('program.countryUserRoles', function ($query) use ($countryIds) {
+                $query->whereIn('country_id', $countryIds);
+            })
+            ->orderBy('id', 'desc')
+            ->paginate($perPage);
+    }
+
+    public function getDashboardProjectsPaginatedByCountryUserRoleId(int $countryUserRoleId, ?string $search, int $perPage = 10)
+    {
+        return $this->buildDashboardProjectsQuery($search)
+            ->whereHas('projectInviteUsers', function ($query) use ($countryUserRoleId) {
+                $query->where('country_user_role_id', $countryUserRoleId);
+            })
+            ->orderBy('id', 'desc')
+            ->paginate($perPage);
+    }
+
+    public function getDashboardProjectsPaginatedByUserRoleContext(array $userRoleIds, ?int $countryUserRoleId, ?string $search, int $perPage = 10)
+    {
+        $userRoleIds = array_values(array_unique(array_map('intval', $userRoleIds)));
+
+        if (empty($userRoleIds) && $countryUserRoleId === null) {
+            return $this->buildDashboardProjectsQuery($search)
+                ->whereRaw('1 = 0')
+                ->paginate($perPage);
+        }
+
+        return $this->buildDashboardProjectsQuery($search)
+            ->where(function ($query) use ($userRoleIds, $countryUserRoleId) {
+                if (!empty($userRoleIds)) {
+                    $query->whereHas('program.countryUserRoles', function ($ownerQuery) use ($userRoleIds) {
+                        $ownerQuery->whereIn('user_role_id', $userRoleIds);
+                    });
+                }
+
+                if ($countryUserRoleId !== null) {
+                    $projectInviteConstraint = function ($inviteQuery) use ($countryUserRoleId) {
+                        $inviteQuery->where('country_user_role_id', $countryUserRoleId);
+                    };
+
+                    if (empty($userRoleIds)) {
+                        $query->whereHas('projectInviteUsers', $projectInviteConstraint);
+                    } else {
+                        $query->orWhereHas('projectInviteUsers', $projectInviteConstraint);
+                    }
+                }
+            })
+            ->orderBy('id', 'desc')
+            ->paginate($perPage);
+    }
+
+    private function buildDashboardProjectsQuery(?string $search): Builder
+    {
+        $query = $this->model->query()
+            ->with([
+                'program',
+                'contact',
+                'agencies',
+                'indicators.measure.strategicOutput.countryKpa.country',
+            ]);
+
+        if (empty($search)) {
+            return $query;
+        }
+
+        $searchTerm = '%' . trim($search) . '%';
+
+        return $query->where(function ($q) use ($searchTerm) {
+            $q->where('name', 'like', $searchTerm)
+                ->orWhere('comments', 'like', $searchTerm)
+                ->orWhereHas('program', function ($programQuery) use ($searchTerm) {
+                    $programQuery->where('name', 'like', $searchTerm);
+                })
+                ->orWhereHas('contact', function ($contactQuery) use ($searchTerm) {
+                    $contactQuery->where('first_name', 'like', $searchTerm)
+                        ->orWhere('last_name', 'like', $searchTerm);
+                })
+                ->orWhereHas('agencies', function ($agencyQuery) use ($searchTerm) {
+                    $agencyQuery->where('name', 'like', $searchTerm);
+                })
+                ->orWhereHas('indicators.measure', function ($measureQuery) use ($searchTerm) {
+                    $measureQuery->where('name', 'like', $searchTerm);
+                })
+                ->orWhereHas('indicators.measure.strategicOutput.countryKpa.country', function ($countryQuery) use ($searchTerm) {
+                    $countryQuery->where('name', 'like', $searchTerm);
+                });
+        });
     }
 
     public function getIdsByProgramId(int $programId): array

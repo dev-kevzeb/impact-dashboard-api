@@ -35,9 +35,6 @@ use Illuminate\Support\Collection;
 
 class ProjectService
 {
-    private const WEIGHT_PRECISION = 4;
-    private const MAX_PROGRAM_WEIGHT = 1.0;
-
     private ProjectRepository $projectRepository;
     private ContactRepository $contactRepository;
     private BeneficiaryRepository $beneficiaryRepository;
@@ -149,6 +146,53 @@ class ProjectService
         return $this->projectInviteUserService->applyProjectAccessToPaginator($projects);
     }
 
+    public function getDashboardProjectsPaginated(?string $search, int $perPage): LengthAwarePaginator
+    {
+        $user = auth('api')->user();
+        if (!$user) {
+            throw new \RuntimeException('Not authenticated.');
+        }
+
+        if ($user->hasPermissionTo('*:*')) {
+            $projects = $this->projectRepository->getDashboardProjectsPaginated($search, $perPage);
+
+            return $this->projectInviteUserService->applyProjectAccessToPaginator($projects);
+        }
+
+        if ($this->canViewProjectsByCountry($user)) {
+            $countryIds = $user->userRoles()
+                ->with('countries')
+                ->get()
+                ->flatMap(fn($userRole) => $userRole->countries->pluck('id'))
+                ->unique()
+                ->values()
+                ->toArray();
+
+            $projects = $this->projectRepository->getDashboardProjectsPaginatedByCountryIds($countryIds, $search, $perPage);
+
+            return $this->projectInviteUserService->applyProjectAccessToPaginator($projects);
+        }
+
+        $userRoleIds = $user->userRoles()->pluck('id')->toArray();
+        $countryUserRoleId = null;
+
+        try {
+            $countryUserRole = $user->getCountryUserRole();
+            $countryUserRoleId = (int) $countryUserRole->id;
+        } catch (\RuntimeException) {
+            $countryUserRoleId = null;
+        }
+
+        $projects = $this->projectRepository->getDashboardProjectsPaginatedByUserRoleContext($userRoleIds, $countryUserRoleId, $search, $perPage);
+
+        return $this->projectInviteUserService->applyProjectAccessToPaginator($projects);
+    }
+
+    private function canViewProjectsByCountry($user): bool
+    {
+        return $user->hasPermissionTo('projects:view_by_country') || $user->hasPermissionTo('programs:view_by_country');
+    }
+
     public function getProjectByName(string $name)
     {
         $project = $this->projectRepository->findByName($name);
@@ -249,13 +293,17 @@ class ProjectService
         $this->resolveAccessibleProgramCountryId($programId);
     }
 
-    private function ensureProgramWeightLimit(int $programId, float $weight, ?int $excludeProjectId = null): void
+    private function ensureWeightWithinBounds(float $weight): void
     {
-        $currentSum = $this->projectRepository->getProgramWeightSum($programId, $excludeProjectId);
-        $total = round($currentSum + $weight, self::WEIGHT_PRECISION);
+        if ($weight < 0 || $weight > 1) {
+            throw new \RuntimeException('Project weight must be between 0 and 1.');
+        }
+    }
 
-        if ($total > self::MAX_PROGRAM_WEIGHT) {
-            throw new \RuntimeException('The sum of project weights for this program cannot exceed 1.');
+    private function ensureProgressWithinBounds(float $progress): void
+    {
+        if ($progress < 0 || $progress > 100) {
+            throw new \RuntimeException('Project progress must be between 0 and 100.');
         }
     }
 
@@ -368,9 +416,9 @@ class ProjectService
 
         $this->ensureUserCanCreateProjectForProgram($program_id);
         $this->ensureIndicatorsBelongToProgramCountry($program_id, $indicators);
+        $this->ensureWeightWithinBounds($weight);
 
         if (empty($program_id)) throw new \RuntimeException("The program id is required.");
-        $this->ensureProgramWeightLimit($program_id, $weight);
 
         $normalizedName = preg_replace('/\s+/', ' ', trim($name));
         $capitalizedName = mb_convert_case($normalizedName, MB_CASE_TITLE, "UTF-8");
@@ -435,8 +483,30 @@ class ProjectService
         $project = $this->findProjectById($id);
         if (!$project) throw new \RuntimeException("The project with id {$id} does not exist.");
 
-        $this->ensureProgramWeightLimit((int) $project->program_id, $weight, $id);
+        $this->ensureWeightWithinBounds($weight);
         $project->weight = $weight;
+
+        // Virtual access flag is injected for API responses and must not be persisted.
+        unset($project->can_edit);
+
+        $this->projectRepository->save($project);
+
+        return $project;
+    }
+
+    public function updateProjectProgress(int $id, float $progress): Project
+    {
+        $project = $this->findProjectById($id);
+        if (!$project) throw new \RuntimeException("The project with id {$id} does not exist.");
+
+        $this->projectInviteUserService->ensureCanEditProject($project);
+        $this->ensureProgressWithinBounds($progress);
+
+        $project->progress = $progress;
+
+        // Virtual access flag is injected for API responses and must not be persisted.
+        unset($project->can_edit);
+
         $this->projectRepository->save($project);
 
         return $project;
@@ -451,7 +521,7 @@ class ProjectService
 
         $this->projectInviteUserService->ensureCanEditProject($project);
 
-        $this->ensureProgramWeightLimit($program_id, $weight, $id);
+        $this->ensureWeightWithinBounds($weight);
 
         $normalizedName = preg_replace('/\s+/', ' ', trim($name));
         $capitalizedName = mb_convert_case($normalizedName, MB_CASE_TITLE, "UTF-8");

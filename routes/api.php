@@ -262,6 +262,9 @@ Route::prefix('v1')->group(function () {
         Route::get('projects', [ProjectController::class, 'index'])->middleware('scope:projects');
         Route::post('projects', [ProjectController::class, 'store'])->middleware('scope:projects:create');
         Route::get('projects/search', [ProjectController::class, 'search'])->middleware('scope:projects');
+        Route::get('projects/dashboard', [ProjectController::class, 'getDashboardProjects'])->middleware('scope:projects');
+        Route::patch('projects/{id}/dashboard-progress', [ProjectController::class, 'updateDashboardProgress'])->middleware('scope:projects:progress');
+        Route::patch('projects/{id}/dashboard-weight', [ProjectController::class, 'updateDashboardWeight'])->middleware('scope:projects:weight');
         Route::get('projects/{id}', [ProjectController::class, 'show'])->middleware('scope:projects');
         Route::put('projects/{id}', [ProjectController::class, 'update'])->middleware('scope:projects:write');
         Route::delete('projects/{id}', [ProjectController::class, 'destroy'])->middleware('scope:projects:delete');
