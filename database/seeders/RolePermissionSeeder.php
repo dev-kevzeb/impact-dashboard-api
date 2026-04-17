@@ -15,6 +15,8 @@ class RolePermissionSeeder extends Seeder
         $admin = Role::where('name', 'admin')->where('guard_name', 'api')->first();
         if ($admin) {
             $adminPermissions = [
+                'programs:read',
+                'projects:read',
                 'users:read',
                 'users:write',
                 'user_states:read',
@@ -42,49 +44,24 @@ class RolePermissionSeeder extends Seeder
                 'agencies:read',
                 'agencies:write',
             ];
-
             $permissions = Permission::whereIn('name', $adminPermissions)->get();
             $admin->syncPermissions($permissions);
         }
+
 
         $projectManager = Role::where('name', 'project-manager')->where('guard_name', 'api')->first();
         if ($projectManager) {
             $projectManagerPermissions = [
                 'programs:read',
                 'programs:write',
-                'program_states:read',
                 'program_country_user_roles:read',
                 'program_country_user_roles:write',
                 'projects:read',
                 'projects:write',
                 'projects:create',
                 'projects:delete',
-                'kpas:read',
-                'kpas:write',
-                'project_states:read',
-                'project_states:write',
-                'project_agencies:read',
-                'project_agencies:write',
-                'project_indicators:read',
-                'project_indicators:write',
-                'beneficiaries:read',
-                'beneficiaries:write',
-                'donors:read',
-                'donors:write',
-                'agencies:read',
-                'sdgs:read',
-                'strategic_outputs:read',
-                'strategic_outputs:write',
-                'measures:read',
-                'measures:write',
-                'indicators:read',
-                'indicators:write',
-                'indicator_types:read',
-                'indicator_types:write',
-                'countries:read',
-                'countries:write',
-                'country_kpas:read',
-                'country_kpas:write',
+                'contacts:read',
+                'contacts:write',
             ];
 
             $permissions = Permission::whereIn('name', $projectManagerPermissions)->get();
@@ -94,33 +71,12 @@ class RolePermissionSeeder extends Seeder
         $countryManager = Role::where('name', 'country-manager')->where('guard_name', 'api')->first();
         if ($countryManager) {
             $countryManagerPermissions = [
-                'kpas:read',
-                'kpas:write',
-                'currencies:read',
-                'countries:read',
-                'countries:write',
-                'country_kpas:read',
-                'country_kpas:write',
-                'strategic_outputs:read',
-                'strategic_outputs:write',
-                'measures:read',
-                'measures:write',
-                'indicators:read',
-                'indicators:write',
-                'indicator_types:read',
                 'programs:read',
                 'programs:view_by_country',
-                'program_states:read',
-                'program_country_user_roles:read',
                 'projects:read',
-                'projects:write',
                 'projects:weight',
-                'project_states:read',
-                'users:read',
-                'users:write',
-                'user_roles:read',
-                'user_roles:write',
-                'user_states:read',
+                'donors:read',
+                'donors:write',
             ];
 
             $permissions = Permission::whereIn('name', $countryManagerPermissions)->get();
