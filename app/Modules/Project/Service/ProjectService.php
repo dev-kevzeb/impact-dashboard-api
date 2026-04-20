@@ -126,6 +126,20 @@ class ProjectService
         return $project;
     }
 
+    /**
+     * Find a project by ID for public (unauthenticated) access.
+     * Skips auth checks — only loads relations needed for the public detail page.
+     */
+    public function findPublicProjectById(int $id)
+    {
+        $project = $this->projectRepository->findById($id);
+        if (!$project) throw new \RuntimeException("The project with id {$id} does not exist.");
+
+        $project->load(['contact', 'beneficiary', 'projectState', 'donors', 'agencies', 'indicators.measure.strategicOutput.countryKpa.kpa']);
+
+        return $project;
+    }
+
     public function findProjectByProgramIdPaginated(int $programId, ?string $search, int $perPage)
     {
         $hasFullAccess = $this->projectInviteUserService->hasFullProgramAccess($programId);
