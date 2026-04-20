@@ -52,6 +52,11 @@ class ProgramResource extends JsonResource
             'projects' => $this->whenLoaded('projects', function () {
                 return ProjectResource::collection($this->projects);
             }),
+
+            'program_summary' => $this->when(
+                isset($this->resource->program_summary),
+                fn() => $this->resource->program_summary
+            ),
         ];
     }
 
