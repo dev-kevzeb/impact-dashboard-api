@@ -62,6 +62,7 @@ class RolePermissionSeeder extends Seeder
                 'projects:write',
                 'projects:create',
                 'projects:delete',
+                'projects:weight',
                 'contacts:read',
                 'contacts:write',
             ];
@@ -79,6 +80,7 @@ class RolePermissionSeeder extends Seeder
                 'projects:view_by_country',
                 'projects:write',
                 'projects:weight',
+                'projects:progress',
                 'donors:read',
                 'donors:write',
             ];
