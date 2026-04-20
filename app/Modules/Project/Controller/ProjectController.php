@@ -3,12 +3,14 @@
 namespace App\Modules\Project\Controller;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\ProjectDashboardRowResource;
 use App\Http\Requests\ProjectRequest;
 use App\Http\Resources\ProjectResource;
 use App\Http\Resources\SimpleProjectResource;
 use App\Http\Responses\ApiResponse;
 use App\Modules\Project\Service\ProjectService;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use RuntimeException;
 
 /**
@@ -530,6 +532,84 @@ class ProjectController extends Controller
                     'last_page' => $projects->lastPage(),
                 ]
             );
+        } catch (RuntimeException $e) {
+            return ApiResponse::error($e->getMessage(), 400);
+        } catch (\Exception $e) {
+            return ApiResponse::error('Internal server error', 500);
+        }
+    }
+
+    public function getDashboardProjects(Request $request)
+    {
+        try {
+            $search = $request->get('search');
+            $perPage = (int) $request->get('per_page', 10);
+
+            $projects = $this->projectService->getDashboardProjectsPaginated($search, $perPage);
+
+            return ApiResponse::success(
+                'Project dashboard list successfully obtained',
+                200,
+                [
+                    'projects' => ProjectDashboardRowResource::collection($projects),
+                    'total' => $projects->total(),
+                    'per_page' => $projects->perPage(),
+                    'current_page' => $projects->currentPage(),
+                    'last_page' => $projects->lastPage(),
+                ]
+            );
+        } catch (RuntimeException $e) {
+            return ApiResponse::error($e->getMessage(), 400);
+        } catch (\Exception $e) {
+            return ApiResponse::error('Internal server error', 500);
+        }
+    }
+
+    public function updateDashboardProgress(Request $request, int $id)
+    {
+        try {
+            $validated = $request->validate([
+                'progress' => 'required|numeric|min:0|max:100',
+            ]);
+
+            $project = $this->projectService->updateProjectProgress($id, (float) $validated['progress']);
+
+            return ApiResponse::success(
+                'Project progress updated successfully',
+                200,
+                [
+                    'id' => (int) $project->id,
+                    'progress' => (float) $project->progress,
+                ]
+            );
+        } catch (ValidationException $e) {
+            return ApiResponse::validationError($e->errors());
+        } catch (RuntimeException $e) {
+            return ApiResponse::error($e->getMessage(), 400);
+        } catch (\Exception $e) {
+            return ApiResponse::error('Internal server error', 500);
+        }
+    }
+
+    public function updateDashboardWeight(Request $request, int $id)
+    {
+        try {
+            $validated = $request->validate([
+                'weight' => 'required|numeric|min:0|max:1',
+            ]);
+
+            $project = $this->projectService->updateProjectWeight($id, (float) $validated['weight']);
+
+            return ApiResponse::success(
+                'Project weight updated successfully',
+                200,
+                [
+                    'id' => (int) $project->id,
+                    'weight' => (float) $project->weight,
+                ]
+            );
+        } catch (ValidationException $e) {
+            return ApiResponse::validationError($e->errors());
         } catch (RuntimeException $e) {
             return ApiResponse::error($e->getMessage(), 400);
         } catch (\Exception $e) {

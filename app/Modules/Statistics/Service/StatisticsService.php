@@ -6,8 +6,6 @@ use App\Modules\CountryKpa\Repository\CountryKpaRepository;
 use App\Modules\Indicator\Repository\IndicatorRepository;
 use App\Modules\Kpa\Repository\KpaRepository;
 use App\Modules\Measure\Repository\MeasureRepository;
-use App\Modules\Statistics\Domain\BottomUp;
-use App\Modules\Statistics\Domain\TopDown;
 use App\Modules\Project\Repository\ProjectRepository;
 use App\Modules\ProjectIndicator\Repository\ProjectIndicatorRepository;
 use App\Modules\StrategicOutput\Repository\StrategicOutputRepository;
@@ -50,27 +48,6 @@ class StatisticsService
 
         $isBottomUp = (bool) ($indicators->first()->type->is_bottom_up ?? true);
 
-        if (!$isBottomUp) {
-            $tdTotal = 0;
-            $tdCount = 0;
-            foreach ($indicators as $indicator) {
-                if ($indicator->target > 0) {
-                    $tdTotal += (new TopDown((float) ($indicator->actual_value ?? 0.0), (float) $indicator->target))->value();
-                    $tdCount++;
-                }
-            }
-            $implementation = $tdCount > 0 ? round($tdTotal / $tdCount, 2) : 0;
-
-            return [
-                "name" => $measure->name,
-                "implementation" => $implementation,
-                "resource" => 0,
-                "beneficiaries" => [],
-                "agencies" => [],
-                "donors" => []
-            ];
-        }
-
         $indicatorIds = $indicators->pluck('id')->toArray();
         $projectIds = $this->projectIndicatorRepository->getProjectIdsByIndicatorIds($indicatorIds);
         if (empty($projectIds)) {
@@ -86,18 +63,25 @@ class StatisticsService
 
         $projects = $this->projectRepository->getByIds($projectIds);
 
-        $chartData = [];
+        if (!$isBottomUp) {
+            $implementation = $this->calculateNormalizedWeightedProjectImplementation($projects);
+
+            return [
+                "name" => $measure->name,
+                "implementation" => $implementation,
+                "resource" => 0,
+                "beneficiaries" => [],
+                "agencies" => [],
+                "donors" => []
+            ];
+        }
         $resource = 0;
 
         foreach ($projects as $project) {
-            $chartData[] = [
-                'implementation' => $project->progress / 100,
-                'weight' => (float) ($project->weight ?? 0),
-            ];
             $resource += $project->project_budget;
         }
 
-        $implementation = (new BottomUp($chartData))->value();
+        $implementation = $this->calculateNormalizedWeightedProjectImplementation($projects);
 
         $allDonorsContributions = $projects->flatMap(function ($project) {
             return $this->calculateDonorsContribution(
@@ -140,6 +124,30 @@ class StatisticsService
             "agencies" => $agenciesContribution,
             "donors" => $donorsContribution
         ];
+    }
+
+    private function calculateNormalizedWeightedProjectImplementation($projects): float
+    {
+        $weightedProgress = 0.0;
+        $totalWeight = 0.0;
+
+        foreach ($projects as $project) {
+            $weight = (float) ($project->weight ?? 0);
+
+            if ($weight <= 0) {
+                continue;
+            }
+
+            $progressRate = max(0.0, min(100.0, (float) ($project->progress ?? 0))) / 100;
+            $weightedProgress += $progressRate * $weight;
+            $totalWeight += $weight;
+        }
+
+        if ($totalWeight <= 0) {
+            return 0;
+        }
+
+        return round(($weightedProgress / $totalWeight) * 100, 2);
     }
 
     public function getStrategicOutputImplementation(int $strategicOutputId): array

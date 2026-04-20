@@ -25,6 +25,8 @@ class PermissionSeeder extends Seeder
             ['name' => 'programs:view_by_country', 'scope' => 'programs', 'module' => 'Program', 'description' => 'View programs filtered by assigned country'],
 
             ['name' => 'projects:read', 'scope' => 'projects', 'module' => 'Project', 'description' => 'View projects'],
+            ['name' => 'projects:view_by_country', 'scope' => 'projects', 'module' => 'Project', 'description' => 'View projects filtered by assigned country'],
+            ['name' => 'projects:progress', 'scope' => 'projects', 'module' => 'Project', 'description' => 'Edit project progress from dashboard'],
             ['name' => 'projects:write', 'scope' => 'projects', 'module' => 'Project', 'description' => 'Create/edit projects'],
             ['name' => 'projects:create', 'scope' => 'projects', 'module' => 'Project', 'description' => 'Create new projects'],
             ['name' => 'projects:delete', 'scope' => 'projects', 'module' => 'Project', 'description' => 'Delete projects'],
