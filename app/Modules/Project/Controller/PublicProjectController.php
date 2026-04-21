@@ -51,7 +51,7 @@ class PublicProjectController extends Controller
     public function show($id)
     {
         try {
-            $project = $this->projectService->findProjectById($id);
+            $project = $this->projectService->findPublicProjectById($id);
 
             return ApiResponse::success(
                 'Project Found',
