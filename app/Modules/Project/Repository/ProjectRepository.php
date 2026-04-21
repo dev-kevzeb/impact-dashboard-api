@@ -120,26 +120,26 @@ class ProjectRepository extends AbstractRepository implements RepositoryInterfac
             return $query;
         }
 
-        $searchTerm = '%' . trim($search) . '%';
+        $searchTerm = '%' . mb_strtolower(trim($search)) . '%';
 
         return $query->where(function ($q) use ($searchTerm) {
-            $q->where('name', 'like', $searchTerm)
-                ->orWhere('comments', 'like', $searchTerm)
+            $q->whereRaw('LOWER(name) LIKE ?', [$searchTerm])
+                ->orWhereRaw('LOWER(comments) LIKE ?', [$searchTerm])
                 ->orWhereHas('program', function ($programQuery) use ($searchTerm) {
-                    $programQuery->where('name', 'like', $searchTerm);
+                    $programQuery->whereRaw('LOWER(name) LIKE ?', [$searchTerm]);
                 })
                 ->orWhereHas('contact', function ($contactQuery) use ($searchTerm) {
-                    $contactQuery->where('first_name', 'like', $searchTerm)
-                        ->orWhere('last_name', 'like', $searchTerm);
+                    $contactQuery->whereRaw('LOWER(first_name) LIKE ?', [$searchTerm])
+                        ->orWhereRaw('LOWER(last_name) LIKE ?', [$searchTerm]);
                 })
                 ->orWhereHas('agencies', function ($agencyQuery) use ($searchTerm) {
-                    $agencyQuery->where('name', 'like', $searchTerm);
+                    $agencyQuery->whereRaw('LOWER(name) LIKE ?', [$searchTerm]);
                 })
                 ->orWhereHas('indicators.measure', function ($measureQuery) use ($searchTerm) {
-                    $measureQuery->where('name', 'like', $searchTerm);
+                    $measureQuery->whereRaw('LOWER(name) LIKE ?', [$searchTerm]);
                 })
                 ->orWhereHas('indicators.measure.strategicOutput.countryKpa.country', function ($countryQuery) use ($searchTerm) {
-                    $countryQuery->where('name', 'like', $searchTerm);
+                    $countryQuery->whereRaw('LOWER(name) LIKE ?', [$searchTerm]);
                 });
         });
     }
