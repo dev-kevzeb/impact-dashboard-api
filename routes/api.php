@@ -63,6 +63,8 @@ Route::prefix('v1')->group(function () {
         // Auth endpoints
         Route::post('auth/refresh', [AuthController::class, 'refresh']);
         Route::get('auth/me', [AuthController::class, 'me']);
+        Route::put('auth/profile', [AuthController::class, 'updateProfile']);
+        Route::post('auth/change-password', [AuthController::class, 'changePassword']);
         Route::get('auth/permissions', [AuthController::class, 'permissions']);
 
         // API Routes para Donors

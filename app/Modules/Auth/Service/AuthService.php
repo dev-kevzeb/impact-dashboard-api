@@ -7,6 +7,8 @@ use App\Modules\User\Domain\User;
 use App\Modules\User\Repository\UserRepository;
 use App\Modules\UserRole\Domain\UserRole;
 use App\Modules\UserState\Repository\UserStateRepository;
+use Illuminate\Support\Facades\Hash;
+use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
 use Spatie\Permission\Models\Role;
 use RuntimeException;
 
@@ -39,7 +41,7 @@ class AuthService
         $credentials = ['email' => $email, 'password' => $password];
 
         // Attempt to authenticate with JWT
-        if (!$token = auth('api')->attempt($credentials)) {
+        if (!$token = JWTAuth::attempt($credentials)) {
             throw new RuntimeException('Invalid credentials');
         }
 
@@ -75,7 +77,7 @@ class AuthService
         return [
             'access_token' => $token,
             'token_type' => 'bearer',
-            'expires_in' => auth('api')->factory()->getTTL() * 60,  // Seconds
+            'expires_in' => JWTAuth::factory()->getTTL() * 60,  // Seconds
             'user' => new \App\Http\Resources\UserResource($user)
         ];
     }
@@ -164,12 +166,12 @@ class AuthService
     public function refresh(): array
     {
         // Refresh token (this calls getJWTCustomClaims() to regenerate scopes)
-        $newToken = auth('api')->refresh();
+        $newToken = JWTAuth::refresh();
 
         return [
             'access_token' => $newToken,
             'token_type' => 'bearer',
-            'expires_in' => auth('api')->factory()->getTTL() * 60,
+            'expires_in' => JWTAuth::factory()->getTTL() * 60,
         ];
     }
 
@@ -181,5 +183,36 @@ class AuthService
     public function me(): User
     {
         return auth('api')->user()->load('roles', 'userState', 'userRoles.countryUserRole.country', 'userRoles.countryUserRole.userRole.role');
+    }
+
+    public function updateOwnProfile(string $name): User
+    {
+        $user = auth('api')->user();
+
+        if (!$user) {
+            throw new RuntimeException('Not authenticated.');
+        }
+
+        $validatedUser = User::at($name, $user->email, $user->userState);
+        $user->name = $validatedUser->name;
+        $this->userRepository->save($user);
+
+        return $user->load('roles', 'userState', 'userRoles.countryUserRole.country', 'userRoles.countryUserRole.userRole.role');
+    }
+
+    public function changeOwnPassword(string $currentPassword, string $newPassword): void
+    {
+        $user = auth('api')->user();
+
+        if (!$user) {
+            throw new RuntimeException('Not authenticated.');
+        }
+
+        if (!Hash::check($currentPassword, $user->password)) {
+            throw new RuntimeException('Current password is incorrect.');
+        }
+
+        $user->password = $newPassword;
+        $this->userRepository->save($user);
     }
 }

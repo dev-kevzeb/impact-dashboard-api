@@ -395,7 +395,9 @@ class ProjectController extends Controller
             $isAdmin = in_array('*:*', $userPermissions);
             $hasWeightPerm = $isAdmin || in_array('projects:weight', $userPermissions);
 
-            if ($hasWeightPerm && !$isAdmin) {
+            $isWeightOnlyUpdate = $request->has('weight') && count($request->all()) === 1;
+
+            if ($hasWeightPerm && !$isAdmin && $isWeightOnlyUpdate) {
                 $project = $this->projectService->updateProjectWeight($id, (float) ($validated['weight'] ?? 0));
                 return ApiResponse::success('Project weight updated successfully', 200, new ProjectResource($project));
             }
