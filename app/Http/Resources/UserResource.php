@@ -14,6 +14,10 @@ class UserResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        $adminUserRoleId = $this->userRoles()
+            ->whereHas('role', fn($q) => $q->where('name', 'admin'))
+            ->value('id');
+
         // Get country_user_role from userRoles relation
         $countryUserRole = null;
         if ($this->relationLoaded('userRoles')) {
@@ -40,6 +44,7 @@ class UserResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'email' => $this->email,
+            'user_role_id' => (int) $adminUserRoleId,
 
             // All effective permissions (direct + from roles)
             // This matches JWT scopes and shows what user can actually do

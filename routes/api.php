@@ -29,6 +29,7 @@ use App\Modules\ProjectState\Controller\ProjectStateController;
 use App\Modules\Contact\Controller\ContactController;
 use App\Modules\Agency\Controller\AgencyController;
 use App\Modules\CountryKpa\Controller\CountryKpaController;
+use App\Modules\CountryDashboardShare\Controller\CountryDashboardShareController;
 use App\Modules\ProgramCountryUserRole\Controller\ProgramCountryUserRoleController;
 use App\Modules\InviteProgram\Controller\InviteProgramController;
 use App\Modules\ProjectInviteUser\Controller\ProjectInviteUserController;
@@ -163,6 +164,13 @@ Route::prefix('v1')->group(function () {
         Route::get('country_kpas/country/{id}', [CountryKpaController::class, 'showForCountry'])->middleware('scope:projects');
         Route::put('country_kpas/{id}', [CountryKpaController::class, 'update'])->middleware('scope:country_kpas:write');
         Route::delete('country_kpas/{id}', [CountryKpaController::class, 'destroy'])->middleware('scope:country_kpas:write');
+
+        // API Routes para Country Dashboard Share
+        Route::get('country-dashboard-shares/admin-candidates', [CountryDashboardShareController::class, 'indexAdminCandidates'])->middleware('scope:country_dashboard_shares');
+        Route::get('country-dashboard-shares/my-shares', [CountryDashboardShareController::class, 'indexMyShares'])->middleware('scope:country_dashboard_shares');
+        Route::get('country-dashboard-shares/visible-for-admin', [CountryDashboardShareController::class, 'indexVisibleForAdmin'])->middleware('scope:country_dashboard_shares');
+        Route::post('country-dashboard-shares', [CountryDashboardShareController::class, 'store'])->middleware('scope:country_dashboard_shares:write');
+        Route::delete('country-dashboard-shares/{id}', [CountryDashboardShareController::class, 'destroy'])->middleware('scope:country_dashboard_shares:write');
 
         // API Routes para Contacts
         Route::get('contacts', [ContactController::class, 'index'])->middleware('scope:contacts');
