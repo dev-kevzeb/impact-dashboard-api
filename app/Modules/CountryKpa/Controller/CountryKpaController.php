@@ -470,7 +470,7 @@ class CountryKpaController extends Controller
 	{
 		try {
 			// Verify user has access to this country
-			if (!$this->service->userHasAccessToCountry((int)$id)) {
+			if (!$this->service->userCanViewCountryDashboard((int)$id)) {
 				return ApiResponse::error('Access denied to this country', 403);
 			}
 			

@@ -53,6 +53,9 @@ class PermissionSeeder extends Seeder
             ['name' => 'country_kpas:read', 'scope' => 'country_kpas', 'module' => 'CountryKpa', 'description' => 'View country-KPA relationships'],
             ['name' => 'country_kpas:write', 'scope' => 'country_kpas', 'module' => 'CountryKpa', 'description' => 'Create/edit country-KPA relationships'],
 
+            ['name' => 'country_dashboard_shares:read', 'scope' => 'country_dashboard_shares', 'module' => 'CountryDashboardShare', 'description' => 'View country dashboard share relationships'],
+            ['name' => 'country_dashboard_shares:write', 'scope' => 'country_dashboard_shares', 'module' => 'CountryDashboardShare', 'description' => 'Create/delete country dashboard share relationships'],
+
             ['name' => 'strategic_outputs:read', 'scope' => 'strategic_outputs', 'module' => 'StrategicOutput', 'description' => 'View strategic outputs'],
             ['name' => 'strategic_outputs:write', 'scope' => 'strategic_outputs', 'module' => 'StrategicOutput', 'description' => 'Create/edit strategic outputs'],
 

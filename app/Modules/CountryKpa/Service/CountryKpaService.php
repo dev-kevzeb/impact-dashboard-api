@@ -2,6 +2,7 @@
 
 namespace App\Modules\CountryKpa\Service;
 
+use App\Modules\CountryDashboardShare\Repository\CountryDashboardShareRepository;
 use App\Modules\CountryKpa\Repository\CountryKpaRepository;
 use Illuminate\Pagination\LengthAwarePaginator;
 use RuntimeException;
@@ -9,10 +10,12 @@ use RuntimeException;
 class CountryKpaService
 {
     protected CountryKpaRepository $repo;
+    protected CountryDashboardShareRepository $countryDashboardShareRepository;
 
-    public function __construct(CountryKpaRepository $repo)
+    public function __construct(CountryKpaRepository $repo, CountryDashboardShareRepository $countryDashboardShareRepository)
     {
         $this->repo = $repo;
+        $this->countryDashboardShareRepository = $countryDashboardShareRepository;
     }
 
     /**
@@ -57,6 +60,23 @@ class CountryKpaService
         }
 
         return false;
+    }
+
+    public function userCanViewCountryDashboard(int $countryId): bool
+    {
+        $user = auth('api')->user();
+        if (!$user) {
+            throw new RuntimeException('No authenticated user found');
+        }
+
+        $isAdmin = $user->roles && $user->roles->contains(fn($role) => strtolower($role->name) === 'admin');
+        if (!$isAdmin) {
+            return $this->userHasAccessToCountry($countryId);
+        }
+
+        $userRoleIds = $user->userRoles()->pluck('id')->toArray();
+
+        return $this->countryDashboardShareRepository->existsForCountryAndSharedUserRoleIds($countryId, $userRoleIds);
     }
 
     public function getAll(): array
