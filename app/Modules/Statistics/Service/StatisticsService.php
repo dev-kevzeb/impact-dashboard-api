@@ -2,7 +2,9 @@
 
 namespace App\Modules\Statistics\Service;
 
+use App\Modules\Agency\Repository\AgencyRepository;
 use App\Modules\CountryKpa\Repository\CountryKpaRepository;
+use App\Modules\Donor\Repository\DonorRepository;
 use App\Modules\Indicator\Repository\IndicatorRepository;
 use App\Modules\Kpa\Repository\KpaRepository;
 use App\Modules\Measure\Repository\MeasureRepository;
@@ -19,8 +21,10 @@ class StatisticsService
     private StrategicOutputRepository $strategicOutputRepository;
     private MeasureRepository $measureRepository;
     private IndicatorRepository $indicatorRepository;
+    private AgencyRepository $agencyRepository;
+    private DonorRepository $donorRepository;
 
-    public function __construct(MeasureRepository $measureRepository, ProjectIndicatorRepository $projectIndicatorRepository, ProjectRepository $projectRepository, IndicatorRepository $indicatorRepository, StrategicOutputRepository $strategicOutputRepository, CountryKpaRepository $countryKpaRepository, KpaRepository $kpaRepository)
+    public function __construct(MeasureRepository $measureRepository, ProjectIndicatorRepository $projectIndicatorRepository, ProjectRepository $projectRepository, IndicatorRepository $indicatorRepository, StrategicOutputRepository $strategicOutputRepository, CountryKpaRepository $countryKpaRepository, KpaRepository $kpaRepository, AgencyRepository $agencyRepository, DonorRepository $donorRepository)
     {
         $this->measureRepository = $measureRepository;
         $this->projectIndicatorRepository = $projectIndicatorRepository;
@@ -29,6 +33,8 @@ class StatisticsService
         $this->strategicOutputRepository = $strategicOutputRepository;
         $this->countryKpaRepository = $countryKpaRepository;
         $this->kpaRepository = $kpaRepository;
+        $this->agencyRepository = $agencyRepository;
+        $this->donorRepository = $donorRepository;
     }
 
     public function getMeasureImplementation(int $measureId):array
@@ -346,6 +352,9 @@ class StatisticsService
             ];
         })->values()->toArray();
 
+        $agenciesContribution = $this->appendMissingContributors($agenciesContribution, $this->agencyRepository->getAll());
+        $donorsContribution = $this->appendMissingContributors($donorsContribution, $this->donorRepository->getAll());
+
         return [
             "name" => "{$measures} measures ",
             "implementation" => $measures > 0 ? round($weightedTotal / $measures, 2) : 0,
@@ -543,6 +552,9 @@ class StatisticsService
             ];
         })->values()->toArray();
 
+        $agenciesContribution = $this->appendMissingContributors($agenciesContribution, $this->agencyRepository->getAll());
+        $donorsContribution = $this->appendMissingContributors($donorsContribution, $this->donorRepository->getAll());
+
         return [
             "name" => "{$measures} measures ",
             "implementation" => $measures > 0 ? round($weightedTotal / $measures, 2) : 0,
@@ -580,6 +592,25 @@ class StatisticsService
             "kpas"=> $kpasData->values()->toArray(),
             "resource" => $resource
         ];
+    }
+
+    private function appendMissingContributors(array $contributions, $registeredEntities): array
+    {
+        $existingById = collect($contributions)->keyBy('id');
+
+        foreach ($registeredEntities as $entity) {
+            if ($existingById->has($entity->id)) {
+                continue;
+            }
+
+            $existingById->put($entity->id, [
+                'id' => $entity->id,
+                'name' => $entity->name,
+                'contribution' => 0,
+            ]);
+        }
+
+        return $existingById->values()->toArray();
     }
 
 }
