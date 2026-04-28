@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use App\Http\Responses\ApiResponse;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
+use Illuminate\Validation\Rule;
 
 class BeneficiaryRequest extends FormRequest
 {
@@ -15,13 +16,15 @@ class BeneficiaryRequest extends FormRequest
 
     public function rules(): array
     {
+        $beneficiaryId = $this->route('id');
+
         return [
             'name' => [
                 'required',
                 'string',
                 'min:2',
                 'max:255',
-                'unique:beneficiary,name',
+                Rule::unique('beneficiary', 'name')->ignore($beneficiaryId),
             ],
         ];
     }
@@ -29,11 +32,11 @@ class BeneficiaryRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'name.required' => 'El nombre del beneficiario es obligatorio.',
-            'name.string'   => 'El nombre debe ser una cadena de texto.',
-            'name.min'      => 'El nombre del beneficiario debe tener al menos 2 caracteres.',
-            'name.max'      => 'El nombre no debe exceder 255 caracteres.',
-            'name.unique'   => 'este beneficiario ya existe en el sistema.',
+            'name.required' => 'Beneficiary name is required.',
+            'name.string'   => 'The name must be a text string.',
+            'name.min'      => 'Beneficiary name must be at least 2 characters long.',
+            'name.max'      => 'Name must not exceed 255 characters.',
+            'name.unique'   => 'This beneficiary already exists in the system.',
         ];
     }
 

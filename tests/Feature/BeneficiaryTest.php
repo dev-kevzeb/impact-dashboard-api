@@ -3,6 +3,8 @@
 namespace Tests\Feature;
 
 use App\Modules\Beneficiary\Domain\Beneficiary;
+use App\Modules\Program\Domain\Program;
+use App\Modules\Project\Domain\Project;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -11,11 +13,11 @@ class BeneficiaryTest extends TestCase
     use RefreshDatabase;
 
     private const BASE_URL = '/api/v1/beneficiaries';
-    private const ERROR_REQUIRED = 'el nombre del beneficiario es obligatorio.';
-    private const ERROR_UNIQUE = 'este beneficiario ya existe en el sistema.';
-    private const ERROR_MIN_LENGTH = 'El nombre del beneficiario debe tener al menos 2 caracteres.';
-    private const ERROR_MAX_LENGTH = 'el nombre no debe exceder 255 caracteres.';
-    private const ERROR_STRING = 'el nombre debe ser una cadena de texto.';
+    private const ERROR_REQUIRED = 'Beneficiary name is required.';
+    private const ERROR_UNIQUE = 'This beneficiary already exists in the system.';
+    private const ERROR_MIN_LENGTH = 'Beneficiary name must be at least 2 characters long.';
+    private const ERROR_MAX_LENGTH = 'Name must not exceed 255 characters.';
+    private const ERROR_STRING = 'The name must be a text string.';
 
     /**
      * Test: GET /api/v1/beneficiaries
@@ -25,7 +27,7 @@ class BeneficiaryTest extends TestCase
     {
         Beneficiary::factory()->count(3)->create();
 
-        $response = $this->getJson(self::BASE_URL);
+        $response = $this->getJson(self::BASE_URL, $this->authHeaders());
 
         $response->assertOk()
                  ->assertJsonStructure([
@@ -50,12 +52,12 @@ class BeneficiaryTest extends TestCase
     {
         $data = ['name' => 'Nuevo Beneficiario'];
 
-        $response = $this->postJson(self::BASE_URL, $data);
+        $response = $this->postJson(self::BASE_URL, $data, $this->authHeaders());
 
         $response->assertCreated()
                  ->assertJson([
                      'success' => true,
-                     'message' => 'Beneficiario creado exitosamente',
+                     'message' => 'Beneficiary created successfully',
                  ])
                  ->assertJsonStructure([
                      'data' => ['id', 'name']
@@ -74,7 +76,7 @@ class BeneficiaryTest extends TestCase
     {
         $data = [];
 
-        $response = $this->postJson(self::BASE_URL, $data);
+        $response = $this->postJson(self::BASE_URL, $data, $this->authHeaders());
 
         $response->assertStatus(422)
                  ->assertJsonValidationErrors(['name'])
@@ -89,7 +91,7 @@ class BeneficiaryTest extends TestCase
     {
         $data = ['name' => 'A'];
 
-        $response = $this->postJson(self::BASE_URL, $data);
+        $response = $this->postJson(self::BASE_URL, $data, $this->authHeaders());
 
         $response->assertStatus(422)
                  ->assertJsonValidationErrors(['name'])
@@ -105,7 +107,7 @@ class BeneficiaryTest extends TestCase
         Beneficiary::factory()->create(['name' => 'Beneficiario Existente']);
 
         $data = ['name' => 'Beneficiario Existente'];
-        $response = $this->postJson(self::BASE_URL, $data);
+        $response = $this->postJson(self::BASE_URL, $data, $this->authHeaders());
 
         $response->assertStatus(422)
                  ->assertJsonValidationErrors(['name'])
@@ -120,7 +122,7 @@ class BeneficiaryTest extends TestCase
     {
         $data = ['name' => str_repeat('A', 256)];
 
-        $response = $this->postJson(self::BASE_URL, $data);
+        $response = $this->postJson(self::BASE_URL, $data, $this->authHeaders());
 
         $response->assertStatus(422)
                  ->assertJsonValidationErrors(['name'])
@@ -135,12 +137,12 @@ class BeneficiaryTest extends TestCase
     {
         $beneficiary = Beneficiary::factory()->create();
 
-        $response = $this->getJson(self::BASE_URL . "/{$beneficiary->id}");
+        $response = $this->getJson(self::BASE_URL . "/{$beneficiary->id}", $this->authHeaders());
 
         $response->assertOk()
                  ->assertJson([
                      'success' => true,
-                     'message' => 'Beneficiario encontrado',
+                     'message' => 'Beneficiary found',
                      'data' => [
                          'id' => $beneficiary->id,
                          'name' => $beneficiary->name
@@ -157,12 +159,12 @@ class BeneficiaryTest extends TestCase
         $beneficiary = Beneficiary::factory()->create(['name' => 'Nombre Original']);
         $data = ['name' => 'Nombre Actualizado'];
 
-        $response = $this->putJson(self::BASE_URL . "/{$beneficiary->id}", $data);
+        $response = $this->putJson(self::BASE_URL . "/{$beneficiary->id}", $data, $this->authHeaders());
 
         $response->assertOk()
                  ->assertJson([
                      'success' => true,
-                     'message' => 'Beneficiario actualizado exitosamente',
+                     'message' => 'Beneficiary uploaded successfully',
                  ]);
 
         $this->assertDatabaseHas('beneficiary', [
@@ -182,11 +184,11 @@ class BeneficiaryTest extends TestCase
      */
     public function test_cannot_update_with_duplicate_name(): void
     {
-        $beneficiary1 = Beneficiary::factory()->create(['name' => 'Beneficiario 1']);
+        Beneficiary::factory()->create(['name' => 'Beneficiario 1']);
         $beneficiary2 = Beneficiary::factory()->create(['name' => 'Beneficiario 2']);
 
         $data = ['name' => 'Beneficiario 1'];
-        $response = $this->putJson(self::BASE_URL . "/{$beneficiary2->id}", $data);
+        $response = $this->putJson(self::BASE_URL . "/{$beneficiary2->id}", $data, $this->authHeaders());
 
         $response->assertStatus(422)
                  ->assertJsonValidationErrors(['name'])
@@ -199,7 +201,7 @@ class BeneficiaryTest extends TestCase
      */
     public function test_returns_404_when_beneficiary_not_found(): void
     {
-        $response = $this->getJson(self::BASE_URL . '/99999');
+        $response = $this->getJson(self::BASE_URL . '/99999', $this->authHeaders());
 
         $response->assertNotFound()
                  ->assertJson(['success' => false]);
@@ -211,7 +213,7 @@ class BeneficiaryTest extends TestCase
      */
     public function test_returns_404_when_updating_non_existent_beneficiary(): void
     {
-        $response = $this->putJson(self::BASE_URL . '/99999', ['name' => 'Nombre Cualquiera']);
+        $response = $this->putJson(self::BASE_URL . '/99999', ['name' => 'Nombre Cualquiera'], $this->authHeaders());
 
         $response->assertNotFound()
                  ->assertJson(['success' => false]);
@@ -225,7 +227,7 @@ class BeneficiaryTest extends TestCase
     {
         $data = ['name' => '  Beneficiario con Espacios  '];
 
-        $response = $this->postJson(self::BASE_URL, $data);
+        $response = $this->postJson(self::BASE_URL, $data, $this->authHeaders());
 
         $response->assertCreated();
         $this->assertDatabaseHas('beneficiary', [
@@ -241,7 +243,7 @@ class BeneficiaryTest extends TestCase
     {
         $data = ['name' => '   '];
 
-        $response = $this->postJson(self::BASE_URL, $data);
+        $response = $this->postJson(self::BASE_URL, $data, $this->authHeaders());
 
         $response->assertStatus(422)
                  ->assertJsonValidationErrors(['name']);
@@ -257,7 +259,8 @@ class BeneficiaryTest extends TestCase
 
         $response = $this->putJson(
             self::BASE_URL . "/{$beneficiary->id}",
-            ['name' => 'Mismo Nombre']
+            ['name' => 'Mismo Nombre'],
+            $this->authHeaders()
         );
 
         $response->assertOk();
@@ -275,7 +278,7 @@ class BeneficiaryTest extends TestCase
     {
         $data = ['name' => 12345];
 
-        $response = $this->postJson(self::BASE_URL, $data);
+        $response = $this->postJson(self::BASE_URL, $data, $this->authHeaders());
 
         $response->assertStatus(422)
                  ->assertJsonValidationErrors(['name'])
@@ -288,10 +291,48 @@ class BeneficiaryTest extends TestCase
      */
     public function test_list_returns_empty_when_no_beneficiaries(): void
     {
-        $response = $this->getJson(self::BASE_URL);
+        $response = $this->getJson(self::BASE_URL, $this->authHeaders());
 
         $response->assertOk()
                  ->assertJsonPath('data.total', 0)
                  ->assertJsonCount(0, 'data.beneficiaries');
+    }
+
+    public function test_can_delete_beneficiary_without_relations(): void
+    {
+        $beneficiary = Beneficiary::factory()->create();
+
+        $response = $this->deleteJson(self::BASE_URL . "/{$beneficiary->id}", [], $this->authHeaders());
+
+        $response->assertOk()
+            ->assertJsonPath('message', 'Beneficiary deleted successfully');
+
+        $this->assertDatabaseMissing('beneficiary', ['id' => $beneficiary->id]);
+    }
+
+    public function test_cannot_delete_beneficiary_with_project_relations(): void
+    {
+        $beneficiary = Beneficiary::factory()->create();
+        $program = Program::factory()->create();
+
+        Project::factory()->create([
+            'program_id' => $program->id,
+            'beneficiary_id' => $beneficiary->id,
+        ]);
+
+        $response = $this->deleteJson(self::BASE_URL . "/{$beneficiary->id}", [], $this->authHeaders());
+
+        $response->assertStatus(409)
+            ->assertJsonPath('success', false);
+
+        $this->assertDatabaseHas('beneficiary', ['id' => $beneficiary->id]);
+    }
+
+    public function test_delete_returns_not_found_for_non_existent_beneficiary(): void
+    {
+        $response = $this->deleteJson(self::BASE_URL . '/999999', [], $this->authHeaders());
+
+        $response->assertStatus(404)
+            ->assertJsonPath('message', 'Beneficiary not Found');
     }
 }

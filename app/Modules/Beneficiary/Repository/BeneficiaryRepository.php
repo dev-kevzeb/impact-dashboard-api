@@ -22,5 +22,20 @@ class BeneficiaryRepository extends AbstractRepository implements RepositoryInte
 
         return $query->paginate($perPage);
     }
+
+    public function hasRelations(int $beneficiaryId): bool
+    {
+        return $this->model
+            ->newQuery()
+            ->whereKey($beneficiaryId)
+            ->whereHas('projects')
+            ->exists();
+    }
+
+    public function delete(int $id): void
+    {
+        $beneficiary = $this->findById($id);
+        $beneficiary->delete();
+    }
     
 }
