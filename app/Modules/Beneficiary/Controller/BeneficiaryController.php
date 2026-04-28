@@ -336,7 +336,7 @@ class BeneficiaryController extends Controller
             }
             return ApiResponse::error('Error de base de datos', 500);
         } catch (RuntimeException $e) {
-            if (str_contains($e->getMessage(), 'Not found')) {
+            if (str_contains(strtolower($e->getMessage()), 'not found')) {
                 return ApiResponse::notFound('Beneficiary');
             }
             // Si el error es de duplicado, retornar como error de validación (422)
@@ -420,6 +420,30 @@ class BeneficiaryController extends Controller
             return ApiResponse::notFound('Beneficiary');
         } catch (\Illuminate\Validation\ValidationException $e) {
             return ApiResponse::validationError($e->errors());
+        } catch (\Exception $e) {
+            return ApiResponse::error('Internal server error', 500);
+        }
+    }
+
+    public function destroy(int $id): JsonResponse
+    {
+        try {
+            $this->beneficiaryService->deleteBeneficiary($id);
+
+            return ApiResponse::success(
+                'Beneficiary deleted successfully',
+                200
+            );
+        } catch (RuntimeException $e) {
+            if (str_contains(strtolower($e->getMessage()), 'not found')) {
+                return ApiResponse::notFound('Beneficiary');
+            }
+
+            if (str_contains(strtolower($e->getMessage()), 'cannot be deleted')) {
+                return ApiResponse::error($e->getMessage(), 409);
+            }
+
+            return ApiResponse::error($e->getMessage(), 400);
         } catch (\Exception $e) {
             return ApiResponse::error('Internal server error', 500);
         }

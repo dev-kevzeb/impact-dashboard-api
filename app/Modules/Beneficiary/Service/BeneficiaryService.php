@@ -65,4 +65,15 @@ class BeneficiaryService
     public function getBeneficiariesPaginated(?string $search, int $perPage){
         return $this->beneficiaryRepository->getPaginated($search, $perPage);
     }
+
+    public function deleteBeneficiary(int $id): void
+    {
+        $this->beneficiaryRepository->findById($id);
+
+        if ($this->beneficiaryRepository->hasRelations($id)) {
+            throw new RuntimeException('The beneficiary cannot be deleted because it is related to other records.');
+        }
+
+        $this->beneficiaryRepository->delete($id);
+    }
 }

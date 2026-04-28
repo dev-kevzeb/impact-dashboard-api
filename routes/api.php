@@ -83,6 +83,7 @@ Route::prefix('v1')->group(function () {
         Route::get('beneficiaries/search', [BeneficiaryController::class, 'search'])->middleware('scope:projects');
         Route::get('beneficiaries/{id}', [BeneficiaryController::class, 'show'])->middleware('scope:projects');
         Route::put('beneficiaries/{id}', [BeneficiaryController::class, 'update'])->middleware('scope:beneficiaries:write');
+        Route::delete('beneficiaries/{id}', [BeneficiaryController::class, 'destroy'])->middleware('scope:beneficiaries:write');
 
         // API Routes para ProgramStates
         Route::get('program_states', [ProgramStateController::class, 'index'])->middleware('scope:projects');

@@ -2,6 +2,7 @@
 
 namespace App\Modules\Beneficiary\Domain;
 
+use App\Modules\Project\Domain\Project;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use RuntimeException;
@@ -50,5 +51,10 @@ class Beneficiary extends Model
     public function getName(): string
     {
         return $this->name;
+    }
+
+    public function projects()
+    {
+        return $this->hasMany(Project::class, 'beneficiary_id', 'id');
     }
 }
