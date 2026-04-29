@@ -62,4 +62,24 @@ class CountryRepository extends AbstractRepository implements RepositoryInterfac
 
         return $query->withCount('kpas')->orderBy('name', 'asc')->paginate($perPage);
     }
+
+    public function hasRelations(int $countryId): bool
+    {
+        return $this->model
+            ->newQuery()
+            ->whereKey($countryId)
+            ->where(function ($query) {
+                $query->whereHas('countryUserRoles')
+                    ->orWhereHas('countryKpas', function ($countryKpaQuery) {
+                        $countryKpaQuery->whereHas('strategicOutputs');
+                    });
+            })
+            ->exists();
+    }
+
+    public function delete(int $id): void
+    {
+        $country = $this->findById($id);
+        $country->delete();
+    }
 }

@@ -3,7 +3,12 @@
 namespace Tests\Feature;
 
 use App\Modules\Country\Domain\Country;
+use App\Modules\CountryKpa\Domain\CountryKpa;
+use App\Modules\CountryUserRole\Domain\CountryUserRole;
 use App\Modules\Currency\Domain\Currency;
+use App\Modules\Kpa\Domain\Kpa;
+use App\Modules\StrategicOutput\Domain\StrategicOutput;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -348,5 +353,85 @@ class CountryTest extends TestCase
         $response = $this->getJson(self::BASE_URL . "/search?name=PaisInexistente");
 
         $response->assertNotFound();
+    }
+
+    public function test_can_delete_country_without_relations(): void
+    {
+        $country = Country::factory()->create();
+
+        $response = $this->deleteJson(self::BASE_URL . "/{$country->id}", [], $this->authHeaders());
+
+        $response->assertOk()
+            ->assertJsonPath('message', 'Country deleted successfully');
+
+        $this->assertDatabaseMissing('country', ['id' => $country->id]);
+    }
+
+    public function test_can_delete_country_with_kpa_relations_without_strategic_outputs(): void
+    {
+        $country = Country::factory()->create();
+        $kpa = Kpa::factory()->create();
+
+        DB::table('country_kpa')->insert([
+            'id_country' => $country->id,
+            'id_kpa' => $kpa->id,
+        ]);
+
+        $response = $this->deleteJson(self::BASE_URL . "/{$country->id}", [], $this->authHeaders());
+
+        $response->assertOk()
+            ->assertJsonPath('message', 'Country deleted successfully');
+
+        $this->assertDatabaseMissing('country', ['id' => $country->id]);
+        $this->assertDatabaseMissing('country_kpa', [
+            'id_country' => $country->id,
+            'id_kpa' => $kpa->id,
+        ]);
+    }
+
+    public function test_cannot_delete_country_with_kpa_relations_that_have_strategic_outputs(): void
+    {
+        $country = Country::factory()->create();
+        $kpa = Kpa::factory()->create();
+
+        $countryKpa = CountryKpa::factory()->create([
+            'id_country' => $country->id,
+            'id_kpa' => $kpa->id,
+        ]);
+
+        StrategicOutput::factory()->create([
+            'id_ck' => $countryKpa->id,
+        ]);
+
+        $response = $this->deleteJson(self::BASE_URL . "/{$country->id}", [], $this->authHeaders());
+
+        $response->assertStatus(409)
+            ->assertJsonPath('success', false);
+
+        $this->assertDatabaseHas('country', ['id' => $country->id]);
+    }
+
+    public function test_cannot_delete_country_with_user_relations(): void
+    {
+        $country = Country::factory()->create();
+
+        CountryUserRole::factory()->create([
+            'country_id' => $country->id,
+        ]);
+
+        $response = $this->deleteJson(self::BASE_URL . "/{$country->id}", [], $this->authHeaders());
+
+        $response->assertStatus(409)
+            ->assertJsonPath('success', false);
+
+        $this->assertDatabaseHas('country', ['id' => $country->id]);
+    }
+
+    public function test_delete_returns_not_found_for_non_existent_country(): void
+    {
+        $response = $this->deleteJson(self::BASE_URL . '/999999', [], $this->authHeaders());
+
+        $response->assertStatus(404)
+            ->assertJsonPath('message', 'Country not Found');
     }
 }

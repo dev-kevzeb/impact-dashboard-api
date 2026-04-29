@@ -98,6 +98,7 @@ Route::prefix('v1')->group(function () {
         Route::get('countries/search', [CountryController::class, 'search'])->middleware('scope:projects');
         Route::get('countries/{id}', [CountryController::class, 'show'])->middleware('scope:projects');
         Route::put('countries/{id}', [CountryController::class, 'update'])->middleware('scope:countries:write');
+        Route::delete('countries/{id}', [CountryController::class, 'destroy'])->middleware('scope:countries:write');
 
         // API Routes para Currencies
         Route::get('currencies', [CurrencyController::class, 'index'])->middleware('scope:currencies');

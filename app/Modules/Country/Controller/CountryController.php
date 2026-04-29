@@ -409,4 +409,28 @@ class CountryController extends Controller
             return ApiResponse::error('Internal server error', 500);
         }
     }
+
+    public function destroy(int $id): JsonResponse
+    {
+        try {
+            $this->countryService->deleteCountry($id);
+
+            return ApiResponse::success(
+                'Country deleted successfully',
+                200
+            );
+        } catch (RuntimeException $e) {
+            if (str_contains(strtolower($e->getMessage()), 'not found')) {
+                return ApiResponse::notFound('Country');
+            }
+
+            if (str_contains(strtolower($e->getMessage()), 'cannot be deleted')) {
+                return ApiResponse::error($e->getMessage(), 409);
+            }
+
+            return ApiResponse::error($e->getMessage(), 400);
+        } catch (\Exception $e) {
+            return ApiResponse::error('Internal server error', 500);
+        }
+    }
 }
