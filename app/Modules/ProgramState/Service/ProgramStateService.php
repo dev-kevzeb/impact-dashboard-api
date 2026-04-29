@@ -46,6 +46,17 @@ class ProgramStateService
         return $this->programStateRepository->getPaginated($search, $perPage);
     }
 
+    public function deleteProgramState(int $id): void
+    {
+        $this->programStateRepository->findById($id);
+
+        if ($this->programStateRepository->hasRelations($id)) {
+            throw new RuntimeException('The program state cannot be deleted because it is related to other records.');
+        }
+
+        $this->programStateRepository->delete($id);
+    }
+
     public function updateProgramState(int $id, string $name): ProgramState
     {
         $programState = $this->programStateRepository->findById($id);

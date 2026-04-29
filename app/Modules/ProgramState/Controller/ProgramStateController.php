@@ -299,6 +299,30 @@ class ProgramStateController extends Controller
         }
     }
 
+    public function destroy(int $id): JsonResponse
+    {
+        try {
+            $this->programStateService->deleteProgramState($id);
+
+            return ApiResponse::success(
+                'State deleted successfully',
+                200
+            );
+        } catch (RuntimeException $e) {
+            if (str_contains(strtolower($e->getMessage()), 'not found')) {
+                return ApiResponse::notFound('State');
+            }
+
+            if (str_contains(strtolower($e->getMessage()), 'cannot be deleted')) {
+                return ApiResponse::error($e->getMessage(), 409);
+            }
+
+            return ApiResponse::error($e->getMessage(), 400);
+        } catch (\Exception $e) {
+            return ApiResponse::error('Internal server error', 500);
+        }
+    }
+
     /**
      * @OA\Get(
      *     path="/program_states/search",
