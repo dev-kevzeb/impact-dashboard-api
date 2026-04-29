@@ -91,6 +91,7 @@ Route::prefix('v1')->group(function () {
         Route::get('program_states/search', [ProgramStateController::class, 'search'])->middleware('scope:projects');
         Route::get('program_states/{id}', [ProgramStateController::class, 'show'])->middleware('scope:projects');
         Route::put('program_states/{id}', [ProgramStateController::class, 'update'])->middleware('scope:program_states:write');
+        Route::delete('program_states/{id}', [ProgramStateController::class, 'destroy'])->middleware('scope:program_states:write');
 
         // API Routes para Countries
         Route::get('countries', [CountryController::class, 'index'])->middleware('scope:projects');
