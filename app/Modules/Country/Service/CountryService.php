@@ -135,4 +135,18 @@ class CountryService
     {
         return $this->countryRepository->exists('name', trim($name));
     }
+
+    public function deleteCountry(int $id): void
+    {
+        $country = $this->countryRepository->findById($id);
+
+        if ($this->countryRepository->hasRelations($id)) {
+            throw new RuntimeException('The country cannot be deleted because it is related to other records.');
+        }
+
+        DB::transaction(function () use ($country, $id) {
+            $country->countryKpas()->delete();
+            $this->countryRepository->delete($id);
+        });
+    }
 }

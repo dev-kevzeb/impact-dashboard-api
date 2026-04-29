@@ -3,6 +3,8 @@
 namespace App\Modules\Country\Domain;
 
 use App\Modules\Currency\Domain\Currency;
+use App\Modules\CountryDashboardShare\Domain\CountryDashboardShare;
+use App\Modules\CountryUserRole\Domain\CountryUserRole;
 use App\Modules\Kpa\Domain\Kpa;
 
 use Database\Factories\CountryFactory;
@@ -72,6 +74,16 @@ class Country extends Model
     public function countryKpas()
     {
         return $this->hasMany(\App\Modules\CountryKpa\Domain\CountryKpa::class, 'id_country');
+    }
+
+    public function countryUserRoles()
+    {
+        return $this->hasMany(CountryUserRole::class, 'country_id');
+    }
+
+    public function countryDashboardShares()
+    {
+        return $this->hasMany(CountryDashboardShare::class, 'country_id');
     }
     
     public function currency()
