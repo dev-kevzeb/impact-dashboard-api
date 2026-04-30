@@ -71,7 +71,7 @@ class ProgramStateController extends Controller
             $states = $this->programStateService->getAllProgramStates($perPage);
 
             return ApiResponse::success(
-                'Program states paginated list successfully uploaded',
+                'Program statuses paginated list successfully uploaded',
                 200,
                 [
                     'program_states' => ProgramStateResource::collection($states),
@@ -130,12 +130,12 @@ class ProgramStateController extends Controller
         try {
             $state = $this->programStateService->getProgramStateById($id);
             return ApiResponse::success(
-                'State found',
+                'Status found',
                 200,
                 new ProgramStateResource($state)
             );
         } catch (RuntimeException $e) {
-            return ApiResponse::notFound('State');
+            return ApiResponse::notFound('Status');
         } catch (\Exception $e) {
             return ApiResponse::error('Internal server error', 500);
         }
@@ -202,7 +202,7 @@ class ProgramStateController extends Controller
             ]);
             $state = $this->programStateService->createProgramState($request->input('name'));
             return ApiResponse::created(
-                'State created successfully',
+                'Status created successfully',
                 new ProgramStateResource($state)
             );
         } catch (RuntimeException $e) {
@@ -284,7 +284,7 @@ class ProgramStateController extends Controller
             ]);
             $state = $this->programStateService->updateProgramState($id, $request->input('name'));
             return ApiResponse::success(
-                'State updated successfully',
+                'Status updated successfully',
                 200,
                 new ProgramStateResource($state)
             );
@@ -305,12 +305,12 @@ class ProgramStateController extends Controller
             $this->programStateService->deleteProgramState($id);
 
             return ApiResponse::success(
-                'State deleted successfully',
+                'Status deleted successfully',
                 200
             );
         } catch (RuntimeException $e) {
             if (str_contains(strtolower($e->getMessage()), 'not found')) {
-                return ApiResponse::notFound('State');
+                return ApiResponse::notFound('Status');
             }
 
             if (str_contains(strtolower($e->getMessage()), 'cannot be deleted')) {
@@ -385,12 +385,12 @@ class ProgramStateController extends Controller
             ]);
             $state = $this->programStateService->findProgramStateByName($request->input('name'));
             return ApiResponse::success(
-                'State found',
+                'Status found',
                 200,
                 new ProgramStateResource($state)
             );
         } catch (RuntimeException $e) {
-            return ApiResponse::notFound('State');
+            return ApiResponse::notFound('Status');
         } catch (\Illuminate\Validation\ValidationException $e) {
             return ApiResponse::validationError($e->errors());
         } catch (\Exception $e) {

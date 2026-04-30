@@ -28,7 +28,7 @@ class PublicProgramStateController extends Controller
             $states = $this->programStateService->getProgramStatesPaginated($search, $perPage);
 
             return ApiResponse::success(
-                'Program states list successfully obtained',
+                'Program statuses list successfully obtained',
                 200,
                 [
                     'program_states' => ProgramStateResource::collection($states),

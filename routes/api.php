@@ -187,6 +187,7 @@ Route::prefix('v1')->group(function () {
         Route::post('project-states', [ProjectStateController::class, 'store'])->middleware('scope:project_states:write');
         Route::get('project-states/{id}', [ProjectStateController::class, 'show'])->middleware('scope:projects');
         Route::put('project-states/{id}', [ProjectStateController::class, 'update'])->middleware('scope:project_states:write');
+        Route::delete('project-states/{id}', [ProjectStateController::class, 'destroy'])->middleware('scope:project_states:write');
 
         // API Routes para SDG
         Route::get('sdgs', [SdgController::class, 'index'])->middleware('scope:programs');

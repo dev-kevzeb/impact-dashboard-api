@@ -19,7 +19,7 @@ class ProjectStateService {
     public function createProjectState(string $state): ProjectState
     {
         if($this->projectStateRepository->exists('state', trim($state))){
-            throw new \RuntimeException("The project state already exists: {$state}");
+            throw new \RuntimeException("The project status already exists: {$state}");
         }
 
         $projectState = ProjectState::at($state);
@@ -34,7 +34,7 @@ class ProjectStateService {
         return $this->projectStateRepository->findById($id);
     }
 
-   public function updateProjectState(int $id, string $state): ProjectState
+    public function updateProjectState(int $id, string $state): ProjectState
     {
         $projectState = $this->getProjectStateById($id);
         if(!$projectState){
@@ -42,7 +42,7 @@ class ProjectStateService {
         }
         $existing = $this->projectStateRepository->findByState(trim($state));
         if($existing && $existing->id !== $id){
-            throw new \RuntimeException("The project state already exists: {$state}");
+            throw new \RuntimeException("The project status already exists: {$state}");
         }
         $projectState->update(['state' => $state]);
         $this->projectStateRepository->save($projectState);
@@ -56,6 +56,17 @@ class ProjectStateService {
 
     public function getProjectStatesPaginated(?string $search, int $perPage){
         return $this->projectStateRepository->getPaginated($search, $perPage);
+    }
+
+    public function deleteProjectState(int $id): void
+    {
+        $this->projectStateRepository->findById($id);
+
+        if ($this->projectStateRepository->hasRelations($id)) {
+            throw new \RuntimeException('The project status cannot be deleted because it is related to other records.');
+        }
+
+        $this->projectStateRepository->delete($id);
     }
 
 }
