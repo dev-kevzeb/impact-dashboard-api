@@ -74,7 +74,7 @@ class ProjectStateController extends Controller
             $states = $this->projectStateService->getProjectStatesPaginated($search, $perPage);
 
             return ApiResponse::success(
-                'Project States list successfully obtained',
+                'Project statuses list successfully obtained',
                 200,
                 [
                     'project_states' => ProjectStateResource::collection($states),
@@ -129,12 +129,12 @@ class ProjectStateController extends Controller
         try {
             $state = $this->projectStateService->getProjectStateById($id);
             return ApiResponse::success(
-                'Project State found',
+                'Project status found',
                 200,
                 new ProjectStateResource($state),
             );
         } catch (RuntimeException $e) {
-            return ApiResponse::notFound('Project State');
+            return ApiResponse::notFound('Project Status');
         } catch (\Exception $e) {
             return ApiResponse::error('Internal server error', 500);
         }
@@ -208,7 +208,7 @@ class ProjectStateController extends Controller
             $validated = $request->validated();
             $state = $this->projectStateService->createProjectState($validated['state']);
             return ApiResponse::success(
-                'Project State created successfully',
+                'Project status created successfully',
                 201,
                 new ProjectStateResource($state)
             );
@@ -305,7 +305,7 @@ class ProjectStateController extends Controller
             $validated = $request->validated();
             $state = $this->projectStateService->updateProjectState($id, $validated['state']);
             return ApiResponse::success(
-                'Project State uploaded successfully',
+                'Project status updated successfully',
                 200,
                 new ProjectStateResource($state)
             );
@@ -314,8 +314,32 @@ class ProjectStateController extends Controller
                 return ApiResponse::validationError(['state' => [$e->getMessage()]]);
             }
             if (str_contains($e->getMessage(), 'no encontrado')) {
-                return ApiResponse::notFound('Estado del proyecto');
+                return ApiResponse::notFound('Project Status');
             }
+            return ApiResponse::error($e->getMessage(), 400);
+        } catch (\Exception $e) {
+            return ApiResponse::error('Internal server error', 500);
+        }
+    }
+
+    public function destroy($id): JsonResponse
+    {
+        try {
+            $this->projectStateService->deleteProjectState($id);
+
+            return ApiResponse::success(
+                'Project status deleted successfully',
+                200
+            );
+        } catch (RuntimeException $e) {
+            if (str_contains(strtolower($e->getMessage()), 'not found') || str_contains(strtolower($e->getMessage()), 'does not exist')) {
+                return ApiResponse::notFound('Project Status');
+            }
+
+            if (str_contains(strtolower($e->getMessage()), 'cannot be deleted')) {
+                return ApiResponse::error($e->getMessage(), 409);
+            }
+
             return ApiResponse::error($e->getMessage(), 400);
         } catch (\Exception $e) {
             return ApiResponse::error('Internal server error', 500);
@@ -375,12 +399,12 @@ class ProjectStateController extends Controller
             $state = $this->projectStateService->findProjectStateByName($name);
 
             return ApiResponse::success(
-                'Estado del proyecto encontrado',
+                'Project status found',
                 200,
                 new ProjectStateResource($state)
             );
         } catch (RuntimeException $e) {
-            return ApiResponse::notFound('Estado del proyecto');
+            return ApiResponse::notFound('Project Status');
         }
     }
 }

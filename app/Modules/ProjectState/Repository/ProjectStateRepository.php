@@ -18,4 +18,19 @@ class ProjectStateRepository extends AbstractRepository implements RepositoryInt
 
     return $query->paginate($perPage);
     }
+
+    public function hasRelations(int $projectStateId): bool
+    {
+        return $this->model
+            ->newQuery()
+            ->whereKey($projectStateId)
+            ->whereHas('projects')
+            ->exists();
+    }
+
+    public function delete(int $id): void
+    {
+        $projectState = $this->findById($id);
+        $projectState->delete();
+    }
 }

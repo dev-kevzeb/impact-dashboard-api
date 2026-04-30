@@ -13,8 +13,8 @@ class ProgramState extends Model
     protected $table = 'program_state';
     protected $fillable = ['name'];
 
-    public static $ERROR_NAME_EMPTY = 'the state name must not be empty';
-    public static $ERROR_NAME_MIN_LENGTH = 'the state name must be at least 2 characters';
+    public static $ERROR_NAME_EMPTY = 'The status name must not be empty';
+    public static $ERROR_NAME_MIN_LENGTH = 'The status name must be at least 2 characters';
 
     public function __construct(array $attributes = [])
     {

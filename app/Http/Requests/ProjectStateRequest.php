@@ -23,10 +23,10 @@ class ProjectStateRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'state.required' => 'El estado del proyecto es obligatorio.',
-            'state.string'   => 'El estado del proyecto debe ser un texto válido.',
-            'state.min'      => 'El estado del proyecto debe tener al menos 3 caracteres.',
-            'state.max'      => 'El estado del proyecto no debe exceder los 100 caracteres.',
+            'state.required' => 'Project status is required.',
+            'state.string'   => 'Project status must be a valid string.',
+            'state.min'      => 'Project status must be at least 3 characters long.',
+            'state.max'      => 'Project status must not exceed 100 characters.',
         ];
     }
 

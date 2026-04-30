@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Modules\Project\Domain\Project;
 use App\Modules\ProjectState\Domain\ProjectState;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -164,5 +165,39 @@ class ProjectStateTest extends TestCase
         $response->assertStatus(422)
                  ->assertJsonValidationErrors(['state'])
                  ->assertJsonPath('errors.state.0', self::ERROR_MIN_LENGTH);
+    }
+
+    public function test_can_delete_project_state_without_relations(): void
+    {
+        $state = ProjectState::factory()->create();
+
+        $response = $this->deleteJson(self::BASE_URL . "/{$state->id}");
+
+        $response->assertOk()
+            ->assertJsonPath('message', 'Project State deleted successfully');
+
+        $this->assertDatabaseMissing('project_state', ['id' => $state->id]);
+    }
+
+    public function test_cannot_delete_project_state_with_project_relations(): void
+    {
+        $state = ProjectState::factory()->create();
+        Project::factory()->create(['project_state_id' => $state->id]);
+
+        $response = $this->deleteJson(self::BASE_URL . "/{$state->id}");
+
+        $response->assertStatus(409)
+            ->assertJsonPath('success', false)
+            ->assertJsonPath('message', 'The project state cannot be deleted because it is related to other records.');
+
+        $this->assertDatabaseHas('project_state', ['id' => $state->id]);
+    }
+
+    public function test_delete_returns_not_found_for_non_existent_project_state(): void
+    {
+        $response = $this->deleteJson(self::BASE_URL . '/999999');
+
+        $response->assertStatus(404)
+            ->assertJsonPath('message', 'Project State not Found');
     }
 }

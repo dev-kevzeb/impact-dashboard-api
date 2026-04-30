@@ -30,7 +30,7 @@ class PublicProjectStateController extends Controller
             $states = $this->projectStateService->getProjectStatesPaginated($search, $perPage);
 
             return ApiResponse::success(
-                'Project States list successfully obtained',
+                'Project statuses list successfully obtained',
                 200,
                 [
                     'project_states' => ProjectStateResource::collection($states),
