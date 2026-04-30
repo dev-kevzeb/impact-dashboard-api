@@ -215,8 +215,7 @@ class KpaController extends Controller
             $validated = $request->validated();
 
             $kpa = $this->kpaService->createKpa(
-                $validated['name'],
-                (float) $validated['implementation']
+                $validated['name']
             );
 
             return ApiResponse::created(
@@ -307,8 +306,7 @@ class KpaController extends Controller
 
             $kpa = $this->kpaService->updateKpa(
                 $id,
-                $validated['name'],
-                (float) $validated['implementation']
+                $validated['name']
             );
 
             return ApiResponse::success(

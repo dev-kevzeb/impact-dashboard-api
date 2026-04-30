@@ -26,13 +26,6 @@ class KpaRequest extends FormRequest
                 'max:300',
                 Rule::unique('kpa', 'name')->ignore($kpaId),
             ],
-
-            'implementation' => [
-                'required',
-                'numeric',
-                'min:0',
-                'max:100',
-            ],
         ];
     }
 
@@ -45,12 +38,6 @@ class KpaRequest extends FormRequest
             'name.max'      => 'The KPA name must not exceed 300 characters',
             'name.string'   => 'The KPA name must be a text string',
             'name.unique'   => 'A KPA with this name already exists',
-
-            // IMPLEMENTATION
-            'implementation.required' => 'The KPA implementation must be a number',
-            'implementation.numeric'  => 'The KPA implementation must be a number',
-            'implementation.min'      => 'The KPA implementation must be between 0 and 100',
-            'implementation.max'      => 'The KPA implementation must be between 0 and 100',
         ];
 
     }

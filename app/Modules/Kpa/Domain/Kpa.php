@@ -47,7 +47,7 @@ class Kpa extends Model
         if(!is_numeric($implementation)){
             throw new RuntimeException(self::$ERROR_IMPLEMENTATION_NOT_NUMERIC);
         }
-        if($implementation < 0 || $implementation > 300){
+        if($implementation < 0 || $implementation > 100){
             throw new RuntimeException(self::$ERROR_IMPLEMENTATION_OUT_OF_RANGE);
         }
         return new Kpa(['name' => trim($name), 'implementation' => (float) $implementation]);
