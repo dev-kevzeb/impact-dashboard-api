@@ -21,7 +21,7 @@ class KpaService
             throw new RuntimeException("A KPA already exists with the name: {$name}");
         }
 
-        $kpa = Kpa::at($name, 0);
+        $kpa = Kpa::at($name);
         
         $this->kpaRepository->save($kpa);
         
@@ -60,7 +60,7 @@ class KpaService
             }
         }
 
-        $updatedKpa = Kpa::at($name, $kpa->implementation);
+        $updatedKpa = Kpa::at($name);
         $kpa->name = $updatedKpa->name;
         
         $this->kpaRepository->save($kpa);

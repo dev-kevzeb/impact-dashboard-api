@@ -17,7 +17,6 @@ class KpaResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
-            'implementation' => $this->implementation,
             'strategic_outputs_count' => $this->strategic_outputs_count,
         ];
     }

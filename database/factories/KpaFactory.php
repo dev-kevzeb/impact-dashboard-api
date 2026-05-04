@@ -13,7 +13,6 @@ class KpaFactory extends Factory
     {
         return [
             'name' => $this->faker->sentence(2),
-            'implementation' => $this->faker->numberBetween(0, 100), 
         ];
     }
 }

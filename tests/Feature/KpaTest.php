@@ -12,11 +12,9 @@ class KpaTest extends TestCase
 
     private const BASE_URL = '/api/v1/kpas';
 
-    private const ERROR_NAME_EMPTY = 'el nombre del KPA no debe ir vacio';
-    private const ERROR_NAME_MIN_LENGTH = 'el nombre del KPA debe tener al menos 2 caracteres';
-    private const ERROR_NAME_MAX_LENGTH = 'el nombre del KPA no debe exceder 100 caracteres';
-    private const ERROR_IMPLEMENTATION_NOT_NUMERIC = 'la implementación del KPA debe ser un número';
-    private const ERROR_IMPLEMENTATION_OUT_OF_RANGE = 'la implementación del KPA debe estar entre 0 y 100';
+    private const ERROR_NAME_EMPTY = 'The KPA name must not be empty';
+    private const ERROR_NAME_MIN_LENGTH = 'The KPA name must be at least 2 characters long';
+    private const ERROR_NAME_MAX_LENGTH = 'The KPA name must not exceed 100 characters';
 
     /** LISTAR */
     public function test_can_list_kpas(): void
@@ -31,7 +29,7 @@ class KpaTest extends TestCase
                 'message',
                 'data' => [
                     'kpas' => [
-                        '*' => ['id', 'name', 'implementation']
+                        '*' => ['id', 'name', 'strategic_outputs_count']
                     ],
                     'total'
                 ]
@@ -55,7 +53,6 @@ class KpaTest extends TestCase
     {
         $data = [
             'name' => 'Kpa Nuevo',
-            'implementation' => 50,
         ];
 
         $response = $this->postJson(self::BASE_URL, $data);
@@ -63,24 +60,21 @@ class KpaTest extends TestCase
         $response->assertCreated()
                 ->assertJson([
                     'success' => true,
-                    'message' => 'KPA creado exitosamente'
+                    'message' => 'KPA created successfully'
                 ])
                 ->assertJsonStructure([
-                    'data' => ['id', 'name', 'implementation']
+                    'data' => ['id', 'name', 'strategic_outputs_count']
                 ]);
 
         $this->assertDatabaseHas('kpa', [
             'name' => 'Kpa Nuevo',
-            'implementation' => 50,
         ]);
     }
 
     /** NAME REQUIRED */
     public function test_name_is_required(): void
     {
-        $response = $this->postJson(self::BASE_URL, [
-            'implementation' => 40
-        ]);
+        $response = $this->postJson(self::BASE_URL, []);
 
         $response->assertStatus(422)
                 ->assertJsonValidationErrors(['name'])
@@ -92,7 +86,6 @@ class KpaTest extends TestCase
     {
         $response = $this->postJson(self::BASE_URL, [
             'name' => 'A',
-            'implementation' => 40
         ]);
 
         $response->assertStatus(422)
@@ -105,7 +98,6 @@ class KpaTest extends TestCase
     {
         $response = $this->postJson(self::BASE_URL, [
             'name' => str_repeat('A', 101),
-            'implementation' => 50
         ]);
 
         $response->assertStatus(422)
@@ -113,50 +105,11 @@ class KpaTest extends TestCase
                 ->assertJsonPath('errors.name.0', self::ERROR_NAME_MAX_LENGTH);
     }
 
-    /** IMPLEMENTATION REQUIRED */
-    public function test_implementation_is_required(): void
-    {
-        $response = $this->postJson(self::BASE_URL, [
-            'name' => 'Kpa válido'
-        ]);
-
-        $response->assertStatus(422)
-                ->assertJsonValidationErrors(['implementation'])
-                ->assertJsonPath('errors.implementation.0', self::ERROR_IMPLEMENTATION_NOT_NUMERIC);
-    }
-
-    /** IMPLEMENTATION MUST BE NUMERIC */
-    public function test_implementation_must_be_numeric(): void
-    {
-        $response = $this->postJson(self::BASE_URL, [
-            'name' => 'Kpa válido',
-            'implementation' => 'abc'
-        ]);
-
-        $response->assertStatus(422)
-                ->assertJsonValidationErrors(['implementation'])
-                ->assertJsonPath('errors.implementation.0', self::ERROR_IMPLEMENTATION_NOT_NUMERIC);
-    }
-
-    /** IMPLEMENTATION RANGE */
-    public function test_implementation_must_be_between_0_and_100(): void
-    {
-        $response = $this->postJson(self::BASE_URL, [
-            'name' => 'KPA válido',
-            'implementation' => 150
-        ]);
-
-        $response->assertStatus(422)
-                ->assertJsonValidationErrors(['implementation'])
-                ->assertJsonPath('errors.implementation.0', self::ERROR_IMPLEMENTATION_OUT_OF_RANGE);
-    }
-
     /** TRIM NAME */
     public function test_trims_whitespace_from_name(): void
     {
         $response = $this->postJson(self::BASE_URL, [
             'name' => '   Kpa Limpio   ',
-            'implementation' => 55
         ]);
 
         $response->assertCreated();
@@ -176,11 +129,10 @@ class KpaTest extends TestCase
         $response->assertOk()
                 ->assertJson([
                     'success' => true,
-                    'message' => 'KPA encontrado',
+                    'message' => 'KPA found',
                     'data' => [
                         'id' => $kpa->id,
                         'name' => $kpa->name,
-                        'implementation' => $kpa->implementation
                     ]
                 ]);
     }
@@ -197,23 +149,21 @@ class KpaTest extends TestCase
     /** UPDATE */
     public function test_can_update_kpa(): void
     {
-        $kpa = Kpa::factory()->create(['name' => 'Viejo', 'implementation' => 10]);
+        $kpa = Kpa::factory()->create(['name' => 'Viejo']);
 
         $response = $this->putJson(self::BASE_URL . "/{$kpa->id}", [
             'name' => 'Nuevo',
-            'implementation' => 90
         ]);
 
         $response->assertOk()
                 ->assertJson([
                     'success' => true,
-                    'message' => 'KPA actualizado exitosamente'
+                    'message' => 'KPA uploaded successfully'
                 ]);
 
         $this->assertDatabaseHas('kpa', [
             'id' => $kpa->id,
             'name' => 'Nuevo',
-            'implementation' => 90
         ]);
     }
 
@@ -224,7 +174,6 @@ class KpaTest extends TestCase
 
         $response = $this->putJson(self::BASE_URL . "/{$kpa->id}", [
             'name' => '   Kpa Limpio   ',
-            'implementation' => 40
         ]);
 
         $response->assertOk();
@@ -235,29 +184,14 @@ class KpaTest extends TestCase
         ]);
     }
 
-    /** UPDATE IMPLEMENTATION INVALID */
-    public function test_update_implementation_must_be_in_range(): void
-    {
-        $kpa = Kpa::factory()->create(['implementation' => 50]);
-
-        $response = $this->putJson(self::BASE_URL . "/{$kpa->id}", [
-            'name' => 'Valid Name',
-            'implementation' => 200
-        ]);
-
-        $response->assertStatus(422)
-                ->assertJsonValidationErrors(['implementation'])
-                ->assertJsonPath('errors.implementation.0', self::ERROR_IMPLEMENTATION_OUT_OF_RANGE);
-    }
-
     public function test_name_must_be_unique(): void
     {
-        Kpa::factory()->create(['name' => 'KPA Existente', 'implementation' => 50]);
+        Kpa::factory()->create(['name' => 'KPA Existente']);
 
-        $response = $this->postJson(self::BASE_URL, ['name' => 'KPA Existente', 'implementation' => 70]);
+        $response = $this->postJson(self::BASE_URL, ['name' => 'KPA Existente']);
 
         $response->assertStatus(422)
                 ->assertJsonValidationErrors(['name'])
-                ->assertJsonPath('errors.name.0', 'Ya existe un KPA con ese nombre');
+            ->assertJsonPath('errors.name.0', 'A KPA with this name already exists');
     }
 }
