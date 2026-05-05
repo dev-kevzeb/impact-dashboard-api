@@ -12,6 +12,7 @@ class MeasureResource extends JsonResource
         return [
             'id'    => $this->id,
             'name'  => $this->name, 
+            'numbering' => $this->when(isset($this->numbering), $this->numbering),
 
             'indicators' => IndicatorResource::collection($this->whenLoaded('indicators')),
             'indicators_count' => $this->when(isset($this->indicators_count), $this->indicators_count),

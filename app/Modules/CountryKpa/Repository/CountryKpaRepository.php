@@ -46,7 +46,8 @@ class CountryKpaRepository extends Model
 				'strategicOutputs',
 				'strategicOutputs as measures_count' => function ($q) {$q->join('measure', 'strategic_output.id', '=', 'measure.strategic_output_id');},
 				'strategicOutputs as indicators_count' => function ($q) {$q->join('measure', 'strategic_output.id', '=', 'measure.strategic_output_id')->join('indicator', 'measure.id', '=', 'indicator.measure_id');},
-			])->where('id_country', $countryId);
+			])->where('id_country', $countryId)
+			->orderBy('id');
 
 		if ($search) {
 			$query->whereHas('kpa', function ($q) use ($search) {

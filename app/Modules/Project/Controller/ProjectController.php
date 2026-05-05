@@ -644,12 +644,21 @@ class ProjectController extends Controller
             /** @var \Illuminate\Pagination\LengthAwarePaginator $countryKpas */
             $countryKpas = $this->projectService->getProgramKpasForCurrentUser($programId, $search, $perPage);
 
-            $kpas = $countryKpas->getCollection()->map(function ($countryKpa) {
-                return [
-                    'id' => $countryKpa->kpa?->id,
+            $kpaNumberMap = $this->projectService->getProgramKpaNumberMap($programId);
+
+            $kpas = $countryKpas->getCollection()->map(function ($countryKpa) use ($kpaNumberMap) {
+                $kpaId = $countryKpa->kpa?->id;
+                $payload = [
+                    'id' => $kpaId,
                     'name' => $countryKpa->kpa?->name,
                     'strategic_outputs_count' => (int) ($countryKpa->strategic_outputs_count ?? 0),
                 ];
+
+                if ($kpaId && array_key_exists($kpaId, $kpaNumberMap)) {
+                    $payload['numbering'] = (string) $kpaNumberMap[$kpaId];
+                }
+
+                return $payload;
             })->values();
 
             return ApiResponse::success(
@@ -678,6 +687,21 @@ class ProjectController extends Controller
 
             $strategicOutputs = $this->projectService->getProgramStrategicOutputsForCurrentUser($programId, $kpaId, $search, $perPage);
 
+            $kpaNumberMap = $this->projectService->getProgramKpaNumberMap($programId);
+            $strategicOutputNumberMap = $this->projectService->getProgramStrategicOutputNumberMap($programId, $kpaId);
+
+            $kpaNumber = array_key_exists($kpaId, $kpaNumberMap) ? (string) $kpaNumberMap[$kpaId] : '';
+
+            $strategicOutputs->getCollection()->transform(function ($strategicOutput) use ($kpaNumber, $strategicOutputNumberMap) {
+                if ($kpaNumber === '' || !array_key_exists($strategicOutput->id, $strategicOutputNumberMap)) {
+                    return $strategicOutput;
+                }
+
+                $strategicOutput->numbering = $kpaNumber . '.' . $strategicOutputNumberMap[$strategicOutput->id];
+
+                return $strategicOutput;
+            });
+
             return ApiResponse::success(
                 'Program strategic outputs paginated list successfully uploaded',
                 200,
@@ -703,6 +727,22 @@ class ProjectController extends Controller
             $perPage = (int) $request->get('per_page', 10);
 
             $measures = $this->projectService->getProgramMeasuresForCurrentUser($programId, $strategicOutputId, $search, $perPage);
+
+            $context = $this->projectService->getProgramStrategicOutputContext($programId, $strategicOutputId);
+            $measureNumberMap = $this->projectService->getProgramMeasureNumberMap($strategicOutputId);
+
+            $kpaNumber = $context['kpa_number'] ?? '';
+            $strategicOutputNumber = $context['strategic_output_number'] ?? '';
+
+            $measures->getCollection()->transform(function ($measure) use ($kpaNumber, $strategicOutputNumber, $measureNumberMap) {
+                if ($kpaNumber === '' || $strategicOutputNumber === '' || !array_key_exists($measure->id, $measureNumberMap)) {
+                    return $measure;
+                }
+
+                $measure->numbering = $kpaNumber . '.' . $strategicOutputNumber . '.' . $measureNumberMap[$measure->id];
+
+                return $measure;
+            });
 
             return ApiResponse::success(
                 'Program measures paginated list successfully uploaded',
