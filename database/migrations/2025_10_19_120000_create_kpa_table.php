@@ -14,7 +14,6 @@ return new class extends Migration
         Schema::create('kpa', function (Blueprint $table) {
             $table->id();
             $table->string('name', 100);
-            $table->decimal('implementation', 5, 2)->default(0);
         });
     }
 

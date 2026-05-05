@@ -18,8 +18,7 @@ use RuntimeException;
  *     title="Kpa",
  *     description="Áreas Clave Prioritarias que definen los focos estratégicos de los programas y proyectos",
  *     @OA\Property(property="id", type="integer", example=1, description="ID único del KPA"),
- *     @OA\Property(property="name", type="string", example="Educación de Calidad", description="Nombre del área prioritaria"),
- *     @OA\Property(property="implementation", type="number", format="float", example=75.5, description="Porcentaje de implementación (0-100)")
+ *     @OA\Property(property="name", type="string", example="Educación de Calidad", description="Nombre del área prioritaria")
  * )
  */
 class KpaController extends Controller
@@ -158,9 +157,8 @@ class KpaController extends Controller
      *         @OA\MediaType(
      *             mediaType="application/json",
      *             @OA\Schema(
-     *                 required={"name", "implementation"},
-     *                 @OA\Property(property="name", type="string", maxLength=255, example="Salud y Bienestar", description="Nombre del área prioritaria (requerido)"),
-     *                 @OA\Property(property="implementation", type="number", format="float", example=50.0, description="Porcentaje de implementación inicial (0-100, requerido)")
+    *                 required={"name"},
+    *                 @OA\Property(property="name", type="string", maxLength=100, example="Salud y Bienestar", description="Nombre del área prioritaria (requerido)")
      *             )
      *         )
      *     ),
@@ -195,11 +193,7 @@ class KpaController extends Controller
      *                     type="array",
      *                     @OA\Items(type="string", example="El campo name es obligatorio.")
      *                 ),
-     *                 @OA\Property(
-     *                     property="implementation",
-     *                     type="array",
-     *                     @OA\Items(type="string", example="El campo implementation debe ser numérico.")
-     *                 )
+    *                 @OA\Property(property="name", type="array", @OA\Items(type="string", example="El nombre es obligatorio."))
      *             )
      *         )
      *     ),
@@ -215,8 +209,7 @@ class KpaController extends Controller
             $validated = $request->validated();
 
             $kpa = $this->kpaService->createKpa(
-                $validated['name'],
-                (float) $validated['implementation']
+                $validated['name']
             );
 
             return ApiResponse::created(
@@ -250,9 +243,8 @@ class KpaController extends Controller
      *         @OA\MediaType(
      *             mediaType="application/json",
      *             @OA\Schema(
-     *                 required={"name", "implementation"},
-     *                 @OA\Property(property="name", type="string", maxLength=255, example="Educación de Calidad e Inclusiva", description="Nombre actualizado del área prioritaria"),
-     *                 @OA\Property(property="implementation", type="number", format="float", example=85.5, description="Porcentaje de implementación actualizado (0-100)")
+    *                 required={"name"},
+    *                 @OA\Property(property="name", type="string", maxLength=100, example="Educación de Calidad e Inclusiva", description="Nombre actualizado del área prioritaria")
      *             )
      *         )
      *     ),
@@ -286,11 +278,7 @@ class KpaController extends Controller
      *             @OA\Property(
      *                 property="errors",
      *                 type="object",
-     *                 @OA\Property(
-     *                     property="implementation",
-     *                     type="array",
-     *                     @OA\Items(type="string", example="El campo implementation debe ser numérico.")
-     *                 )
+    *                 @OA\Property(property="name", type="array", @OA\Items(type="string", example="El nombre es obligatorio."))
      *             )
      *         )
      *     ),
@@ -307,8 +295,7 @@ class KpaController extends Controller
 
             $kpa = $this->kpaService->updateKpa(
                 $id,
-                $validated['name'],
-                (float) $validated['implementation']
+                $validated['name']
             );
 
             return ApiResponse::success(

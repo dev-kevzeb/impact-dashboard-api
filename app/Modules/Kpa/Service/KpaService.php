@@ -15,13 +15,13 @@ class KpaService
         $this->kpaRepository = $kpaRepository;
     }
 
-    public function createKpa(string $name, float $implementation): Kpa
+    public function createKpa(string $name): Kpa
     {
         if ($this->kpaRepository->exists('name', trim($name))) {
             throw new RuntimeException("A KPA already exists with the name: {$name}");
         }
 
-        $kpa = Kpa::at($name, $implementation);
+        $kpa = Kpa::at($name);
         
         $this->kpaRepository->save($kpa);
         
@@ -43,7 +43,7 @@ class KpaService
         return $this->kpaRepository->paginate($perPage);
     }
 
-    public function updateKpa(int $id, string $name, float $implementation): Kpa
+    public function updateKpa(int $id, string $name): Kpa
     {
         $kpa = $this->kpaRepository->findById($id);
 
@@ -53,14 +53,15 @@ class KpaService
                 throw new RuntimeException("There is already another KPA with the name: {$name}");
             }
         } catch (RuntimeException $e) {
-            if (!str_contains($e->getMessage(), 'Not found')) {
-                throw $e; 
+            // findBy throws a RuntimeException when the entity is not found.
+            // Accept the normal 'not found' case and rethrow other unexpected errors.
+            if (!str_contains(strtolower($e->getMessage()), 'not found')) {
+                throw $e;
             }
         }
 
-        $updatedKpa = Kpa::at($name, $implementation);
+        $updatedKpa = Kpa::at($name);
         $kpa->name = $updatedKpa->name;
-        $kpa->implementation = $updatedKpa->implementation;
         
         $this->kpaRepository->save($kpa);
         
