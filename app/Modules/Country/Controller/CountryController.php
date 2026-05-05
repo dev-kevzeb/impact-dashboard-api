@@ -221,7 +221,11 @@ class CountryController extends Controller
         try {
             $validated = $request->validated();
 
-            $country = $this->countryService->createCountry($validated['name'], $validated['currency']);
+            $country = $this->countryService->createCountry(
+                $validated['name'],
+                $validated['currency'],
+                $validated['active'] ?? false
+            );
 
             return ApiResponse::created(
                 'Country created successfully',
@@ -315,6 +319,7 @@ class CountryController extends Controller
                 $id,
                 $validated['name'],
                 $validated['currency'],
+                $validated['active'] ?? null,
             );
 
             return ApiResponse::success(
@@ -326,6 +331,9 @@ class CountryController extends Controller
             // Si el error es de duplicado, retornar como error de validación (422)
             if (str_contains($e->getMessage(), 'Ya existe')) {
                 return ApiResponse::validationError(['name' => [$e->getMessage()]]);
+            }
+            if (str_contains($e->getMessage(), 'cannot be modified because it is active')) {
+                return ApiResponse::error($e->getMessage(), 409);
             }
             return ApiResponse::error($e->getMessage(), 400);
         } catch (\Illuminate\Validation\ValidationException $e) {
@@ -431,6 +439,90 @@ class CountryController extends Controller
             return ApiResponse::error($e->getMessage(), 400);
         } catch (\Exception $e) {
             return ApiResponse::error('Internal server error', 500);
+        }
+    }
+
+    /**
+     * @OA\Patch(
+     *     path="/countries/{id}/activate",
+     *     tags={"Countries"},
+     *     summary="Activar un país",
+     *     description="Cambia el estado del país a activo. Solo funciona si el país está inactivo.",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="ID del país a activar",
+     *         @OA\Schema(type="integer", example=1)
+     *     ),
+     *     @OA\Response(response=200, description="País activado exitosamente"),
+     *     @OA\Response(response=409, description="El país ya está activo"),
+     *     @OA\Response(response=404, description="País no encontrado")
+     * )
+     */
+    public function activate(int $id): JsonResponse
+    {
+        try {
+            $country = $this->countryService->activateCountry($id);
+
+            return ApiResponse::success(
+                'Country activated successfully',
+                200,
+                new CountryResource($country)
+            );
+        } catch (RuntimeException $e) {
+            if (str_contains(strtolower($e->getMessage()), 'not found')) {
+                return ApiResponse::notFound('Country');
+            }
+
+            if (str_contains($e->getMessage(), 'already active')) {
+                return ApiResponse::error($e->getMessage(), 409);
+            }
+
+            return ApiResponse::error($e->getMessage(), 400);
+        }
+    }
+
+    /**
+     * @OA\Patch(
+     *     path="/countries/{id}/deactivate",
+     *     tags={"Countries"},
+     *     summary="Desactivar un país",
+     *     description="Cambia el estado del país a inactivo. Solo funciona si el país está activo.",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="ID del país a desactivar",
+     *         @OA\Schema(type="integer", example=1)
+     *     ),
+     *     @OA\Response(response=200, description="País desactivado exitosamente"),
+     *     @OA\Response(response=409, description="El país ya está inactivo"),
+     *     @OA\Response(response=404, description="País no encontrado")
+     * )
+     */
+    public function deactivate(int $id): JsonResponse
+    {
+        try {
+            $country = $this->countryService->deactivateCountry($id);
+
+            return ApiResponse::success(
+                'Country deactivated successfully',
+                200,
+                new CountryResource($country)
+            );
+        } catch (RuntimeException $e) {
+            if (str_contains(strtolower($e->getMessage()), 'not found')) {
+                return ApiResponse::notFound('Country');
+            }
+
+            if (str_contains($e->getMessage(), 'already inactive')) {
+                return ApiResponse::error($e->getMessage(), 409);
+            }
+
+            return ApiResponse::error($e->getMessage(), 400);
         }
     }
 }

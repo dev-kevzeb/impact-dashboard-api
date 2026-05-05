@@ -69,6 +69,11 @@ class CountryRequest extends FormRequest
                 "integer",
                 Rule::exists("currency", "id"),
             ],
+
+            "active" => [
+                "nullable",
+                "boolean",
+            ],
         ];
     }
 
@@ -91,6 +96,8 @@ class CountryRequest extends FormRequest
 
             "currency.id.integer" => "Currency ID must be a valid number",
             "currency.id.exists" => "The selected currency does not exist",
+
+            "active.boolean" => "Active must be a boolean value",
         ];
     }
 

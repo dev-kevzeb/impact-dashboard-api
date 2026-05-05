@@ -30,9 +30,9 @@ class CountryService
         $this->countryKpaRepository = $countryKpaRepository;
     }
 
-    public function createCountry(string $name, $currency): Country
+    public function createCountry(string $name, $currency, bool $active = Country::DEFAULT_ACTIVE): Country
     {
-        return DB::transaction(function () use ($name, $currency) {
+        return DB::transaction(function () use ($name, $currency, $active) {
 
             $name = trim($name);
             $currencyCode = strtoupper(trim($currency['code']));
@@ -50,7 +50,7 @@ class CountryService
                 }
             }
 
-            $country = Country::at($name, $currency);
+            $country = Country::at($name, $currency, $active);
             $this->countryRepository->save($country);
 
             $kpas = $this->kpaRepository->getAllIds();
@@ -67,9 +67,13 @@ class CountryService
         });
     }
 
-    public function updateCountry(int $id, string $name, $currency): Country
+    public function updateCountry(int $id, string $name, $currency, ?bool $active = null): Country
     {
         $country = $this->countryRepository->findById($id);
+
+        if ($country->active) {
+            throw new RuntimeException('The country cannot be modified because it is active.');
+        }
 
         try {
             $existingCountry = $this->countryRepository->findBy('name', trim($name));
@@ -97,9 +101,10 @@ class CountryService
             }
         }
 
-        $updatedCountry = Country::at($name, $currency);
+        $updatedCountry = Country::at($name, $currency, $active ?? $country->active);
         $country->name = $updatedCountry->name;
         $country->currency_id = $updatedCountry->currency_id;
+        $country->active = $updatedCountry->active;
 
         $this->countryRepository->save($country);
 
@@ -148,5 +153,33 @@ class CountryService
             $country->countryKpas()->delete();
             $this->countryRepository->delete($id);
         });
+    }
+
+    public function activateCountry(int $id): Country
+    {
+        $country = $this->countryRepository->findById($id);
+
+        if ($country->active) {
+            throw new RuntimeException('The country is already active.');
+        }
+
+        $country->active = true;
+        $this->countryRepository->save($country);
+
+        return $country;
+    }
+
+    public function deactivateCountry(int $id): Country
+    {
+        $country = $this->countryRepository->findById($id);
+
+        if (!$country->active) {
+            throw new RuntimeException('The country is already inactive.');
+        }
+
+        $country->active = false;
+        $this->countryRepository->save($country);
+
+        return $country;
     }
 }

@@ -38,6 +38,7 @@ class CountryTest extends TestCase
         $country = Country::at("Bolivia", $this->validCurrency);
 
         $this->assertEquals("Bolivia", $country->getName());
+        $this->assertFalse($country->isActive());
         $this->assertInstanceOf(Country::class, $country);
     }
 
@@ -151,7 +152,7 @@ class CountryTest extends TestCase
             ['Bolivia', 'BOB'],
             ['Estados Unidos', 'USD'],
             ['Reino Unido', 'GBP'],
-            ['Côte d\'Ivoire', 'XOF'], // Con apostrofe
+            ['Côte D\'ivoire', 'XOF'], // Con apostrofe y normalizacion de titulo
             ['Guinea-Bissau', 'XOF'],  // Con guión
         ];
 
@@ -176,5 +177,20 @@ class CountryTest extends TestCase
         $country = Country::at("España", $currency);
         
         $this->assertEquals("España", $country->getName());
+    }
+
+    public function test_country_active_is_boolean_false_by_default()
+    {
+        $country = Country::at("Paraguay", $this->validCurrency);
+
+        $this->assertIsBool($country->isActive());
+        $this->assertFalse($country->isActive());
+    }
+
+    public function test_country_can_be_created_as_active_true()
+    {
+        $country = Country::at("Uruguay", $this->validCurrency, true);
+
+        $this->assertTrue($country->isActive());
     }
 }

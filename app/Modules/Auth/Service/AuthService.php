@@ -45,7 +45,7 @@ class AuthService
             throw new RuntimeException('Invalid credentials');
         }
 
-        $user = auth('api')->user();
+        $user = JWTAuth::user();
 
         // Check email verification
         if (!$user->hasVerifiedEmail()) {

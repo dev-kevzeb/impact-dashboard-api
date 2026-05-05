@@ -434,4 +434,84 @@ class CountryTest extends TestCase
         $response->assertStatus(404)
             ->assertJsonPath('message', 'Country not Found');
     }
+
+    /** ACTIVATE */
+    public function test_cannot_update_active_country(): void
+    {
+        $country = Country::factory()->create(['active' => true]);
+        $currency = Currency::factory()->create();
+
+        $response = $this->putJson(self::BASE_URL . "/{$country->id}", [
+            'name' => 'Nuevo Nombre',
+            'currency' => [
+                'id'   => $currency->id,
+                'code' => $currency->code,
+            ],
+        ], $this->authHeaders());
+
+        $response->assertStatus(409)
+            ->assertJsonPath('success', false);
+    }
+
+    /** ACTIVATE */
+    public function test_can_activate_inactive_country(): void
+    {
+        $country = Country::factory()->create(['active' => false]);
+
+        $response = $this->patchJson(self::BASE_URL . "/{$country->id}/activate", [], $this->authHeaders());
+
+        $response->assertOk()
+            ->assertJsonPath('message', 'Country activated successfully')
+            ->assertJsonPath('data.active', true);
+
+        $this->assertDatabaseHas('country', ['id' => $country->id, 'active' => true]);
+    }
+
+    public function test_cannot_activate_already_active_country(): void
+    {
+        $country = Country::factory()->create(['active' => true]);
+
+        $response = $this->patchJson(self::BASE_URL . "/{$country->id}/activate", [], $this->authHeaders());
+
+        $response->assertStatus(409)
+            ->assertJsonPath('success', false);
+    }
+
+    public function test_activate_returns_not_found_for_non_existent_country(): void
+    {
+        $response = $this->patchJson(self::BASE_URL . '/999999/activate', [], $this->authHeaders());
+
+        $response->assertStatus(404);
+    }
+
+    /** DEACTIVATE */
+    public function test_can_deactivate_active_country(): void
+    {
+        $country = Country::factory()->create(['active' => true]);
+
+        $response = $this->patchJson(self::BASE_URL . "/{$country->id}/deactivate", [], $this->authHeaders());
+
+        $response->assertOk()
+            ->assertJsonPath('message', 'Country deactivated successfully')
+            ->assertJsonPath('data.active', false);
+
+        $this->assertDatabaseHas('country', ['id' => $country->id, 'active' => false]);
+    }
+
+    public function test_cannot_deactivate_already_inactive_country(): void
+    {
+        $country = Country::factory()->create(['active' => false]);
+
+        $response = $this->patchJson(self::BASE_URL . "/{$country->id}/deactivate", [], $this->authHeaders());
+
+        $response->assertStatus(409)
+            ->assertJsonPath('success', false);
+    }
+
+    public function test_deactivate_returns_not_found_for_non_existent_country(): void
+    {
+        $response = $this->patchJson(self::BASE_URL . '/999999/deactivate', [], $this->authHeaders());
+
+        $response->assertStatus(404);
+    }
 }

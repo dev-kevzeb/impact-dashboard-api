@@ -2,6 +2,7 @@
 
 namespace App\Modules\Measure\Service;
 
+use App\Modules\CountryKpa\Repository\CountryKpaRepository;
 use App\Modules\Measure\Domain\Measure;
 use App\Modules\Measure\Repository\MeasureRepository;
 use App\Modules\StrategicOutput\Domain\StrategicOutput;
@@ -13,17 +14,29 @@ class MeasureService
 {
     private MeasureRepository $measureRepository;
     private StrategicOutputRepository $strategicOutputRepository;
+    private CountryKpaRepository $countryKpaRepository;
 
-    public function __construct(MeasureRepository $measureRepository, StrategicOutputRepository $strategicOutputRepository)
+    public function __construct(MeasureRepository $measureRepository, StrategicOutputRepository $strategicOutputRepository, CountryKpaRepository $countryKpaRepository)
     {
         $this->measureRepository = $measureRepository;
         $this->strategicOutputRepository = $strategicOutputRepository;
+        $this->countryKpaRepository = $countryKpaRepository;
+    }
+
+    private function assertCountryNotActiveByStrategicOutput(StrategicOutput $strategicOutput): void
+    {
+        $countryKpa = $this->countryKpaRepository->getById($strategicOutput->id_ck);
+        if ($countryKpa->country->active) {
+            throw new RuntimeException('Cannot add or remove measures while the country is active.');
+        }
     }
 
     public function createMeasure(string $name, int $strategicOutputId): Measure
     {
         $strategicOutput = $this->strategicOutputRepository->findById($strategicOutputId);
         if (!$strategicOutput instanceof StrategicOutput) throw new RuntimeException("The strategic output with id {$strategicOutputId} does not exist.");
+
+        $this->assertCountryNotActiveByStrategicOutput($strategicOutput);
 
         $measure = Measure::at($name, $strategicOutput);
 
@@ -124,6 +137,10 @@ class MeasureService
     public function deleteMeasure(int $id): void
     {
         $measure = $this->measureRepository->findById($id);
+
+        $strategicOutput = $this->strategicOutputRepository->findById($measure->strategic_output_id);
+        $this->assertCountryNotActiveByStrategicOutput($strategicOutput);
+
         if ($measure->indicators()->count() > 0) {
             throw new RuntimeException('Cannot delete a measure that has associated indicators.');
         }

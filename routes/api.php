@@ -99,6 +99,8 @@ Route::prefix('v1')->group(function () {
         Route::get('countries/search', [CountryController::class, 'search'])->middleware('scope:projects');
         Route::get('countries/{id}', [CountryController::class, 'show'])->middleware('scope:projects');
         Route::put('countries/{id}', [CountryController::class, 'update'])->middleware('scope:countries:write');
+        Route::patch('countries/{id}/activate', [CountryController::class, 'activate'])->middleware('scope:countries:activate');
+        Route::patch('countries/{id}/deactivate', [CountryController::class, 'deactivate'])->middleware('scope:countries:activate');
         Route::delete('countries/{id}', [CountryController::class, 'destroy'])->middleware('scope:countries:write');
 
         // API Routes para Currencies

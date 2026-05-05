@@ -21,6 +21,15 @@ class IndicatorService
         $this->measureRepository = $measureRepository;
     }
 
+    private function assertCountryNotActiveByMeasureId(int $measureId): void
+    {
+        $measure = $this->measureRepository->findById($measureId);
+        $measure->load('StrategicOutput.countryKpa.country');
+        if ($measure->StrategicOutput->countryKpa->country->active) {
+            throw new RuntimeException('Cannot add or remove indicators while the country is active.');
+        }
+    }
+
     public function createIndicator(string $name, float $target, int $indicatorTypeId, int $measureId, float $actualValue = 0.0): Indicator
     {
         $measure = $this->measureRepository->findById($measureId);
@@ -28,6 +37,8 @@ class IndicatorService
 
         if (!$measure) throw new RuntimeException("Measure not found");
         if (!$indicatorType) throw new RuntimeException("Indicator type not found");
+
+        $this->assertCountryNotActiveByMeasureId($measureId);
 
         $indicator = Indicator::at($name, $indicatorType, $target, $measure);
         $indicator->actual_value = $actualValue;
@@ -69,6 +80,13 @@ class IndicatorService
             throw new RuntimeException("Measure not found");
         }
 
+        $indicator->load('measure.StrategicOutput.countryKpa.country');
+        if ($indicator->measure->StrategicOutput->countryKpa->country->active) {
+            if ($indicator->type_id !== $indicatorTypeId) {
+                throw new RuntimeException('Cannot change the indicator type while the country is active.');
+            }
+        }
+
         $updatedIndicator = Indicator::at($name, $indicatorType, $target, $measure);
 
         $indicator->name = $updatedIndicator->name;
@@ -93,6 +111,11 @@ class IndicatorService
     public function deleteIndicator(int $id): void
     {
         $indicator = $this->indicatorRepository->findById($id);
+
+        $indicator->load('measure.StrategicOutput.countryKpa.country');
+        if ($indicator->measure->StrategicOutput->countryKpa->country->active) {
+            throw new RuntimeException('Cannot delete an indicator while the country is active.');
+        }
 
         if ($indicator->projects()->count() > 0) {
             throw new RuntimeException('Cannot delete an indicator that is assigned to one or more projects.');

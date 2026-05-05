@@ -16,7 +16,12 @@ class Country extends Model
 {
     use HasFactory;
     protected $table = 'country';
-    protected $fillable = ['name', 'currency_id'];
+    protected $fillable = ['name', 'currency_id', 'active'];
+    protected $casts = [
+        'active' => 'boolean',
+    ];
+
+    public const DEFAULT_ACTIVE = false;
 
     public static $ERROR_NAME_EMPTY = 'The country name must not be empty';
     public static $ERROR_NAME_TOO_SHORT = 'The country name must have at least 2 characters';
@@ -29,20 +34,24 @@ class Country extends Model
     {
         return CountryFactory::new();
     }
-    
-    public static function at($name, $currency): Country
+
+    public static function at($name, $currency, bool $active = self::DEFAULT_ACTIVE): Country
     {
-        
+
         if (empty(trim($name))) throw new RuntimeException(self::$ERROR_NAME_EMPTY);
         $normalizedName = preg_replace('/\s+/', ' ', trim($name));
         if (strlen($normalizedName) < 2) throw new RuntimeException(self::$ERROR_NAME_TOO_SHORT);
-    
+
         if (strlen($normalizedName) > 100) throw new RuntimeException(self::$ERROR_NAME_TOO_LONG);
         if (!preg_match('/^[a-zA-ZÀ-ÿñÑ\s\-\'\.]+$/u', $normalizedName)) throw new RuntimeException(self::$ERROR_NAME_INVALID_CHARACTERS);
         if (!($currency instanceof Currency )) throw new RuntimeException(self::$ERROR_CURRENCY_INVALID);
 
         $capitalizedName = mb_convert_case($normalizedName, MB_CASE_TITLE, "UTF-8");
-        return new self(['name' => $capitalizedName, 'currency_id' => $currency->getKey()]);
+        return new self([
+            'name' => $capitalizedName,
+            'currency_id' => $currency->getKey(),
+            'active' => $active,
+        ]);
     }
 
     
@@ -59,6 +68,11 @@ class Country extends Model
     public function getCurrencyCode(): string
     {
         return $this->currency->getCode();
+    }
+
+    public function isActive(): bool
+    {
+        return (bool) $this->active;
     }
     
     public function getKpas(): array
