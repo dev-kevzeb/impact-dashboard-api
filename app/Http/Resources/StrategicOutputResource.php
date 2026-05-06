@@ -12,6 +12,7 @@ class StrategicOutputResource extends JsonResource
         return [
             'id'   => $this->id,
             'name' => $this->name,
+            'numbering' => $this->when(isset($this->numbering), $this->numbering),
 
             'country_kpa' => [
                 'id' => $this->countryKpa->id,

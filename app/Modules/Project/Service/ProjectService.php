@@ -364,6 +364,93 @@ class ProjectService
         return $this->indicatorService->getIndicatorsByMeasureId($measureId, $perPage, $search, $exclude);
     }
 
+    private function getProgramCountryKpasCollection(int $programId): Collection
+    {
+        $countryId = $this->resolveAccessibleProgramCountryId($programId);
+        $countryKpas = $this->countryKpaService->getCountryKpasByCountryId($countryId, null, -1);
+
+        return $countryKpas->getCollection();
+    }
+
+    public function getProgramKpaNumberMap(int $programId): array
+    {
+        $kpas = $this->getProgramCountryKpasCollection($programId);
+        $map = [];
+        $index = 1;
+
+        foreach ($kpas as $countryKpa) {
+            $kpaId = $countryKpa->kpa?->id;
+            if (!$kpaId || array_key_exists($kpaId, $map)) {
+                continue;
+            }
+
+            $map[$kpaId] = $index;
+            $index += 1;
+        }
+
+        return $map;
+    }
+
+    public function getProgramStrategicOutputNumberMap(int $programId, int $kpaId): array
+    {
+        $countryId = $this->resolveAccessibleProgramCountryId($programId);
+        $countryKpas = $this->countryKpaService->getByCountryAndKpa($countryId, $kpaId);
+        if ($countryKpas->isEmpty()) {
+            return [];
+        }
+
+        $countryKpaIds = $countryKpas->pluck('id')->toArray();
+        $strategicOutputs = $this->strategicOutputService->getByCountryKpaIds($countryKpaIds);
+
+        $map = [];
+        $index = 1;
+
+        foreach ($strategicOutputs as $strategicOutput) {
+            $map[$strategicOutput->id] = $index;
+            $index += 1;
+        }
+
+        return $map;
+    }
+
+    public function getProgramMeasureNumberMap(int $strategicOutputId): array
+    {
+        $measures = $this->measureService->getByStrategicOutputIds([$strategicOutputId]);
+        $map = [];
+        $index = 1;
+
+        foreach ($measures as $measure) {
+            $map[$measure->id] = $index;
+            $index += 1;
+        }
+
+        return $map;
+    }
+
+    public function getProgramStrategicOutputContext(int $programId, int $strategicOutputId): array
+    {
+        $strategicOutput = $this->strategicOutputService->getStrategicOutputById($strategicOutputId);
+        $strategicOutput->loadMissing(['countryKpa.kpa']);
+
+        $kpaId = (int) ($strategicOutput->countryKpa?->kpa?->id ?? 0);
+        $kpaNumberMap = $kpaId > 0 ? $this->getProgramKpaNumberMap($programId) : [];
+        $strategicOutputNumberMap = $kpaId > 0 ? $this->getProgramStrategicOutputNumberMap($programId, $kpaId) : [];
+
+        $kpaNumber = $kpaId > 0 && array_key_exists($kpaId, $kpaNumberMap)
+            ? (string) $kpaNumberMap[$kpaId]
+            : '';
+
+        $strategicOutputNumber = array_key_exists($strategicOutputId, $strategicOutputNumberMap)
+            ? (string) $strategicOutputNumberMap[$strategicOutputId]
+            : '';
+
+        return [
+            'kpa_id' => $kpaId,
+            'kpa_number' => $kpaNumber,
+            'strategic_output_number' => $strategicOutputNumber,
+        ];
+    }
+
     public function syncIndicators(Project $project, array $indicators)
     {
         $validated = [];

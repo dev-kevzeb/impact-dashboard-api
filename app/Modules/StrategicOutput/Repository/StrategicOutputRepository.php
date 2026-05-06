@@ -37,6 +37,7 @@ class StrategicOutputRepository extends AbstractRepository implements Repository
         return $this->model
             ->where('id_ck', $id)
             ->with('measures')
+            ->orderBy('id')
             ->paginate($perPage);
     }
 
@@ -45,13 +46,13 @@ class StrategicOutputRepository extends AbstractRepository implements Repository
 
         if(!empty($search)) $query->whereRaw('lower(name) LIKE lower(?)', ['%'.trim($search).'%']);
 
-        return $query->orderBy('name')->paginate($perPage);
+        return $query->orderBy('id')->paginate($perPage);
     }
 
     public function getByCountryKpaIds(array $countryKpaIds){
         $query = $this->model->whereIn('id_ck', $countryKpaIds);
 
-        return $query->orderBy('name')->get();
+        return $query->orderBy('id')->get();
     }
 
     public function belongsToCountry(int $strategicOutputId, int $countryId): bool
