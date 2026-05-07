@@ -233,6 +233,15 @@ class ProgramService
             ->all();
     }
 
+    private function buildPrivateProgramSummary(Collection $projects): array
+    {
+        return [
+            'donors' => $this->extractUniqueDonors($projects),
+            'implementing_agencies' => $this->extractUniqueAgencies($projects),
+            'budget' => (float) $projects->sum(fn($project) => (float) ($project->project_budget ?? 0)),
+        ];
+    }
+
     /**
      * Get all programs with pagination (all countries).
      * @param int $perPage
@@ -287,6 +296,15 @@ class ProgramService
         $programs->getCollection()->transform(function ($program) use ($user, &$countryUserRole) {
             if ($user->hasPermissionTo('*:*') || $user->hasPermissionTo('programs:view_by_country') || (bool) ($program->can_edit ?? false)) {
                 $program->setAttribute('visible_projects_count', (int) ($program->projects_count ?? 0));
+                $program->setAttribute(
+                    'program_summary',
+                    $this->buildPrivateProgramSummary(
+                        Project::query()
+                            ->where('program_id', $program->id)
+                            ->with(['donors', 'agencies'])
+                            ->get(['id', 'program_id', 'project_budget'])
+                    )
+                );
 
                 return $program;
             }
@@ -308,6 +326,20 @@ class ProgramService
                     (int) $countryUserRole->id
                 )
             );
+
+            $projectIds = $this->projectInviteUserRepository->getProjectIdsByProgramAndCountryUserRole(
+                (int) $program->id,
+                (int) $countryUserRole->id
+            );
+
+            $visibleProjects = empty($projectIds)
+                ? collect()
+                : Project::query()
+                    ->whereIn('id', $projectIds)
+                    ->with(['donors', 'agencies'])
+                    ->get(['id', 'program_id', 'project_budget']);
+
+            $program->setAttribute('program_summary', $this->buildPrivateProgramSummary($visibleProjects));
 
             return $program;
         });
