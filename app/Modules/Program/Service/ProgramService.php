@@ -36,6 +36,24 @@ class ProgramService
         $this->projectInviteUserRepository = $projectInviteUserRepository;
     }
 
+    private function ensureUserCountryIsActive(string $verb): void
+    {
+        $user = auth('api')->user();
+        if ($user && !$user->hasPermissionTo('*:*')) {
+            try {
+                $countryUserRole = $user->getCountryUserRole();
+                $countryUserRole->load('country');
+                if ($countryUserRole->country && !$countryUserRole->country->active) {
+                    throw new RuntimeException("Programs cannot be {$verb} because your country is not active.");
+                }
+            } catch (RuntimeException $e) {
+                if (str_contains($e->getMessage(), 'Programs cannot be')) {
+                    throw $e;
+                }
+            }
+        }
+    }
+
     /**
      * Create a new program
      */
@@ -47,6 +65,8 @@ class ProgramService
         array $contactPayload,
         array $sdgIds = []
     ): Program {
+        $this->ensureUserCountryIsActive('created');
+
         // Validate duplicates
         if ($this->programRepository->exists('name', trim($name))) {
             throw new RuntimeException("A program with the name already exists: {$name}");
@@ -357,6 +377,8 @@ class ProgramService
             if (!$this->programRepository->isEditableByUserRoleIds($id, $userRoleIds)) {
                 throw new RuntimeException('You do not have permission to edit this program.');
             }
+
+            $this->ensureUserCountryIsActive('edited');
         }
 
         // Get existing program

@@ -70,10 +70,7 @@ class CountryRequest extends FormRequest
                 Rule::exists("currency", "id"),
             ],
 
-            "active" => [
-                "nullable",
-                "boolean",
-            ],
+            "active" => $this->isMethod('POST') ? ["required", "boolean"] : ["prohibited"],
         ];
     }
 
@@ -98,6 +95,8 @@ class CountryRequest extends FormRequest
             "currency.id.exists" => "The selected currency does not exist",
 
             "active.boolean" => "Active must be a boolean value",
+            "active.required" => "The active field is required",
+            "active.prohibited" => "The active field cannot be changed through this endpoint",
         ];
     }
 

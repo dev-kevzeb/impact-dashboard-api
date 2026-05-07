@@ -2,12 +2,16 @@
 
 namespace Tests\Feature;
 
+use App\Modules\Country\Domain\Country;
+use App\Modules\CountryKpa\Domain\CountryKpa;
 use App\Modules\Indicator\Domain\Indicator;
 use App\Modules\IndicatorType\Domain\IndicatorType;
+use App\Modules\Kpa\Domain\Kpa;
 use App\Modules\Measure\Domain\Measure;
 use App\Modules\Program\Domain\Program;
 use App\Modules\Project\Domain\Project;
 use App\Modules\Statistics\Service\StatisticsService;
+use App\Modules\StrategicOutput\Domain\StrategicOutput;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
@@ -146,5 +150,111 @@ class StatisticsServiceTest extends TestCase
         $result = $this->service->getMeasureImplementation($measure->id);
 
         $this->assertEquals(62.5, $result['implementation']);
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    //  KPA implementation — active country filtering
+    // ─────────────────────────────────────────────────────────────
+
+    private function buildActiveCountryChain(Kpa $kpa): array
+    {
+        $buType  = IndicatorType::factory()->create(['is_bottom_up' => true]);
+        $country = Country::factory()->create(['active' => true]);
+        $ck      = CountryKpa::factory()->create(['id_country' => $country->id, 'id_kpa' => $kpa->id]);
+        $so      = StrategicOutput::factory()->create(['id_ck' => $ck->id]);
+        $measure = Measure::factory()->create(['strategic_output_id' => $so->id]);
+        $indicator = Indicator::factory()->create(['type_id' => $buType->id, 'measure_id' => $measure->id]);
+        $project = Project::factory()->create(['progress' => 100, 'weight' => 1.0, 'program_id' => $this->program->id]);
+        DB::table('project_indicator')->insert([
+            ['project_id' => $project->id, 'indicator_id' => $indicator->id],
+        ]);
+        return compact('country', 'ck', 'so', 'measure', 'indicator', 'project');
+    }
+
+    public function test_kpa_implementation_includes_active_country(): void
+    {
+        $kpa = Kpa::factory()->create();
+        $this->buildActiveCountryChain($kpa);
+
+        $result = $this->service->getKpaImplementation($kpa->id);
+
+        $this->assertGreaterThan(0, $result['implementation']);
+    }
+
+    public function test_kpa_implementation_excludes_inactive_country(): void
+    {
+        $buType  = IndicatorType::factory()->create(['is_bottom_up' => true]);
+        $kpa     = Kpa::factory()->create();
+        $country = Country::factory()->create(['active' => false]);
+        $ck      = CountryKpa::factory()->create(['id_country' => $country->id, 'id_kpa' => $kpa->id]);
+        $so      = StrategicOutput::factory()->create(['id_ck' => $ck->id]);
+        $measure = Measure::factory()->create(['strategic_output_id' => $so->id]);
+        $indicator = Indicator::factory()->create(['type_id' => $buType->id, 'measure_id' => $measure->id]);
+        $project = Project::factory()->create(['progress' => 100, 'weight' => 1.0, 'program_id' => $this->program->id]);
+        DB::table('project_indicator')->insert([
+            ['project_id' => $project->id, 'indicator_id' => $indicator->id],
+        ]);
+
+        $result = $this->service->getKpaImplementation($kpa->id);
+
+        $this->assertEquals(0, $result['implementation']);
+    }
+
+    public function test_kpa_implementation_only_counts_active_countries(): void
+    {
+        $kpa = Kpa::factory()->create();
+
+        // Active country — should be counted
+        $this->buildActiveCountryChain($kpa);
+
+        // Inactive country — should NOT be counted
+        $buType    = IndicatorType::factory()->create(['is_bottom_up' => true]);
+        $inactive  = Country::factory()->create(['active' => false]);
+        $ckInactive = CountryKpa::factory()->create(['id_country' => $inactive->id, 'id_kpa' => $kpa->id]);
+        $soInactive = StrategicOutput::factory()->create(['id_ck' => $ckInactive->id]);
+        $mInactive  = Measure::factory()->create(['strategic_output_id' => $soInactive->id]);
+        $indInactive = Indicator::factory()->create(['type_id' => $buType->id, 'measure_id' => $mInactive->id]);
+        $projInactive = Project::factory()->create(['progress' => 0, 'weight' => 1.0, 'program_id' => $this->program->id]);
+        DB::table('project_indicator')->insert([
+            ['project_id' => $projInactive->id, 'indicator_id' => $indInactive->id],
+        ]);
+
+        $result = $this->service->getKpaImplementation($kpa->id);
+
+        // Only the active country (100% progress) counts, inactive (0%) is excluded
+        $this->assertEquals(100.0, $result['implementation']);
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    //  Country-KPA implementation — active country filtering
+    // ─────────────────────────────────────────────────────────────
+
+    public function test_country_kpa_implementation_includes_active_country(): void
+    {
+        $kpa  = Kpa::factory()->create();
+        $data = $this->buildActiveCountryChain($kpa);
+
+        $result = $this->service->getCountryKpaImplementation($data['country']->id, $kpa->id);
+
+        $this->assertGreaterThan(0, $result['implementation']);
+    }
+
+    public function test_country_kpa_implementation_excludes_inactive_country(): void
+    {
+        $buType  = IndicatorType::factory()->create(['is_bottom_up' => true]);
+        $kpa     = Kpa::factory()->create();
+        $country = Country::factory()->create(['active' => false]);
+        $ck      = CountryKpa::factory()->create(['id_country' => $country->id, 'id_kpa' => $kpa->id]);
+        $so      = StrategicOutput::factory()->create(['id_ck' => $ck->id]);
+        $measure = Measure::factory()->create(['strategic_output_id' => $so->id]);
+        $indicator = Indicator::factory()->create(['type_id' => $buType->id, 'measure_id' => $measure->id]);
+        $project = Project::factory()->create(['progress' => 100, 'weight' => 1.0, 'program_id' => $this->program->id]);
+        DB::table('project_indicator')->insert([
+            ['project_id' => $project->id, 'indicator_id' => $indicator->id],
+        ]);
+
+        $result = $this->service->getCountryKpaImplementation($country->id, $kpa->id);
+
+        $this->assertEquals(0, $result['implementation']);
     }
 }
