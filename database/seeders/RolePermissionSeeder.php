@@ -32,6 +32,7 @@ class RolePermissionSeeder extends Seeder
                 'sdgs:write',
                 'countries:read',
                 'countries:write',
+                'countries:activate',
                 'currencies:read',
                 'currencies:write',
                 'donors:read',
@@ -88,6 +89,7 @@ class RolePermissionSeeder extends Seeder
                 'donors:write',
                 'country_dashboard_shares:read',
                 'country_dashboard_shares:write',
+                'countries:activate',
             ];
 
             $permissions = Permission::whereIn('name', $countryManagerPermissions)->get();

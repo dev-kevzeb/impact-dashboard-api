@@ -15,6 +15,7 @@ class CountryFactory extends Factory
         return [
             'name' => $this->faker->unique()->country(),  
             'currency_id' => Currency::factory(),
+            'active' => false,
         ];
     }
 }

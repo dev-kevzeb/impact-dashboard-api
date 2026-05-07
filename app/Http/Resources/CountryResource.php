@@ -12,6 +12,7 @@ class CountryResource extends JsonResource
         return [
             'id'   => $this->id,
             'name' => $this->name,
+            'active' => (bool) $this->active,
 
             'currency' => [
                 'id'   => $this->currency->id,

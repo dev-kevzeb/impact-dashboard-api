@@ -485,6 +485,7 @@ class CountryKpaController extends Controller
 					'id' => $country->id,
 					'name' => $country->name,
 					'currency_id' => $country->currency_id,
+					'active' => (bool) $country->active,
 				],
 
 				'kpas' => CountryKpaResource::collection($paginator),

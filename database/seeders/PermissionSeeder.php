@@ -40,6 +40,7 @@ class PermissionSeeder extends Seeder
 
             ['name' => 'countries:read', 'scope' => 'countries', 'module' => 'Country', 'description' => 'View countries'],
             ['name' => 'countries:write', 'scope' => 'countries', 'module' => 'Country', 'description' => 'Create/edit countries'],
+            ['name' => 'countries:activate', 'scope' => 'countries', 'module' => 'Country', 'description' => 'Activate/deactivate countries'],
 
             ['name' => 'agencies:read', 'scope' => 'agencies', 'module' => 'Agency', 'description' => 'View agencies'],
             ['name' => 'agencies:write', 'scope' => 'agencies', 'module' => 'Agency', 'description' => 'Create/edit agencies'],

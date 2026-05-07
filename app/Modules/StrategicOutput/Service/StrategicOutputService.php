@@ -37,8 +37,18 @@ class StrategicOutputService{
         return $strategicOutput;
     }
 
+    private function assertCountryNotActive(int $idCk): void
+    {
+        $countryKpa = $this->countryKpaRepository->getById($idCk);
+        if ($countryKpa->country->active) {
+            throw new \RuntimeException('Cannot add or remove strategic outputs while the country is active.');
+        }
+    }
+
     public function createStrategicOutput(string $name, int $idCk): StrategicOutput
     {
+        $this->assertCountryNotActive($idCk);
+
         $normalizedName = mb_convert_case(preg_replace('/\s+/', ' ', trim($name)), MB_CASE_TITLE, "UTF-8");
         if ($this->strategicOutputRepository->existsByNameAndCountryKpa($normalizedName, $idCk)) throw new \RuntimeException("StrategicOutput with name {$normalizedName} already exists assigned in the Kpa");
         
@@ -113,6 +123,12 @@ class StrategicOutputService{
     public function deleteStrategicOutput(int $id): void
     {
         $strategicOutput = $this->strategicOutputRepository->findById($id);
+
+        $strategicOutput->load('countryKpa.country');
+        if ($strategicOutput->countryKpa->country->active) {
+            throw new RuntimeException('Cannot add or remove strategic outputs while the country is active.');
+        }
+
         if ($strategicOutput->measures()->count() > 0) {
             throw new RuntimeException('Cannot delete a strategic output that has associated measures.');
         }

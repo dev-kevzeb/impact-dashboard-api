@@ -536,31 +536,26 @@
                 ]
             }
         },
-        "/auth/login": {
+        "/auth/forgot-password": {
             "post": {
                 "tags": [
                     "Authentication"
                 ],
-                "summary": "Login user",
-                "operationId": "65ed06efad856e58a1f460d546062c54",
+                "summary": "Send password reset link",
+                "operationId": "c7e9d824e71facaf6e4adf66c8bf3eb5",
                 "requestBody": {
                     "required": true,
                     "content": {
                         "application/json": {
                             "schema": {
                                 "required": [
-                                    "email",
-                                    "password"
+                                    "email"
                                 ],
                                 "properties": {
                                     "email": {
                                         "type": "string",
                                         "format": "email",
                                         "example": "user@example.com"
-                                    },
-                                    "password": {
-                                        "type": "string",
-                                        "example": "password123"
                                     }
                                 },
                                 "type": "object"
@@ -570,10 +565,7 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "Login successful"
-                    },
-                    "401": {
-                        "description": "Invalid credentials"
+                        "description": "Reset link sent"
                     },
                     "422": {
                         "description": "Validation error"
@@ -581,64 +573,41 @@
                 }
             }
         },
-        "/auth/register": {
+        "/auth/reset-password": {
             "post": {
                 "tags": [
                     "Authentication"
                 ],
-                "summary": "Register new user",
-                "description": "Register a new user with pending state. Requires admin approval before login is allowed. Only project-manager and country-manager roles can self-register.",
-                "operationId": "0968e17a0ab4b8db6a49f0f60dd2ac2e",
+                "summary": "Reset password with token",
+                "operationId": "53010e70e1c68cc7c4dd27b3b5b8695d",
                 "requestBody": {
                     "required": true,
                     "content": {
                         "application/json": {
                             "schema": {
                                 "required": [
-                                    "name",
+                                    "token",
                                     "email",
                                     "password",
-                                    "password_confirmation",
-                                    "role_name",
-                                    "country_id",
-                                    "g-recaptcha-response"
+                                    "password_confirmation"
                                 ],
                                 "properties": {
-                                    "name": {
+                                    "token": {
                                         "type": "string",
-                                        "example": "John Doe"
+                                        "example": "reset-token-here"
                                     },
                                     "email": {
                                         "type": "string",
                                         "format": "email",
-                                        "example": "john@example.com"
+                                        "example": "user@example.com"
                                     },
                                     "password": {
                                         "type": "string",
-                                        "example": "password123"
+                                        "example": "newpassword123"
                                     },
                                     "password_confirmation": {
                                         "type": "string",
-                                        "example": "password123"
-                                    },
-                                    "role_name": {
-                                        "description": "Role to assign (only project-manager and country-manager allowed)",
-                                        "type": "string",
-                                        "enum": [
-                                            "project-manager",
-                                            "country-manager"
-                                        ],
-                                        "example": "project-manager"
-                                    },
-                                    "country_id": {
-                                        "description": "Country identifier.",
-                                        "type": "integer",
-                                        "example": 1
-                                    },
-                                    "g-recaptcha-response": {
-                                        "description": "Token generated by Google reCAPTCHA v2 checkbox.",
-                                        "type": "string",
-                                        "example": "03AFcWeA..."
+                                        "example": "newpassword123"
                                     }
                                 },
                                 "type": "object"
@@ -647,184 +616,16 @@
                     }
                 },
                 "responses": {
-                    "201": {
-                        "description": "User registered successfully, pending approval",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "success": {
-                                            "type": "boolean",
-                                            "example": true
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Registration successful. Your account is pending approval by an administrator."
-                                        },
-                                        "data": {
-                                            "properties": {
-                                                "message": {
-                                                    "type": "string"
-                                                },
-                                                "user": {
-                                                    "$ref": "#/components/schemas/User"
-                                                }
-                                            },
-                                            "type": "object"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
+                    "200": {
+                        "description": "Password reset successfully"
                     },
                     "400": {
-                        "description": "Business logic error"
+                        "description": "Invalid or expired token"
                     },
                     "422": {
-                        "description": "Validation error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "success": {
-                                            "type": "boolean",
-                                            "example": false
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Validation error"
-                                        },
-                                        "errors": {
-                                            "properties": {
-                                                "g-recaptcha-response": {
-                                                    "type": "array",
-                                                    "items": {
-                                                        "type": "string",
-                                                        "example": "reCAPTCHA validation failed. Please try again."
-                                                    }
-                                                }
-                                            },
-                                            "type": "object"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
+                        "description": "Validation error"
                     }
                 }
-            }
-        },
-        "/auth/refresh": {
-            "post": {
-                "tags": [
-                    "Authentication"
-                ],
-                "summary": "Refresh access token",
-                "operationId": "d8f4d0bbb1feefb26246fb263c582f10",
-                "responses": {
-                    "200": {
-                        "description": "Token refreshed successfully"
-                    },
-                    "401": {
-                        "description": "Token cannot be refreshed"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
-        "/auth/me": {
-            "get": {
-                "tags": [
-                    "Authentication"
-                ],
-                "summary": "Get authenticated user",
-                "operationId": "fb6518dfa3b8dccbd688e467d063bded",
-                "responses": {
-                    "200": {
-                        "description": "User retrieved successfully"
-                    },
-                    "401": {
-                        "description": "Unauthorized"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
-        "/auth/permissions": {
-            "get": {
-                "tags": [
-                    "Authentication"
-                ],
-                "summary": "Get current user permissions and roles",
-                "description": "Returns all permissions assigned to the authenticated user (via roles and direct permissions)",
-                "operationId": "275249ace16fd78f3e52e8e7dadff163",
-                "responses": {
-                    "200": {
-                        "description": "Permissions retrieved successfully",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "success": {
-                                            "type": "boolean",
-                                            "example": true
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Permissions retrieved"
-                                        },
-                                        "data": {
-                                            "properties": {
-                                                "user": {
-                                                    "type": "string",
-                                                    "example": "Admin User"
-                                                },
-                                                "permissions": {
-                                                    "type": "array",
-                                                    "items": {
-                                                        "type": "string"
-                                                    },
-                                                    "example": [
-                                                        "*:*"
-                                                    ]
-                                                },
-                                                "roles": {
-                                                    "type": "array",
-                                                    "items": {
-                                                        "type": "string"
-                                                    },
-                                                    "example": [
-                                                        "admin"
-                                                    ]
-                                                }
-                                            },
-                                            "type": "object"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
             }
         },
         "/api/v1/email/verify/{id}/{hash}": {
@@ -2034,593 +1835,6 @@
                 ]
             }
         },
-        "/country_kpa_users": {
-            "get": {
-                "tags": [
-                    "CountryKpaUsers"
-                ],
-                "summary": "Get all user assignments to CountryKpas",
-                "description": "Retrieve a list of all user assignments with relationships loaded",
-                "operationId": "getCountryKpaUsersList",
-                "parameters": [
-                    {
-                        "name": "country_kpa_id",
-                        "in": "query",
-                        "description": "Filter by CountryKpa ID",
-                        "required": false,
-                        "schema": {
-                            "type": "integer",
-                            "example": 5
-                        }
-                    },
-                    {
-                        "name": "user_id",
-                        "in": "query",
-                        "description": "Filter by User ID",
-                        "required": false,
-                        "schema": {
-                            "type": "integer",
-                            "example": 3
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Successful operation",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "success": {
-                                            "type": "boolean",
-                                            "example": true
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Assignments retrieved successfully"
-                                        },
-                                        "data": {
-                                            "properties": {
-                                                "assignments": {
-                                                    "type": "array",
-                                                    "items": {
-                                                        "$ref": "#/components/schemas/CountryKpaUser"
-                                                    }
-                                                },
-                                                "total": {
-                                                    "description": "Total number of assignments",
-                                                    "type": "integer",
-                                                    "example": 15
-                                                }
-                                            },
-                                            "type": "object"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "success": {
-                                            "type": "boolean",
-                                            "example": false
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Internal server error"
-                                        },
-                                        "data": {
-                                            "type": "null"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            },
-            "post": {
-                "tags": [
-                    "CountryKpaUsers"
-                ],
-                "summary": "Assign a user to a CountryKpa",
-                "description": "Create a new assignment between a User and a CountryKpa with optional role validation",
-                "operationId": "createCountryKpaUserAssignment",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "country_kpa_id",
-                                    "user_role_id",
-                                    "required_role_name"
-                                ],
-                                "properties": {
-                                    "country_kpa_id": {
-                                        "description": "CountryKpa ID",
-                                        "type": "integer",
-                                        "example": 5
-                                    },
-                                    "user_role_id": {
-                                        "description": "UserRole ID",
-                                        "type": "integer",
-                                        "example": 12
-                                    },
-                                    "required_role_name": {
-                                        "description": "Role name to validate (e.g., 'project_manager', 'country_manager', 'admin'). Only UserRoles with this role can be assigned.",
-                                        "type": "string",
-                                        "example": "project_manager"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "201": {
-                        "description": "Assignment created successfully",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "success": {
-                                            "type": "boolean",
-                                            "example": true
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "example": "User assigned to CountryKpa successfully"
-                                        },
-                                        "data": {
-                                            "$ref": "#/components/schemas/CountryKpaUser"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Validation error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "success": {
-                                            "type": "boolean",
-                                            "example": false
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Validation error"
-                                        },
-                                        "data": {
-                                            "properties": {
-                                                "errors": {
-                                                    "properties": {
-                                                        "country_kpa_id": {
-                                                            "type": "array",
-                                                            "items": {
-                                                                "type": "string",
-                                                                "example": "The specified CountryKpa does not exist."
-                                                            }
-                                                        }
-                                                    },
-                                                    "type": "object"
-                                                }
-                                            },
-                                            "type": "object"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "success": {
-                                            "type": "boolean",
-                                            "example": false
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Internal server error"
-                                        },
-                                        "data": {
-                                            "type": "null"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
-        "/country_kpa_users/{id}": {
-            "get": {
-                "tags": [
-                    "CountryKpaUsers"
-                ],
-                "summary": "Get assignment by ID",
-                "description": "Retrieve a specific assignment by its ID with relationships",
-                "operationId": "getCountryKpaUserById",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "description": "Assignment ID",
-                        "required": true,
-                        "schema": {
-                            "type": "integer",
-                            "example": 1
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Successful operation",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "success": {
-                                            "type": "boolean",
-                                            "example": true
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Assignment retrieved successfully"
-                                        },
-                                        "data": {
-                                            "$ref": "#/components/schemas/CountryKpaUser"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Assignment not found",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "success": {
-                                            "type": "boolean",
-                                            "example": false
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "example": "CountryKpaUser not found with ID: 999"
-                                        },
-                                        "data": {
-                                            "type": "null"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "success": {
-                                            "type": "boolean",
-                                            "example": false
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Internal server error"
-                                        },
-                                        "data": {
-                                            "type": "null"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            },
-            "put": {
-                "tags": [
-                    "CountryKpaUsers"
-                ],
-                "summary": "Update an assignment",
-                "description": "Update an existing user assignment to a different CountryKpa or different user with optional role validation",
-                "operationId": "updateCountryKpaUserAssignment",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "description": "Assignment ID",
-                        "required": true,
-                        "schema": {
-                            "type": "integer",
-                            "example": 1
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "country_kpa_id",
-                                    "user_role_id",
-                                    "required_role_name"
-                                ],
-                                "properties": {
-                                    "country_kpa_id": {
-                                        "description": "New CountryKpa ID",
-                                        "type": "integer",
-                                        "example": 8
-                                    },
-                                    "user_role_id": {
-                                        "description": "New UserRole ID",
-                                        "type": "integer",
-                                        "example": 15
-                                    },
-                                    "required_role_name": {
-                                        "description": "Role name to validate. Only UserRoles with this role can be assigned.",
-                                        "type": "string",
-                                        "example": "project_manager"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Assignment updated successfully",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "success": {
-                                            "type": "boolean",
-                                            "example": true
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Assignment updated successfully"
-                                        },
-                                        "data": {
-                                            "$ref": "#/components/schemas/CountryKpaUser"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Assignment not found",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "success": {
-                                            "type": "boolean",
-                                            "example": false
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "example": "CountryKpaUser not found with ID: 999"
-                                        },
-                                        "data": {
-                                            "type": "null"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Validation error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "success": {
-                                            "type": "boolean",
-                                            "example": false
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Validation error"
-                                        },
-                                        "data": {
-                                            "properties": {
-                                                "errors": {
-                                                    "properties": {
-                                                        "user_id": {
-                                                            "type": "array",
-                                                            "items": {
-                                                                "type": "string",
-                                                                "example": "The specified User does not exist."
-                                                            }
-                                                        }
-                                                    },
-                                                    "type": "object"
-                                                }
-                                            },
-                                            "type": "object"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "success": {
-                                            "type": "boolean",
-                                            "example": false
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Internal server error"
-                                        },
-                                        "data": {
-                                            "type": "null"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            },
-            "delete": {
-                "tags": [
-                    "CountryKpaUsers"
-                ],
-                "summary": "Remove an assignment (physical delete)",
-                "description": "Permanently delete an assignment between a User and a CountryKpa",
-                "operationId": "deleteCountryKpaUserAssignment",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "description": "Assignment ID",
-                        "required": true,
-                        "schema": {
-                            "type": "integer",
-                            "example": 1
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Assignment removed successfully",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "success": {
-                                            "type": "boolean",
-                                            "example": true
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Assignment removed successfully"
-                                        },
-                                        "data": {
-                                            "type": "null"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Assignment not found",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "success": {
-                                            "type": "boolean",
-                                            "example": false
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "example": "CountryKpaUser not found with ID: 999"
-                                        },
-                                        "data": {
-                                            "type": "null"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "success": {
-                                            "type": "boolean",
-                                            "example": false
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Internal server error"
-                                        },
-                                        "data": {
-                                            "type": "null"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
         "/country_kpas": {
             "get": {
                 "tags": [
@@ -3674,6 +2888,82 @@
                     },
                     "500": {
                         "description": "Error interno del servidor"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/countries/{id}/activate": {
+            "patch": {
+                "tags": [
+                    "Countries"
+                ],
+                "summary": "Activar un país",
+                "description": "Cambia el estado del país a activo. Solo funciona si el país está inactivo.",
+                "operationId": "d50b9bd359be4260d0da5f4b02146653",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID del país a activar",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "País activado exitosamente"
+                    },
+                    "409": {
+                        "description": "El país ya está activo"
+                    },
+                    "404": {
+                        "description": "País no encontrado"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/countries/{id}/deactivate": {
+            "patch": {
+                "tags": [
+                    "Countries"
+                ],
+                "summary": "Desactivar un país",
+                "description": "Cambia el estado del país a inactivo. Solo funciona si el país está activo.",
+                "operationId": "62a90648185fad50a6e319a979050931",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID del país a desactivar",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "País desactivado exitosamente"
+                    },
+                    "409": {
+                        "description": "El país ya está inactivo"
+                    },
+                    "404": {
+                        "description": "País no encontrado"
                     }
                 },
                 "security": [
@@ -7960,249 +7250,6 @@
                     },
                     "500": {
                         "description": "Internal server error"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
-        "/program_users": {
-            "get": {
-                "tags": [
-                    "Program Users"
-                ],
-                "summary": "List all Program-CountryKpaUser assignments",
-                "description": "Get paginated list of all Program-CountryKpaUser assignments with optional filters",
-                "operationId": "listProgramUsers",
-                "parameters": [
-                    {
-                        "name": "per_page",
-                        "in": "query",
-                        "description": "Items per page",
-                        "required": false,
-                        "schema": {
-                            "type": "integer",
-                            "example": 10
-                        }
-                    },
-                    {
-                        "name": "program_id",
-                        "in": "query",
-                        "description": "Filter by Program ID",
-                        "required": false,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    },
-                    {
-                        "name": "country_kpa_user_id",
-                        "in": "query",
-                        "description": "Filter by CountryKpaUser ID",
-                        "required": false,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Successful operation",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "success": {
-                                            "type": "boolean",
-                                            "example": true
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Assignments retrieved successfully"
-                                        },
-                                        "data": {
-                                            "type": "object"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            },
-            "post": {
-                "tags": [
-                    "Program Users"
-                ],
-                "summary": "Create a new Program-CountryKpaUser assignment",
-                "description": "Assign a CountryKpaUser to a Program",
-                "operationId": "createProgramUser",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "program_id",
-                                    "country_kpa_user_id"
-                                ],
-                                "properties": {
-                                    "program_id": {
-                                        "type": "integer",
-                                        "example": 1
-                                    },
-                                    "country_kpa_user_id": {
-                                        "type": "integer",
-                                        "example": 1
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "201": {
-                        "description": "Assignment created successfully"
-                    },
-                    "400": {
-                        "description": "Bad request - Duplicate assignment"
-                    },
-                    "422": {
-                        "description": "Validation error"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
-        "/program_users/{id}": {
-            "get": {
-                "tags": [
-                    "Program Users"
-                ],
-                "summary": "Get a specific Program-CountryKpaUser assignment",
-                "description": "Retrieve details of a specific assignment by ID",
-                "operationId": "getProgramUser",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "description": "Assignment ID",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Successful operation"
-                    },
-                    "404": {
-                        "description": "Assignment not found"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            },
-            "put": {
-                "tags": [
-                    "Program Users"
-                ],
-                "summary": "Update a Program-CountryKpaUser assignment",
-                "description": "Update an existing assignment",
-                "operationId": "updateProgramUser",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "description": "Assignment ID",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "program_id",
-                                    "country_kpa_user_id"
-                                ],
-                                "properties": {
-                                    "program_id": {
-                                        "type": "integer",
-                                        "example": 1
-                                    },
-                                    "country_kpa_user_id": {
-                                        "type": "integer",
-                                        "example": 1
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Assignment updated successfully"
-                    },
-                    "400": {
-                        "description": "Bad request"
-                    },
-                    "404": {
-                        "description": "Assignment not found"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            },
-            "delete": {
-                "tags": [
-                    "Program Users"
-                ],
-                "summary": "Delete a Program-CountryKpaUser assignment",
-                "description": "Remove an assignment between Program and CountryKpaUser",
-                "operationId": "deleteProgramUser",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "description": "Assignment ID",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Assignment deleted successfully"
-                    },
-                    "404": {
-                        "description": "Assignment not found"
                     }
                 },
                 "security": [
@@ -15548,70 +14595,6 @@
                 },
                 "type": "object"
             },
-            "CountryKpaUser": {
-                "title": "CountryKpaUser",
-                "description": "User assignment to CountryKpa (Country-KPA relationship)",
-                "properties": {
-                    "id": {
-                        "description": "Assignment unique ID",
-                        "type": "integer",
-                        "example": 1
-                    },
-                    "country_kpa": {
-                        "description": "CountryKpa information",
-                        "properties": {
-                            "id": {
-                                "type": "integer",
-                                "example": 5
-                            },
-                            "country": {
-                                "type": "string",
-                                "example": "Bolivia"
-                            },
-                            "kpa": {
-                                "type": "string",
-                                "example": "Quality Education"
-                            }
-                        },
-                        "type": "object"
-                    },
-                    "user": {
-                        "description": "User information",
-                        "properties": {
-                            "id": {
-                                "type": "integer",
-                                "example": 3
-                            },
-                            "name": {
-                                "type": "string",
-                                "example": "John Doe"
-                            },
-                            "email": {
-                                "type": "string",
-                                "example": "john@example.com"
-                            },
-                            "role": {
-                                "type": "string",
-                                "example": "Manager"
-                            }
-                        },
-                        "type": "object"
-                    },
-                    "assigned_at": {
-                        "description": "Assignment creation timestamp",
-                        "type": "string",
-                        "format": "date-time",
-                        "example": "2025-12-19T10:30:00Z"
-                    },
-                    "updated_at": {
-                        "description": "Last update timestamp",
-                        "type": "string",
-                        "format": "date-time",
-                        "example": "2025-12-19T15:45:00Z"
-                    }
-                },
-                "type": "object"
-            },
             "CountryKpa": {
                 "title": "CountryKpa",
                 "description": "Relación muchos-a-muchos entre países y áreas prioritarias clave",
@@ -16406,10 +15389,6 @@
             "description": "Project-manager invitations to collaborate in a program context"
         },
         {
-            "name": "CountryKpaUsers",
-            "description": "CountryKpaUsers"
-        },
-        {
             "name": "Country-KPAs",
             "description": "Country-KPAs"
         },
@@ -16440,10 +15419,6 @@
         {
             "name": "Program Country User Roles",
             "description": "Program Country User Roles"
-        },
-        {
-            "name": "Program Users",
-            "description": "Program Users"
         },
         {
             "name": "Project-Agencies",
