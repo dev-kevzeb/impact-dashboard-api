@@ -11,12 +11,12 @@
     },
     "servers": [
         {
-            "url": "http://localhost:8000/api/v1",
-            "description": "Servidor de Desarrollo Local"
-        },
-        {
             "url": "https://pacificecommerce.shop/api/v1",
             "description": "Servidor de Producción"
+        },
+        {
+            "url": "http://pacificecommerce.test/api/v1",
+            "description": "Servidor de Desarrollo Local"
         }
     ],
     "paths": {
@@ -536,6 +536,279 @@
                 ]
             }
         },
+        "/auth/login": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Login user",
+                "description": "Authenticates a user and returns JWT token data.",
+                "operationId": "65ed06efad856e58a1f460d546062c54",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "user@example.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "example": "password123"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Login successful"
+                    },
+                    "401": {
+                        "description": "Invalid credentials"
+                    }
+                }
+            }
+        },
+        "/auth/register": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Register user",
+                "description": "Creates a new user account with the requested role.",
+                "operationId": "0968e17a0ab4b8db6a49f0f60dd2ac2e",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "email",
+                                    "password",
+                                    "role_name",
+                                    "country_id",
+                                    "g-recaptcha-response"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "John Doe"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "user@example.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "example": "password123"
+                                    },
+                                    "role_name": {
+                                        "type": "string",
+                                        "example": "user"
+                                    },
+                                    "country_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "g-recaptcha-response": {
+                                        "type": "string",
+                                        "example": "recaptcha-token"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "User created successfully"
+                    },
+                    "400": {
+                        "description": "Business validation error"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                }
+            }
+        },
+        "/auth/refresh": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Refresh access token",
+                "operationId": "d8f4d0bbb1feefb26246fb263c582f10",
+                "responses": {
+                    "200": {
+                        "description": "Token refreshed successfully"
+                    },
+                    "401": {
+                        "description": "Invalid or expired token"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/auth/me": {
+            "get": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Get authenticated user",
+                "operationId": "fb6518dfa3b8dccbd688e467d063bded",
+                "responses": {
+                    "200": {
+                        "description": "Authenticated user retrieved successfully"
+                    },
+                    "401": {
+                        "description": "Not authenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/auth/profile": {
+            "put": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Update authenticated user profile",
+                "operationId": "a07e518f1814a51c9e68c9805b30650b",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Jane Doe"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Profile updated successfully"
+                    },
+                    "400": {
+                        "description": "Business validation error"
+                    },
+                    "500": {
+                        "description": "Internal server error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/auth/change-password": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Change authenticated user password",
+                "operationId": "d862dabd6ed1299e5956783fb954d8ac",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "current_password",
+                                    "password",
+                                    "password_confirmation"
+                                ],
+                                "properties": {
+                                    "current_password": {
+                                        "type": "string",
+                                        "example": "oldpassword123"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "example": "newpassword123"
+                                    },
+                                    "password_confirmation": {
+                                        "type": "string",
+                                        "example": "newpassword123"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Password updated successfully"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    },
+                    "400": {
+                        "description": "Business validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/auth/permissions": {
+            "get": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Get authenticated user permissions",
+                "operationId": "275249ace16fd78f3e52e8e7dadff163",
+                "responses": {
+                    "200": {
+                        "description": "Permissions retrieved successfully"
+                    },
+                    "401": {
+                        "description": "Not authenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/auth/forgot-password": {
             "post": {
                 "tags": [
@@ -628,14 +901,14 @@
                 }
             }
         },
-        "/api/v1/email/verify/{id}/{hash}": {
+        "/email/verify/{id}/{hash}": {
             "get": {
                 "tags": [
                     "Email Verification"
                 ],
                 "summary": "Verify user email address",
                 "description": "Verifies user email using signed URL. Changes user state from 'unverified' to 'pending'.",
-                "operationId": "6035695536866bdefb18eb40751772a8",
+                "operationId": "52b9b448df39685d73600c43d681afac",
                 "parameters": [
                     {
                         "name": "id",
@@ -697,14 +970,14 @@
                 }
             }
         },
-        "/api/v1/email/resend": {
+        "/email/resend": {
             "post": {
                 "tags": [
                     "Email Verification"
                 ],
                 "summary": "Resend verification email",
                 "description": "Resends verification email to user's email address",
-                "operationId": "423222ed427db37defbab135470faec9",
+                "operationId": "69aecee2c4fa5ab65f45952e05aeab2c",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -5281,11 +5554,6 @@
                                                     "items": {
                                                         "$ref": "#/components/schemas/Kpa"
                                                     }
-                                                },
-                                                "total": {
-                                                    "description": "Total de KPAs registrados",
-                                                    "type": "integer",
-                                                    "example": 6
                                                 }
                                             },
                                             "type": "object"
@@ -5336,21 +5604,14 @@
                         "application/json": {
                             "schema": {
                                 "required": [
-                                    "name",
-                                    "implementation"
+                                    "name"
                                 ],
                                 "properties": {
                                     "name": {
                                         "description": "Nombre del área prioritaria (requerido)",
                                         "type": "string",
-                                        "maxLength": 255,
+                                        "maxLength": 100,
                                         "example": "Salud y Bienestar"
-                                    },
-                                    "implementation": {
-                                        "description": "Porcentaje de implementación inicial (0-100, requerido)",
-                                        "type": "number",
-                                        "format": "float",
-                                        "example": 50
                                     }
                                 },
                                 "type": "object"
@@ -5423,13 +5684,6 @@
                                                     "items": {
                                                         "type": "string",
                                                         "example": "El campo name es obligatorio."
-                                                    }
-                                                },
-                                                "implementation": {
-                                                    "type": "array",
-                                                    "items": {
-                                                        "type": "string",
-                                                        "example": "El campo implementation debe ser numérico."
                                                     }
                                                 }
                                             },
@@ -5551,21 +5805,14 @@
                         "application/json": {
                             "schema": {
                                 "required": [
-                                    "name",
-                                    "implementation"
+                                    "name"
                                 ],
                                 "properties": {
                                     "name": {
                                         "description": "Nombre actualizado del área prioritaria",
                                         "type": "string",
-                                        "maxLength": 255,
+                                        "maxLength": 100,
                                         "example": "Educación de Calidad e Inclusiva"
-                                    },
-                                    "implementation": {
-                                        "description": "Porcentaje de implementación actualizado (0-100)",
-                                        "type": "number",
-                                        "format": "float",
-                                        "example": 85.5
                                     }
                                 },
                                 "type": "object"
@@ -5636,11 +5883,11 @@
                                         },
                                         "errors": {
                                             "properties": {
-                                                "implementation": {
+                                                "name": {
                                                     "type": "array",
                                                     "items": {
                                                         "type": "string",
-                                                        "example": "El campo implementation debe ser numérico."
+                                                        "example": "El nombre es obligatorio."
                                                     }
                                                 }
                                             },
@@ -14805,12 +15052,6 @@
                         "description": "Nombre del área prioritaria",
                         "type": "string",
                         "example": "Educación de Calidad"
-                    },
-                    "implementation": {
-                        "description": "Porcentaje de implementación (0-100)",
-                        "type": "number",
-                        "format": "float",
-                        "example": 75.5
                     }
                 },
                 "type": "object"
@@ -15346,7 +15587,7 @@
     "tags": [
         {
             "name": "Authentication",
-            "description": "Autenticación y autorización con JWT"
+            "description": "Authentication endpoints"
         },
         {
             "name": "Programs",

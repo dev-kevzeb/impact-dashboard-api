@@ -17,6 +17,12 @@ use PHPOpenSourceSaver\JWTAuth\Exceptions\TokenExpiredException;
 use PHPOpenSourceSaver\JWTAuth\Exceptions\TokenInvalidException;
 use RuntimeException;
 
+/**
+ * @OA\Tag(
+ *     name="Authentication",
+ *     description="Authentication endpoints"
+ * )
+ */
 class AuthController extends Controller
 {
     private AuthService $authService;
@@ -28,6 +34,27 @@ class AuthController extends Controller
         $this->recaptchaService = $recaptchaService;
     }
 
+    /**
+     * @OA\Post(
+    *     path="/auth/login",
+     *     tags={"Authentication"},
+     *     summary="Login user",
+     *     description="Authenticates a user and returns JWT token data.",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"email", "password"},
+     *             @OA\Property(property="email", type="string", format="email", example="user@example.com"),
+     *             @OA\Property(property="password", type="string", example="password123")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Login successful"
+     *     ),
+     *     @OA\Response(response=401, description="Invalid credentials")
+     * )
+     */
     public function login(LoginRequest $request): JsonResponse
     {
         try {
@@ -45,6 +72,29 @@ class AuthController extends Controller
         }
     }
 
+    /**
+     * @OA\Post(
+    *     path="/auth/register",
+     *     tags={"Authentication"},
+     *     summary="Register user",
+     *     description="Creates a new user account with the requested role.",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"name", "email", "password", "role_name", "country_id", "g-recaptcha-response"},
+     *             @OA\Property(property="name", type="string", example="John Doe"),
+     *             @OA\Property(property="email", type="string", format="email", example="user@example.com"),
+     *             @OA\Property(property="password", type="string", example="password123"),
+     *             @OA\Property(property="role_name", type="string", example="user"),
+     *             @OA\Property(property="country_id", type="integer", example=1),
+     *             @OA\Property(property="g-recaptcha-response", type="string", example="recaptcha-token")
+     *         )
+     *     ),
+     *     @OA\Response(response=201, description="User created successfully"),
+     *     @OA\Response(response=400, description="Business validation error"),
+     *     @OA\Response(response=422, description="Validation error")
+     * )
+     */
     public function register(RegisterRequest $request): JsonResponse
     {
         try {
@@ -74,6 +124,16 @@ class AuthController extends Controller
         }
     }
 
+    /**
+     * @OA\Post(
+    *     path="/auth/refresh",
+     *     tags={"Authentication"},
+     *     summary="Refresh access token",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Response(response=200, description="Token refreshed successfully"),
+     *     @OA\Response(response=401, description="Invalid or expired token")
+     * )
+     */
     public function refresh(): JsonResponse
     {
         try {
@@ -86,6 +146,16 @@ class AuthController extends Controller
         }
     }
 
+    /**
+     * @OA\Get(
+    *     path="/auth/me",
+     *     tags={"Authentication"},
+     *     summary="Get authenticated user",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Response(response=200, description="Authenticated user retrieved successfully"),
+     *     @OA\Response(response=401, description="Not authenticated")
+     * )
+     */
     public function me(): JsonResponse
     {
         try {
@@ -100,6 +170,24 @@ class AuthController extends Controller
         }
     }
 
+    /**
+     * @OA\Put(
+    *     path="/auth/profile",
+     *     tags={"Authentication"},
+     *     summary="Update authenticated user profile",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"name"},
+     *             @OA\Property(property="name", type="string", example="Jane Doe")
+     *         )
+     *     ),
+     *     @OA\Response(response=200, description="Profile updated successfully"),
+     *     @OA\Response(response=400, description="Business validation error"),
+     *     @OA\Response(response=500, description="Internal server error")
+     * )
+     */
     public function updateProfile(UpdateProfileRequest $request): JsonResponse
     {
         try {
@@ -118,6 +206,26 @@ class AuthController extends Controller
         }
     }
 
+    /**
+     * @OA\Post(
+    *     path="/auth/change-password",
+     *     tags={"Authentication"},
+     *     summary="Change authenticated user password",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"current_password", "password", "password_confirmation"},
+     *             @OA\Property(property="current_password", type="string", example="oldpassword123"),
+     *             @OA\Property(property="password", type="string", example="newpassword123"),
+     *             @OA\Property(property="password_confirmation", type="string", example="newpassword123")
+     *         )
+     *     ),
+     *     @OA\Response(response=200, description="Password updated successfully"),
+     *     @OA\Response(response=422, description="Validation error"),
+     *     @OA\Response(response=400, description="Business validation error")
+     * )
+     */
     public function changePassword(ChangePasswordRequest $request): JsonResponse
     {
         try {
@@ -140,6 +248,16 @@ class AuthController extends Controller
         }
     }
 
+    /**
+     * @OA\Get(
+    *     path="/auth/permissions",
+     *     tags={"Authentication"},
+     *     summary="Get authenticated user permissions",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Response(response=200, description="Permissions retrieved successfully"),
+     *     @OA\Response(response=401, description="Not authenticated")
+     * )
+     */
     public function permissions(): JsonResponse
     {
         try {

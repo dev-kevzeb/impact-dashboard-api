@@ -51,7 +51,6 @@ class KpaController extends Controller
      *                     type="array",
      *                     @OA\Items(ref="#/components/schemas/Kpa")
      *                 ),
-     *                 @OA\Property(property="total", type="integer", example=6, description="Total de KPAs registrados")
      *             )
      *         )
      *     ),
@@ -193,7 +192,6 @@ class KpaController extends Controller
      *                     type="array",
      *                     @OA\Items(type="string", example="El campo name es obligatorio.")
      *                 ),
-    *                 @OA\Property(property="name", type="array", @OA\Items(type="string", example="El nombre es obligatorio."))
      *             )
      *         )
      *     ),

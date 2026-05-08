@@ -37,7 +37,7 @@ class VerificationController extends Controller
      * Verify user email
      * 
      * @OA\Get(
-     *     path="/api/v1/email/verify/{id}/{hash}",
+    *     path="/email/verify/{id}/{hash}",
      *     tags={"Email Verification"},
      *     summary="Verify user email address",
      *     description="Verifies user email using signed URL. Changes user state from 'unverified' to 'pending'.",
@@ -158,7 +158,7 @@ class VerificationController extends Controller
      * Resend verification email
      * 
      * @OA\Post(
-     *     path="/api/v1/email/resend",
+    *     path="/email/resend",
      *     tags={"Email Verification"},
      *     summary="Resend verification email",
      *     description="Resends verification email to user's email address",
