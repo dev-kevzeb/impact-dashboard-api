@@ -18,7 +18,7 @@ class PasswordResetController extends Controller
 
     /**
      * @OA\Post(
-     *     path="/auth/forgot-password",
+    *     path="/auth/forgot-password",
      *     tags={"Authentication"},
      *     summary="Send password reset link",
      *     @OA\RequestBody(
@@ -49,7 +49,7 @@ class PasswordResetController extends Controller
 
     /**
      * @OA\Post(
-     *     path="/auth/reset-password",
+    *     path="/auth/reset-password",
      *     tags={"Authentication"},
      *     summary="Reset password with token",
      *     @OA\RequestBody(

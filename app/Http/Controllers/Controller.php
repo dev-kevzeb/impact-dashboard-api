@@ -16,13 +16,13 @@ use Illuminate\Routing\Controller as BaseController;
  * )
  * 
  * @OA\Server(
- *     url="http://localhost:8000/api/v1",
- *     description="Servidor de Desarrollo Local"
+ *     url="https://pacificecommerce.shop/api/v1",
+ *     description="Servidor de Producción"
  * )
  * 
  * @OA\Server(
- *     url="https://pacificecommerce.shop/api/v1",
- *     description="Servidor de Producción"
+ *     url="http://pacificecommerce.test/api/v1",
+ *     description="Servidor de Desarrollo Local"
  * )
  * 
  * @OA\SecurityScheme(
