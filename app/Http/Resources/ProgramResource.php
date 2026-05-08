@@ -42,8 +42,9 @@ class ProgramResource extends JsonResource
                     return [
                         'id'      => $cur->id,
                         'country' => $cur->relationLoaded('country') ? [
-                            'id'   => $cur->country->id,
-                            'name' => $cur->country->name,
+                            'id'     => $cur->country->id,
+                            'name'   => $cur->country->name,
+                            'active' => (bool) $cur->country->active,
                         ] : null,
                     ];
                 });
