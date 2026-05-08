@@ -72,7 +72,7 @@ class AuthService
         }
 
         // Load relationships needed for UserResource
-        $user->load('roles', 'userState');
+        $user->load('roles', 'userState', 'userRoles.countryUserRole.country', 'userRoles.countryUserRole.userRole.role');
 
         return [
             'access_token' => $token,

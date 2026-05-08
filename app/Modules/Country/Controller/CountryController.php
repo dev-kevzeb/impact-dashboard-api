@@ -224,7 +224,7 @@ class CountryController extends Controller
             $country = $this->countryService->createCountry(
                 $validated['name'],
                 $validated['currency'],
-                $validated['active'] ?? false
+                (bool) $validated['active']
             );
 
             return ApiResponse::created(
@@ -318,8 +318,7 @@ class CountryController extends Controller
             $country = $this->countryService->updateCountry(
                 $id,
                 $validated['name'],
-                $validated['currency'],
-                $validated['active'] ?? null,
+                $validated['currency']
             );
 
             return ApiResponse::success(

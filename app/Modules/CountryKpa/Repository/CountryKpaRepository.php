@@ -23,12 +23,16 @@ class CountryKpaRepository extends Model
 
 	public function getByCountryAndKpa(int $countryId, int $kpaId)
 	{
-		return $this->model->where('id_country', $countryId)->where('id_kpa', $kpaId)->get();
+		return $this->model->where('id_country', $countryId)->where('id_kpa', $kpaId)
+			->whereHas('country', fn($q) => $q->where('active', true))
+			->get();
 	}
 
 	public function getByCountry(int $countryId)
 	{
-		return $this->model->where('id_country', $countryId)->get();
+		return $this->model->where('id_country', $countryId)
+			->whereHas('country', fn($q) => $q->where('active', true))
+			->get();
     }
 
 	public function getById(int $id)
@@ -131,7 +135,9 @@ class CountryKpaRepository extends Model
 	}
 
 	public function getIdsByKpaId(int $kpaId){
-		return $this->model->where('id_kpa', $kpaId)->pluck('id');
+		return $this->model->where('id_kpa', $kpaId)
+			->whereHas('country', fn($q) => $q->where('active', true))
+			->pluck('id');
 	}
 
 	public function paginateKpasByCountry(int $countryId, ?string $search, int $perPage) {

@@ -302,9 +302,42 @@ class ProjectService
             }
         }
     }
+    private function ensureUserCanEditProjectForCountry(): void
+    {
+        $user = auth('api')->user();
+        if ($user && !$user->hasPermissionTo('*:*')) {
+            try {
+                $countryUserRole = $user->getCountryUserRole();
+                $countryUserRole->load('country');
+                if ($countryUserRole->country && !$countryUserRole->country->active) {
+                    throw new \RuntimeException('Projects cannot be edited because your country is not active.');
+                }
+            } catch (\RuntimeException $e) {
+                if (str_contains($e->getMessage(), 'Projects cannot be edited')) {
+                    throw $e;
+                }
+            }
+        }
+    }
+
     private function ensureUserCanCreateProjectForProgram(int $programId): void
     {
         $this->resolveAccessibleProgramCountryId($programId);
+
+        $user = auth('api')->user();
+        if ($user && !$user->hasPermissionTo('*:*')) {
+            try {
+                $countryUserRole = $user->getCountryUserRole();
+                $countryUserRole->load('country');
+                if ($countryUserRole->country && !$countryUserRole->country->active) {
+                    throw new \RuntimeException('Projects cannot be created because your country is not active.');
+                }
+            } catch (\RuntimeException $e) {
+                if (str_contains($e->getMessage(), 'Projects cannot be created')) {
+                    throw $e;
+                }
+            }
+        }
     }
 
     private function ensureWeightWithinBounds(float $weight): void
@@ -584,6 +617,7 @@ class ProjectService
         $project = $this->findProjectById($id);
         if (!$project) throw new \RuntimeException("The project with id {$id} does not exist.");
 
+        $this->ensureUserCanEditProjectForCountry();
         $this->ensureWeightWithinBounds($weight);
         $project->weight = $weight;
 
@@ -601,6 +635,7 @@ class ProjectService
         if (!$project) throw new \RuntimeException("The project with id {$id} does not exist.");
 
         $this->projectInviteUserService->ensureCanEditProject($project);
+        $this->ensureUserCanEditProjectForCountry();
         $this->ensureProgressWithinBounds($progress);
 
         $project->progress = $progress;
@@ -622,6 +657,7 @@ class ProjectService
 
         $this->projectInviteUserService->ensureCanEditProject($project);
 
+        $this->ensureUserCanEditProjectForCountry();
         $this->ensureWeightWithinBounds($weight);
 
         $normalizedName = preg_replace('/\s+/', ' ', trim($name));

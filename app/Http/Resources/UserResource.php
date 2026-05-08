@@ -18,26 +18,27 @@ class UserResource extends JsonResource
             ->whereHas('role', fn($q) => $q->where('name', 'admin'))
             ->value('id');
 
-        // Get country_user_role from userRoles relation
+        // Resolve country_user_role via direct query (same as getCountryUserRole()).
+        // This works for all user types regardless of which relations were eager-loaded.
         $countryUserRole = null;
-        if ($this->relationLoaded('userRoles')) {
-            foreach ($this->userRoles as $userRole) {
-                if ($userRole->relationLoaded('countryUserRole') && $userRole->countryUserRole) {
-                    $cur = $userRole->countryUserRole;
-                    $role = ($cur->relationLoaded('userRole') && $cur->userRole?->relationLoaded('role') && $cur->userRole->role)
-                        ? ['id' => $cur->userRole->role->id, 'name' => $cur->userRole->role->name]
-                        : null;
-                    $countryUserRole = [
-                        'id'      => $cur->id,
-                        'country' => ($cur->relationLoaded('country') && $cur->country) ? [
-                            'id'   => $cur->country->id,
-                            'name' => $cur->country->name,
-                        ] : null,
-                        'role'    => $role,
-                    ];
-                    break;
-                }
-            }
+        $cur = \App\Modules\CountryUserRole\Domain\CountryUserRole::whereHas(
+            'userRole', fn($q) => $q->where('user_id', $this->id)
+        )->with(['country', 'userRole.role'])->first();
+
+        if ($cur) {
+            $role = ($cur->userRole && $cur->userRole->role)
+                ? ['id' => $cur->userRole->role->id, 'name' => $cur->userRole->role->name]
+                : null;
+
+            $countryUserRole = [
+                'id'      => $cur->id,
+                'country' => $cur->country ? [
+                    'id'     => $cur->country->id,
+                    'name'   => $cur->country->name,
+                    'active' => (bool) $cur->country->active,
+                ] : null,
+                'role' => $role,
+            ];
         }
 
         return [
