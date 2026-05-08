@@ -121,9 +121,9 @@ class CountryService
         return $this->countryRepository->findBy('name', trim($name));
     }
 
-    public function getAllCountries(?string $search, int $perPage = 10)
+    public function getAllCountries(?string $search, int $perPage = 10, ?bool $active = null)
     {
-        return $this->countryRepository->getPaginated($search, $perPage);
+        return $this->countryRepository->getPaginated($search, $perPage, $active);
     }
 
     public function getAllCountriesForDropdown(int $perPage = 100)

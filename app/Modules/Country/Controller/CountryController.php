@@ -77,8 +77,9 @@ class CountryController extends Controller
         try {
             $search = $request->get("search");
             $perPage = (int) $request->get("per_page", 10);
+            $active  = $request->has('active') ? filter_var($request->get('active'), FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) : null;
 
-            $countries = $this->countryService->getAllCountries($search, $perPage);
+            $countries = $this->countryService->getAllCountries($search, $perPage, $active);
 
             return ApiResponse::success(
                 'Countries paginated list successfully uploaded',
