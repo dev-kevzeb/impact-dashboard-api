@@ -15,7 +15,9 @@ class PermissionSeeder extends Seeder
             ['name' => '*:*', 'scope' => 'all', 'module' => 'admin', 'description' => 'Full system access - Admin only'],
 
             ['name' => 'donors:read', 'scope' => 'donors', 'module' => 'Donor', 'description' => 'View donors'],
-            ['name' => 'donors:write', 'scope' => 'donors', 'module' => 'Donor', 'description' => 'Create/edit donors'],
+            ['name' => 'donors:create', 'scope' => 'donors', 'module' => 'Donor', 'description' => 'Create donors'],
+            ['name' => 'donors:update', 'scope' => 'donors', 'module' => 'Donor', 'description' => 'Edit donors'],
+            ['name' => 'donors:delete', 'scope' => 'donors', 'module' => 'Donor', 'description' => 'Delete donors'],
 
             ['name' => 'beneficiaries:read', 'scope' => 'beneficiaries', 'module' => 'Beneficiary', 'description' => 'View beneficiaries'],
             ['name' => 'beneficiaries:write', 'scope' => 'beneficiaries', 'module' => 'Beneficiary', 'description' => 'Create/edit beneficiaries'],
