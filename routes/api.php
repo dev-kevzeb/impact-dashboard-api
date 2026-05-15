@@ -69,13 +69,13 @@ Route::prefix('v1')->group(function () {
         Route::get('auth/permissions', [AuthController::class, 'permissions']);
 
         // API Routes para Donors
-        Route::get('donors', [DonorController::class, 'index'])->middleware('scope:projects');
-        Route::post('donors', [DonorController::class, 'store'])->middleware('scope:donors:write');
-        Route::get('donors/search', [DonorController::class, 'search'])->middleware('scope:projects');
-        Route::get('donors/{id}', [DonorController::class, 'show'])->middleware('scope:projects');
-        Route::put('donors/{id}', [DonorController::class, 'update'])->middleware('scope:donors:write');
-        Route::delete('donors/{id}', [DonorController::class, 'destroy'])->middleware('scope:donors:write');
-        Route::get('donors/get/project', [DonorController::class, 'getDonorsExcluding'])->middleware('scope:projects');
+        Route::get('donors', [DonorController::class, 'index'])->middleware('scope:donors:read');
+        Route::post('donors', [DonorController::class, 'store'])->middleware('scope:donors:create');
+        Route::get('donors/search', [DonorController::class, 'search'])->middleware('scope:donors:read');
+        Route::get('donors/{id}', [DonorController::class, 'show'])->middleware('scope:donors:read');
+        Route::put('donors/{id}', [DonorController::class, 'update'])->middleware('scope:donors:update');
+        Route::delete('donors/{id}', [DonorController::class, 'destroy'])->middleware('scope:donors:delete');
+        Route::get('donors/get/project', [DonorController::class, 'getDonorsExcluding'])->middleware('scope:donors:read');
 
         // API Routes para Beneficiaries
         Route::get('beneficiaries', [BeneficiaryController::class, 'index'])->middleware('scope:projects');
