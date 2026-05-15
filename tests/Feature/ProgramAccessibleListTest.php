@@ -8,6 +8,11 @@ use App\Modules\Program\Domain\Program;
 use App\Modules\ProgramCountryUserRole\Domain\ProgramCountryUserRole;
 use App\Modules\ProgramState\Domain\ProgramState;
 use App\Modules\Sdg\Domain\Sdg;
+use App\Modules\CountryUserRole\Domain\CountryUserRole;
+use App\Modules\Role\Domain\Role;
+use App\Modules\User\Domain\User;
+use App\Modules\UserRole\Domain\UserRole;
+use App\Modules\UserState\Domain\UserState;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -27,9 +32,7 @@ class ProgramAccessibleListTest extends TestCase
         ]);
 
         $invitedProgram = Program::factory()->create();
-        $otherOwnerAssignment = ProgramCountryUserRole::factory()->create([
-            'program_id' => $invitedProgram->id,
-        ]);
+        $otherOwnerAssignment = $this->createProgramOwnerAssignmentForDifferentPm($invitedProgram->id, $ownerCountryUserRole->country_id);
 
         InviteProgram::create([
             'program_country_user_role_id' => $otherOwnerAssignment->id,
@@ -55,9 +58,7 @@ class ProgramAccessibleListTest extends TestCase
         $ownerCountryUserRole = $auth['countryUserRole'];
 
         $invitedProgram = Program::factory()->create();
-        $otherOwnerAssignment = ProgramCountryUserRole::factory()->create([
-            'program_id' => $invitedProgram->id,
-        ]);
+        $otherOwnerAssignment = $this->createProgramOwnerAssignmentForDifferentPm($invitedProgram->id, $ownerCountryUserRole->country_id);
 
         InviteProgram::create([
             'program_country_user_role_id' => $otherOwnerAssignment->id,
@@ -66,7 +67,10 @@ class ProgramAccessibleListTest extends TestCase
 
         $contact = Contact::factory()->create();
         $state = ProgramState::factory()->create();
-        $sdg = Sdg::factory()->create();
+        $sdg = Sdg::create([
+            'image' => 'sdg-1.png',
+            'filename' => 'SDG 1',
+        ]);
 
         $payload = [
             'name' => 'Updated invited program',
@@ -80,8 +84,34 @@ class ProgramAccessibleListTest extends TestCase
         ];
 
         $response = $this->putJson('/api/v1/programs/' . $invitedProgram->id, $payload, $auth['headers']);
-
         $response->assertStatus(400)
             ->assertJsonPath('message', 'You do not have permission to edit this program.');
+    }
+
+    private function createProgramOwnerAssignmentForDifferentPm(int $programId, int $countryId): ProgramCountryUserRole
+    {
+        $activeState = UserState::where('name', 'active')->firstOrFail();
+        $role = Role::where('name', 'project-manager')->where('guard_name', 'api')->firstOrFail();
+
+        $otherUser = User::factory()->create([
+            'email' => 'other-pm-' . uniqid() . '@test.com',
+            'user_state_id' => $activeState->id,
+            'email_verified_at' => now(),
+        ]);
+
+        $otherUserRole = UserRole::create([
+            'user_id' => $otherUser->id,
+            'role_id' => $role->id,
+        ]);
+
+        $countryUserRole = CountryUserRole::create([
+            'country_id' => $countryId,
+            'user_role_id' => $otherUserRole->id,
+        ]);
+
+        return ProgramCountryUserRole::create([
+            'program_id' => $programId,
+            'country_user_role_id' => $countryUserRole->id,
+        ]);
     }
 }

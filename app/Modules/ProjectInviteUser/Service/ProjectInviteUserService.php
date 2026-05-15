@@ -96,7 +96,8 @@ class ProjectInviteUserService
             throw new RuntimeException('You do not have access to this program context.');
         }
 
-        $countryUserRole = $this->getCurrentCountryUserRole();
+        $requestedCountryId = (int) (request()->query('country_id', 0));
+        $countryUserRole = $this->getCurrentCountryUserRole($requestedCountryId);
 
         return $this->repository->getProjectIdsByProgramAndCountryUserRole($programId, $countryUserRole->id);
     }
@@ -144,7 +145,20 @@ class ProjectInviteUserService
             return true;
         }
 
-        $countryUserRole = $this->tryGetCurrentCountryUserRole();
+        // User must have projects:write permission to edit
+        if (!$user->hasPermissionTo('projects:write')) {
+            return false;
+        }
+
+        if ($user->hasPermissionTo('projects:view_by_country') || $user->hasPermissionTo('programs:view_by_country')) {
+            $countryIds = $this->getAssignedCountryIds($user);
+            if (!empty($countryIds) && $this->programCountryUserRoleRepository->existsByProgramAndCountryIds((int) $project->program_id, $countryIds)) {
+                return true;
+            }
+        }
+
+        $requestedCountryId = (int) (request()->query('country_id', 0));
+        $countryUserRole = $this->tryGetCurrentCountryUserRole($requestedCountryId);
         if (!$countryUserRole) {
             return false;
         }
@@ -182,22 +196,34 @@ class ProjectInviteUserService
         return $paginator;
     }
 
-    private function getCurrentCountryUserRole(): CountryUserRole
+    private function getCurrentCountryUserRole(int $countryId = 0): CountryUserRole
     {
         $user = auth('api')->user();
         if (!$user) {
             throw new RuntimeException('Not authenticated.');
         }
 
-        return $user->getCountryUserRole();
+        return $user->getCountryUserRole($countryId > 0 ? $countryId : 0);
     }
 
-    private function tryGetCurrentCountryUserRole(): ?CountryUserRole
+    private function tryGetCurrentCountryUserRole(int $countryId = 0): CountryUserRole|false
     {
         try {
-            return $this->getCurrentCountryUserRole();
+            return $this->getCurrentCountryUserRole($countryId);
         } catch (RuntimeException) {
-            return null;
+            return false;
         }
+    }
+
+    private function getAssignedCountryIds($user): array
+    {
+        return $user->userRoles()
+            ->with('countries')
+            ->get()
+            ->flatMap(fn($userRole) => $userRole->countries->pluck('id'))
+            ->map(fn($id) => (int) $id)
+            ->unique()
+            ->values()
+            ->toArray();
     }
 }

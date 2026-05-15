@@ -191,7 +191,8 @@ class ProjectService
         $countryUserRoleId = null;
 
         try {
-            $countryUserRole = $user->getCountryUserRole();
+            $requestedCountryId = request()->query('country_id');
+            $countryUserRole = $requestedCountryId ? $user->getCountryUserRole((int) $requestedCountryId) : $user->getCountryUserRole();
             $countryUserRoleId = (int) $countryUserRole->id;
         } catch (\RuntimeException) {
             $countryUserRoleId = null;
@@ -272,6 +273,25 @@ class ProjectService
             return (int) $invite->programCountryUserRole->countryUserRole->country_id;
         }
 
+        // Joined-country fallback (no invite required): if the authenticated user has
+        // country visibility and is assigned to one of the program countries, use that context.
+        if ($this->canViewProjectsByCountry($user)) {
+            $countryIds = $user->userRoles()
+                ->with('countries')
+                ->get()
+                ->flatMap(fn($userRole) => $userRole->countries->pluck('id'))
+                ->unique()
+                ->values()
+                ->toArray();
+
+            $assignmentForUserCountry = $this->programCountryUserRoleRepository
+                ->findFirstAssignmentByProgramAndCountryIds($programId, $countryIds);
+
+            if ($assignmentForUserCountry && $assignmentForUserCountry->countryUserRole) {
+                return (int) $assignmentForUserCountry->countryUserRole->country_id;
+            }
+        }
+
         throw new \RuntimeException('You do not have access to this program context.');
     }
 
@@ -302,42 +322,25 @@ class ProjectService
             }
         }
     }
-    private function ensureUserCanEditProjectForCountry(): void
+    private function ensureUserCanEditProjectForCountry(int $programId, string $verb): void
     {
         $user = auth('api')->user();
-        if ($user && !$user->hasPermissionTo('*:*')) {
-            try {
-                $countryUserRole = $user->getCountryUserRole();
-                $countryUserRole->load('country');
-                if ($countryUserRole->country && !$countryUserRole->country->active) {
-                    throw new \RuntimeException('Projects cannot be edited because your country is not active.');
-                }
-            } catch (\RuntimeException $e) {
-                if (str_contains($e->getMessage(), 'Projects cannot be edited')) {
-                    throw $e;
-                }
-            }
+        if (!$user || $user->hasPermissionTo('*:*')) {
+            return;
+        }
+
+        $countryId = $this->resolveAccessibleProgramCountryId($programId);
+        $country = $this->countryService->getCountryById($countryId);
+
+        if (!$country->active) {
+            throw new \RuntimeException("Projects cannot be {$verb} because the selected country is not active.");
         }
     }
 
     private function ensureUserCanCreateProjectForProgram(int $programId): void
     {
         $this->resolveAccessibleProgramCountryId($programId);
-
-        $user = auth('api')->user();
-        if ($user && !$user->hasPermissionTo('*:*')) {
-            try {
-                $countryUserRole = $user->getCountryUserRole();
-                $countryUserRole->load('country');
-                if ($countryUserRole->country && !$countryUserRole->country->active) {
-                    throw new \RuntimeException('Projects cannot be created because your country is not active.');
-                }
-            } catch (\RuntimeException $e) {
-                if (str_contains($e->getMessage(), 'Projects cannot be created')) {
-                    throw $e;
-                }
-            }
-        }
+        $this->ensureUserCanEditProjectForCountry($programId, 'created');
     }
 
     private function ensureWeightWithinBounds(float $weight): void
@@ -617,7 +620,7 @@ class ProjectService
         $project = $this->findProjectById($id);
         if (!$project) throw new \RuntimeException("The project with id {$id} does not exist.");
 
-        $this->ensureUserCanEditProjectForCountry();
+        $this->ensureUserCanEditProjectForCountry((int) $project->program_id, 'edited');
         $this->ensureWeightWithinBounds($weight);
         $project->weight = $weight;
 
@@ -635,7 +638,7 @@ class ProjectService
         if (!$project) throw new \RuntimeException("The project with id {$id} does not exist.");
 
         $this->projectInviteUserService->ensureCanEditProject($project);
-        $this->ensureUserCanEditProjectForCountry();
+        $this->ensureUserCanEditProjectForCountry((int) $project->program_id, 'edited');
         $this->ensureProgressWithinBounds($progress);
 
         $project->progress = $progress;
@@ -657,7 +660,7 @@ class ProjectService
 
         $this->projectInviteUserService->ensureCanEditProject($project);
 
-        $this->ensureUserCanEditProjectForCountry();
+        $this->ensureUserCanEditProjectForCountry((int) $project->program_id, 'edited');
         $this->ensureWeightWithinBounds($weight);
 
         $normalizedName = preg_replace('/\s+/', ' ', trim($name));
@@ -787,7 +790,8 @@ class ProjectService
         }
 
         try {
-            $countryUserRole = $user->getCountryUserRole();
+            $programCountryId = $this->resolveAccessibleProgramCountryId((int) $project->program_id);
+            $countryUserRole = $user->getCountryUserRole($programCountryId);
         } catch (\RuntimeException $e) {
             return;
         }

@@ -44,7 +44,7 @@ class CountryService
                 if (!$currency) throw new RuntimeException("The specified currency does not exist");
             } else {
                 $currency = $this->currencyRepository->findByCode($currencyCode);
-                if ($currency == null) {
+                if (!$currency) {
                     $currency = Currency::at($currencyCode);
                     $this->currencyRepository->save($currency);
                 }
@@ -95,7 +95,7 @@ class CountryService
             }
         } else {
             $currency = $this->currencyRepository->findByCode($currencyCode);
-            if ($currency == null) {
+            if (!$currency) {
                 $currency = Currency::at($currencyCode);
                 $this->currencyRepository->save($currency);
             }
@@ -121,9 +121,9 @@ class CountryService
         return $this->countryRepository->findBy('name', trim($name));
     }
 
-    public function getAllCountries(?string $search, int $perPage = 10, ?bool $active = null)
+    public function getAllCountries(?string $search, int $perPage = 10, ?bool $active = null, array $excludeCountryIds = [])
     {
-        return $this->countryRepository->getPaginated($search, $perPage, $active);
+        return $this->countryRepository->getPaginated($search, $perPage, $active, $excludeCountryIds);
     }
 
     public function getAllCountriesForDropdown(int $perPage = 100)

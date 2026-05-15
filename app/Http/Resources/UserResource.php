@@ -18,28 +18,27 @@ class UserResource extends JsonResource
             ->whereHas('role', fn($q) => $q->where('name', 'admin'))
             ->value('id');
 
-        // Resolve country_user_role via direct query (same as getCountryUserRole()).
-        // This works for all user types regardless of which relations were eager-loaded.
-        $countryUserRole = null;
-        $cur = \App\Modules\CountryUserRole\Domain\CountryUserRole::whereHas(
+        $countryUserRoles = \App\Modules\CountryUserRole\Domain\CountryUserRole::whereHas(
             'userRole', fn($q) => $q->where('user_id', $this->id)
-        )->with(['country', 'userRole.role'])->first();
+        )->with(['country', 'userRole.role'])->get();
 
-        if ($cur) {
+        $serializedCountryUserRoles = $countryUserRoles->map(function ($cur) {
             $role = ($cur->userRole && $cur->userRole->role)
                 ? ['id' => $cur->userRole->role->id, 'name' => $cur->userRole->role->name]
                 : null;
 
-            $countryUserRole = [
-                'id'      => $cur->id,
+            return [
+                'id' => $cur->id,
                 'country' => $cur->country ? [
-                    'id'     => $cur->country->id,
-                    'name'   => $cur->country->name,
+                    'id' => $cur->country->id,
+                    'name' => $cur->country->name,
                     'active' => (bool) $cur->country->active,
                 ] : null,
                 'role' => $role,
             ];
-        }
+        })->values()->all();
+
+        $countryUserRole = $serializedCountryUserRoles[0] ?? null;
 
         return [
             'id' => $this->id,
@@ -54,6 +53,7 @@ class UserResource extends JsonResource
             'roles' => RoleResource::collection($this->whenLoaded('roles')),
             'userState' => new UserStateResource($this->whenLoaded('userState')),
             'country_user_role' => $countryUserRole,
+            'country_user_roles' => $serializedCountryUserRoles,
             'created_at' => $this->created_at?->toISOString(),
             'updated_at' => $this->updated_at?->toISOString(),
         ];

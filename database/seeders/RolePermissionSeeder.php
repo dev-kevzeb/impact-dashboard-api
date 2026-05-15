@@ -47,6 +47,7 @@ class RolePermissionSeeder extends Seeder
                 'agencies:read',
                 'agencies:write',
                 'country_dashboard_shares:read',
+                'country_join_requests:read',
                 'country_kpas:write',
             ];
             $permissions = Permission::whereIn('name', $adminPermissions)->get();
@@ -69,6 +70,10 @@ class RolePermissionSeeder extends Seeder
                 'projects:weight',
                 'contacts:read',
                 'contacts:write',
+                'programs:view_by_country',
+                'projects:view_by_country',
+                'country_join_requests:read',
+                'country_join_requests:write',
             ];
 
             $permissions = Permission::whereIn('name', $projectManagerPermissions)->get();
@@ -82,13 +87,14 @@ class RolePermissionSeeder extends Seeder
                 'programs:view_by_country',
                 'projects:read',
                 'projects:view_by_country',
-                'projects:write',
                 'projects:weight',
                 'projects:progress',
                 'donors:read',
                 'donors:write',
                 'country_dashboard_shares:read',
                 'country_dashboard_shares:write',
+                'country_join_requests:read',
+                'country_join_requests:write',
                 'countries:activate',
             ];
 

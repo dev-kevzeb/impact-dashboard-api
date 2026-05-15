@@ -19,6 +19,8 @@ class CountryResource extends JsonResource
                 'code' => $this->currency->code,
             ],
 
+            'relationship_status' => $this->when(isset($this->relationship_status), $this->relationship_status),
+
             'kpas_count' => $this->when( isset($this->country_kpas_count),$this->country_kpas_count),
             'strategic_outputs_count' => $this->when(isset($this->strategic_outputs_count),$this->strategic_outputs_count),
             'measures_count' => $this->when( isset($this->measures_count), $this->measures_count),
