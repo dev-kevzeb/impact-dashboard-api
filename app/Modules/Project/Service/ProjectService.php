@@ -28,6 +28,7 @@ use App\Modules\InviteProgram\Repository\InviteProgramRepository;
 use App\Modules\StrategicOutput\Repository\StrategicOutputRepository;
 use App\Modules\StrategicOutput\Service\StrategicOutputService;
 use App\Modules\Program\Service\ProgramService;
+use App\Modules\CountryDashboardShare\Repository\CountryDashboardShareRepository;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
@@ -49,6 +50,7 @@ class ProjectService
     private ProgramCountryUserRoleRepository $programCountryUserRoleRepository;
     private InviteProgramRepository $inviteProgramRepository;
     private StrategicOutputRepository $strategicOutputRepository;
+    private CountryDashboardShareRepository $countryDashboardShareRepository;
 
     private ProjectDonorService $projectDonorService;
     private DonorService $donorService;
@@ -78,6 +80,7 @@ class ProjectService
         ProgramCountryUserRoleRepository $programCountryUserRoleRepository,
         InviteProgramRepository $inviteProgramRepository,
         StrategicOutputRepository $strategicOutputRepository,
+        CountryDashboardShareRepository $countryDashboardShareRepository,
     ) {
         $this->projectRepository = $projectRepository;
         $this->contactRepository = $contactRepository;
@@ -103,6 +106,7 @@ class ProjectService
         $this->programCountryUserRoleRepository = $programCountryUserRoleRepository;
         $this->inviteProgramRepository = $inviteProgramRepository;
         $this->strategicOutputRepository = $strategicOutputRepository;
+        $this->countryDashboardShareRepository = $countryDashboardShareRepository;
     }
 
 
@@ -160,15 +164,32 @@ class ProjectService
         return $this->projectInviteUserService->applyProjectAccessToPaginator($projects);
     }
 
-    public function getDashboardProjectsPaginated(?string $search, int $perPage): LengthAwarePaginator
+    public function getDashboardProjectsPaginated(?string $search, int $perPage, int $countryId = 0): LengthAwarePaginator
     {
         $user = auth('api')->user();
         if (!$user) {
             throw new \RuntimeException('Not authenticated.');
         }
 
+        $sharedCountryIds = $this->getSharedCountryIdsForAdmin($user);
+
         if ($user->hasPermissionTo('*:*')) {
-            $projects = $this->projectRepository->getDashboardProjectsPaginated($search, $perPage);
+            if ($countryId > 0) {
+                $projects = $this->projectRepository->getDashboardProjectsPaginatedByCountryIds([$countryId], $search, $perPage);
+            } else {
+                $projects = $this->projectRepository->getDashboardProjectsPaginated($search, $perPage);
+            }
+
+            return $this->projectInviteUserService->applyProjectAccessToPaginator($projects);
+        }
+
+        if (!empty($sharedCountryIds)) {
+            if ($countryId > 0 && !in_array($countryId, $sharedCountryIds, true)) {
+                $projects = $this->projectRepository->emptyPaginated($perPage);
+            } else {
+                $filteredIds = $countryId > 0 ? [$countryId] : $sharedCountryIds;
+                $projects = $this->projectRepository->getDashboardProjectsPaginatedByCountryIds($filteredIds, $search, $perPage);
+            }
 
             return $this->projectInviteUserService->applyProjectAccessToPaginator($projects);
         }
@@ -181,6 +202,10 @@ class ProjectService
                 ->unique()
                 ->values()
                 ->toArray();
+
+            if ($countryId > 0) {
+                $countryIds = in_array($countryId, $countryIds, true) ? [$countryId] : [];
+            }
 
             $projects = $this->projectRepository->getDashboardProjectsPaginatedByCountryIds($countryIds, $search, $perPage);
 
@@ -206,6 +231,17 @@ class ProjectService
     private function canViewProjectsByCountry($user): bool
     {
         return $user->hasPermissionTo('projects:view_by_country') || $user->hasPermissionTo('programs:view_by_country');
+    }
+
+    private function getSharedCountryIdsForAdmin($user): array
+    {
+        if (!$user || !$user->hasRole('admin')) {
+            return [];
+        }
+
+        $userRoleIds = $user->userRoles()->pluck('id')->toArray();
+
+        return $this->countryDashboardShareRepository->getCountryIdsBySharedUserRoleIds($userRoleIds);
     }
 
     public function getProjectByName(string $name)
