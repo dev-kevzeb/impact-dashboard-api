@@ -546,8 +546,9 @@ class ProjectController extends Controller
         try {
             $search = $request->get('search');
             $perPage = (int) $request->get('per_page', 10);
+            $countryId = (int) $request->get('country_id', 0);
 
-            $projects = $this->projectService->getDashboardProjectsPaginated($search, $perPage);
+            $projects = $this->projectService->getDashboardProjectsPaginated($search, $perPage, $countryId);
 
             return ApiResponse::success(
                 'Project dashboard list successfully obtained',

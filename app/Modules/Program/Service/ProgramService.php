@@ -11,6 +11,7 @@ use App\Modules\Project\Domain\Project;
 use App\Modules\ProjectInviteUser\Repository\ProjectInviteUserRepository;
 use App\Modules\ProgramState\Repository\ProgramStateRepository;
 use App\Modules\Sdg\Repository\SdgRepository;
+use App\Modules\CountryDashboardShare\Repository\CountryDashboardShareRepository;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -24,6 +25,7 @@ class ProgramService
     private SdgRepository $sdgRepository;
     private ProjectInviteUserRepository $projectInviteUserRepository;
     private ProgramCountryUserRoleRepository $programCountryUserRoleRepository;
+    private CountryDashboardShareRepository $countryDashboardShareRepository;
 
     public function __construct(
         ProgramRepository $programRepository,
@@ -31,7 +33,8 @@ class ProgramService
         ProgramStateRepository $programStateRepository,
         SdgRepository $sdgRepository,
         ProjectInviteUserRepository $projectInviteUserRepository,
-        ProgramCountryUserRoleRepository $programCountryUserRoleRepository
+        ProgramCountryUserRoleRepository $programCountryUserRoleRepository,
+        CountryDashboardShareRepository $countryDashboardShareRepository
     ) {
         $this->programRepository = $programRepository;
         $this->contactRepository = $contactRepository;
@@ -39,6 +42,34 @@ class ProgramService
         $this->sdgRepository = $sdgRepository;
         $this->projectInviteUserRepository = $projectInviteUserRepository;
         $this->programCountryUserRoleRepository = $programCountryUserRoleRepository;
+        $this->countryDashboardShareRepository = $countryDashboardShareRepository;
+    }
+
+    private function getSharedCountryIdsForAdmin($user): array
+    {
+        if (!$user || !$user->hasRole('admin')) {
+            return [];
+        }
+
+        $userRoleIds = $user->userRoles()->pluck('id')->toArray();
+
+        return $this->countryDashboardShareRepository->getCountryIdsBySharedUserRoleIds($userRoleIds);
+    }
+
+    private function programHasSharedCountry($program, array $sharedCountryIds): bool
+    {
+        if (empty($sharedCountryIds)) {
+            return false;
+        }
+
+        foreach ($program->countryUserRoles ?? [] as $countryUserRole) {
+            $countryId = (int) ($countryUserRole->country_id ?? 0);
+            if ($countryId > 0 && in_array($countryId, $sharedCountryIds, true)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function isAdminUser($user): bool
@@ -335,7 +366,8 @@ class ProgramService
         return $this->programRepository->paginateWithRelations($perPage);
     }
 
-    public function getAccessibleProgramsForCurrentUser(int $perPage = 10, ?string $search = '')
+    // public function getAccessibleProgramsForCurrentUser(int $perPage = 10, ?string $search = '')
+    public function getAccessibleProgramsForCurrentUser(int $perPage = 10, ?string $search = null, int $countryId = 0)
     {
         $user = auth('api')->user();
         if (!$user) {
@@ -352,14 +384,28 @@ class ProgramService
             return $this->applyVisibleProjectsCount($programs, $user);
         }
 
-        if ($user->hasPermissionTo('programs:view_by_country')) {
-            $countryIds = $user->userRoles()
-                ->with('countries')
-                ->get()
-                ->flatMap(fn($userRole) => $userRole->countries->pluck('id'))
-                ->unique()
-                ->values()
-                ->toArray();
+        $sharedCountryIds = $this->getSharedCountryIdsForAdmin($user);
+
+        if ($user->hasPermissionTo('programs:view_by_country') || !empty($sharedCountryIds)) {
+            $countryIds = [];
+
+            if ($user->hasPermissionTo('programs:view_by_country')) {
+                $countryIds = $user->userRoles()
+                    ->with('countries')
+                    ->get()
+                    ->flatMap(fn($userRole) => $userRole->countries->pluck('id'))
+                    ->unique()
+                    ->values()
+                    ->toArray();
+            }
+
+            if (!empty($sharedCountryIds)) {
+                $countryIds = array_values(array_unique(array_merge($countryIds, $sharedCountryIds)));
+            }
+
+            if ($countryId > 0) {
+                $countryIds = in_array($countryId, $countryIds, true) ? [$countryId] : [];
+            }
 
             if (empty($countryIds)) {
                 $programs = $this->programRepository->paginateWithRelations($perPage);
@@ -370,7 +416,7 @@ class ProgramService
 
             $programs = $this->programRepository->paginateByCountryIds($countryIds, $perPage, $search, $editableUserRoleIds);
 
-            return $this->applyVisibleProjectsCount($programs, $user);
+            return $this->applyVisibleProjectsCount($programs, $user, $sharedCountryIds);
         }
 
         $userRoleIds = $user->userRoles()->pluck('id')->toArray();
@@ -379,12 +425,18 @@ class ProgramService
         return $this->applyVisibleProjectsCount($programs, $user);
     }
 
-    private function applyVisibleProjectsCount($programs, $user)
+    private function applyVisibleProjectsCount($programs, $user, array $sharedCountryIds = [])
     {
         $countryUserRole = false;
-
-        $programs->getCollection()->transform(function ($program) use ($user, &$countryUserRole) {
-            if ($this->isAdminUser($user) || $user->hasPermissionTo('programs:view_by_country') || (bool) ($program->can_edit ?? false)) {
+        $programs->getCollection()->transform(function ($program) use ($user, &$countryUserRole, $sharedCountryIds) {
+            $hasSharedCountryAccess = $this->programHasSharedCountry($program, $sharedCountryIds);
+            if (
+                $this->isAdminUser($user)
+                || $user->hasPermissionTo('*:*')
+                || $user->hasPermissionTo('programs:view_by_country')
+                || $hasSharedCountryAccess
+                || (bool) ($program->can_edit ?? false)
+            ) {
                 $program->setAttribute('visible_projects_count', (int) ($program->projects_count ?? 0));
                 $program->setAttribute(
                     'program_summary',

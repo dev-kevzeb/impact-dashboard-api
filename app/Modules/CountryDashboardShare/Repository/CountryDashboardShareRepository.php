@@ -83,4 +83,21 @@ class CountryDashboardShareRepository extends AbstractRepository
             ->whereIn('shared_user_role_id', $sharedUserRoleIds)
             ->exists();
     }
+
+    public function getCountryIdsBySharedUserRoleIds(array $sharedUserRoleIds): array
+    {
+        $sharedUserRoleIds = array_values(array_unique(array_map('intval', $sharedUserRoleIds)));
+
+        if (empty($sharedUserRoleIds)) {
+            return [];
+        }
+
+        return $this->model
+            ->whereIn('shared_user_role_id', $sharedUserRoleIds)
+            ->pluck('country_id')
+            ->map(fn($id) => (int) $id)
+            ->unique()
+            ->values()
+            ->toArray();
+    }
 }

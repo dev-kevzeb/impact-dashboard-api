@@ -15,6 +15,7 @@ class RolePermissionSeeder extends Seeder
         $admin = Role::where('name', 'admin')->where('guard_name', 'api')->first();
         if ($admin) {
             $adminPermissions = [
+                'admin_dashboard:read',
                 'programs:read',
                 'projects:read',
                 'projects:weight',

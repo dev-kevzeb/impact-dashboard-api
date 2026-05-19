@@ -3,6 +3,7 @@
 namespace App\Modules\ProjectInviteUser\Service;
 
 use App\Modules\CountryUserRole\Domain\CountryUserRole;
+use App\Modules\CountryDashboardShare\Repository\CountryDashboardShareRepository;
 use App\Modules\InviteProgram\Repository\InviteProgramRepository;
 use App\Modules\ProgramCountryUserRole\Repository\ProgramCountryUserRoleRepository;
 use App\Modules\Project\Domain\Project;
@@ -17,8 +18,32 @@ class ProjectInviteUserService
     public function __construct(
         private ProgramCountryUserRoleRepository $programCountryUserRoleRepository,
         private InviteProgramRepository $inviteProgramRepository,
+        private CountryDashboardShareRepository $countryDashboardShareRepository,
     ) {
         $this->repository = app('App\\Modules\\ProjectInviteUser\\Repository\\ProjectInviteUserRepository');
+    }
+
+    private function getSharedCountryIdsForAdmin($user): array
+    {
+        if (!$user || !$user->hasRole('admin')) {
+            return [];
+        }
+
+        $userRoleIds = $user->userRoles()->pluck('id')->toArray();
+
+        return $this->countryDashboardShareRepository->getCountryIdsBySharedUserRoleIds($userRoleIds);
+    }
+
+    private function canViewProgramBySharedDashboard(int $programId, $user): bool
+    {
+        $sharedCountryIds = $this->getSharedCountryIdsForAdmin($user);
+
+        if (empty($sharedCountryIds)) {
+            return false;
+        }
+
+        return $this->programCountryUserRoleRepository
+            ->existsByProgramAndCountryIds($programId, $sharedCountryIds);
     }
 
     public function attachProject(Project $project, CountryUserRole $countryUserRole): ProjectInviteUser
@@ -58,6 +83,10 @@ class ProjectInviteUserService
         $user = auth('api')->user();
         if (!$user) {
             throw new RuntimeException('Not authenticated.');
+        }
+
+        if ($this->canViewProgramBySharedDashboard($programId, $user)) {
+            return true;
         }
 
         if (!$user->hasPermissionTo('programs:view_by_country')) {

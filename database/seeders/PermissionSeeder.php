@@ -14,6 +14,8 @@ class PermissionSeeder extends Seeder
         $permissions = [
             ['name' => '*:*', 'scope' => 'all', 'module' => 'admin', 'description' => 'Full system access - Admin only'],
 
+            ['name' => 'admin_dashboard:read', 'scope' => 'admin_dashboard', 'module' => 'AdminDashboard', 'description' => 'View admin dashboard (shared countries)'],
+
             ['name' => 'donors:read', 'scope' => 'donors', 'module' => 'Donor', 'description' => 'View donors'],
             ['name' => 'donors:create', 'scope' => 'donors', 'module' => 'Donor', 'description' => 'Create donors'],
             ['name' => 'donors:update', 'scope' => 'donors', 'module' => 'Donor', 'description' => 'Edit donors'],
