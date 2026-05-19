@@ -14,8 +14,11 @@ use RuntimeException;
 
 class CountryJoinRequestController extends Controller
 {
-    public function __construct(private CountryJoinRequestService $service)
+    private CountryJoinRequestService $service;
+
+    public function __construct(CountryJoinRequestService $service)
     {
+        $this->service = $service;
     }
 
     public function index(Request $request): JsonResponse

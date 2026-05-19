@@ -14,10 +14,15 @@ use RuntimeException;
 
 class CountryJoinRequestService
 {
+    private CountryJoinRequestRepository $repository;
+    private CountryUserRoleRepository $countryUserRoleRepository;
+
     public function __construct(
-        private CountryJoinRequestRepository $repository,
-        private CountryUserRoleRepository $countryUserRoleRepository,
+        CountryJoinRequestRepository $repository,
+        CountryUserRoleRepository $countryUserRoleRepository
     ) {
+        $this->repository = $repository;
+        $this->countryUserRoleRepository = $countryUserRoleRepository;
     }
 
     public function listRequests(int $perPage = 10, ?string $status = null, ?int $countryId = null, ?string $search = null)

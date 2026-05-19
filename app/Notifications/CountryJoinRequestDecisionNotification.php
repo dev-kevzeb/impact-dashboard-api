@@ -10,10 +10,13 @@ class CountryJoinRequestDecisionNotification extends Notification
 {
     use Queueable;
 
-    public function __construct(
-        private string $status,
-        private string $countryName,
-    ) {
+    private string $status;
+    private string $countryName;
+
+    public function __construct(string $status, string $countryName)
+    {
+        $this->status = $status;
+        $this->countryName = $countryName;
     }
 
     public function via($notifiable): array

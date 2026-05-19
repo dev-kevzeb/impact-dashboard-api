@@ -10,10 +10,13 @@ class CountryJoinRequestSubmittedNotification extends Notification
 {
     use Queueable;
 
-    public function __construct(
-        private string $countryName,
-        private string $requesterName,
-    ) {
+    private string $countryName;
+    private string $requesterName;
+
+    public function __construct(string $countryName, string $requesterName)
+    {
+        $this->countryName = $countryName;
+        $this->requesterName = $requesterName;
     }
 
     public function via($notifiable): array
