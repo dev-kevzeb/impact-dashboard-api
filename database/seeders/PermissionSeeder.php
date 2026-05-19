@@ -59,6 +59,9 @@ class PermissionSeeder extends Seeder
             ['name' => 'country_dashboard_shares:read', 'scope' => 'country_dashboard_shares', 'module' => 'CountryDashboardShare', 'description' => 'View country dashboard share relationships'],
             ['name' => 'country_dashboard_shares:write', 'scope' => 'country_dashboard_shares', 'module' => 'CountryDashboardShare', 'description' => 'Create/delete country dashboard share relationships'],
 
+            ['name' => 'country_join_requests:read', 'scope' => 'country_join_requests', 'module' => 'CountryJoinRequest', 'description' => 'View country join requests'],
+            ['name' => 'country_join_requests:write', 'scope' => 'country_join_requests', 'module' => 'CountryJoinRequest', 'description' => 'Create/review country join requests'],
+
             ['name' => 'strategic_outputs:read', 'scope' => 'strategic_outputs', 'module' => 'StrategicOutput', 'description' => 'View strategic outputs'],
             ['name' => 'strategic_outputs:write', 'scope' => 'strategic_outputs', 'module' => 'StrategicOutput', 'description' => 'Create/edit strategic outputs'],
 

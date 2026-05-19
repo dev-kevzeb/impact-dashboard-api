@@ -172,25 +172,40 @@ class User extends Authenticatable implements JWTSubject, MustVerifyEmail
     }
 
     /**
-     * Get the CountryUserRole record for this user (Phase 1: one country per user).
-     * Resolves: User → UserRole → CountryUserRole
-     * The server derives this from the JWT — never from the request body.
+     * Get one CountryUserRole for this user.
+     * If $countryId is provided, resolves the country-specific assignment.
      *
-     * @return \App\Modules\CountryUserRole\Domain\CountryUserRole
-     * @throws \RuntimeException If user has no country assigned
+     * @throws \RuntimeException If user has no matching country assignment
      */
-    public function getCountryUserRole(): \App\Modules\CountryUserRole\Domain\CountryUserRole
+    public function getCountryUserRole(int $countryId = 0): \App\Modules\CountryUserRole\Domain\CountryUserRole
     {
-        $countryUserRole = \App\Modules\CountryUserRole\Domain\CountryUserRole::whereHas(
+        $query = \App\Modules\CountryUserRole\Domain\CountryUserRole::whereHas(
             'userRole',
             fn($q) => $q->where('user_id', $this->id)
-        )->first();
+        );
+
+        if ($countryId > 0) {
+            $query->where('country_id', $countryId);
+        }
+
+        $countryUserRole = $query->first();
 
         if (!$countryUserRole) {
-            throw new \RuntimeException('The authenticated user has no country assigned.');
+            throw new \RuntimeException('The authenticated user has no country assigned for the selected context.');
         }
 
         return $countryUserRole;
+    }
+
+    /**
+     * Get all country assignments for this user.
+     */
+    public function getCountryUserRoles()
+    {
+        return \App\Modules\CountryUserRole\Domain\CountryUserRole::whereHas(
+            'userRole',
+            fn($q) => $q->where('user_id', $this->id)
+        )->with(['country', 'userRole.role'])->get();
     }
 
     /**
@@ -273,7 +288,7 @@ class User extends Authenticatable implements JWTSubject, MustVerifyEmail
      */
     public function hasVerifiedEmail(): bool
     {
-        return !is_null($this->email_verified_at);
+        return (bool) $this->email_verified_at;
     }
 
     /**

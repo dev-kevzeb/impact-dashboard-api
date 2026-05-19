@@ -44,6 +44,7 @@ class ProgramRequest extends FormRequest
                 : 'nullable|integer|min:1|exists:program_state,id',
             'sdg_ids' => 'required|array|min:1',
             'sdg_ids.*' => 'integer|min:1|exists:sdg,id',
+            'country_id' => 'nullable|integer|exists:country,id',
         ], $this->contactRules());
     }
 
@@ -72,6 +73,8 @@ class ProgramRequest extends FormRequest
             'sdg_ids.array' => 'The SDGs must be an array.',
             'sdg_ids.min' => 'You must select at least one SDG.',
             'sdg_ids.*.exists' => 'One or more selected SDGs do not exist.',
+            'country_id.integer' => 'The country ID must be an integer.',
+            'country_id.exists' => 'The selected country does not exist.',
         ], $this->contactMessages());
     }
 

@@ -100,17 +100,31 @@ class ProgramRepository extends AbstractRepository
             ->paginate($perPage);
     }
 
-    public function paginateByCountryIds(array $countryIds, int $perPage = 10, ?string $search = null)
+    public function paginateByCountryIds(array $countryIds, int $perPage = 10, ?string $search = null, array $editableUserRoleIds = [])
     {
         $countryIds = array_values(array_unique(array_map('intval', $countryIds)));
         if (empty($countryIds)) {
             return $this->model->whereRaw('1 = 0')->paginate($perPage);
         }
 
-        return $this->model
-            ->join('program_country_user_role as pcur', 'pcur.program_id', '=', 'program.id')
-            ->join('country_user_role as cur', 'cur.id', '=', 'pcur.country_user_role_id')
+        $editableUserRoleIds = array_values(array_unique(array_map('intval', $editableUserRoleIds)));
+        $editableIdsSql = !empty($editableUserRoleIds) ? implode(',', $editableUserRoleIds) : null;
+
+        $accessSubquery = DB::table('program_country_user_role as pcur')
+            ->leftJoin('country_user_role as cur', 'cur.id', '=', 'pcur.country_user_role_id')
             ->whereIn('cur.country_id', $countryIds)
+            ->select('pcur.program_id')
+            ->selectRaw(
+                $editableIdsSql
+                    ? "MAX(CASE WHEN cur.user_role_id IN ({$editableIdsSql}) THEN 1 ELSE 0 END) as can_edit"
+                    : '0 as can_edit'
+            )
+            ->groupBy('pcur.program_id');
+
+        return $this->model
+            ->joinSub($accessSubquery, 'access_programs', function ($join) {
+                $join->on('program.id', '=', 'access_programs.program_id');
+            })
             ->with([
                 'contact',
                 'programState',
@@ -122,8 +136,7 @@ class ProgramRepository extends AbstractRepository
                 $query->whereRaw('LOWER(program.name) LIKE LOWER(?)', ['%' . trim($search) . '%']);
             })
             ->select('program.*')
-            ->selectRaw('0 as can_edit')
-            ->groupBy('program.id')
+            ->selectRaw('CAST(access_programs.can_edit AS integer) as can_edit')
             ->orderBy('program.id', 'desc')
             ->paginate($perPage);
     }

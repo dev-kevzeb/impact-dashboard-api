@@ -30,6 +30,7 @@ use App\Modules\Contact\Controller\ContactController;
 use App\Modules\Agency\Controller\AgencyController;
 use App\Modules\CountryKpa\Controller\CountryKpaController;
 use App\Modules\CountryDashboardShare\Controller\CountryDashboardShareController;
+use App\Modules\CountryJoinRequest\Controller\CountryJoinRequestController;
 use App\Modules\ProgramCountryUserRole\Controller\ProgramCountryUserRoleController;
 use App\Modules\InviteProgram\Controller\InviteProgramController;
 use App\Modules\ProjectInviteUser\Controller\ProjectInviteUserController;
@@ -176,6 +177,13 @@ Route::prefix('v1')->group(function () {
         Route::get('country-dashboard-shares/visible-for-admin', [CountryDashboardShareController::class, 'indexVisibleForAdmin'])->middleware('scope:country_dashboard_shares');
         Route::post('country-dashboard-shares', [CountryDashboardShareController::class, 'store'])->middleware('scope:country_dashboard_shares:write');
         Route::delete('country-dashboard-shares/{id}', [CountryDashboardShareController::class, 'destroy'])->middleware('scope:country_dashboard_shares:write');
+
+        // API Routes para Country Join Requests
+        Route::get('country-join-requests', [CountryJoinRequestController::class, 'index'])->middleware('scope:country_join_requests');
+        Route::post('country-join-requests', [CountryJoinRequestController::class, 'store'])->middleware('scope:country_join_requests:write');
+        Route::get('country-join-requests/search', [CountryJoinRequestController::class, 'search'])->middleware('scope:country_join_requests');
+        Route::get('country-join-requests/{id}', [CountryJoinRequestController::class, 'show'])->middleware('scope:country_join_requests');
+        Route::put('country-join-requests/{id}', [CountryJoinRequestController::class, 'update'])->middleware('scope:country_join_requests:write');
 
         // API Routes para Contacts
         Route::get('contacts', [ContactController::class, 'index'])->middleware('scope:contacts');

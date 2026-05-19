@@ -4,6 +4,8 @@ namespace App\Modules\Program\Service;
 
 use App\Modules\Program\Domain\Program;
 use App\Modules\Program\Repository\ProgramRepository;
+use App\Modules\ProgramCountryUserRole\Domain\ProgramCountryUserRole;
+use App\Modules\ProgramCountryUserRole\Repository\ProgramCountryUserRoleRepository;
 use App\Modules\Contact\Repository\ContactRepository;
 use App\Modules\Project\Domain\Project;
 use App\Modules\ProjectInviteUser\Repository\ProjectInviteUserRepository;
@@ -21,37 +23,93 @@ class ProgramService
     private ProgramStateRepository $programStateRepository;
     private SdgRepository $sdgRepository;
     private ProjectInviteUserRepository $projectInviteUserRepository;
+    private ProgramCountryUserRoleRepository $programCountryUserRoleRepository;
 
     public function __construct(
         ProgramRepository $programRepository,
         ContactRepository $contactRepository,
         ProgramStateRepository $programStateRepository,
         SdgRepository $sdgRepository,
-        ProjectInviteUserRepository $projectInviteUserRepository
+        ProjectInviteUserRepository $projectInviteUserRepository,
+        ProgramCountryUserRoleRepository $programCountryUserRoleRepository
     ) {
         $this->programRepository = $programRepository;
         $this->contactRepository = $contactRepository;
         $this->programStateRepository = $programStateRepository;
         $this->sdgRepository = $sdgRepository;
         $this->projectInviteUserRepository = $projectInviteUserRepository;
+        $this->programCountryUserRoleRepository = $programCountryUserRoleRepository;
     }
 
-    private function ensureUserCountryIsActive(string $verb): void
+    private function isAdminUser($user): bool
+    {
+        return (bool) ($user && $user->hasRole('admin'));
+    }
+
+    private function resolveCurrentCountryUserRoleForProgram(?int $countryId = 0)
     {
         $user = auth('api')->user();
-        if ($user && !$user->hasPermissionTo('*:*')) {
-            try {
-                $countryUserRole = $user->getCountryUserRole();
-                $countryUserRole->load('country');
-                if ($countryUserRole->country && !$countryUserRole->country->active) {
-                    throw new RuntimeException("Programs cannot be {$verb} because your country is not active.");
-                }
-            } catch (RuntimeException $e) {
-                if (str_contains($e->getMessage(), 'Programs cannot be')) {
-                    throw $e;
-                }
+        if (!$user) {
+            throw new RuntimeException('Not authenticated.');
+        }
+
+        $requestedCountryId = (int) ($countryId ?? 0);
+        if ($requestedCountryId <= 0) {
+            $fromRequest = request()->input('country_id', request()->query('country_id'));
+            if (!blank($fromRequest)) {
+                $requestedCountryId = (int) $fromRequest;
             }
         }
+
+        $countryUserRole = $requestedCountryId > 0
+            ? $user->getCountryUserRole($requestedCountryId)
+            : $user->getCountryUserRole();
+        $countryUserRole->load('country');
+
+        if ($countryUserRole->country && !$countryUserRole->country->active) {
+            throw new RuntimeException('Programs cannot be created or edited because the selected country is not active.');
+        }
+
+        return $countryUserRole;
+    }
+
+    private function ensureProgramCountryIsActiveForEdition(int $programId): void
+    {
+        $user = auth('api')->user();
+        if (!$user || $this->isAdminUser($user)) {
+            return;
+        }
+
+        $assignment = $this->programCountryUserRoleRepository->findFirstAssignmentByProgramId($programId);
+        if ($assignment && $assignment->countryUserRole) {
+            $assignment->countryUserRole->load('country');
+            if ($assignment->countryUserRole->country && !$assignment->countryUserRole->country->active) {
+                throw new RuntimeException('Programs cannot be created or edited because the selected country is not active.');
+            }
+        }
+    }
+
+    private function attachCountryOwnerToProgram(Program $program, $countryUserRole): void
+    {
+        if (!$countryUserRole) {
+            return;
+        }
+
+        $alreadyAssigned = ProgramCountryUserRole::query()
+            ->where('program_id', (int) $program->id)
+            ->where('country_user_role_id', (int) $countryUserRole->id)
+            ->exists();
+
+        if ($alreadyAssigned) {
+            return;
+        }
+
+        $assignment = new ProgramCountryUserRole([
+            'program_id' => (int) $program->id,
+            'country_user_role_id' => (int) $countryUserRole->id,
+        ]);
+
+        $this->programCountryUserRoleRepository->save($assignment);
     }
 
     /**
@@ -63,9 +121,25 @@ class ProgramService
         ?string $bannerImg,
         string $programUrl,
         array $contactPayload,
-        array $sdgIds = []
+        array $sdgIds = [],
+        ?int $countryId = 0
     ): Program {
-        $this->ensureUserCountryIsActive('created');
+        $user = auth('api')->user();
+        if (!$user) {
+            throw new RuntimeException('Not authenticated.');
+        }
+
+        $countryUserRole = false;
+        if (!$this->isAdminUser($user) && ((int) ($countryId ?? 0) > 0 || $user->hasPermissionTo('programs:view_by_country'))) {
+            try {
+                $countryUserRole = $this->resolveCurrentCountryUserRoleForProgram($countryId);
+            } catch (RuntimeException $e) {
+                // If no specific country context was requested, keep legacy behavior and continue.
+                if ((int) ($countryId ?? 0) > 0) {
+                    throw $e;
+                }
+            }
+        }
 
         // Validate duplicates
         if ($this->programRepository->exists('name', trim($name))) {
@@ -121,7 +195,9 @@ class ProgramService
         // Synchronize M:N relationships (always required, at least 1 SDG)
         $this->programRepository->syncSdgs($program, $sdgIds);
 
-        return $program->fresh(['contact', 'programState', 'sdgs']);
+        $this->attachCountryOwnerToProgram($program, $countryUserRole);
+
+        return $program->fresh(['contact', 'programState', 'sdgs', 'countryUserRoles.country']);
     }
 
     /**
@@ -188,20 +264,13 @@ class ProgramService
         return $projects
             ->flatMap(function ($project) {
                 return ($project->indicators ?? collect())
-                    ->map(function ($indicator) {
-                        $country = $indicator->measure?->StrategicOutput?->countryKpa?->country;
-
-                        if (!$country) {
-                            return null;
-                        }
-
-                        return [
-                            'id' => $country->id,
-                            'name' => $country->name,
-                        ];
-                    });
+                    ->map(fn($indicator) => $indicator->measure?->StrategicOutput?->countryKpa?->country)
+                    ->filter()
+                    ->map(fn($country) => [
+                        'id' => $country->id,
+                        'name' => $country->name,
+                    ]);
             })
-            ->filter()
             ->unique('id')
             ->values()
             ->all();
@@ -210,17 +279,11 @@ class ProgramService
     private function extractUniqueBeneficiaries(Collection $projects): array
     {
         return $projects
-            ->map(function ($project) {
-                if (!$project->beneficiary) {
-                    return null;
-                }
-
-                return [
-                    'id' => $project->beneficiary->id,
-                    'name' => $project->beneficiary->name,
-                ];
-            })
-            ->filter()
+            ->filter(fn($project) => (bool) $project->beneficiary)
+            ->map(fn($project) => [
+                'id' => $project->beneficiary->id,
+                'name' => $project->beneficiary->name,
+            ])
             ->unique('id')
             ->values()
             ->all();
@@ -272,14 +335,14 @@ class ProgramService
         return $this->programRepository->paginateWithRelations($perPage);
     }
 
-    public function getAccessibleProgramsForCurrentUser(int $perPage = 10, ?string $search = null)
+    public function getAccessibleProgramsForCurrentUser(int $perPage = 10, ?string $search = '')
     {
         $user = auth('api')->user();
         if (!$user) {
             throw new RuntimeException('Not authenticated.');
         }
 
-        if ($user->hasPermissionTo('*:*')) {
+        if ($this->isAdminUser($user)) {
             $programs = $this->programRepository->paginateWithRelations($perPage);
             $programs->getCollection()->transform(function ($program) {
                 $program->setAttribute('can_edit', 1);
@@ -298,7 +361,14 @@ class ProgramService
                 ->values()
                 ->toArray();
 
-            $programs = $this->programRepository->paginateByCountryIds($countryIds, $perPage, $search);
+            if (empty($countryIds)) {
+                $programs = $this->programRepository->paginateWithRelations($perPage);
+                return $this->applyVisibleProjectsCount($programs, $user);
+            }
+
+            $editableUserRoleIds = $user->userRoles()->pluck('id')->toArray();
+
+            $programs = $this->programRepository->paginateByCountryIds($countryIds, $perPage, $search, $editableUserRoleIds);
 
             return $this->applyVisibleProjectsCount($programs, $user);
         }
@@ -311,10 +381,10 @@ class ProgramService
 
     private function applyVisibleProjectsCount($programs, $user)
     {
-        $countryUserRole = null;
+        $countryUserRole = false;
 
         $programs->getCollection()->transform(function ($program) use ($user, &$countryUserRole) {
-            if ($user->hasPermissionTo('*:*') || $user->hasPermissionTo('programs:view_by_country') || (bool) ($program->can_edit ?? false)) {
+            if ($this->isAdminUser($user) || $user->hasPermissionTo('programs:view_by_country') || (bool) ($program->can_edit ?? false)) {
                 $program->setAttribute('visible_projects_count', (int) ($program->projects_count ?? 0));
                 $program->setAttribute(
                     'program_summary',
@@ -331,7 +401,8 @@ class ProgramService
 
             if (!$countryUserRole) {
                 try {
-                    $countryUserRole = $user->getCountryUserRole();
+                    $requestedCountryId = request()->query('country_id');
+                    $countryUserRole = $requestedCountryId ? $user->getCountryUserRole((int) $requestedCountryId) : $user->getCountryUserRole();
                 } catch (RuntimeException) {
                     $program->setAttribute('visible_projects_count', 0);
 
@@ -404,13 +475,19 @@ class ProgramService
             throw new RuntimeException('Not authenticated.');
         }
 
-        if (!$user->hasPermissionTo('*:*')) {
-            $userRoleIds = $user->userRoles()->pluck('id')->toArray();
-            if (!$this->programRepository->isEditableByUserRoleIds($id, $userRoleIds)) {
+        if (!$this->isAdminUser($user)) {
+            $hasOwnerAssignments = (bool) $this->programCountryUserRoleRepository->findFirstAssignmentByProgramId($id);
+
+            if ($hasOwnerAssignments) {
+                $userRoleIds = $user->userRoles()->pluck('id')->toArray();
+                if (!$this->programRepository->isEditableByUserRoleIds($id, $userRoleIds)) {
+                    throw new RuntimeException('You do not have permission to edit this program.');
+                }
+            } elseif (!$user->hasPermissionTo('programs:write')) {
                 throw new RuntimeException('You do not have permission to edit this program.');
             }
 
-            $this->ensureUserCountryIsActive('edited');
+            $this->ensureProgramCountryIsActiveForEdition($id);
         }
 
         // Get existing program
@@ -513,9 +590,15 @@ class ProgramService
             throw new RuntimeException('Not authenticated.');
         }
 
-        if (!$user->hasPermissionTo('*:*')) {
-            $userRoleIds = $user->userRoles()->pluck('id')->toArray();
-            if (!$this->programRepository->isEditableByUserRoleIds($id, $userRoleIds)) {
+        if (!$this->isAdminUser($user)) {
+            $hasOwnerAssignments = (bool) $this->programCountryUserRoleRepository->findFirstAssignmentByProgramId($id);
+
+            if ($hasOwnerAssignments) {
+                $userRoleIds = $user->userRoles()->pluck('id')->toArray();
+                if (!$this->programRepository->isEditableByUserRoleIds($id, $userRoleIds)) {
+                    throw new RuntimeException('You do not have permission to delete this program.');
+                }
+            } elseif (!$user->hasPermissionTo('programs:write')) {
                 throw new RuntimeException('You do not have permission to delete this program.');
             }
         }
@@ -526,13 +609,13 @@ class ProgramService
             throw new RuntimeException('Cannot delete a program that still has associated projects.');
         }
 
-        $contactId = $program->contact_id ? (int) $program->contact_id : null;
+        $contactId = (int) ($program->contact_id ?? 0);
         $bannerImg = $program->banner_img;
 
         DB::transaction(function () use ($program, $contactId): void {
             $program->delete();
 
-            if ($contactId !== null) {
+            if ($contactId > 0) {
                 $usedByAnotherProgram = Program::query()->where('contact_id', $contactId)->exists();
                 $usedByProject = Project::query()->where('contact_id', $contactId)->exists();
                 if (!$usedByAnotherProgram && !$usedByProject) {

@@ -24,11 +24,14 @@ class CountryRepository extends AbstractRepository implements RepositoryInterfac
         return $this->model->whereRaw('LOWER(name) = LOWER(?)', [trim($name)])->exists();
     }
 
-    public function getPaginated(?string $search, int $perPage = 10, ?bool $active = null)
+    public function getPaginated(?string $search, int $perPage = 10, ?bool $active = null, array $excludeCountryIds = [])
     {
         $query = $this->model->query();
         if ($search) $query->whereRaw('LOWER(name) LIKE LOWER(?)', ['%' . $search . '%']);
         if ($active !== null) $query->where('active', $active);
+        if (!empty($excludeCountryIds)) {
+            $query->whereNotIn('id', $excludeCountryIds);
+        }
 
         return $query
             ->with('currency')

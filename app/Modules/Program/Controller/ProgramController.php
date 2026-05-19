@@ -147,7 +147,7 @@ class ProgramController extends Controller
             $validated = $request->validated();
 
             // Manejar upload de imagen (opcional)
-            $path = null;
+            $path = '';
             if ($request->hasFile('banner_img')) {
                 $file = $request->file('banner_img');
                 $filename = time() . '_' . $file->getClientOriginalName();
@@ -160,7 +160,8 @@ class ProgramController extends Controller
                 $path,
                 $validated['program_url'] ?? '',
                 $validated['contact'],
-                $validated['sdg_ids']
+                $validated['sdg_ids'],
+                (int) ($validated['country_id'] ?? 0)
             );
 
             return ApiResponse::created(
@@ -374,7 +375,7 @@ class ProgramController extends Controller
             $validated = $request->validated();
 
             // Manejar upload de imagen (opcional en update)
-            $bannerPath = null;
+            $bannerPath = '';
             if ($request->hasFile('banner_img')) {
                 $file = $request->file('banner_img');
                 $filename = time() . '_' . $file->getClientOriginalName();
@@ -382,7 +383,7 @@ class ProgramController extends Controller
             } else {
                 // Keep current banner
                 $currentProgram = $this->programService->getProgramById($id);
-                $bannerPath = $currentProgram->banner_img;
+                $bannerPath = (string) ($currentProgram->banner_img ?? '');
             }
 
             $program = $this->programService->updateProgram(
