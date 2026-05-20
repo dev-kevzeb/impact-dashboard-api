@@ -23,6 +23,6 @@ class IndicatorTypeRepository extends AbstractRepository implements RepositoryIn
 
         if( $search ) $query->whereRaw('lower(name) LIKE lower(?)',['%' . $search . '%']);
 
-        return $query->paginate($perPage);
+        return $query->orderBy('name', 'asc')->paginate($perPage);
     }
 }

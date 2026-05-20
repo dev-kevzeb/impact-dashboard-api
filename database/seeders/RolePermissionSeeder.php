@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Modules\Donor\Domain\Donor;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
@@ -77,6 +78,7 @@ class RolePermissionSeeder extends Seeder
                 'projects:view_by_country',
                 'country_join_requests:read',
                 'country_join_requests:write',
+                'donors:read',
             ];
 
             $permissions = Permission::whereIn('name', $projectManagerPermissions)->get();

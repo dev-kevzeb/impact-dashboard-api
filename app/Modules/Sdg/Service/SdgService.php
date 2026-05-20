@@ -66,7 +66,7 @@ class SdgService
      */
     public function getAllSdgs(int $perPage = 10)
     {
-        return $this->sdgRepository->paginate($perPage);
+        return $this->sdgRepository->getPaginated($perPage);
     }
 
     /**

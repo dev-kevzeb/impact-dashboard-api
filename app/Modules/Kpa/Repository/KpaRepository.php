@@ -19,7 +19,7 @@ class KpaRepository extends AbstractRepository implements RepositoryInterface
 
         if( $search ) $query->whereRaw('lower(name) LIKE lower(?)',['%' . $search . '%']);
 
-        return $query->withCount('strategicOutputs')->paginate($perPage);
+        return $query->withCount('strategicOutputs')->orderBy('name', 'asc')->paginate($perPage);
     }
     
     public function getAllIds(): array

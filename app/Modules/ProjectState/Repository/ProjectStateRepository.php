@@ -16,7 +16,7 @@ class ProjectStateRepository extends AbstractRepository implements RepositoryInt
             $query->whereRaw('LOWER(state) LIKE ?',['%' . $search . '%']);
         }
 
-    return $query->paginate($perPage);
+    return $query->orderBy('state', 'asc')->paginate($perPage);
     }
 
     public function hasRelations(int $projectStateId): bool

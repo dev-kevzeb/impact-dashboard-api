@@ -20,7 +20,7 @@ class BeneficiaryRepository extends AbstractRepository implements RepositoryInte
             $query->whereRaw('LOWER(name) LIKE ?',['%' . $search . '%']);
         }
 
-        return $query->paginate($perPage);
+        return $query->orderBy('name', 'asc')->paginate($perPage);
     }
 
     public function hasRelations(int $beneficiaryId): bool
