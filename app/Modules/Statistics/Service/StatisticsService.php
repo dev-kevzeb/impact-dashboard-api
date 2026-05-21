@@ -56,7 +56,8 @@ class StatisticsService
 
         $indicatorIds = $indicators->pluck('id')->toArray();
         $projectIds = $this->projectIndicatorRepository->getProjectIdsByIndicatorIds($indicatorIds);
-        if (empty($projectIds)) {
+        // If there are no linked projects and this is BottomUp, return zeros.
+        if ($isBottomUp && empty($projectIds)) {
             return [
                 "name" => $measure->name,
                 "implementation" => 0,
@@ -70,7 +71,29 @@ class StatisticsService
         $projects = $this->projectRepository->getByIds($projectIds);
 
         if (!$isBottomUp) {
-            $implementation = $this->calculateNormalizedWeightedProjectImplementation($projects);
+            // Top-Down: compute implementation as average of (actual/target)*100 across indicators
+            $indicatorPercentages = [];
+            foreach ($indicators as $indicator) {
+                $actual = $indicator->actual_value ?? null;
+                $target = $indicator->target ?? null;
+
+                if ($actual === null || $target === null) {
+                    continue;
+                }
+
+                if ((float) $target == 0.0) {
+                    continue;
+                }
+
+                $percent = ((float) $actual / (float) $target) * 100;
+                $percent = max(0.0, min(100.0, $percent));
+                $indicatorPercentages[] = $percent;
+            }
+
+            $implementation = 0;
+            if (!empty($indicatorPercentages)) {
+                $implementation = round(array_sum($indicatorPercentages) / count($indicatorPercentages), 2);
+            }
 
             return [
                 "name" => $measure->name,
@@ -134,26 +157,20 @@ class StatisticsService
 
     private function calculateNormalizedWeightedProjectImplementation($projects): float
     {
-        $weightedProgress = 0.0;
-        $totalWeight = 0.0;
+        // BottomUp semantics: sum(rate * weight) * 100 (weights expected between 0 and 1)
+        $sum = 0.0;
 
         foreach ($projects as $project) {
             $weight = (float) ($project->weight ?? 0);
-
             if ($weight <= 0) {
                 continue;
             }
 
             $progressRate = max(0.0, min(100.0, (float) ($project->progress ?? 0))) / 100;
-            $weightedProgress += $progressRate * $weight;
-            $totalWeight += $weight;
+            $sum += $progressRate * $weight;
         }
 
-        if ($totalWeight <= 0) {
-            return 0;
-        }
-
-        return round(($weightedProgress / $totalWeight) * 100, 2);
+        return round($sum * 100, 2);
     }
 
     public function getStrategicOutputImplementation(int $strategicOutputId): array
