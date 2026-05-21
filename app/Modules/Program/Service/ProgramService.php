@@ -317,6 +317,8 @@ class ProgramService
             ])
             ->unique('id')
             ->values()
+            ->sortBy('name')
+            ->values()
             ->all();
     }
 
@@ -329,6 +331,8 @@ class ProgramService
                 'name' => $donor->name,
             ])
             ->unique('id')
+            ->values()
+            ->sortBy('name')
             ->values()
             ->all();
     }
@@ -343,6 +347,8 @@ class ProgramService
                 'url' => $agency->url,
             ])
             ->unique('id')
+            ->values()
+            ->sortBy('name')
             ->values()
             ->all();
     }
