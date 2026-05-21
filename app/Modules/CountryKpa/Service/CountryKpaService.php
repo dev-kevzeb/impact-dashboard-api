@@ -4,6 +4,7 @@ namespace App\Modules\CountryKpa\Service;
 
 use App\Modules\CountryDashboardShare\Repository\CountryDashboardShareRepository;
 use App\Modules\CountryKpa\Repository\CountryKpaRepository;
+use App\Modules\Statistics\Service\StatisticsService;
 use Illuminate\Pagination\LengthAwarePaginator;
 use RuntimeException;
 
@@ -11,11 +12,13 @@ class CountryKpaService
 {
     protected CountryKpaRepository $repo;
     protected CountryDashboardShareRepository $countryDashboardShareRepository;
+    protected StatisticsService $statisticsService;
 
-    public function __construct(CountryKpaRepository $repo, CountryDashboardShareRepository $countryDashboardShareRepository)
+    public function __construct(CountryKpaRepository $repo, CountryDashboardShareRepository $countryDashboardShareRepository, StatisticsService $statisticsService)
     {
         $this->repo = $repo;
         $this->countryDashboardShareRepository = $countryDashboardShareRepository;
+        $this->statisticsService = $statisticsService;
     }
 
     /**
@@ -91,12 +94,41 @@ class CountryKpaService
 
     public function getCountryKpasByCountryId(int $id, ?string $search, int $perPage): LengthAwarePaginator
     {
-        return $this->repo->getCountryKpasByCountryId($id, $search, $perPage);
+        $paginator = $this->repo->getCountryKpasByCountryId($id, $search, $perPage);
+
+        foreach ($paginator as $item) {
+            try {
+                $impl = $this->statisticsService->getCountryKpaImplementation($id, $item->kpa->id)['implementation'] ?? 0;
+            } catch (\Throwable $e) {
+                $impl = 0;
+            }
+
+            if (isset($item->kpa)) {
+                $item->kpa->implementation = $impl;
+            }
+        }
+
+        return $paginator;
     }
 
     public function getByCountryAndKpa(int $CountryId, int $kpaId)
     {
-        return $this->repo->getByCountryAndKpa($CountryId, $kpaId);
+        $collection = $this->repo->getByCountryAndKpa($CountryId, $kpaId);
+
+        // Attach computed implementation for each item if possible
+        foreach ($collection as $item) {
+            try {
+                $impl = $this->statisticsService->getCountryKpaImplementation($CountryId, $item->id_kpa)['implementation'] ?? 0;
+            } catch (\Throwable $e) {
+                $impl = 0;
+            }
+
+            if (isset($item->kpa)) {
+                $item->kpa->implementation = $impl;
+            }
+        }
+
+        return $collection;
     }
 
     public function getByCountry(int $id)
@@ -132,7 +164,22 @@ class CountryKpaService
 
     public function getKpasByCountryPaginated( int $countryId, ?string $search, int $perPage)
     {
-        return $this->repo->getCountryKpasByCountryId($countryId, $search, $perPage);
+        $paginator = $this->repo->getCountryKpasByCountryId($countryId, $search, $perPage);
+
+        // For each item in paginator, compute implementation via StatisticsService
+        foreach ($paginator as $item) {
+            try {
+                $impl = $this->statisticsService->getCountryKpaImplementation($countryId, $item->kpa->id)['implementation'] ?? 0;
+            } catch (\Throwable $e) {
+                $impl = 0;
+            }
+
+            if (isset($item->kpa)) {
+                $item->kpa->implementation = $impl;
+            }
+        }
+
+        return $paginator;
     }
 }
 

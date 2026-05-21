@@ -12,7 +12,7 @@ class CountryKpaTest extends TestCase
 {
     use RefreshDatabase;
 
-    private const BASE_URL = '/api/v1/country-kpas';
+    private const BASE_URL = '/api/v1/country_kpas';
 
     private const ERROR_COUNTRY_REQUIRED = 'el país es obligatorio';
     private const ERROR_KPA_REQUIRED = 'el KPA es obligatorio';
