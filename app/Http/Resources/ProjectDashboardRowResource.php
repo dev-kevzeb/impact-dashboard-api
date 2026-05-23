@@ -22,6 +22,10 @@ class ProjectDashboardRowResource extends JsonResource
             ->sortByDesc(fn($agency) => (float) ($agency->pivot?->contribution ?? 0))
             ->first();
 
+        $hasBottomUpIndicator = (bool) $this->has_bottom_up_indicator;
+        $user = $request->user();
+        $canEditWeight = $user ? ($user->hasPermissionTo('*:*') || $user->hasPermissionTo('projects:weight')) : false;
+
         return [
             'id' => $this->id,
             'country' => $country?->name,
@@ -35,6 +39,8 @@ class ProjectDashboardRowResource extends JsonResource
             'end_date' => $this->end_date,
             'progress' => (float) $this->progress,
             'weight' => (float) ($this->weight ?? 0),
+            'has_bottom_up_indicator' => $hasBottomUpIndicator,
+            'can_edit_weight' => $canEditWeight,
             'comment' => $this->comments,
             'can_edit' => (bool) ($this->can_edit ?? false),
         ];
