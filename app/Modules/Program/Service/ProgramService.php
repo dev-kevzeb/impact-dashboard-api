@@ -104,6 +104,23 @@ class ProgramService
         return $countryUserRole;
     }
 
+    private function ensureCountryContextProvidedForProgramCreation($user, ?int $countryId = 0): void
+    {
+        if (!$user || $this->isAdminUser($user)) {
+            return;
+        }
+
+        $requestedCountryId = (int) ($countryId ?? 0);
+        if ($requestedCountryId > 0) {
+            return;
+        }
+
+        $countryUserRoles = $user->getCountryUserRoles();
+        if ($countryUserRoles->count() > 1) {
+            throw new RuntimeException('You must select a country to create a program.');
+        }
+    }
+
     private function ensureProgramCountryIsActiveForEdition(int $programId): void
     {
         $user = auth('api')->user();
@@ -159,6 +176,8 @@ class ProgramService
         if (!$user) {
             throw new RuntimeException('Not authenticated.');
         }
+
+        $this->ensureCountryContextProvidedForProgramCreation($user, $countryId);
 
         $countryUserRole = false;
         if (!$this->isAdminUser($user) && ((int) ($countryId ?? 0) > 0 || $user->hasPermissionTo('programs:view_by_country'))) {
