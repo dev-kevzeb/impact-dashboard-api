@@ -35,7 +35,7 @@ class Project extends Model
         'project_state_id',
         'program_id'
     ];
-    protected $appends = ['donors_count', 'indicators_count', 'agencies_count'];
+    protected $appends = ['donors_count', 'indicators_count', 'agencies_count', 'has_bottom_up_indicator'];
 
     public static $ERROR_NAME_EMPTY = 'The project name must not be empty';
     public static $ERROR_NAME_MIN_LENGTH = 'The project name must have at least 3 characters';
@@ -224,5 +224,16 @@ class Project extends Model
     public function getAgenciesCountAttribute()
     {
         return $this->agencies()->count();
+    }
+
+    public function getHasBottomUpIndicatorAttribute(): bool
+    {
+        $indicators = $this->relationLoaded('indicators')
+            ? $this->indicators
+            : $this->indicators()->with('type')->get();
+
+        return $indicators->contains(function (Indicator $indicator) {
+            return (bool) ($indicator->type?->is_bottom_up ?? false);
+        });
     }
 }

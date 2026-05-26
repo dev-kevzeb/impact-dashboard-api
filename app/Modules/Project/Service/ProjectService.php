@@ -216,7 +216,7 @@ class ProjectService
         $countryUserRoleId = null;
 
         try {
-            $requestedCountryId = request()->query('country_id');
+            $requestedCountryId = (int) request('country_id', 0);
             $countryUserRole = $requestedCountryId ? $user->getCountryUserRole((int) $requestedCountryId) : $user->getCountryUserRole();
             $countryUserRoleId = (int) $countryUserRole->id;
         } catch (\RuntimeException) {
@@ -657,6 +657,7 @@ class ProjectService
         if (!$project) throw new \RuntimeException("The project with id {$id} does not exist.");
 
         $this->ensureUserCanEditProjectForCountry((int) $project->program_id, 'edited');
+        $this->ensureWeightAllowedForProject($project);
         $this->ensureWeightWithinBounds($weight);
         $project->weight = $weight;
 
@@ -666,6 +667,15 @@ class ProjectService
         $this->projectRepository->save($project);
 
         return $project;
+    }
+
+    private function ensureWeightAllowedForProject(Project $project): void
+    {
+        $project->loadMissing(['indicators.type']);
+
+        if (!$project->has_bottom_up_indicator) {
+            throw new \RuntimeException('Project weight cannot be edited because the project does not have any Bottom-Up indicators.');
+        }
     }
 
     public function updateProjectProgress(int $id, float $progress): Project

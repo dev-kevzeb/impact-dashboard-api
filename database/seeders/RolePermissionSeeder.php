@@ -101,6 +101,7 @@ class RolePermissionSeeder extends Seeder
                 'country_join_requests:read',
                 'country_join_requests:write',
                 'countries:activate',
+                'agencies:read',
             ];
 
             $permissions = Permission::whereIn('name', $countryManagerPermissions)->get();
