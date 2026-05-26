@@ -80,7 +80,7 @@ class DonorController extends Controller
             $query = Donor::query();
 
             if ($search) $query->where("name", "like", "%" . $search . "%");
-            $donors = $query->paginate($perPage);
+            $donors = $query->orderBy('name', 'asc')->paginate($perPage);
 
             return ApiResponse::success(
                 'Donors list successfully obtained',

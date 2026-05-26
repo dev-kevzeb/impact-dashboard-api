@@ -43,7 +43,7 @@ class AgencyRepository extends AbstractRepository implements RepositoryInterface
     public function getPaginated(int $perPage = 10, ?string $search){
         $query = $this->model::query();
         if( $search ) $query->whereRaw('lower(name) LIKE lower(?)',['%' . $search . '%']);
-        return $query->paginate($perPage);
+        return $query->orderBy('name', 'asc')->paginate($perPage);
     }
 
     public function hasRelations(int $agencyId): bool

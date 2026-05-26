@@ -38,7 +38,7 @@ class ProgramStateService
 
     public function getAllProgramStates(int $perPage = 10)
     {
-        return $this->programStateRepository->paginate($perPage);
+        return $this->programStateRepository->getPaginated(null, $perPage);
     }
 
     public function getProgramStatesPaginated(?string $search, int $perPage = 10)

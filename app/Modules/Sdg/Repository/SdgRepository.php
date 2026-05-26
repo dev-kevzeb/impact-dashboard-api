@@ -21,4 +21,12 @@ class SdgRepository extends AbstractRepository implements RepositoryInterface
     {
         parent::__construct($model);
     }
+
+    public function getPaginated(int $perPage = 10)
+    {
+        return $this->model
+            ->newQuery()
+            ->orderBy('filename', 'asc')
+            ->paginate($perPage);
+    }
 }
