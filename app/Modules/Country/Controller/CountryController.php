@@ -161,6 +161,128 @@ class CountryController extends Controller
         }
     }
 
+    /**
+     * @OA\Get(
+     *     path="/countries/available-for-kpa",
+     *     tags={"Countries"},
+     *     summary="Listar países disponibles para asignar KPA",
+     *     description="Obtiene la lista de países inactivos disponibles para asignar KPAs",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Lista obtenida exitosamente",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Lista obtenida exitosamente"),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="object",
+     *                 @OA\Property(
+     *                     property="countries",
+     *                     type="array",
+     *                     @OA\Items(ref="#/components/schemas/Country")
+     *                 ),
+     *                 @OA\Property(property="total", type="integer", example=8, description="Total de países registrados")
+     *             )
+     *         )
+    *     ),
+    *     @OA\Response(
+     *         response=500,
+     *         description="Error interno del servidor",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Error interno del servidor")
+     *         )
+     *     )
+     * )
+     */
+    public function indexAvailableForKpa(Request $request): JsonResponse
+    {
+        try {
+            $search = $request->get("search");
+            $perPage = (int) $request->get("per_page", 10);
+            $active = false;
+
+            $excludeCountryIds = [];
+            $relationshipStatusByCountryId = [];
+            $user = auth('api')->user();
+            if ($user && !$user->hasPermissionTo('*:*')) {
+                $hasProjectManager = $user->userRoles()->whereHas('role', fn($q) => $q->where('name', 'project-manager'))->exists();
+                $hasCountryManager = $user->userRoles()->whereHas('role', fn($q) => $q->where('name', 'country-manager'))->exists();
+
+                if ($hasProjectManager && !$hasCountryManager) {
+                    $pmUserRoleIds = $user->userRoles()
+                        ->whereHas('role', fn($q) => $q->where('name', 'project-manager'))
+                        ->pluck('id')
+                        ->map(fn($id) => (int) $id)
+                        ->toArray();
+
+                    if (!empty($pmUserRoleIds)) {
+                        $baseCountryIds = CountryUserRole::query()
+                            ->whereIn('user_role_id', $pmUserRoleIds)
+                            ->orderBy('id')
+                            ->get()
+                            ->groupBy('user_role_id')
+                            ->map(fn($assignments) => (int) $assignments->first()->country_id)
+                            ->values()
+                            ->toArray();
+
+                        $approvedCountryIds = CountryJoinRequest::query()
+                            ->whereIn('requester_user_role_id', $pmUserRoleIds)
+                            ->where('status', CountryJoinRequest::STATUS_APPROVED)
+                            ->pluck('country_id')
+                            ->map(fn($id) => (int) $id)
+                            ->values()
+                            ->toArray();
+
+                        $pendingCountryIds = CountryJoinRequest::query()
+                            ->whereIn('requester_user_role_id', $pmUserRoleIds)
+                            ->where('status', CountryJoinRequest::STATUS_PENDING)
+                            ->pluck('country_id')
+                            ->map(fn($id) => (int) $id)
+                            ->values()
+                            ->toArray();
+
+                        $excludeCountryIds = $baseCountryIds;
+
+                        foreach ($approvedCountryIds as $countryId) {
+                            $relationshipStatusByCountryId[$countryId] = 'collaborating';
+                        }
+
+                        foreach ($pendingCountryIds as $countryId) {
+                            if (!isset($relationshipStatusByCountryId[$countryId])) {
+                                $relationshipStatusByCountryId[$countryId] = 'join_requested';
+                            }
+                        }
+                    }
+                }
+            }
+
+            $countries = $this->countryService->getAllCountries($search, $perPage, $active, $excludeCountryIds);
+
+            if (!empty($relationshipStatusByCountryId)) {
+                $countries->getCollection()->transform(function ($country) use ($relationshipStatusByCountryId) {
+                    $country->setAttribute('relationship_status', $relationshipStatusByCountryId[$country->id] ?? 'available');
+                    return $country;
+                });
+            }
+
+            $data = [
+                'countries' => CountryResource::collection($countries),
+                'total' => $countries->count(),
+                'per_page' => $countries->perPage(),
+                'current_page' => $countries->currentPage(),
+                'last_page' => $countries->lastPage(),
+            ];
+
+            return ApiResponse::success('Countries available for KPA assignment', 200, $data);
+        } catch (RuntimeException $e) {
+            return ApiResponse::error($e->getMessage(), 500);
+        } catch (\Exception $e) {
+            return ApiResponse::error('Internal server error', 500);
+        }
+    }
+
 
     /**
      * @OA\Get(

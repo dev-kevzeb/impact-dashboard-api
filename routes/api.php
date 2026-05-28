@@ -98,6 +98,7 @@ Route::prefix('v1')->group(function () {
         Route::get('countries', [CountryController::class, 'index'])->middleware('scope:projects');
         Route::post('countries', [CountryController::class, 'store'])->middleware('scope:countries:write');
         Route::get('countries/search', [CountryController::class, 'search'])->middleware('scope:projects');
+        Route::get('countries/available-for-kpa', [CountryController::class, 'indexAvailableForKpa'])->middleware('scope:projects');
         Route::get('countries/{id}', [CountryController::class, 'show'])->middleware('scope:projects');
         Route::put('countries/{id}', [CountryController::class, 'update'])->middleware('scope:countries:write');
         Route::patch('countries/{id}/activate', [CountryController::class, 'activate'])->middleware('scope:countries:activate');
