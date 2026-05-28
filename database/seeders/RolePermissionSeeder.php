@@ -52,6 +52,7 @@ class RolePermissionSeeder extends Seeder
                 'agencies:write',
                 'country_dashboard_shares:read',
                 'country_join_requests:read',
+                'country_kpas:read',
                 'country_kpas:write',
             ];
             $permissions = Permission::whereIn('name', $adminPermissions)->get();

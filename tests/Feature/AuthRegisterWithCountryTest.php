@@ -459,6 +459,7 @@ class AuthRegisterWithCountryTest extends TestCase
             ->assertJsonPath('data.user.country_user_role.country', [
                 'id' => $country->id,
                 'name' => 'Costa Rica',
+                'active' => false,
             ]);
     }
 

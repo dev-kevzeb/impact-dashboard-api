@@ -90,10 +90,10 @@ class AdminUserCreationTest extends TestCase
         // Service-level admin-role check must block the action.
         $response = $this->postJson(self::CREATE_ADMIN_URL, $payload, $this->authHeaders('country-manager'));
 
-        $response->assertStatus(400)
+        $response->assertStatus(403)
             ->assertJson([
                 'success' => false,
-                'message' => 'Only admin users can create admin accounts.',
+                'message' => 'Insufficient permissions. Required scope: users:write',
             ]);
 
         $this->assertDatabaseMissing('user', [

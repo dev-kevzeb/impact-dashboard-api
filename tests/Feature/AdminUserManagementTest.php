@@ -61,10 +61,10 @@ class AdminUserManagementTest extends TestCase
     {
         $response = $this->getJson(self::LIST_ADMINS_URL, $this->authHeaders('country-manager'));
 
-        $response->assertStatus(400)
+        $response->assertStatus(403)
             ->assertJson([
                 'success' => false,
-                'message' => 'Only admin users can list admin accounts.',
+                'message' => 'Insufficient permissions. Required scope: users:write',
             ]);
     }
 
@@ -156,10 +156,10 @@ class AdminUserManagementTest extends TestCase
 
         $response = $this->deleteJson('/api/v1/users/admins/' . $targetAdmin->id, [], $this->authHeaders('country-manager'));
 
-        $response->assertStatus(400)
+        $response->assertStatus(403)
             ->assertJson([
                 'success' => false,
-                'message' => 'Only admin users can delete admin accounts.',
+                'message' => 'Insufficient permissions. Required scope: users:write',
             ]);
 
         $this->assertDatabaseHas('user', ['id' => $targetAdmin->id]);
