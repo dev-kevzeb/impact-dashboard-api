@@ -81,60 +81,7 @@ class CountryController extends Controller
             $perPage = (int) $request->get("per_page", 10);
             $active  = $request->has('active') ? filter_var($request->get('active'), FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) : null;
 
-            $excludeCountryIds = [];
-            $relationshipStatusByCountryId = [];
-            $user = auth('api')->user();
-            if ($user && !$user->hasPermissionTo('*:*')) {
-                $hasProjectManager = $user->userRoles()->whereHas('role', fn($q) => $q->where('name', 'project-manager'))->exists();
-                $hasCountryManager = $user->userRoles()->whereHas('role', fn($q) => $q->where('name', 'country-manager'))->exists();
-
-                if ($hasProjectManager && !$hasCountryManager) {
-                    $pmUserRoleIds = $user->userRoles()
-                        ->whereHas('role', fn($q) => $q->where('name', 'project-manager'))
-                        ->pluck('id')
-                        ->map(fn($id) => (int) $id)
-                        ->toArray();
-
-                    if (!empty($pmUserRoleIds)) {
-                        $baseCountryIds = CountryUserRole::query()
-                            ->whereIn('user_role_id', $pmUserRoleIds)
-                            ->orderBy('id')
-                            ->get()
-                            ->groupBy('user_role_id')
-                            ->map(fn($assignments) => (int) $assignments->first()->country_id)
-                            ->values()
-                            ->toArray();
-
-                        $approvedCountryIds = CountryJoinRequest::query()
-                            ->whereIn('requester_user_role_id', $pmUserRoleIds)
-                            ->where('status', CountryJoinRequest::STATUS_APPROVED)
-                            ->pluck('country_id')
-                            ->map(fn($id) => (int) $id)
-                            ->values()
-                            ->toArray();
-
-                        $pendingCountryIds = CountryJoinRequest::query()
-                            ->whereIn('requester_user_role_id', $pmUserRoleIds)
-                            ->where('status', CountryJoinRequest::STATUS_PENDING)
-                            ->pluck('country_id')
-                            ->map(fn($id) => (int) $id)
-                            ->values()
-                            ->toArray();
-
-                        $excludeCountryIds = $baseCountryIds;
-
-                        foreach ($approvedCountryIds as $countryId) {
-                            $relationshipStatusByCountryId[$countryId] = 'collaborating';
-                        }
-
-                        foreach ($pendingCountryIds as $countryId) {
-                            if (!isset($relationshipStatusByCountryId[$countryId])) {
-                                $relationshipStatusByCountryId[$countryId] = 'join_requested';
-                            }
-                        }
-                    }
-                }
-            }
+            [$excludeCountryIds, $relationshipStatusByCountryId] = $this->buildCountryAccessFilters(auth('api')->user());
 
             $countries = $this->countryService->getAllCountries($search, $perPage, $active, $excludeCountryIds);
 
@@ -203,60 +150,7 @@ class CountryController extends Controller
             $perPage = (int) $request->get("per_page", 10);
             $active = false;
 
-            $excludeCountryIds = [];
-            $relationshipStatusByCountryId = [];
-            $user = auth('api')->user();
-            if ($user && !$user->hasPermissionTo('*:*')) {
-                $hasProjectManager = $user->userRoles()->whereHas('role', fn($q) => $q->where('name', 'project-manager'))->exists();
-                $hasCountryManager = $user->userRoles()->whereHas('role', fn($q) => $q->where('name', 'country-manager'))->exists();
-
-                if ($hasProjectManager && !$hasCountryManager) {
-                    $pmUserRoleIds = $user->userRoles()
-                        ->whereHas('role', fn($q) => $q->where('name', 'project-manager'))
-                        ->pluck('id')
-                        ->map(fn($id) => (int) $id)
-                        ->toArray();
-
-                    if (!empty($pmUserRoleIds)) {
-                        $baseCountryIds = CountryUserRole::query()
-                            ->whereIn('user_role_id', $pmUserRoleIds)
-                            ->orderBy('id')
-                            ->get()
-                            ->groupBy('user_role_id')
-                            ->map(fn($assignments) => (int) $assignments->first()->country_id)
-                            ->values()
-                            ->toArray();
-
-                        $approvedCountryIds = CountryJoinRequest::query()
-                            ->whereIn('requester_user_role_id', $pmUserRoleIds)
-                            ->where('status', CountryJoinRequest::STATUS_APPROVED)
-                            ->pluck('country_id')
-                            ->map(fn($id) => (int) $id)
-                            ->values()
-                            ->toArray();
-
-                        $pendingCountryIds = CountryJoinRequest::query()
-                            ->whereIn('requester_user_role_id', $pmUserRoleIds)
-                            ->where('status', CountryJoinRequest::STATUS_PENDING)
-                            ->pluck('country_id')
-                            ->map(fn($id) => (int) $id)
-                            ->values()
-                            ->toArray();
-
-                        $excludeCountryIds = $baseCountryIds;
-
-                        foreach ($approvedCountryIds as $countryId) {
-                            $relationshipStatusByCountryId[$countryId] = 'collaborating';
-                        }
-
-                        foreach ($pendingCountryIds as $countryId) {
-                            if (!isset($relationshipStatusByCountryId[$countryId])) {
-                                $relationshipStatusByCountryId[$countryId] = 'join_requested';
-                            }
-                        }
-                    }
-                }
-            }
+            [$excludeCountryIds, $relationshipStatusByCountryId] = $this->buildCountryAccessFilters(auth('api')->user());
 
             $countries = $this->countryService->getAllCountries($search, $perPage, $active, $excludeCountryIds);
 
@@ -708,5 +602,65 @@ class CountryController extends Controller
 
             return ApiResponse::error($e->getMessage(), 400);
         }
+    }
+
+    private function buildCountryAccessFilters($user): array
+    {
+        $excludeCountryIds = [];
+        $relationshipStatusByCountryId = [];
+
+        if ($user && !$user->hasPermissionTo('*:*')) {
+            $hasProjectManager = $user->userRoles()->whereHas('role', fn($q) => $q->where('name', 'project-manager'))->exists();
+            $hasCountryManager = $user->userRoles()->whereHas('role', fn($q) => $q->where('name', 'country-manager'))->exists();
+
+            if ($hasProjectManager && !$hasCountryManager) {
+                $pmUserRoleIds = $user->userRoles()
+                    ->whereHas('role', fn($q) => $q->where('name', 'project-manager'))
+                    ->pluck('id')
+                    ->map(fn($id) => (int) $id)
+                    ->toArray();
+
+                if (!empty($pmUserRoleIds)) {
+                    $baseCountryIds = CountryUserRole::query()
+                        ->whereIn('user_role_id', $pmUserRoleIds)
+                        ->orderBy('id')
+                        ->get()
+                        ->groupBy('user_role_id')
+                        ->map(fn($assignments) => (int) $assignments->first()->country_id)
+                        ->values()
+                        ->toArray();
+
+                    $approvedCountryIds = CountryJoinRequest::query()
+                        ->whereIn('requester_user_role_id', $pmUserRoleIds)
+                        ->where('status', CountryJoinRequest::STATUS_APPROVED)
+                        ->pluck('country_id')
+                        ->map(fn($id) => (int) $id)
+                        ->values()
+                        ->toArray();
+
+                    $pendingCountryIds = CountryJoinRequest::query()
+                        ->whereIn('requester_user_role_id', $pmUserRoleIds)
+                        ->where('status', CountryJoinRequest::STATUS_PENDING)
+                        ->pluck('country_id')
+                        ->map(fn($id) => (int) $id)
+                        ->values()
+                        ->toArray();
+
+                    $excludeCountryIds = $baseCountryIds;
+
+                    foreach ($approvedCountryIds as $countryId) {
+                        $relationshipStatusByCountryId[$countryId] = 'collaborating';
+                    }
+
+                    foreach ($pendingCountryIds as $countryId) {
+                        if (!isset($relationshipStatusByCountryId[$countryId])) {
+                            $relationshipStatusByCountryId[$countryId] = 'join_requested';
+                        }
+                    }
+                }
+            }
+        }
+
+        return [$excludeCountryIds, $relationshipStatusByCountryId];
     }
 }
