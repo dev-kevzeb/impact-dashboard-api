@@ -6,6 +6,7 @@ use App\Modules\Project\Domain\Project;
 use App\Modules\Contact\Domain\Contact;
 use App\Modules\Beneficiary\Domain\Beneficiary;
 use App\Modules\ProjectState\Domain\ProjectState;
+use App\Modules\Program\Domain\Program;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -37,6 +38,7 @@ class ProjectFactory extends Factory
             'contact_id' => Contact::factory(),
             'beneficiary_id' => Beneficiary::factory(),
             'project_state_id' => ProjectState::factory(),
+            'program_id' => Program::factory(),
         ];
     }
 }

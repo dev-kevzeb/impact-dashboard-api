@@ -11,15 +11,22 @@ class ProjectStateTest extends TestCase
 {
     use RefreshDatabase;
 
-    private const ERROR_MIN_LENGTH = 'El estado del proyecto debe tener al menos 3 caracteres.';
+    private const ERROR_MIN_LENGTH = 'Project status must be at least 3 characters long.';
 
-    private const BASE_URL = '/api/v1/project_states';
+    private const BASE_URL = '/api/v1/project-states';
 
+    private array $headers = [];
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->headers = $this->authHeaders('admin');
+    }
     public function test_can_list_project_states(): void
     {
         ProjectState::factory()->count(3)->create();
 
-        $response = $this->getJson(self::BASE_URL);
+        $response = $this->getJson(self::BASE_URL, $this->headers);
 
         $response->assertOk()
                  ->assertJsonStructure([
@@ -35,38 +42,38 @@ class ProjectStateTest extends TestCase
 
     public function test_index_returns_empty_list(): void
     {
-        $response = $this->getJson(self::BASE_URL);
+        $response = $this->getJson(self::BASE_URL, $this->headers);
 
         $response->assertOk()
-                 ->assertJsonPath('data.project_states', [])
-                 ->assertJsonPath('data.total', 0);
+             ->assertJsonPath('data.project_states', [])
+             ->assertJsonPath('data.total', 0);
     }
 
     public function test_index_returns_project_states_list(): void
     {
         ProjectState::factory()->count(3)->create();
 
-        $response = $this->getJson(self::BASE_URL);
+        $response = $this->getJson(self::BASE_URL, $this->headers);
 
         $response->assertOk()
-                 ->assertJsonCount(3, 'data.project_states')
-                 ->assertJsonPath('data.total', 3);
+             ->assertJsonCount(3, 'data.project_states')
+             ->assertJsonPath('data.total', 3);
     }
 
     public function test_can_show_project_state(): void
     {
         $state = ProjectState::factory()->create();
 
-        $response = $this->getJson(self::BASE_URL . "/{$state->id}");
+        $response = $this->getJson(self::BASE_URL . "/{$state->id}", $this->headers);
 
         $response->assertOk()
-                 ->assertJsonPath('data.id', $state->id)
-                 ->assertJsonPath('data.state', $state->state);
+             ->assertJsonPath('data.id', $state->id)
+             ->assertJsonPath('data.state', $state->state);
     }
 
     public function test_show_not_found(): void
     {
-        $response = $this->getJson(self::BASE_URL . "/999");
+        $response = $this->getJson(self::BASE_URL . "/999", $this->headers);
 
         $response->assertNotFound();
     }
@@ -77,13 +84,13 @@ class ProjectStateTest extends TestCase
             'state' => 'Implementación'
         ];
 
-        $response = $this->postJson(self::BASE_URL, $payload);
+        $response = $this->postJson(self::BASE_URL, $payload, $this->headers);
 
         $response->assertCreated()
-                 ->assertJsonPath('data.state', strtolower($payload['state']));
+             ->assertJsonPath('data.state', $payload['state']);
 
         $this->assertDatabaseHas('project_state', [
-            'state' => strtolower($payload['state'])
+            'state' => $payload['state']
         ]);
     }
 
@@ -91,7 +98,7 @@ class ProjectStateTest extends TestCase
     {
         $payload = ['state' => '']; // vacío
 
-        $response = $this->postJson(self::BASE_URL, $payload);
+        $response = $this->postJson(self::BASE_URL, $payload, $this->headers);
 
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['state']);
@@ -103,10 +110,10 @@ class ProjectStateTest extends TestCase
             'state' => 'ab'
         ];
 
-        $response = $this->postJson(self::BASE_URL, $payload);
+        $response = $this->postJson(self::BASE_URL, $payload, $this->headers);
 
          $response->assertStatus(422)
-                 ->assertJsonValidationErrors(['state'])
+             ->assertJsonValidationErrors(['state'])
                  ->assertJsonPath('errors.state.0', self::ERROR_MIN_LENGTH);
     }
 
@@ -120,10 +127,11 @@ class ProjectStateTest extends TestCase
             'state' => 'Ejecución'
         ];
 
-        $response = $this->putJson(self::BASE_URL . "/{$state->id}", $payload);
+
+        $response = $this->putJson(self::BASE_URL . "/{$state->id}", $payload, $this->headers);
 
         $response->assertOk()
-                 ->assertJsonPath('data.state', $payload['state']);
+             ->assertJsonPath('data.state', $payload['state']);
 
         $this->assertDatabaseHas('project_state', [
             'id' => $state->id,
@@ -135,7 +143,7 @@ class ProjectStateTest extends TestCase
     {
         $payload = ['state' => 'Seguimiento'];
 
-        $response = $this->putJson(self::BASE_URL . "/999", $payload);
+        $response = $this->putJson(self::BASE_URL . "/999", $payload, $this->headers);
 
         $response->assertStatus(400); // por lógica del controller
     }
@@ -146,10 +154,10 @@ class ProjectStateTest extends TestCase
 
         $payload = ['state' => ''];
 
-        $response = $this->putJson(self::BASE_URL . "/{$state->id}", $payload);
+        $response = $this->putJson(self::BASE_URL . "/{$state->id}", $payload, $this->headers);
 
         $response->assertStatus(422)
-                 ->assertJsonValidationErrors(['state']);
+             ->assertJsonValidationErrors(['state']);
     }
 
     public function test_domain_errors_on_update(): void
@@ -160,21 +168,22 @@ class ProjectStateTest extends TestCase
             'state' => 'ab'
         ];
 
-        $response = $this->putJson(self::BASE_URL . "/{$state->id}", $payload);
+        $response = $this->putJson(self::BASE_URL . "/{$state->id}", $payload, $this->headers);
 
         $response->assertStatus(422)
-                 ->assertJsonValidationErrors(['state'])
-                 ->assertJsonPath('errors.state.0', self::ERROR_MIN_LENGTH);
+             ->assertJsonValidationErrors(['state'])
+             ->assertJsonPath('errors.state.0', self::ERROR_MIN_LENGTH);
     }
 
     public function test_can_delete_project_state_without_relations(): void
     {
         $state = ProjectState::factory()->create();
 
-        $response = $this->deleteJson(self::BASE_URL . "/{$state->id}");
+
+        $response = $this->deleteJson(self::BASE_URL . "/{$state->id}", [], $this->headers);
 
         $response->assertOk()
-            ->assertJsonPath('message', 'Project State deleted successfully');
+            ->assertJsonPath('message', 'Project status deleted successfully');
 
         $this->assertDatabaseMissing('project_state', ['id' => $state->id]);
     }
@@ -184,20 +193,21 @@ class ProjectStateTest extends TestCase
         $state = ProjectState::factory()->create();
         Project::factory()->create(['project_state_id' => $state->id]);
 
-        $response = $this->deleteJson(self::BASE_URL . "/{$state->id}");
+
+        $response = $this->deleteJson(self::BASE_URL . "/{$state->id}", [], $this->headers);
 
         $response->assertStatus(409)
             ->assertJsonPath('success', false)
-            ->assertJsonPath('message', 'The project state cannot be deleted because it is related to other records.');
+            ->assertJsonPath('message', 'The project status cannot be deleted because it is related to other records.');
 
         $this->assertDatabaseHas('project_state', ['id' => $state->id]);
     }
 
     public function test_delete_returns_not_found_for_non_existent_project_state(): void
     {
-        $response = $this->deleteJson(self::BASE_URL . '/999999');
+        $response = $this->deleteJson(self::BASE_URL . '/999999', [], $this->headers);
 
         $response->assertStatus(404)
-            ->assertJsonPath('message', 'Project State not Found');
+            ->assertJsonPath('message', 'Project Status not Found');
     }
 }

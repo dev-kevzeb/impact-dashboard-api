@@ -11,17 +11,8 @@ class ProjectStateFactory extends Factory
 
     public function definition(): array
     {
-        $states = [
-            'pendiente',
-            'en progreso',
-            'completado',
-            'en revisión',
-            'cancelado',
-            'aprobado',
-        ];
-
         return [
-            'state' => $this->faker->randomElement($states),
+            'state' => $this->faker->unique()->words(2, true),
         ];
     }
 }

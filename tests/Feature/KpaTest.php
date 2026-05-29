@@ -16,12 +16,21 @@ class KpaTest extends TestCase
     private const ERROR_NAME_MIN_LENGTH = 'The KPA name must be at least 2 characters long';
     private const ERROR_NAME_MAX_LENGTH = 'The KPA name must not exceed 100 characters';
 
+    private array $headers;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->headers = $this->authHeaders('admin');
+    }
+
     /** LISTAR */
     public function test_can_list_kpas(): void
     {
         Kpa::factory()->count(3)->create();
 
-        $response = $this->getJson(self::BASE_URL);
+        $response = $this->getJson(self::BASE_URL, $this->headers);
 
         $response->assertOk()
             ->assertJsonStructure([
@@ -41,7 +50,7 @@ class KpaTest extends TestCase
     /** LISTAR VACÍO */
     public function test_list_returns_empty_when_no_kpas(): void
     {
-        $response = $this->getJson(self::BASE_URL);
+        $response = $this->getJson(self::BASE_URL, $this->headers);
 
         $response->assertOk()
                 ->assertJsonPath('data.total', 0)
@@ -55,7 +64,7 @@ class KpaTest extends TestCase
             'name' => 'Kpa Nuevo',
         ];
 
-        $response = $this->postJson(self::BASE_URL, $data);
+        $response = $this->postJson(self::BASE_URL, $data, $this->headers);
 
         $response->assertCreated()
                 ->assertJson([
@@ -74,7 +83,7 @@ class KpaTest extends TestCase
     /** NAME REQUIRED */
     public function test_name_is_required(): void
     {
-        $response = $this->postJson(self::BASE_URL, []);
+        $response = $this->postJson(self::BASE_URL, [], $this->headers);
 
         $response->assertStatus(422)
                 ->assertJsonValidationErrors(['name'])
@@ -86,7 +95,7 @@ class KpaTest extends TestCase
     {
         $response = $this->postJson(self::BASE_URL, [
             'name' => 'A',
-        ]);
+        ], $this->headers);
 
         $response->assertStatus(422)
                 ->assertJsonValidationErrors(['name'])
@@ -98,7 +107,7 @@ class KpaTest extends TestCase
     {
         $response = $this->postJson(self::BASE_URL, [
             'name' => str_repeat('A', 101),
-        ]);
+        ], $this->headers);
 
         $response->assertStatus(422)
                 ->assertJsonValidationErrors(['name'])
@@ -110,7 +119,7 @@ class KpaTest extends TestCase
     {
         $response = $this->postJson(self::BASE_URL, [
             'name' => '   Kpa Limpio   ',
-        ]);
+        ], $this->headers);
 
         $response->assertCreated();
 
@@ -124,7 +133,7 @@ class KpaTest extends TestCase
     {
         $kpa = Kpa::factory()->create();
 
-        $response = $this->getJson(self::BASE_URL . "/{$kpa->id}");
+        $response = $this->getJson(self::BASE_URL . "/{$kpa->id}", $this->headers);
 
         $response->assertOk()
                 ->assertJson([
@@ -140,7 +149,7 @@ class KpaTest extends TestCase
     /** SHOW 404 */
     public function test_returns_404_when_kpa_not_found(): void
     {
-        $response = $this->getJson(self::BASE_URL . '/99999');
+        $response = $this->getJson(self::BASE_URL . '/99999', $this->headers);
 
         $response->assertNotFound()
                 ->assertJson(['success' => false]);
@@ -153,7 +162,7 @@ class KpaTest extends TestCase
 
         $response = $this->putJson(self::BASE_URL . "/{$kpa->id}", [
             'name' => 'Nuevo',
-        ]);
+        ], $this->headers);
 
         $response->assertOk()
                 ->assertJson([
@@ -174,7 +183,7 @@ class KpaTest extends TestCase
 
         $response = $this->putJson(self::BASE_URL . "/{$kpa->id}", [
             'name' => '   Kpa Limpio   ',
-        ]);
+        ], $this->headers);
 
         $response->assertOk();
 
@@ -188,7 +197,7 @@ class KpaTest extends TestCase
     {
         Kpa::factory()->create(['name' => 'KPA Existente']);
 
-        $response = $this->postJson(self::BASE_URL, ['name' => 'KPA Existente']);
+        $response = $this->postJson(self::BASE_URL, ['name' => 'KPA Existente'], $this->headers);
 
         $response->assertStatus(422)
                 ->assertJsonValidationErrors(['name'])

@@ -22,7 +22,7 @@ class ProgramDeleteTest extends TestCase
         $this->seed(\Database\Seeders\ProgramStateSeeder::class);
     }
 
-    private function createProgramWithAccess(?array $overrides = []): Program
+    private function createProgramWithAccess(?array $overrides = [], ?int $countryUserRoleId = null): Program
     {
         $inactiveState = ProgramState::where('name', 'Inactive')->firstOrFail();
 
@@ -30,17 +30,21 @@ class ProgramDeleteTest extends TestCase
             'program_state_id' => $inactiveState->id,
         ], $overrides));
 
-        ProgramCountryUserRole::factory()->create([
-            'program_id' => $program->id,
-        ]);
+        if ($countryUserRoleId !== null) {
+            ProgramCountryUserRole::create([
+                'program_id' => $program->id,
+                'country_user_role_id' => $countryUserRoleId,
+            ]);
+        }
 
         return $program;
     }
 
     public function test_delete_program_removes_program_and_orphan_contact(): void
     {
-        $headers = $this->authHeaders('admin');
-        $program = $this->createProgramWithAccess();
+        $authContext = $this->authHeadersWithCountry('project-manager');
+        $headers = $authContext['headers'];
+        $program = $this->createProgramWithAccess([], $authContext['countryUserRole']->id);
         $contactId = $program->contact_id;
 
         $response = $this->deleteJson(self::BASE_URL . '/' . $program->id, [], $headers);
@@ -53,12 +57,13 @@ class ProgramDeleteTest extends TestCase
 
     public function test_delete_program_keeps_contact_when_used_by_another_program(): void
     {
-        $headers = $this->authHeaders('admin');
+        $authContext = $this->authHeadersWithCountry('project-manager');
+        $headers = $authContext['headers'];
 
         $sharedContact = Contact::factory()->create();
 
-        $programToDelete = $this->createProgramWithAccess(['contact_id' => $sharedContact->id]);
-        $this->createProgramWithAccess(['contact_id' => $sharedContact->id]);
+        $programToDelete = $this->createProgramWithAccess(['contact_id' => $sharedContact->id], $authContext['countryUserRole']->id);
+        $this->createProgramWithAccess(['contact_id' => $sharedContact->id], $authContext['countryUserRole']->id);
 
         $response = $this->deleteJson(self::BASE_URL . '/' . $programToDelete->id, [], $headers);
 
@@ -70,14 +75,15 @@ class ProgramDeleteTest extends TestCase
 
     public function test_delete_program_keeps_contact_when_used_by_project(): void
     {
-        $headers = $this->authHeaders('admin');
+        $authContext = $this->authHeadersWithCountry('project-manager');
+        $headers = $authContext['headers'];
 
         $sharedContact = Contact::factory()->create();
 
-        $program = $this->createProgramWithAccess(['contact_id' => $sharedContact->id]);
+        $program = $this->createProgramWithAccess(['contact_id' => $sharedContact->id], $authContext['countryUserRole']->id);
 
         // Another program with a project that shares the same contact
-        $anotherProgram = $this->createProgramWithAccess();
+        $anotherProgram = $this->createProgramWithAccess([], $authContext['countryUserRole']->id);
         Project::factory()->create([
             'program_id' => $anotherProgram->id,
             'contact_id' => $sharedContact->id,
@@ -93,8 +99,9 @@ class ProgramDeleteTest extends TestCase
 
     public function test_delete_program_fails_when_program_has_projects(): void
     {
-        $headers = $this->authHeaders('admin');
-        $program = $this->createProgramWithAccess();
+        $authContext = $this->authHeadersWithCountry('project-manager');
+        $headers = $authContext['headers'];
+        $program = $this->createProgramWithAccess([], $authContext['countryUserRole']->id);
 
         Project::factory()->create(['program_id' => $program->id]);
 
@@ -108,7 +115,8 @@ class ProgramDeleteTest extends TestCase
 
     public function test_delete_program_returns_error_when_not_found(): void
     {
-        $headers = $this->authHeaders('admin');
+        $authContext = $this->authHeadersWithCountry('project-manager');
+        $headers = $authContext['headers'];
 
         $response = $this->deleteJson(self::BASE_URL . '/999999', [], $headers);
 
@@ -117,13 +125,13 @@ class ProgramDeleteTest extends TestCase
 
     public function test_delete_program_forbidden_for_unrelated_user(): void
     {
-        $headers = $this->authHeaders('project-manager');
+        $headers = $this->authHeaders('country-manager');
         $program = $this->createProgramWithAccess();
 
         $response = $this->deleteJson(self::BASE_URL . '/' . $program->id, [], $headers);
 
-        $response->assertStatus(400)
-            ->assertJsonPath('message', 'You do not have permission to delete this program.');
+        $response->assertStatus(403)
+            ->assertJsonPath('message', 'Insufficient permissions. Required scope: programs:write');
 
         $this->assertDatabaseHas('program', ['id' => $program->id]);
     }
