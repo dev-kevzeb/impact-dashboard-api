@@ -14,11 +14,11 @@ class CountryKpaTest extends TestCase
 
     private const BASE_URL = '/api/v1/country_kpas';
 
-    private const ERROR_COUNTRY_REQUIRED = 'el país es obligatorio';
-    private const ERROR_KPA_REQUIRED = 'el KPA es obligatorio';
-    private const ERROR_COUNTRY_INVALID = 'el país especificado no existe';
-    private const ERROR_KPA_INVALID = 'el KPA especificado no existe';
-    private const ERROR_DUPLICATE = 'este país ya está asociado con este KPA';
+    private const ERROR_COUNTRY_REQUIRED = 'Country is required';
+    private const ERROR_KPA_REQUIRED = 'KPA is mandatory';
+    private const ERROR_COUNTRY_INVALID = 'the specified country does not exist';
+    private const ERROR_KPA_INVALID = 'The specified KPA does not exist';
+    private const ERROR_DUPLICATE = 'The Country is already associated with the KPA';
 
 
     /** LISTAR TODOS */
@@ -26,7 +26,7 @@ class CountryKpaTest extends TestCase
     {
         CountryKpa::factory()->count(3)->create();
 
-        $response = $this->getJson(self::BASE_URL);
+        $response = $this->getJson(self::BASE_URL, $this->authHeaders());
 
         $response->assertOk()
                  ->assertJsonPath('data.total', 3)
@@ -36,7 +36,7 @@ class CountryKpaTest extends TestCase
     /** LISTAR VACÍO */
     public function test_list_returns_empty_when_no_records(): void
     {
-        $response = $this->getJson(self::BASE_URL);
+        $response = $this->getJson(self::BASE_URL, $this->authHeaders());
 
         $response->assertOk()
                  ->assertJsonPath('data.total', 0)
@@ -49,10 +49,11 @@ class CountryKpaTest extends TestCase
         $country = Country::factory()->create();
         CountryKpa::factory()->count(2)->create(['id_country' => $country->id]);
 
-        $response = $this->getJson(self::BASE_URL . "?country={$country->id}");
+        $response = $this->getJson(self::BASE_URL . "?country={$country->id}", $this->authHeaders());
 
         $response->assertOk()
-                 ->assertJsonCount(2, 'data');
+             ->assertJsonPath('data.total', 2)
+             ->assertJsonCount(2, 'data.data');
     }
 
     /** SHOW */
@@ -60,7 +61,7 @@ class CountryKpaTest extends TestCase
     {
         $record = CountryKpa::factory()->create();
 
-        $response = $this->getJson(self::BASE_URL . "/{$record->id}");
+        $response = $this->getJson(self::BASE_URL . "/{$record->id}", $this->authHeaders());
 
         $response->assertOk()
                  ->assertJsonPath('data.country_id', $record->country_id)
@@ -78,10 +79,10 @@ class CountryKpaTest extends TestCase
             'id_kpa'     => $kpa->id
         ];
 
-        $response = $this->postJson(self::BASE_URL, $data);
+        $response = $this->postJson(self::BASE_URL, $data, $this->authHeaders());
 
         $response->assertCreated()
-                 ->assertJson(['message' => 'Relación Country-KPA creada exitosamente']);
+             ->assertJson(['message' => 'Country-KPA relationship created successfully']);
 
         $this->assertDatabaseHas('country_kpa', $data);
     }
@@ -93,7 +94,7 @@ class CountryKpaTest extends TestCase
 
         $response = $this->postJson(self::BASE_URL, [
             'id_kpa' => $kpa->id
-        ]);
+        ], $this->authHeaders());
 
         $response->assertStatus(422)
                  ->assertJsonValidationErrors(['id_country'])
@@ -107,7 +108,7 @@ class CountryKpaTest extends TestCase
 
         $response = $this->postJson(self::BASE_URL, [
             'id_country' => $country->id
-        ]);
+        ], $this->authHeaders());
 
         $response->assertStatus(422)
                  ->assertJsonValidationErrors(['id_kpa'])
@@ -122,7 +123,7 @@ class CountryKpaTest extends TestCase
         $response = $this->postJson(self::BASE_URL, [
             'id_country' => 999,
             'id_kpa' => $kpa->id
-        ]);
+        ], $this->authHeaders());
 
         $response->assertStatus(422)
                  ->assertJsonValidationErrors(['id_country'])
@@ -137,7 +138,7 @@ class CountryKpaTest extends TestCase
         $response = $this->postJson(self::BASE_URL, [
             'id_country' => $country->id,
             'id_kpa' => 999
-        ]);
+        ], $this->authHeaders());
 
         $response->assertStatus(422)
                  ->assertJsonValidationErrors(['id_kpa'])
@@ -158,7 +159,7 @@ class CountryKpaTest extends TestCase
         $response = $this->postJson(self::BASE_URL, [
             'id_country' => $country->id,
             'id_kpa'     => $kpa->id
-        ]);
+        ], $this->authHeaders());
 
         $response->assertStatus(422)
                  ->assertJsonValidationErrors(['id_country'])
@@ -178,10 +179,10 @@ class CountryKpaTest extends TestCase
             'id_kpa'     => $newKpa->id
         ];
 
-        $response = $this->putJson(self::BASE_URL . "/{$record->id}", $data);
+        $response = $this->putJson(self::BASE_URL . "/{$record->id}", $data, $this->authHeaders());
 
         $response->assertOk()
-                 ->assertJson(['message' => 'Relación Country-KPA actualizada exitosamente']);
+             ->assertJson(['message' => 'Country-KPA relationship updated successfully']);
 
         $this->assertDatabaseHas('country_kpa', array_merge(['id' => $record->id], $data));
     }
@@ -206,7 +207,7 @@ class CountryKpaTest extends TestCase
         $response = $this->putJson(self::BASE_URL . "/{$toUpdate->id}", [
             'id_country' => $country->id,
             'id_kpa' => $kpa1->id
-        ]);
+        ], $this->authHeaders());
 
         $response->assertStatus(422)
                  ->assertJsonPath('errors.id_country.0', self::ERROR_DUPLICATE);

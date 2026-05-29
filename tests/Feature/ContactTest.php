@@ -17,7 +17,7 @@ class ContactTest extends TestCase
     {
         Contact::factory()->count(3)->create();
 
-        $response = $this->getJson(self::BASE_URL);
+        $response = $this->getJson(self::BASE_URL, $this->authHeaders('project-manager'));
 
         $response->assertOk()
             ->assertJsonStructure([
@@ -38,7 +38,7 @@ class ContactTest extends TestCase
     {
         $contact = Contact::factory()->create();
 
-        $response = $this->getJson(self::BASE_URL . "/{$contact->id}");
+        $response = $this->getJson(self::BASE_URL . "/{$contact->id}", $this->authHeaders('project-manager'));
 
         $response->assertOk()
             ->assertJsonPath('data.id', $contact->id)
@@ -48,7 +48,7 @@ class ContactTest extends TestCase
     /** @test */
     public function test_show_returns_404_for_nonexistent_contact()
     {
-        $response = $this->getJson(self::BASE_URL . "/9999");
+        $response = $this->getJson(self::BASE_URL . "/9999", $this->authHeaders('project-manager'));
 
         $response->assertStatus(404);
     }
@@ -64,7 +64,7 @@ class ContactTest extends TestCase
             'phone'      => '+591 70000001'
         ];
 
-        $response = $this->postJson(self::BASE_URL, $payload);
+        $response = $this->postJson(self::BASE_URL, $payload, $this->authHeaders('project-manager'));
 
         $response->assertStatus(201)
             ->assertJsonPath('data.first_name', 'Juan')
@@ -86,7 +86,7 @@ class ContactTest extends TestCase
             'phone' => 'abc'
         ];
 
-        $response = $this->postJson(self::BASE_URL, $payload);
+        $response = $this->postJson(self::BASE_URL, $payload, $this->authHeaders('project-manager'));
 
         $response->assertStatus(422)
             ->assertJsonValidationErrors([
@@ -111,7 +111,7 @@ class ContactTest extends TestCase
             'phone' => '+591 70000022'
         ];
 
-        $response = $this->putJson(self::BASE_URL . "/{$contact->id}", $payload);
+        $response = $this->putJson(self::BASE_URL . "/{$contact->id}", $payload, $this->authHeaders('project-manager'));
 
         $response->assertOk()
             ->assertJsonPath('data.first_name', 'Carlos')
@@ -135,7 +135,7 @@ class ContactTest extends TestCase
             'phone'=> ''
         ];
 
-        $response = $this->putJson(self::BASE_URL . "/{$contact->id}", $payload);
+        $response = $this->putJson(self::BASE_URL . "/{$contact->id}", $payload, $this->authHeaders('project-manager'));
 
         $response->assertStatus(422)
             ->assertJsonValidationErrors([
@@ -154,7 +154,7 @@ class ContactTest extends TestCase
             'phone'      => '+591 72100000'
         ];
 
-        $response = $this->putJson(self::BASE_URL . "/9999", $payload);
+        $response = $this->putJson(self::BASE_URL . "/9999", $payload, $this->authHeaders('project-manager'));
 
         $response->assertStatus(404);
     }
@@ -166,7 +166,7 @@ class ContactTest extends TestCase
             'email' => 'searchme@example.com'
         ]);
 
-        $response = $this->getJson(self::BASE_URL . "/search?email=searchme@example.com");
+        $response = $this->getJson(self::BASE_URL . "/search?email=searchme@example.com", $this->authHeaders('project-manager'));
 
         $response->assertOk()
             ->assertJsonPath('data.email', 'searchme@example.com');
@@ -175,7 +175,7 @@ class ContactTest extends TestCase
     /** @test */
     public function test_search_returns_404_if_not_found()
     {
-        $response = $this->getJson(self::BASE_URL . "/search?email=unknown@example.com");
+        $response = $this->getJson(self::BASE_URL . "/search?email=unknown@example.com", $this->authHeaders('project-manager'));
 
         $response->assertStatus(404);
     }
@@ -183,7 +183,7 @@ class ContactTest extends TestCase
     /** @test */
     public function test_search_validation_error()
     {
-        $response = $this->getJson(self::BASE_URL . "/search?email=not-valid");
+        $response = $this->getJson(self::BASE_URL . "/search?email=not-valid", $this->authHeaders('project-manager'));
 
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['email']);

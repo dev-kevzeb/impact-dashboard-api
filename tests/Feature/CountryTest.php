@@ -32,7 +32,7 @@ class CountryTest extends TestCase
     {
         Country::factory()->count(3)->create();
 
-        $response = $this->getJson(self::BASE_URL);
+        $response = $this->getJson(self::BASE_URL, $this->authHeaders());
 
         $response->assertOk()
                  ->assertJsonPath('data.total', 3)
@@ -42,7 +42,7 @@ class CountryTest extends TestCase
     /** LISTAR VACÍO */
     public function test_list_returns_empty_when_no_countries(): void
     {
-        $response = $this->getJson(self::BASE_URL);
+        $response = $this->getJson(self::BASE_URL, $this->authHeaders());
 
         $response->assertOk()
                  ->assertJsonPath('data.total', 0)
@@ -56,18 +56,19 @@ class CountryTest extends TestCase
 
         $data = [
             'name' => 'Bolivia',
+            'active' => false,
             'currency' => [
                 'id' => $currency->id,
                 'code' => $currency->code,
             ],
         ];
 
-        $response = $this->postJson(self::BASE_URL, $data);
+        $response = $this->postJson(self::BASE_URL, $data, $this->authHeaders());
 
         $response->assertCreated()
                  ->assertJson([
                      'success' => true,
-                     'message' => 'Country successfully created'
+                     'message' => 'Country created successfully'
                  ]);
 
         $this->assertDatabaseHas('country', [
@@ -83,17 +84,18 @@ class CountryTest extends TestCase
 
         $data = [
             'name' => 'Bolivia',
+            'active' => false,
             'currency' => [
                 'code' => $currency->code,
             ],
         ];
 
-        $response = $this->postJson(self::BASE_URL, $data);
+        $response = $this->postJson(self::BASE_URL, $data, $this->authHeaders());
 
         $response->assertCreated()
                  ->assertJson([
                      'success' => true,
-                     'message' => 'Country successfully created'
+                     'message' => 'Country created successfully'
                  ]);
 
         $this->assertDatabaseHas('country', [
@@ -111,7 +113,7 @@ class CountryTest extends TestCase
             'currency' => [
                 'code' => $currency->code,
             ],
-        ]);
+        ], $this->authHeaders());
 
         $response->assertStatus(422)
                  ->assertJsonValidationErrors(['name'])
@@ -126,7 +128,7 @@ class CountryTest extends TestCase
         $response = $this->postJson(self::BASE_URL, [
             'name' => 'A',
             'currency_id' => $currency->id
-        ]);
+        ], $this->authHeaders());
 
         $response->assertStatus(422)
                  ->assertJsonPath('errors.name.0', self::ERROR_NAME_TOO_SHORT);
@@ -140,7 +142,7 @@ class CountryTest extends TestCase
         $response = $this->postJson(self::BASE_URL, [
             'name' => str_repeat('A', 101),
             'currency_id' => $currency->id
-        ]);
+        ], $this->authHeaders());
 
         $response->assertStatus(422)
                  ->assertJsonPath('errors.name.0', self::ERROR_NAME_TOO_LONG);
@@ -154,7 +156,7 @@ class CountryTest extends TestCase
         $response = $this->postJson(self::BASE_URL, [
             'name' => 'País 123 %&/',
             'currency_id' => $currency->id
-        ]);
+        ], $this->authHeaders());
 
         $response->assertStatus(422)
                  ->assertJsonPath('errors.name.0', self::ERROR_NAME_INVALID_CHARACTERS);
@@ -167,11 +169,12 @@ class CountryTest extends TestCase
 
         $response = $this->postJson(self::BASE_URL, [
             'name' => '   República    de Bolivia   ',
+            'active' => false,
             'currency' => [
                 'id' => $currency->id,
                 'code' => $currency->code,
             ],
-        ]);
+        ], $this->authHeaders());
 
         $response->assertCreated();
 
@@ -191,7 +194,7 @@ class CountryTest extends TestCase
                 'id' => 9999,
                 'code' => 'USD'
             ],
-        ]);
+        ], $this->authHeaders());
 
         $response->assertStatus(422)
                 ->assertJson([
@@ -216,7 +219,7 @@ class CountryTest extends TestCase
         $response = $this->postJson(self::BASE_URL, [
             'name' => 'Peru',
             'currency_id' => $currency->id
-        ]);
+        ], $this->authHeaders());
 
         $response->assertStatus(422)
                  ->assertJsonPath('errors.name.0', self::ERROR_NAME_UNIQUE);
@@ -227,7 +230,7 @@ class CountryTest extends TestCase
     {
         $country = Country::factory()->create();
 
-        $response = $this->getJson(self::BASE_URL . "/{$country->id}");
+        $response = $this->getJson(self::BASE_URL . "/{$country->id}", $this->authHeaders());
 
         $response->assertOk()
                  ->assertJsonPath('data.name', $country->name);
@@ -245,10 +248,10 @@ class CountryTest extends TestCase
                 'id' => $currency->id,
                 'code' => $currency->code,
             ],
-        ]);
+        ], $this->authHeaders());
 
         $response->assertOk()
-                 ->assertJson(['message' => 'Country successfully uploaded']);
+                 ->assertJson(['message' => 'Country uploaded successfully']);
 
         $this->assertDatabaseHas('country', [
             'id' => $country->id,
@@ -267,7 +270,7 @@ class CountryTest extends TestCase
                 'id' => 9999,
                 'code' => 'USD'
             ],
-        ]);
+        ], $this->authHeaders());
 
         $response->assertStatus(422)
                 ->assertJson([
@@ -288,10 +291,10 @@ class CountryTest extends TestCase
             'currency' => [
                 'code' => 'USD'
             ],
-        ]);
+        ], $this->authHeaders());
 
         $response->assertOk()
-                 ->assertJson(['message' => 'Country successfully uploaded']);
+                 ->assertJson(['message' => 'Country uploaded successfully']);
     }
 
     /** UPDATE NAME UNIQUE */
@@ -303,7 +306,7 @@ class CountryTest extends TestCase
         $response = $this->putJson(self::BASE_URL . "/{$c2->id}", [
             'name' => 'Chile',
             'currency_id' => $c2->currency_id
-        ]);
+        ], $this->authHeaders());
 
         $response->assertStatus(422)
                  ->assertJsonPath('errors.name.0', self::ERROR_NAME_UNIQUE);
@@ -318,7 +321,7 @@ class CountryTest extends TestCase
         $response = $this->putJson(self::BASE_URL . "/{$country->id}", [
             'name' => '   Bolivia   ',
             'currency' => $currency
-        ]);
+        ], $this->authHeaders());
 
         $response->assertOk();
 
@@ -333,7 +336,7 @@ class CountryTest extends TestCase
     {
         $country = Country::factory()->create();
 
-        $response = $this->getJson(self::BASE_URL . "/search?name={$country->name}");
+        $response = $this->getJson(self::BASE_URL . "/search?name={$country->name}", $this->authHeaders());
 
         $response->assertOk()
                  ->assertJsonPath('data.name', $country->name);
@@ -342,7 +345,7 @@ class CountryTest extends TestCase
     /** SEARCH NAME REQUIRED */
     public function test_search_requires_name(): void
     {
-        $response = $this->getJson(self::BASE_URL . "/search");
+        $response = $this->getJson(self::BASE_URL . "/search", $this->authHeaders());
 
         $response->assertStatus(422);
     }
@@ -350,7 +353,7 @@ class CountryTest extends TestCase
     /** SEARCH NOT FOUND */
     public function test_search_not_found(): void
     {
-        $response = $this->getJson(self::BASE_URL . "/search?name=PaisInexistente");
+        $response = $this->getJson(self::BASE_URL . "/search?name=PaisInexistente", $this->authHeaders());
 
         $response->assertNotFound();
     }
