@@ -46,6 +46,8 @@ class RolePermissionSeeder extends Seeder
                 'projects:progress',
                 'kpas:read',
                 'kpas:write',
+                'indicators:read',
+                'indicators:write',
                 'indicator_types:read',
                 'indicator_types:write',
                 'agencies:read',

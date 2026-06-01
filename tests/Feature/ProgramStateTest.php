@@ -20,7 +20,7 @@ class ProgramStateTest extends TestCase
         $response = $this->deleteJson(self::BASE_URL . "/{$state->id}", [], $this->authHeaders());
 
         $response->assertOk()
-            ->assertJsonPath('message', 'State deleted successfully');
+            ->assertJsonPath('message', 'Status deleted successfully');
 
         $this->assertDatabaseMissing('program_state', ['id' => $state->id]);
     }
@@ -34,7 +34,7 @@ class ProgramStateTest extends TestCase
 
         $response->assertStatus(409)
             ->assertJsonPath('success', false)
-            ->assertJsonPath('message', 'The program state cannot be deleted because it is related to other records.');
+            ->assertJsonPath('message', 'The program status cannot be deleted because it is related to other records.');
 
         $this->assertDatabaseHas('program_state', ['id' => $state->id]);
     }
@@ -44,6 +44,6 @@ class ProgramStateTest extends TestCase
         $response = $this->deleteJson(self::BASE_URL . '/999999', [], $this->authHeaders());
 
         $response->assertStatus(404)
-            ->assertJsonPath('message', 'State not Found');
+            ->assertJsonPath('message', 'Status not Found');
     }
 }

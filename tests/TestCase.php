@@ -95,7 +95,7 @@ abstract class TestCase extends BaseTestCase
         $currency = Currency::firstOrCreate(['code' => 'USD', 'name' => 'US Dollar']);
         $country  = Country::firstOrCreate(
             ['name' => 'Test Country'],
-            ['currency_id' => $currency->id]
+            ['currency_id' => $currency->id, 'active' => true]
         );
 
         // Get the UserRole just created/reused in authenticateUser()

@@ -16,6 +16,7 @@ class IndicatorTest extends TestCase
 
     private IndicatorType $type;
     private Measure $measure;
+    private array $headers;
 
     protected function setUp(): void
     {
@@ -23,6 +24,7 @@ class IndicatorTest extends TestCase
 
         $this->type = IndicatorType::factory()->create();
         $this->measure = Measure::factory()->create();
+        $this->headers = $this->authHeaders();
     }
 
     // LISTAR
@@ -34,7 +36,7 @@ class IndicatorTest extends TestCase
             'measure_id' => $this->measure->id,
         ]);
 
-        $response = $this->getJson(self::BASE_URL);
+        $response = $this->getJson(self::BASE_URL, $this->headers);
 
         $response->assertOk()
             ->assertJsonPath('data.total', 3)
@@ -43,7 +45,7 @@ class IndicatorTest extends TestCase
 
     public function test_list_returns_empty_when_no_indicators(): void
     {
-        $response = $this->getJson(self::BASE_URL);
+        $response = $this->getJson(self::BASE_URL, $this->headers);
 
         $response->assertOk()
             ->assertJsonPath('data.total', 0)
@@ -63,7 +65,7 @@ class IndicatorTest extends TestCase
             'measure_id' => $this->measure->id,
         ];
 
-        $response = $this->postJson(self::BASE_URL, $data);
+        $response = $this->postJson(self::BASE_URL, $data, $this->headers);
 
         $response->assertCreated()
             ->assertJsonPath('data.name', 'Indicador Nuevo');
@@ -82,7 +84,7 @@ class IndicatorTest extends TestCase
             'measure_id' => $this->measure->id,
         ];
 
-        $response = $this->postJson(self::BASE_URL, $data);
+        $response = $this->postJson(self::BASE_URL, $data, $this->headers);
 
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['name']);
@@ -97,7 +99,7 @@ class IndicatorTest extends TestCase
             'measure_id' => $this->measure->id,
         ];
 
-        $response = $this->postJson(self::BASE_URL, $data);
+        $response = $this->postJson(self::BASE_URL, $data, $this->headers);
 
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['target']);
@@ -112,7 +114,7 @@ class IndicatorTest extends TestCase
             'measure_id' => $this->measure->id,
         ];
 
-        $response = $this->postJson(self::BASE_URL, $data);
+        $response = $this->postJson(self::BASE_URL, $data, $this->headers);
 
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['type_id']);
@@ -127,7 +129,7 @@ class IndicatorTest extends TestCase
             'measure_id' => 999,
         ];
 
-        $response = $this->postJson(self::BASE_URL, $data);
+        $response = $this->postJson(self::BASE_URL, $data, $this->headers);
 
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['measure_id']);
@@ -144,7 +146,7 @@ class IndicatorTest extends TestCase
             'measure_id' => $this->measure->id,
         ]);
 
-        $response = $this->getJson(self::BASE_URL . "/{$indicator->id}");
+        $response = $this->getJson(self::BASE_URL . "/{$indicator->id}", $this->headers);
 
         $response->assertOk()
             ->assertJsonPath('data.id', $indicator->id);
@@ -152,7 +154,7 @@ class IndicatorTest extends TestCase
 
     public function test_show_not_found(): void
     {
-        $response = $this->getJson(self::BASE_URL . "/9999");
+        $response = $this->getJson(self::BASE_URL . "/9999", $this->headers);
 
         $response->assertStatus(404);
     }
@@ -172,7 +174,7 @@ class IndicatorTest extends TestCase
             'target' => 80,
             'type_id' => $this->type->id,
             'measure_id' => $this->measure->id,
-        ]);
+        ], $this->headers);
 
         $response->assertOk()
             ->assertJsonPath('data.name', 'Actualizado');
@@ -196,7 +198,7 @@ class IndicatorTest extends TestCase
             'target' => 0,
             'type_id' => 0,
             'measure_id' => 0,
-        ]);
+        ], $this->headers);
 
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['name', 'target', 'type_id', 'measure_id']);
@@ -214,7 +216,7 @@ class IndicatorTest extends TestCase
             'measure_id' => $this->measure->id,
         ]);
 
-        $response = $this->getJson(self::BASE_URL . "/search?name=salud");
+        $response = $this->getJson(self::BASE_URL . "/search?name=salud", $this->headers);
 
         $response->assertOk()
             ->assertJsonPath('data.name', 'Salud Pública');
@@ -222,7 +224,7 @@ class IndicatorTest extends TestCase
 
     public function test_search_not_found(): void
     {
-        $response = $this->getJson(self::BASE_URL . "/search?name=xxxxxxxx");
+        $response = $this->getJson(self::BASE_URL . "/search?name=xxxxxxxx", $this->headers);
 
         $response->assertStatus(404);
     }

@@ -28,7 +28,7 @@ class ProjectDeleteTest extends TestCase
         $this->seed(\Database\Seeders\ProgramStateSeeder::class);
     }
 
-    private function createProgramWithAccess(): Program
+    private function createProgramWithAccess(?int $countryUserRoleId = null): Program
     {
         $activeState = ProgramState::where('name', 'Active')->firstOrFail();
 
@@ -36,17 +36,21 @@ class ProjectDeleteTest extends TestCase
             'program_state_id' => $activeState->id,
         ]);
 
-        ProgramCountryUserRole::factory()->create([
-            'program_id' => $program->id,
-        ]);
+        $data = ['program_id' => $program->id];
+        if ($countryUserRoleId !== null) {
+            $data['country_user_role_id'] = $countryUserRoleId;
+        }
+
+        ProgramCountryUserRole::factory()->create($data);
 
         return $program;
     }
 
     public function test_delete_project_removes_project_related_records_and_contact(): void
     {
-        $headers = $this->authHeaders('admin');
-        $program = $this->createProgramWithAccess();
+        $auth = $this->authHeadersWithCountry('project-manager');
+        $headers = $auth['headers'];
+        $program = $this->createProgramWithAccess($auth['countryUserRole']->id);
 
         $project = Project::factory()->create([
             'program_id' => $program->id,
@@ -93,8 +97,9 @@ class ProjectDeleteTest extends TestCase
 
     public function test_delete_project_keeps_contact_when_still_used_by_another_project(): void
     {
-        $headers = $this->authHeaders('admin');
-        $program = $this->createProgramWithAccess();
+        $auth = $this->authHeadersWithCountry('project-manager');
+        $headers = $auth['headers'];
+        $program = $this->createProgramWithAccess($auth['countryUserRole']->id);
 
         $sharedContact = Contact::factory()->create();
 
@@ -119,7 +124,7 @@ class ProjectDeleteTest extends TestCase
 
     public function test_delete_project_returns_error_when_not_found(): void
     {
-        $headers = $this->authHeaders('admin');
+        $headers = $this->authHeaders('project-manager');
 
         $response = $this->deleteJson(self::BASE_URL . '/999999', [], $headers);
 

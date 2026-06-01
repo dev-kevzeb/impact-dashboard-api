@@ -219,8 +219,8 @@ class InviteProgramTest extends TestCase
             'invited_user_role_id' => $invitedUserRole->id,
         ], $nonOwnerHeaders);
 
-        $response->assertStatus(400)
-            ->assertJsonPath('message', self::ERROR_ONLY_OWNER_CAN_INVITE);
+        $response->assertStatus(403)
+            ->assertJsonPath('message', 'Insufficient permissions. Required scope: program_country_user_roles:write');
     }
 
     public function test_only_project_manager_roles_can_be_invited(): void
@@ -345,9 +345,9 @@ class InviteProgramTest extends TestCase
             $nonOwnerHeaders
         );
 
-        $response->assertStatus(400)
+        $response->assertStatus(403)
             ->assertJsonPath('success', false)
-            ->assertJsonPath('message', self::ERROR_ONLY_OWNER_CAN_INVITE);
+            ->assertJsonPath('message', 'Insufficient permissions. Required scope: program_country_user_roles');
     }
 
     public function test_show_returns_not_found_when_invite_does_not_exist(): void
@@ -416,8 +416,8 @@ class InviteProgramTest extends TestCase
 
         $response = $this->deleteJson(self::BASE_URL . '/' . $invite->id, [], $thirdPartyHeaders);
 
-        $response->assertStatus(400)
-            ->assertJsonPath('message', self::ERROR_NOT_ALLOWED_TO_REMOVE);
+        $response->assertStatus(403)
+            ->assertJsonPath('message', 'Insufficient permissions. Required scope: program_country_user_roles:write');
 
         $this->assertDatabaseHas('invite_program', ['id' => $invite->id]);
     }
