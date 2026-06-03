@@ -169,6 +169,7 @@ Route::prefix('v1')->group(function () {
         Route::post('country_kpas', [CountryKpaController::class, 'store'])->middleware('scope:country_kpas:write');
         Route::get('country_kpas/{id}', [CountryKpaController::class, 'show'])->middleware('scope:country_kpas');
         Route::get('country_kpas/country/{id}', [CountryKpaController::class, 'showForCountry'])->middleware('scope:projects');
+        Route::get('country_kpas/country/{id}/implementation', [CountryKpaController::class, 'showForCountryImplementation'])->middleware('scope:stats');
         Route::put('country_kpas/{id}', [CountryKpaController::class, 'update'])->middleware('scope:country_kpas:write');
         Route::delete('country_kpas/{id}', [CountryKpaController::class, 'destroy'])->middleware('scope:country_kpas:write');
 

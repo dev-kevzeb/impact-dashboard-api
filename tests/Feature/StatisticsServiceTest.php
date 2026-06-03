@@ -86,12 +86,12 @@ class StatisticsServiceTest extends TestCase
     }
 
     // ─────────────────────────────────────────────────────────────
-    //  TOP-DOWN measure implementation
+    //  TOP-DOWN indicators
     // ─────────────────────────────────────────────────────────────
 
-    public function test_td_measure_implementation_uses_actual_value_over_target(): void
+    public function test_td_measure_implementation_uses_actual_over_target(): void
     {
-        // (60 / 80) × 100 = 75.0
+        // TD indicators use actual / target * 100.
 
         $tdType  = IndicatorType::factory()->create(['is_bottom_up' => false]);
         $measure = Measure::factory()->create();
@@ -123,11 +123,9 @@ class StatisticsServiceTest extends TestCase
         $this->assertEquals(0, $result['implementation']);
     }
 
-    public function test_td_measure_averages_multiple_indicators(): void
+    public function test_td_measure_with_multiple_indicators_sums_implementations(): void
     {
-        // indicator1: 60/80 × 100 = 75
-        // indicator2: 40/80 × 100 = 50
-        // avg = (75 + 50) / 2 = 62.5
+        // TD indicators are aggregated as the sum of each indicator implementation.
 
         $tdType  = IndicatorType::factory()->create(['is_bottom_up' => false]);
         $measure = Measure::factory()->create();
@@ -136,20 +134,20 @@ class StatisticsServiceTest extends TestCase
             'name'         => 'Indicador TD uno',
             'type_id'      => $tdType->id,
             'measure_id'   => $measure->id,
-            'target'       => 80,
-            'actual_value' => 60,
+            'target'       => 100,
+            'actual_value' => 30,
         ]);
         Indicator::factory()->create([
             'name'         => 'Indicador TD dos',
             'type_id'      => $tdType->id,
             'measure_id'   => $measure->id,
-            'target'       => 80,
-            'actual_value' => 40,
+            'target'       => 100,
+            'actual_value' => 20,
         ]);
 
         $result = $this->service->getMeasureImplementation($measure->id);
 
-        $this->assertEquals(62.5, $result['implementation']);
+        $this->assertEquals(50.0, $result['implementation']);
     }
 
     // ─────────────────────────────────────────────────────────────

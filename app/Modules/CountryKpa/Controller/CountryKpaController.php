@@ -9,6 +9,7 @@ use App\Http\Responses\ApiResponse;
 use Illuminate\Http\Request;
 use \Illuminate\Http\JsonResponse;
 use App\Modules\CountryKpa\Service\CountryKpaService;
+use App\Modules\Statistics\Service\StatisticsService;
 use RuntimeException;
 
 /**
@@ -39,10 +40,12 @@ use RuntimeException;
 class CountryKpaController extends Controller
 {
 	protected CountryKpaService $service;
+	protected StatisticsService $statisticsService;
 
-	public function __construct(CountryKpaService $service)
+	public function __construct(CountryKpaService $service, StatisticsService $statisticsService)
 	{
 		$this->service = $service;
+		$this->statisticsService = $statisticsService;
 	}
 
 	/**
@@ -500,6 +503,29 @@ class CountryKpaController extends Controller
 
 		} catch (RuntimeException $e) {
 			return ApiResponse::notFound('CountryKpa');
+		} catch (\Exception $e) {
+			return ApiResponse::error('Internal server error', 500);
+		}
+	}
+
+	public function showForCountryImplementation(Request $request, int $id): JsonResponse
+	{
+		try {
+			if (!$this->service->userCanViewCountryDashboard($id)) {
+				return ApiResponse::error('Access denied to this country', 403);
+			}
+
+			$search = $request->get('search');
+			$perPage = (int) $request->get('per_page', 10);
+			$implementation = $this->statisticsService->getCountryDashboardImplementation($id, $search, $perPage);
+
+			return ApiResponse::success(
+				'Country dashboard implementation retrieved successfully',
+				200,
+				$implementation
+			);
+		} catch (RuntimeException $e) {
+			return ApiResponse::notFound('Country');
 		} catch (\Exception $e) {
 			return ApiResponse::error('Internal server error', 500);
 		}
