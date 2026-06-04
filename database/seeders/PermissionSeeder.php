@@ -36,6 +36,8 @@ class PermissionSeeder extends Seeder
             ['name' => 'projects:delete', 'scope' => 'projects', 'module' => 'Project', 'description' => 'Delete projects'],
             ['name' => 'projects:weight', 'scope' => 'projects', 'module' => 'Project', 'description' => 'Edit project weight'],
 
+            ['name' => 'stats:read', 'scope' => 'stats', 'module' => 'Stats', 'description' => 'View statistics and country dashboard implementation'],
+
             ['name' => 'currencies:read', 'scope' => 'currencies', 'module' => 'Currency', 'description' => 'View currencies'],
             ['name' => 'currencies:write', 'scope' => 'currencies', 'module' => 'Currency', 'description' => 'Create/edit currencies'],
 

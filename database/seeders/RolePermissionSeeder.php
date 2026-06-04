@@ -56,6 +56,7 @@ class RolePermissionSeeder extends Seeder
                 'country_join_requests:read',
                 'country_kpas:read',
                 'country_kpas:write',
+                'stats:read',
             ];
             $permissions = Permission::whereIn('name', $adminPermissions)->get();
             $admin->syncPermissions($permissions);
@@ -98,13 +99,13 @@ class RolePermissionSeeder extends Seeder
                 'projects:weight',
                 'projects:progress',
                 'donors:read',
-                'donors:create',
                 'country_dashboard_shares:read',
                 'country_dashboard_shares:write',
                 'country_join_requests:read',
                 'country_join_requests:write',
                 'countries:activate',
                 'agencies:read',
+                'stats:read',
             ];
 
             $permissions = Permission::whereIn('name', $countryManagerPermissions)->get();

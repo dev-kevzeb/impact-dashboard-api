@@ -3,6 +3,7 @@
 namespace App\Modules\Statistics\Service;
 
 use App\Modules\Agency\Repository\AgencyRepository;
+use App\Modules\Country\Repository\CountryRepository;
 use App\Modules\CountryKpa\Repository\CountryKpaRepository;
 use App\Modules\Donor\Repository\DonorRepository;
 use App\Modules\Indicator\Repository\IndicatorRepository;
@@ -11,6 +12,8 @@ use App\Modules\Measure\Repository\MeasureRepository;
 use App\Modules\Project\Repository\ProjectRepository;
 use App\Modules\ProjectIndicator\Repository\ProjectIndicatorRepository;
 use App\Modules\StrategicOutput\Repository\StrategicOutputRepository;
+use App\Modules\Statistics\Domain\BottomUp;
+use App\Modules\Statistics\Domain\TopDown;
 
 class StatisticsService
 {
@@ -23,8 +26,9 @@ class StatisticsService
     private IndicatorRepository $indicatorRepository;
     private AgencyRepository $agencyRepository;
     private DonorRepository $donorRepository;
+    private CountryRepository $countryRepository;
 
-    public function __construct(MeasureRepository $measureRepository, ProjectIndicatorRepository $projectIndicatorRepository, ProjectRepository $projectRepository, IndicatorRepository $indicatorRepository, StrategicOutputRepository $strategicOutputRepository, CountryKpaRepository $countryKpaRepository, KpaRepository $kpaRepository, AgencyRepository $agencyRepository, DonorRepository $donorRepository)
+    public function __construct(MeasureRepository $measureRepository, ProjectIndicatorRepository $projectIndicatorRepository, ProjectRepository $projectRepository, IndicatorRepository $indicatorRepository, StrategicOutputRepository $strategicOutputRepository, CountryKpaRepository $countryKpaRepository, KpaRepository $kpaRepository, AgencyRepository $agencyRepository, DonorRepository $donorRepository, CountryRepository $countryRepository)
     {
         $this->measureRepository = $measureRepository;
         $this->projectIndicatorRepository = $projectIndicatorRepository;
@@ -35,6 +39,7 @@ class StatisticsService
         $this->kpaRepository = $kpaRepository;
         $this->agencyRepository = $agencyRepository;
         $this->donorRepository = $donorRepository;
+        $this->countryRepository = $countryRepository;
     }
 
     public function getMeasureImplementation(int $measureId):array
@@ -51,99 +56,54 @@ class StatisticsService
             "agencies" => [],
             "donors" => []
         ];
-
-        $isBottomUp = (bool) ($indicators->first()->type->is_bottom_up ?? true);
-
-        $indicatorIds = $indicators->pluck('id')->toArray();
-        $projectIds = $this->projectIndicatorRepository->getProjectIdsByIndicatorIds($indicatorIds);
-        // If there are no linked projects and this is BottomUp, return zeros.
-        if ($isBottomUp && empty($projectIds)) {
-            return [
-                "name" => $measure->name,
-                "implementation" => 0,
-                "resource" => 0,
-                "beneficiaries" => [],
-                "agencies" => [],
-                "donors" => []
-            ];
-        }
-
-        $projects = $this->projectRepository->getByIds($projectIds);
-
-        if (!$isBottomUp) {
-            // Top-Down: compute implementation as average of (actual/target)*100 across indicators
-            $indicatorPercentages = [];
-            foreach ($indicators as $indicator) {
-                $actual = $indicator->actual_value ?? null;
-                $target = $indicator->target ?? null;
-
-                if ($actual === null || $target === null) {
-                    continue;
-                }
-
-                if ((float) $target == 0.0) {
-                    continue;
-                }
-
-                $percent = ((float) $actual / (float) $target) * 100;
-                $percent = max(0.0, min(100.0, $percent));
-                $indicatorPercentages[] = $percent;
-            }
-
-            $implementation = 0;
-            if (!empty($indicatorPercentages)) {
-                $implementation = round(array_sum($indicatorPercentages) / count($indicatorPercentages), 2);
-            }
-
-            return [
-                "name" => $measure->name,
-                "implementation" => $implementation,
-                "resource" => 0,
-                "beneficiaries" => [],
-                "agencies" => [],
-                "donors" => []
-            ];
-        }
+        // Measures now aggregate the implementation of their indicators.
+        // TD indicators currently contribute 0 because only BU is implemented.
         $resource = 0;
+        $beneficiaries = collect();
+        $agenciesRaw = collect();
+        $donorsRaw = collect();
+        $indicatorImplementations = [];
 
-        foreach ($projects as $project) {
-            $resource += $project->project_budget;
+        foreach ($indicators as $indicator) {
+            $implementationData = $this->getIndicatorImplementation($indicator->id);
+            $indicatorImplementations[] = $implementationData['implementation'];
+
+            // collect resource and contributors
+            $resource += $implementationData['resource'];
+            $beneficiaries = $beneficiaries->merge($implementationData['beneficiaries']);
+            $agenciesRaw = $agenciesRaw->merge($implementationData['agencies']);
+            $donorsRaw = $donorsRaw->merge($implementationData['donors']);
         }
 
-        $implementation = $this->calculateNormalizedWeightedProjectImplementation($projects);
+        $implementation = 0;
+        if (!empty($indicatorImplementations)) {
+            $implementation = min(round(array_sum($indicatorImplementations), 2), 100);
+        }
 
-        $allDonorsContributions = $projects->flatMap(function ($project) {
-            return $this->calculateDonorsContribution(
-                $project->donors,
-                $project->progress / 100,
-                (float) ($project->weight ?? 0)
-            );
-        });
-        $allAgenciesContributions = $projects->flatMap(function ($project) {
-            return $this->calculateAgenciesContribution(
-                $project->agencies,
-                $project->progress / 100,
-                (float) ($project->weight ?? 0)
-            );
-        });
+        // Ensure beneficiaries unique
+        $beneficiaries = $beneficiaries->unique('id')->values();
 
-        $donorsContribution = $allDonorsContributions->groupBy('id')->map(function ($group) use ($implementation) {
+        $totalCombinedContribution = $agenciesRaw->sum('contribution') + $donorsRaw->sum('contribution');
+
+        $agenciesContribution = $agenciesRaw->groupBy('id')->map(function ($group) use ($totalCombinedContribution) {
+            $sum = $group->sum('contribution');
+
             return [
                 'id' => $group->first()['id'],
                 'name' => $group->first()['name'],
-                'contribution' => $implementation > 0 ? round($group->sum('contribution') / $implementation * 100, 2) : 0
+                'contribution' => $totalCombinedContribution > 0 ? round(($sum / $totalCombinedContribution) * 100, 2) : 0
             ];
         })->values()->toArray();
 
-        $agenciesContribution = $allAgenciesContributions->groupBy('id')->map(function ($group) use ($implementation) {
+        $donorsContribution = $donorsRaw->groupBy('id')->map(function ($group) use ($totalCombinedContribution) {
+            $sum = $group->sum('contribution');
+
             return [
                 'id' => $group->first()['id'],
                 'name' => $group->first()['name'],
-                'contribution' => $implementation > 0 ? round($group->sum('contribution') / $implementation * 100, 2) : 0
+                'contribution' => $totalCombinedContribution > 0 ? round(($sum / $totalCombinedContribution) * 100, 2) : 0
             ];
         })->values()->toArray();
-
-        $beneficiaries = $projects->map(fn($project) => $project->beneficiary)->filter()->unique('id')->values();
 
         return [
             "name" => $measure->name,
@@ -152,6 +112,91 @@ class StatisticsService
             "beneficiaries" => $beneficiaries,
             "agencies" => $agenciesContribution,
             "donors" => $donorsContribution
+        ];
+    }
+
+    public function getIndicatorImplementation(int $indicatorId): array
+    {
+        $indicator = $this->indicatorRepository->findById($indicatorId);
+        if (!$indicator) return [
+            'name' => 'indicator',
+            'implementation' => 0,
+            'resource' => 0,
+            'beneficiaries' => [],
+            'agencies' => [],
+            'donors' => [],
+            'project_ids' => []
+        ];
+
+        // ensure type relation is loaded
+        if (!isset($indicator->type)) {
+            $indicator->load('type');
+        }
+
+        $isBottomUp = (bool) ($indicator->type?->is_bottom_up ?? true);
+
+        if (!$isBottomUp) {
+            $implementation = $this->calculateIndicatorImplementation($indicator);
+
+            return [
+                'name' => $indicator->name,
+                'implementation' => $implementation,
+                'resource' => 0,
+                'beneficiaries' => [],
+                'agencies' => [],
+                'donors' => [],
+                'project_ids' => []
+            ];
+        }
+
+        $projectIds = $this->projectIndicatorRepository->getProjectIdsByIndicatorIds([$indicatorId]);
+        if (empty($projectIds)) {
+            return [
+                'name' => $indicator->name,
+                'implementation' => 0,
+                'resource' => 0,
+                'beneficiaries' => [],
+                'agencies' => [],
+                'donors' => [],
+                'project_ids' => []
+            ];
+        }
+
+        $projects = $this->projectRepository->getByIds($projectIds);
+
+        $resource = 0;
+        foreach ($projects as $project) {
+            $resource += $project->project_budget;
+        }
+
+        $implementation = $this->calculateIndicatorImplementation($indicator);
+
+        $allDonorsContributions = $projects->flatMap(function ($project) {
+            return $this->calculateDonorsContribution(
+                $project->donors,
+                $project->progress / 100,
+                (float) ($project->weight ?? 0)
+            );
+        });
+
+        $allAgenciesContributions = $projects->flatMap(function ($project) {
+            return $this->calculateAgenciesContribution(
+                $project->agencies,
+                $project->progress / 100,
+                (float) ($project->weight ?? 0)
+            );
+        });
+
+        $beneficiaries = $projects->map(fn($project) => $project->beneficiary)->filter()->unique('id')->values();
+
+        return [
+            'name' => $indicator->name,
+            'implementation' => $implementation,
+            'resource' => $resource,
+            'beneficiaries' => $beneficiaries,
+            'agencies' => $allAgenciesContributions,
+            'donors' => $allDonorsContributions,
+            'project_ids' => $projectIds
         ];
     }
 
@@ -408,6 +453,168 @@ class StatisticsService
             "kpas"=> $kpasData->values()->toArray(),
             "resource" => $resource
         ];
+    }
+
+    public function getCountryDashboardImplementation(int $countryId, ?string $search, int $perPage): array
+    {
+        $country = $this->countryRepository->findById($countryId);
+        $paginator = $this->countryKpaRepository->getCountryKpasByCountryId($countryId, $search, $perPage);
+
+        $kpas = [];
+        foreach ($paginator as $countryKpa) {
+            $kpas[] = $this->buildCountryKpaImplementationNode($countryKpa);
+        }
+
+        return [
+            'country' => [
+                'id' => $country->id,
+                'name' => $country->name,
+                'currency_id' => $country->currency_id,
+                'active' => (bool) $country->active,
+            ],
+            'kpas' => $kpas,
+            'pagination' => [
+                'current_page' => $paginator->currentPage(),
+                'last_page' => $paginator->lastPage(),
+                'per_page' => $paginator->perPage(),
+                'total' => $paginator->total(),
+            ],
+        ];
+    }
+
+    private function buildCountryKpaImplementationNode(object $countryKpa): array
+    {
+        $strategicOutputs = $this->strategicOutputRepository->getByCountryKpaIds([$countryKpa->id]);
+        $strategicOutputNodes = [];
+        $totalMeasures = 0;
+        $totalIndicators = 0;
+
+        foreach ($strategicOutputs as $strategicOutput) {
+            $measures = $this->measureRepository->getAllByStrategicOutputId($strategicOutput->id);
+            $measureNodes = [];
+            $strategicOutputImplementation = 0.0;
+            $strategicOutputIndicatorCount = 0;
+
+            foreach ($measures as $measure) {
+                $indicators = $this->indicatorRepository->getWithTypeByMeasureId($measure->id);
+                $indicatorNodes = [];
+                $measureImplementation = 0.0;
+
+                foreach ($indicators as $indicator) {
+                    $indicatorNode = $this->buildIndicatorImplementationNode($indicator);
+                    $measureImplementation += $indicatorNode['implementation'];
+                    $indicatorNodes[] = $indicatorNode;
+                }
+
+                $measureImplementation = min(round($measureImplementation, 2), 100);
+                $strategicOutputImplementation += $measureImplementation;
+                $strategicOutputIndicatorCount += count($indicatorNodes);
+
+                $measureNodes[] = [
+                    'id' => $measure->id,
+                    'name' => $measure->name,
+                    'implementation' => $measureImplementation,
+                    'indicators_count' => count($indicatorNodes),
+                    'indicators' => $indicatorNodes,
+                ];
+            }
+
+            $measureCount = count($measureNodes);
+            $strategicOutputImplementation = $measureCount > 0 ? round($strategicOutputImplementation / $measureCount, 2) : 0;
+            $totalMeasures += $measureCount;
+            $totalIndicators += $strategicOutputIndicatorCount;
+
+            $strategicOutputNodes[] = [
+                'id' => $strategicOutput->id,
+                'name' => $strategicOutput->name,
+                'implementation' => $strategicOutputImplementation,
+                'measures_count' => $measureCount,
+                'indicators_count' => $strategicOutputIndicatorCount,
+                'measures' => $measureNodes,
+            ];
+        }
+
+        $weightedTotal = 0.0;
+        foreach ($strategicOutputNodes as $strategicOutputNode) {
+            $weightedTotal += $strategicOutputNode['implementation'] * $strategicOutputNode['measures_count'];
+        }
+
+        return [
+            'id' => $countryKpa->id,
+            'id_kpa' => $countryKpa->id_kpa,
+            'name' => data_get($countryKpa, 'kpa.name', ''),
+            'implementation' => $totalMeasures > 0 ? round($weightedTotal / $totalMeasures, 2) : 0,
+            'strategic_outputs_count' => (int) ($countryKpa->strategic_outputs_count ?? count($strategicOutputNodes)),
+            'measures_count' => (int) ($countryKpa->measures_count ?? $totalMeasures),
+            'indicators_count' => (int) ($countryKpa->indicators_count ?? $totalIndicators),
+            'strategic_outputs' => $strategicOutputNodes,
+        ];
+    }
+
+    private function buildIndicatorImplementationNode(object $indicator): array
+    {
+        $implementation = $this->calculateIndicatorImplementation($indicator);
+
+        return [
+            'id' => $indicator->id,
+            'name' => $indicator->name,
+            'target' => $indicator->target,
+            'actual_value' => $indicator->actual_value,
+            'implementation' => $implementation,
+            'type' => [
+                'id' => $indicator->type?->id,
+                'name' => $indicator->type?->name,
+                'is_bottom_up' => (bool) ($indicator->type?->is_bottom_up ?? true),
+            ],
+        ];
+    }
+
+    private function calculateIndicatorImplementation(object $indicator): float
+    {
+        if (!isset($indicator->type)) {
+            $indicator->load('type');
+        }
+
+        $isBottomUp = (bool) ($indicator->type?->is_bottom_up ?? true);
+
+        if ($isBottomUp) {
+            $projectIds = $this->projectIndicatorRepository->getProjectIdsByIndicatorIds([$indicator->id]);
+
+            if (empty($projectIds)) {
+                return 0.0;
+            }
+
+            $projects = $this->projectRepository->getByIds($projectIds);
+            $bottomUpProjects = $projects->map(function ($project) {
+                return [
+                    'implementation' => max(0.0, min(100.0, (float) ($project->progress ?? 0))) / 100,
+                    'weight' => max(0.0, min(1.0, (float) ($project->weight ?? 0))),
+                ];
+            })->toArray();
+
+            if (empty($bottomUpProjects)) {
+                return 0.0;
+            }
+
+            try {
+                return min((new BottomUp($bottomUpProjects))->value(), 100);
+            } catch (\RuntimeException $e) {
+                return 0.0;
+            }
+        }
+
+        $target = (float) ($indicator->target ?? 0);
+        $actualValue = (float) ($indicator->actual_value ?? 0);
+
+        if ($target <= 0 || $actualValue < 0) {
+            return 0.0;
+        }
+
+        try {
+            return min((new TopDown($actualValue, $target))->value(), 100);
+        } catch (\RuntimeException $e) {
+            return 0.0;
+        }
     }
 
     public function calculateAgenciesContribution($agencies, $progress, $weight):array{
