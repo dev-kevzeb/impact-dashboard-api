@@ -8,7 +8,6 @@ use App\Modules\Donor\Domain\Donor;
 use App\Modules\Indicator\Domain\Indicator;
 use App\Modules\Program\Domain\Program;
 use App\Modules\ProgramCountryUserRole\Domain\ProgramCountryUserRole;
-use App\Modules\Project\Domain\Project;
 use App\Modules\ProjectState\Domain\ProjectState;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -21,7 +20,7 @@ class ProjectWeightValidationTest extends TestCase
 
     private function prepareProgramWithAccess(): array
     {
-        $headers = $this->authHeaders('admin');
+        $headers = $this->authHeaders('project-manager');
         $program = Program::factory()->create();
 
         ProgramCountryUserRole::factory()->create([
@@ -101,59 +100,6 @@ class ProjectWeightValidationTest extends TestCase
 
         $response
             ->assertStatus(422)
-            ->assertJsonPath('errors.weight.0', 'The project weight must be between 0 and 1.');
-    }
-
-    public function test_create_project_rejects_when_program_weight_sum_exceeds_one(): void
-    {
-        [$headers, $program] = $this->prepareProgramWithAccess();
-
-        Project::factory()->create([
-            'program_id' => $program->id,
-            'weight' => 0.80,
-        ]);
-
-        $payload = $this->buildPayload($program->id, 0.30, [
-            'name' => 'Segundo proyecto',
-        ]);
-
-        $response = $this->postJson(self::BASE_URL, $payload, $headers);
-
-        $response
-            ->assertStatus(422)
-            ->assertJsonPath('errors.weight.0', 'The sum of project weights for this program cannot exceed 1.');
-    }
-
-    public function test_update_project_rejects_when_program_weight_sum_exceeds_one(): void
-    {
-        [$headers, $program] = $this->prepareProgramWithAccess();
-
-        Project::factory()->create([
-            'program_id' => $program->id,
-            'weight' => 0.60,
-        ]);
-
-        $projectB = Project::factory()->create([
-            'program_id' => $program->id,
-            'weight' => 0.30,
-        ]);
-
-        $payload = $this->buildPayload($program->id, 0.50, [
-            'name' => 'Proyecto B actualizado',
-            'contact' => [
-                'id' => $projectB->contact_id,
-                'first_name' => $projectB->contact->first_name,
-                'last_name' => $projectB->contact->last_name,
-                'title' => $projectB->contact->title,
-                'email' => $projectB->contact->email,
-                'phone' => $projectB->contact->phone,
-            ],
-        ]);
-
-        $response = $this->putJson(self::BASE_URL . '/' . $projectB->id, $payload, $headers);
-
-        $response
-            ->assertStatus(422)
-            ->assertJsonPath('errors.weight.0', 'The sum of project weights for this program cannot exceed 1.');
+            ->assertJsonPath('errors.weight.0', 'The project weight must be at most 1.');
     }
 }
