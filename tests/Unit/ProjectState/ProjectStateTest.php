@@ -1,9 +1,9 @@
 <?php
 
-namespace Tests\Unit;
+namespace Tests\Unit\ProjectState;
 
+use Tests\TestCase;
 use App\Modules\ProjectState\Domain\ProjectState;
-use PHPUnit\Framework\TestCase;
 use RuntimeException;
 
 class ProjectStateTest extends TestCase
@@ -27,7 +27,7 @@ class ProjectStateTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals(ProjectState::$ERROR_NAME_EMPTY, $exception->getMessage());
+                $this->assertEquals(ProjectState::$ERROR_STATE_EMPTY, $exception->getMessage());
             }
         );
     }
@@ -40,7 +40,7 @@ class ProjectStateTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals(ProjectState::$ERROR_NAME_EMPTY, $exception->getMessage());
+                $this->assertEquals(ProjectState::$ERROR_STATE_EMPTY, $exception->getMessage());
             }
         );
     }
@@ -53,7 +53,7 @@ class ProjectStateTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals(ProjectState::$ERROR_NAME_MIN_LENGTH, $exception->getMessage());
+                $this->assertEquals(ProjectState::$ERROR_STATE_MIN_LENGTH, $exception->getMessage());
             }
         );
     }
@@ -66,7 +66,7 @@ class ProjectStateTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals(ProjectState::$ERROR_NAME_MIN_LENGTH, $exception->getMessage());
+                $this->assertEquals(ProjectState::$ERROR_STATE_MIN_LENGTH, $exception->getMessage());
             }
         );
     }
@@ -76,7 +76,7 @@ class ProjectStateTest extends TestCase
         $projectState = ProjectState::at("ACTIVE");
         
         $this->assertInstanceOf(ProjectState::class, $projectState);
-        $this->assertEquals("ACTIVE", $projectState->getName());
+        $this->assertEquals("ACTIVE", $projectState->getState());
     }
 
     public function test_project_state_name_with_minimum_length_is_valid()
@@ -84,7 +84,7 @@ class ProjectStateTest extends TestCase
         $projectState = ProjectState::at("ABC");
         
         $this->assertInstanceOf(ProjectState::class, $projectState);
-        $this->assertEquals("ABC", $projectState->getName());
+        $this->assertEquals("ABC", $projectState->getState());
     }
 
     public function test_project_state_with_numeric_string_is_valid()
@@ -92,7 +92,7 @@ class ProjectStateTest extends TestCase
         $projectState = ProjectState::at("123");
         
         $this->assertInstanceOf(ProjectState::class, $projectState);
-        $this->assertEquals("123", $projectState->getName());
+        $this->assertEquals("123", $projectState->getState());
     }
 
     public function test_project_state_with_spaces_is_valid()
@@ -100,7 +100,7 @@ class ProjectStateTest extends TestCase
         $projectState = ProjectState::at("En Proceso");
         
         $this->assertInstanceOf(ProjectState::class, $projectState);
-        $this->assertEquals("En Proceso", $projectState->getName());
+        $this->assertEquals("En Proceso", $projectState->getState());
     }
 
     public function test_project_state_with_special_characters_is_valid()
@@ -108,7 +108,7 @@ class ProjectStateTest extends TestCase
         $projectState = ProjectState::at("En-Proceso");
         
         $this->assertInstanceOf(ProjectState::class, $projectState);
-        $this->assertEquals("En-Proceso", $projectState->getName());
+        $this->assertEquals("En-Proceso", $projectState->getState());
     }
 
     public function test_project_state_with_unicode_characters_is_valid()
@@ -116,7 +116,7 @@ class ProjectStateTest extends TestCase
         $projectState = ProjectState::at("Ejecución");
         
         $this->assertInstanceOf(ProjectState::class, $projectState);
-        $this->assertEquals("Ejecución", $projectState->getName());
+        $this->assertEquals("Ejecución", $projectState->getState());
     }
 
     public function test_project_state_name_too_long_throws_exception()
@@ -129,7 +129,7 @@ class ProjectStateTest extends TestCase
             },
             RuntimeException::class,
             function ($exception) {
-                $this->assertEquals(ProjectState::$ERROR_NAME_MAX_LENGTH, $exception->getMessage());
+                $this->assertEquals(ProjectState::$ERROR_STATE_MAX_LENGTH, $exception->getMessage());
             }
         );
     }
@@ -138,6 +138,6 @@ class ProjectStateTest extends TestCase
     {
         $projectState = ProjectState::at("  Estado Trimmed  ");
         
-        $this->assertEquals("Estado Trimmed", $projectState->getName());
+        $this->assertEquals("Estado Trimmed", $projectState->getState());
     }
 }

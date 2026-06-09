@@ -2,7 +2,7 @@
 
 namespace Tests\Unit\Agency;
 
-use PHPUnit\Framework\TestCase;
+use Tests\TestCase;
 use App\Modules\Agency\Domain\Agency;
 use Exception;
 use RuntimeException;
@@ -87,18 +87,14 @@ class AgencyTest extends TestCase
         );
     }
 
-    public function test_agency_url_cannot_be_empty()
+    public function test_agency_url_is_optional()
     {
-        // URL no puede ser vacía (obligatoria)
-        $this->shouldThrowAndAssert(
-            function () {
-                Agency::at("UNICEF", "", true);
-            },
-            RuntimeException::class,
-            function ($exception) {
-                $this->assertEquals(Agency::$ERROR_URL_EMPTY, $exception->getMessage());
-            }
-        );
+        // URL vacía es válida (opcional)
+        $agency = Agency::at("UNICEF", "", true);
+        $this->assertEquals("UNICEF", $agency->getName());
+        $this->assertEquals('', $agency->getUrl());
+        $this->assertInstanceOf(Agency::class, $agency);
+
     }
 
     public function test_agency_url_must_be_valid_when_provided()

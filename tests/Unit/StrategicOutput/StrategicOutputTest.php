@@ -82,7 +82,7 @@ class StrategicOutputTest extends TestCase
 
     public function test_strategic_output_name_too_long_throws_runtime_exception()
     {
-        $longName = str_repeat("A", 201); // 201 caracteres
+        $longName = str_repeat("A", 301); // 301 caracteres
 
         $this->shouldThrowAndAssert(
             function () use ($longName) {

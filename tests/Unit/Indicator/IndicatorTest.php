@@ -153,7 +153,7 @@ class IndicatorTest extends TestCase
     public function test_indicator_name_too_long_throws_runtime_exception()
     {
         $indicatorType = $this->validIndicatorType;
-        $longName = str_repeat("A", 201); // 201 caracteres
+        $longName = str_repeat("A", 301); // 301 caracteres
         
         $this->shouldThrowAndAssert(
             function() use ($indicatorType, $longName){ 

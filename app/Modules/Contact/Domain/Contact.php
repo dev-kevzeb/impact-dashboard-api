@@ -49,18 +49,21 @@ class Contact extends Model
         
         $trimmedFirstName = trim($firstName);
         
+        if (!self::hasValidTextCharacters($trimmedFirstName)) throw new RuntimeException(self::$ERROR_FIRST_NAME_INVALID_CHARS);
         if (strlen($trimmedFirstName) < 2) throw new RuntimeException(self::$ERROR_FIRST_NAME_MIN_LENGTH);
         if (strlen($trimmedFirstName) > 50) throw new RuntimeException(self::$ERROR_FIRST_NAME_MAX_LENGTH);
         if (empty(trim($lastName))) throw new RuntimeException(self::$ERROR_LAST_NAME_EMPTY);
         
         $trimmedLastName = trim($lastName);
     
+        if (!self::hasValidTextCharacters($trimmedLastName)) throw new RuntimeException(self::$ERROR_LAST_NAME_INVALID_CHARS);
         if (strlen($trimmedLastName) < 2) throw new RuntimeException(self::$ERROR_LAST_NAME_MIN_LENGTH);
         if (strlen($trimmedLastName) > 50) throw new RuntimeException(self::$ERROR_LAST_NAME_MAX_LENGTH);
         if (empty(trim($title))) throw new RuntimeException(self::$ERROR_TITLE_EMPTY);
     
         $trimmedTitle = trim($title);
         
+        if (!self::hasValidTextCharacters($trimmedTitle)) throw new RuntimeException(self::$ERROR_TITLE_INVALID_CHARS);
         if (strlen($trimmedTitle) < 2) throw new RuntimeException(self::$ERROR_TITLE_MIN_LENGTH);
         if (strlen($trimmedTitle) > 100) throw new RuntimeException(self::$ERROR_TITLE_MAX_LENGTH);
         if (empty(trim($email))) throw new RuntimeException(self::$ERROR_EMAIL_EMPTY);
@@ -96,7 +99,7 @@ class Contact extends Model
 
     private static function hasValidTextCharacters(string $text): bool
     {
-        return preg_match('/^[a-zA-ZÀ-ÿñÑ\s\'-\.,\/]+$/u', $text);
+        return preg_match('/^[a-zA-ZÀ-ÿñÑ\s\'\-\.\,\/\(\)]+$/u', $text);
     }
 
     // Getters
