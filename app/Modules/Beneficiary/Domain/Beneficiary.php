@@ -16,6 +16,7 @@ class Beneficiary extends Model
     
     public static $ERROR_NAME_EMPTY = 'The beneficiary name must not be empty';
     public static $ERROR_NAME_MIN_LENGTH = 'The beneficiary name must have at least 2 characters';
+    public static $ERROR_NAME_TOO_LONG = 'The beneficiary name must not exceed 255 characters';
 
     
     /**
@@ -38,6 +39,9 @@ class Beneficiary extends Model
         }
         if (strlen(trim($name)) < 2) {
             throw new RuntimeException(self::$ERROR_NAME_MIN_LENGTH);
+        }
+        if (strlen(trim($name)) > 255) {
+            throw new RuntimeException(self::$ERROR_NAME_TOO_LONG);
         }
         
         return new Beneficiary(['name' => trim($name)]);

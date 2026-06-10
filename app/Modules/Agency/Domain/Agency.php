@@ -41,11 +41,13 @@ class Agency extends Model
         if (strlen($trimmedName) < 2) throw new RuntimeException(self::$ERROR_NAME_TOO_SHORT);
         if (strlen($trimmedName) > 100) throw new RuntimeException(self::$ERROR_NAME_TOO_LONG);
 
-        $trimmedUrl = trim($url);
-        if ($trimmedUrl !== '') {
+        if (trim($url) !== '') {
+            $trimmedUrl = trim($url);
             if (!filter_var($trimmedUrl, FILTER_VALIDATE_URL)) throw new RuntimeException(self::$ERROR_URL_INVALID_FORMAT);
             $parsedUrl = parse_url($trimmedUrl);
             if (!isset($parsedUrl['scheme']) || !in_array($parsedUrl['scheme'], ['http', 'https'], true)) throw new RuntimeException(self::$ERROR_URL_INVALID_PROTOCOL);
+        } else {
+            $trimmedUrl = '';
         }
 
         if (!is_bool($isApproved)) throw new RuntimeException(self::$ERROR_APPROVED_NOT_BOOLEAN);
@@ -70,6 +72,16 @@ class Agency extends Model
     public function isApproved(): bool
     {
         return (bool) $this->is_approved;
+    }
+
+    public function getIsApproved(): bool
+    {
+        return (bool) $this->is_approved;
+    }
+
+    public function compareIsApproved(bool $value): bool
+    {
+        return $this->isApproved() === $value;
     }
 
     public function projectAgencies()

@@ -49,7 +49,7 @@ class PendingRegistrationForAdminNotification extends Notification
             ->line("- Name: {$this->applicantName}")
             ->line("- Email: {$this->applicantEmail}")
             ->line("- Requested role: {$this->requestedRole}")
-            ->action('Review Pending Requests', $frontendUrl . '/admin/pending-users')
+            ->action('Review Pending Requests', $frontendUrl . '/app/admin/users')
             ->line('Please approve or reject this registration request from the administration panel.')
             ->salutation('Best regards,')
             ->salutation('Pacific Ecommerce System');

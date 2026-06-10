@@ -2,12 +2,24 @@
 
 namespace Tests\Unit\Beneficiary;
 
+use Exception;
 use PHPUnit\Framework\TestCase;
 use App\Modules\Beneficiary\Domain\Beneficiary;
-use InvalidArgumentException;
+use RuntimeException;
 
 class BeneficiaryTest extends TestCase
 {
+    public function shouldThrowAndAssert($should, $exceptionType, $assertions)
+    {
+        try {
+            $should->__invoke();
+            $this->fail();
+        } catch (Exception $exception) {
+            $this->assertEquals($exceptionType, get_class($exception));
+            $assertions->__invoke($exception);
+        }
+    }
+
     public function test_beneficiary_can_be_created_with_valid_name()
     {
         $beneficiary = Beneficiary::at("Juan Pérez");
@@ -35,36 +47,56 @@ class BeneficiaryTest extends TestCase
 
     public function test_beneficiary_cannot_be_empty()
     {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('El nombre del beneficiario no puede estar vacío');
-
-        Beneficiary::at("");
+        $this->shouldThrowAndAssert(
+            function () {
+                Beneficiary::at("");
+            },
+            RuntimeException::class,
+            function ($exception) {
+                $this->assertEquals(Beneficiary::$ERROR_NAME_EMPTY, $exception->getMessage());
+            }
+        );
     }
 
     public function test_beneficiary_cannot_be_only_spaces()
     {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('El nombre del beneficiario no puede estar vacío');
-
-        Beneficiary::at("   ");
+        $this->shouldThrowAndAssert(
+            function () {
+                Beneficiary::at("   ");
+            },
+            RuntimeException::class,
+            function ($exception) {
+                $this->assertEquals(Beneficiary::$ERROR_NAME_EMPTY, $exception->getMessage());
+            }
+        );
     }
 
     public function test_beneficiary_cannot_be_too_short()
     {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('El nombre del beneficiario debe tener al menos 2 caracteres');
-
-        Beneficiary::at("A");
+        $this->shouldThrowAndAssert(
+            function () {
+                Beneficiary::at("A");
+            },
+            RuntimeException::class,
+            function ($exception) {
+                $this->assertEquals(Beneficiary::$ERROR_NAME_MIN_LENGTH, $exception->getMessage());
+            }
+        );
     }
 
     public function test_beneficiary_cannot_be_too_long()
     {
-        $longName = str_repeat("A", 256); // 256 caracteres
+        $longName = str_repeat("A", 256);
 
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('El nombre del beneficiario no puede exceder 255 caracteres');
-
-        Beneficiary::at($longName);
+        $this->shouldThrowAndAssert(
+            function () use ($longName) {
+                Beneficiary::at($longName);
+            },
+            RuntimeException::class,
+            function ($exception) {
+                $this->assertEquals(Beneficiary::$ERROR_NAME_TOO_LONG, $exception->getMessage());
+            }
+        );
     }
 
     public function test_beneficiary_can_handle_maximum_length()

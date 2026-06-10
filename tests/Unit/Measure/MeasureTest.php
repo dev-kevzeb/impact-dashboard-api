@@ -89,7 +89,7 @@ class MeasureTest extends TestCase
 
     public function test_measure_name_too_long_throws_runtime_exception()
     {
-        $longName = str_repeat("A", 151); // 151 caracteres
+        $longName = str_repeat("A", 301); // 301 caracteres
 
         $this->shouldThrowAndAssert(
             function () use ($longName) {
