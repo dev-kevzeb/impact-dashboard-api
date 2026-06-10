@@ -22,7 +22,7 @@ class IndicatorTypeTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->headers = $this->authHeaders('project-manager');
+        $this->headers = $this->authHeaders('admin');
     }
 
     public function test_can_list_indicator_types(): void

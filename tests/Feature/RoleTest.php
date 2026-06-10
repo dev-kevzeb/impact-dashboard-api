@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Modules\Role\Domain\Role;
+use App\Modules\User\Domain\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -12,6 +13,17 @@ class RoleTest extends TestCase
 
     private const BASE_URL = '/api/v1/roles';
 
+    private array $headers;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->headers = $this->authHeaders('admin');
+        $user = User::where('email', 'test@pacific.com')->first();
+        $user->givePermissionTo(['roles:read', 'roles:write']);
+        $this->headers['Authorization'] = 'Bearer ' . auth('api')->login($user);
+    }
+
     /**
      * Test: Can create a user role
      */
@@ -19,7 +31,7 @@ class RoleTest extends TestCase
     {
         $response = $this->postJson(self::BASE_URL, [
             'name' => 'super_admin'
-        ]);
+        ], $this->headers);
 
         $response->assertCreated()
             ->assertJson(['success' => true])
@@ -37,11 +49,11 @@ class RoleTest extends TestCase
      */
     public function test_cannot_create_duplicate_role(): void
     {
-        Role::factory()->create(['name' => 'admin']);
+        Role::factory()->create(['name' => 'editor']);
 
         $response = $this->postJson(self::BASE_URL, [
-            'name' => 'admin'
-        ]);
+            'name' => 'editor'
+        ], $this->headers);
 
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['name']);
@@ -54,7 +66,7 @@ class RoleTest extends TestCase
     {
         $response = $this->postJson(self::BASE_URL, [
             'name' => 'a'
-        ]);
+        ], $this->headers);
 
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['name']);
@@ -65,7 +77,7 @@ class RoleTest extends TestCase
      */
     public function test_name_is_required(): void
     {
-        $response = $this->postJson(self::BASE_URL, []);
+        $response = $this->postJson(self::BASE_URL, [], $this->headers);
 
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['name']);
@@ -78,11 +90,11 @@ class RoleTest extends TestCase
     {
         Role::factory()->count(3)->create();
 
-        $response = $this->getJson(self::BASE_URL);
+        $response = $this->getJson(self::BASE_URL, $this->headers);
 
         $response->assertOk()
             ->assertJson(['success' => true])
-            ->assertJsonCount(3, 'data');
+            ->assertJsonCount(5, 'data');
     }
 
     /**
@@ -92,7 +104,7 @@ class RoleTest extends TestCase
     {
         $role = Role::factory()->create(['name' => 'editor']);
 
-        $response = $this->getJson(self::BASE_URL . '/' . $role->id);
+        $response = $this->getJson(self::BASE_URL . '/' . $role->id, $this->headers);
 
         $response->assertOk()
             ->assertJson([
@@ -109,7 +121,7 @@ class RoleTest extends TestCase
      */
     public function test_returns_404_when_role_not_found(): void
     {
-        $response = $this->getJson(self::BASE_URL . '/999');
+        $response = $this->getJson(self::BASE_URL . '/999', $this->headers);
 
         $response->assertNotFound();
     }
@@ -123,7 +135,7 @@ class RoleTest extends TestCase
 
         $response = $this->putJson(self::BASE_URL . '/' . $role->id, [
             'name' => 'new_role'
-        ]);
+        ], $this->headers);
 
         $response->assertOk()
             ->assertJson([
@@ -140,12 +152,12 @@ class RoleTest extends TestCase
      */
     public function test_cannot_update_to_duplicate_name(): void
     {
-        Role::factory()->create(['name' => 'admin']);
+        // 'admin' already exists from RoleSeeder (seeded by authHeaders)
         $role = Role::factory()->create(['name' => 'editor']);
 
         $response = $this->putJson(self::BASE_URL . '/' . $role->id, [
             'name' => 'admin'
-        ]);
+        ], $this->headers);
 
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['name']);
@@ -156,15 +168,14 @@ class RoleTest extends TestCase
      */
     public function test_can_search_roles(): void
     {
-        Role::factory()->create(['name' => 'admin']);
         Role::factory()->create(['name' => 'country_manager']);
         Role::factory()->create(['name' => 'project_manager']);
 
-        $response = $this->getJson(self::BASE_URL . '/search?q=manager');
+        $response = $this->getJson(self::BASE_URL . '/search?q=manager', $this->headers);
 
         $response->assertOk()
             ->assertJson(['success' => true])
-            ->assertJsonCount(2, 'data');
+            ->assertJsonCount(4, 'data');
     }
 
     /**
@@ -172,7 +183,7 @@ class RoleTest extends TestCase
      */
     public function test_search_requires_query_parameter(): void
     {
-        $response = $this->getJson(self::BASE_URL . '/search');
+        $response = $this->getJson(self::BASE_URL . '/search', $this->headers);
 
         $response->assertStatus(422);
     }
@@ -186,7 +197,7 @@ class RoleTest extends TestCase
 
         $response = $this->postJson(self::BASE_URL, [
             'name' => $longName
-        ]);
+        ], $this->headers);
 
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['name']);
@@ -199,7 +210,7 @@ class RoleTest extends TestCase
     {
         $response = $this->postJson(self::BASE_URL, [
             'name' => '  viewer  '
-        ]);
+        ], $this->headers);
 
         $response->assertCreated();
 
