@@ -29,6 +29,7 @@ class ProjectDashboardRowResource extends JsonResource
         return [
             'id' => $this->id,
             'country' => $country?->name,
+            'currency_code' => $country?->currency?->code,
             'measure' => $measure?->name,
             'program_title' => $this->program?->name,
             'project_title' => $this->name,

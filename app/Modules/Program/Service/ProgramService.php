@@ -247,7 +247,7 @@ class ProgramService
 
         $this->attachCountryOwnerToProgram($program, $countryUserRole);
 
-        return $program->fresh(['contact', 'programState', 'sdgs', 'countryUserRoles.country']);
+        return $program->fresh(['contact', 'programState', 'sdgs', 'countryUserRoles.country.currency']);
     }
 
     /**

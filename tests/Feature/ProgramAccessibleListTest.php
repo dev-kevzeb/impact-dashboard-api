@@ -52,6 +52,29 @@ class ProgramAccessibleListTest extends TestCase
         $this->assertFalse($programs->contains(fn ($p) => $p['id'] === $unrelatedProgram->id));
     }
 
+    public function test_program_list_includes_currency_code_per_country_in_country_user_roles(): void
+    {
+        $auth = $this->authHeadersWithCountry('project-manager');
+        $ownerCountryUserRole = $auth['countryUserRole'];
+
+        $country = \App\Modules\Country\Domain\Country::find($ownerCountryUserRole->country_id);
+        $this->assertSame('USD', $country->currency->code, 'Test Country in TestCase must use USD currency');
+
+        $ownedProgram = Program::factory()->create();
+        ProgramCountryUserRole::create([
+            'program_id' => $ownedProgram->id,
+            'country_user_role_id' => $ownerCountryUserRole->id,
+        ]);
+
+        $response = $this->getJson('/api/v1/programs?per_page=10', $auth['headers']);
+
+        $response->assertOk()
+            ->assertJsonPath('data.programs.0.country_user_roles.0.country.id', $country->id)
+            ->assertJsonPath('data.programs.0.country_user_roles.0.country.name', $country->name)
+            ->assertJsonPath('data.programs.0.country_user_roles.0.country.active', true)
+            ->assertJsonPath('data.programs.0.country_user_roles.0.country.currency_code', 'USD');
+    }
+
     public function test_cannot_update_program_where_user_is_only_invited(): void
     {
         $auth = $this->authHeadersWithCountry('project-manager');
