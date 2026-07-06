@@ -16,7 +16,7 @@ use Illuminate\Routing\Controller as BaseController;
  * )
  * 
  * @OA\Server(
- *     url="https://pacificecommerce.shop/api/v1",
+ *     url="https://www.epulse.pro/api/v1",
  *     description="Servidor de Producción"
  * )
  * 
