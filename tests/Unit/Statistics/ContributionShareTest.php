@@ -10,8 +10,6 @@ class ContributionShareTest extends TestCase
 {
     public function test_two_donors_splitting_a_partially_implemented_measure_sum_to_100(): void
     {
-        // PDF example: measure 10% implemented, two donors split funding 50/50
-        // -> each donor's raw contribution is 5 (percentage points), Sd(x) = 5/10 = 50%.
         $result = new ContributionShare([
             ['id' => 1, 'name' => 'Australia', 'contribution' => 5],
             ['id' => 2, 'name' => 'European Union', 'contribution' => 5],
@@ -38,7 +36,6 @@ class ContributionShareTest extends TestCase
 
     public function test_reproduces_pdf_worked_example(): void
     {
-        // Measure 1 from the PDF: I(x) = 55.4, Cd(x) = 24.7 / 29.2 / 1.6 for AU/EU/NZ.
         $result = new ContributionShare([
             ['id' => 'AU', 'name' => 'Australia', 'contribution' => 24.7],
             ['id' => 'EU', 'name' => 'European Union', 'contribution' => 29.2],
@@ -54,7 +51,6 @@ class ContributionShareTest extends TestCase
 
     public function test_multiple_rows_for_the_same_contributor_are_summed_before_normalizing(): void
     {
-        // A donor funding two different projects for the same measure.
         $result = new ContributionShare([
             ['id' => 1, 'name' => 'Australia', 'contribution' => 10],
             ['id' => 1, 'name' => 'Australia', 'contribution' => 15],

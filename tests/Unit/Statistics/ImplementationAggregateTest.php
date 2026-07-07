@@ -33,8 +33,6 @@ class ImplementationAggregateTest extends TestCase
 
     public function test_children_are_weighted_by_their_own_measure_count(): void
     {
-        // A strategic output covering 3 measures at 90% should count 3x as much
-        // as one covering 1 measure at 0%.
         $result = new ImplementationAggregate([
             $this->node(90, 3),
             $this->node(0, 1),
@@ -46,8 +44,6 @@ class ImplementationAggregateTest extends TestCase
 
     public function test_donor_share_is_diluted_by_measures_the_donor_does_not_contribute_to(): void
     {
-        // Donor funds 100% of measure 1 (Sd=100) out of 3 equally-weighted measures.
-        // Ad = (1/3) * (100 + 0 + 0) = 33.33, NOT 100.
         $result = new ImplementationAggregate([
             $this->node(80, 1, donors: [['id' => 1, 'name' => 'Australia', 'contribution' => 100.0]]),
             $this->node(40, 1, donors: []),
@@ -59,8 +55,6 @@ class ImplementationAggregateTest extends TestCase
 
     public function test_donors_and_agencies_are_aggregated_independently(): void
     {
-        // Both donors and agencies fully cover every measure -> each group must
-        // still sum to 100%, independent of the other group existing.
         $result = new ImplementationAggregate([
             $this->node(
                 50,
