@@ -113,7 +113,7 @@ class ProjectRepository extends AbstractRepository implements RepositoryInterfac
                 'program',
                 'contact',
                 'agencies',
-                'indicators.measure.strategicOutput.countryKpa.country',
+                'indicators.measure.strategicOutput.countryKpa.country.currency',
             ]);
 
         if (empty($search)) {

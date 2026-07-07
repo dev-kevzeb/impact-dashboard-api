@@ -35,7 +35,7 @@ class ProgramRepository extends AbstractRepository
                 'contact',
                 'programState',
                 'sdgs',
-                'countryUserRoles.country',
+                'countryUserRoles.country.currency',
             ])
             ->withCount('projects')
             ->get();
@@ -54,7 +54,7 @@ class ProgramRepository extends AbstractRepository
                 'contact',
                 'programState',
                 'sdgs',
-                'countryUserRoles.country',
+                'countryUserRoles.country.currency',
             ])
             ->withCount('projects')
             ->paginate($perPage);
@@ -88,7 +88,7 @@ class ProgramRepository extends AbstractRepository
                 'contact',
                 'programState',
                 'sdgs',
-                'countryUserRoles.country',
+                'countryUserRoles.country.currency',
             ])
             ->withCount('projects')
             ->when($search, function ($query) use ($search) {
@@ -129,7 +129,7 @@ class ProgramRepository extends AbstractRepository
                 'contact',
                 'programState',
                 'sdgs',
-                'countryUserRoles.country',
+                'countryUserRoles.country.currency',
             ])
             ->withCount('projects')
             ->when($search, function ($query) use ($search) {
@@ -251,7 +251,7 @@ class ProgramRepository extends AbstractRepository
                 'contact',
                 'programState',
                 'sdgs',
-                'countryUserRoles.country',
+                'countryUserRoles.country.currency',
             ])
             ->withCount('projects')
             ->find($id);

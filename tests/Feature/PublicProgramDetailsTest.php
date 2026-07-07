@@ -285,4 +285,47 @@ class PublicProgramDetailsTest extends TestCase
         $response->assertOk()
             ->assertJsonPath('data.program_summary.geographical_focus', []);
     }
+
+    public function test_public_program_details_returns_currency_code_per_country_in_country_user_roles(): void
+    {
+        $this->seed(\Database\Seeders\RoleSeeder::class);
+
+        $currency = \App\Modules\Currency\Domain\Currency::firstOrCreate(['code' => 'BOB']);
+        $country = Country::factory()->create([
+            'name' => 'Bolivia-Test',
+            'currency_id' => $currency->id,
+            'active' => true,
+        ]);
+
+        $programState = ProgramState::factory()->create(['name' => 'Active']);
+        $program = Program::factory()->create([
+            'program_state_id' => $programState->id,
+            'contact_id' => Contact::factory()->create()->id,
+        ]);
+
+        $userRole = \App\Modules\UserRole\Domain\UserRole::create([
+            'user_id' => \App\Modules\User\Domain\User::factory()->create([
+                'user_state_id' => \App\Modules\UserState\Domain\UserState::firstOrCreate(['name' => 'active'])->id,
+            ])->id,
+            'role_id' => \App\Modules\Role\Domain\Role::where('name', 'project-manager')->firstOrFail()->id,
+        ]);
+
+        $countryUserRole = \App\Modules\CountryUserRole\Domain\CountryUserRole::create([
+            'country_id' => $country->id,
+            'user_role_id' => $userRole->id,
+        ]);
+
+        \App\Modules\ProgramCountryUserRole\Domain\ProgramCountryUserRole::create([
+            'program_id' => $program->id,
+            'country_user_role_id' => $countryUserRole->id,
+        ]);
+
+        $response = $this->getJson(self::BASE_URL . "/{$program->id}");
+
+        $response->assertOk()
+            ->assertJsonPath('data.country_user_roles.0.country.id', $country->id)
+            ->assertJsonPath('data.country_user_roles.0.country.name', 'Bolivia-Test')
+            ->assertJsonPath('data.country_user_roles.0.country.active', true)
+            ->assertJsonPath('data.country_user_roles.0.country.currency_code', 'BOB');
+    }
 }

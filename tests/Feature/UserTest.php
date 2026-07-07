@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Modules\User\Domain\User;
-use App\Modules\Role\Domain\Role;
 use App\Modules\UserState\Domain\UserState;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -13,14 +12,14 @@ class UserTest extends TestCase
     use RefreshDatabase;
 
     private const BASE_URL = '/api/v1/users';
-    private Role $role;
     private UserState $userState;
+    private array $headers;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->role = Role::factory()->create(['name' => 'Admin']);
-        $this->userState = UserState::factory()->create(['name' => 'Activo']);
+        $this->headers = $this->authHeaders('admin');
+        $this->userState = UserState::where('name', 'active')->firstOrFail();
     }
 
     public function test_can_create_user(): void
@@ -30,7 +29,7 @@ class UserTest extends TestCase
             'email' => 'test@example.com',
             'password' => 'secret123',
             'user_state_id' => $this->userState->id
-        ]);
+        ], $this->headers);
 
         $response->assertCreated()
             ->assertJson(['success' => true])
@@ -58,7 +57,7 @@ class UserTest extends TestCase
             'user_state_id' => $this->userState->id
         ]);
 
-        $response = $this->getJson(self::BASE_URL);
+        $response = $this->getJson(self::BASE_URL, $this->headers);
 
         $response->assertOk()
             ->assertJson(['success' => true])
@@ -84,7 +83,7 @@ class UserTest extends TestCase
         ]);
 
         // Solicitar página 1 con 5 usuarios por página
-        $response = $this->getJson(self::BASE_URL . '?per_page=5');
+        $response = $this->getJson(self::BASE_URL . '?per_page=5', $this->headers);
 
         $response->assertOk()
             ->assertJson([
@@ -99,7 +98,7 @@ class UserTest extends TestCase
             ->assertJsonCount(5, 'data.users');
 
         // Solicitar página 2
-        $response2 = $this->getJson(self::BASE_URL . '?per_page=5&page=2');
+        $response2 = $this->getJson(self::BASE_URL . '?per_page=5&page=2', $this->headers);
 
         $response2->assertOk()
             ->assertJson([
@@ -120,7 +119,7 @@ class UserTest extends TestCase
             'user_state_id' => $this->userState->id
         ]);
 
-        $response = $this->getJson(self::BASE_URL . '/' . $user->id);
+        $response = $this->getJson(self::BASE_URL . '/' . $user->id, $this->headers);
 
         $response->assertOk()
             ->assertJson([
@@ -142,7 +141,7 @@ class UserTest extends TestCase
             'name' => 'Updated Name',
             'email' => 'updated@example.com',
             'user_state_id' => $this->userState->id
-        ]);
+        ], $this->headers);
 
         $response->assertOk()
             ->assertJson([
@@ -171,7 +170,7 @@ class UserTest extends TestCase
             'email' => $user->email,
             'password' => 'newpassword456',
             'user_state_id' => $this->userState->id
-        ]);
+        ], $this->headers);
 
         $response->assertOk()
             ->assertJson(['success' => true]);
@@ -187,7 +186,7 @@ class UserTest extends TestCase
             'user_state_id' => $this->userState->id
         ]);
 
-        $response = $this->getJson(self::BASE_URL . '/search?name=Maria Garcia');
+        $response = $this->getJson(self::BASE_URL . '/search?name=Maria Garcia', $this->headers);
 
         $response->assertOk()
             ->assertJson([
@@ -198,7 +197,7 @@ class UserTest extends TestCase
 
     public function test_returns_404_when_searching_nonexistent_user(): void
     {
-        $response = $this->getJson(self::BASE_URL . '/search?name=Nonexistent');
+        $response = $this->getJson(self::BASE_URL . '/search?name=Nonexistent', $this->headers);
 
         $response->assertNotFound()
             ->assertJson(['success' => false]);
@@ -206,7 +205,7 @@ class UserTest extends TestCase
 
     public function test_returns_404_when_getting_nonexistent_user(): void
     {
-        $response = $this->getJson(self::BASE_URL . '/999');
+        $response = $this->getJson(self::BASE_URL . '/999', $this->headers);
 
         $response->assertNotFound()
             ->assertJson(['success' => false]);
@@ -218,7 +217,7 @@ class UserTest extends TestCase
             'name' => 'Test',
             'email' => 'test@example.com',
             'user_state_id' => $this->userState->id
-        ]);
+        ], $this->headers);
 
         $response->assertNotFound()
             ->assertJson(['success' => false]);
@@ -226,7 +225,7 @@ class UserTest extends TestCase
 
     public function test_validates_required_fields(): void
     {
-        $response = $this->postJson(self::BASE_URL, []);
+        $response = $this->postJson(self::BASE_URL, [], $this->headers);
 
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['name', 'email', 'password', 'user_state_id']);
@@ -239,7 +238,7 @@ class UserTest extends TestCase
             'email' => 'invalid-email',
             'password' => 'secret123',
             'user_state_id' => $this->userState->id
-        ]);
+        ], $this->headers);
 
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['email']);
@@ -257,7 +256,7 @@ class UserTest extends TestCase
             'email' => 'duplicate@example.com',
             'password' => 'secret123',
             'user_state_id' => $this->userState->id
-        ]);
+        ], $this->headers);
 
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['email']);
@@ -274,7 +273,7 @@ class UserTest extends TestCase
             'name' => 'Updated Name',
             'email' => 'same@example.com', // Same email
             'user_state_id' => $this->userState->id
-        ]);
+        ], $this->headers);
 
         $response->assertOk()
             ->assertJson(['success' => true]);
@@ -287,7 +286,7 @@ class UserTest extends TestCase
             'email' => 'test@example.com',
             'password' => '123', // Too short
             'user_state_id' => $this->userState->id
-        ]);
+        ], $this->headers);
 
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['password']);
@@ -300,7 +299,7 @@ class UserTest extends TestCase
             'email' => 'test@example.com',
             'password' => 'secret123',
             'user_state_id' => 9999 // Non-existent
-        ]);
+        ], $this->headers);
 
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['user_state_id']);
@@ -313,7 +312,7 @@ class UserTest extends TestCase
             'email' => 'test@example.com',
             'password' => 'secret123',
             'user_state_id' => $this->userState->id
-        ]);
+        ], $this->headers);
 
         $response->assertStatus(400)
             ->assertJson(['success' => false]);
@@ -326,7 +325,7 @@ class UserTest extends TestCase
             'email' => '  test@example.com  ',
             'password' => 'secret123',
             'user_state_id' => $this->userState->id
-        ]);
+        ], $this->headers);
 
         $response->assertCreated();
 
@@ -343,7 +342,7 @@ class UserTest extends TestCase
             'email' => 'TEST@EXAMPLE.COM',
             'password' => 'secret123',
             'user_state_id' => $this->userState->id
-        ]);
+        ], $this->headers);
 
         $response->assertCreated();
 
@@ -358,7 +357,7 @@ class UserTest extends TestCase
             'user_state_id' => $this->userState->id
         ]);
 
-        $response = $this->getJson(self::BASE_URL . '/' . $user->id);
+        $response = $this->getJson(self::BASE_URL . '/' . $user->id, $this->headers);
 
         $response->assertOk()
             ->assertJsonMissing(['password']);
@@ -370,7 +369,7 @@ class UserTest extends TestCase
             'user_state_id' => $this->userState->id
         ]);
 
-        $response = $this->getJson(self::BASE_URL . '/' . $user->id);
+        $response = $this->getJson(self::BASE_URL . '/' . $user->id, $this->headers);
 
         $response->assertOk()
             ->assertJsonStructure([

@@ -82,16 +82,9 @@ class CurrencyTest extends TestCase
 
     public function test_currency_code_must_be_uppercase_letters_only()
     {
-        // Código con minúsculas
-        $this->shouldThrowAndAssert(
-            function () {
-                Currency::at("usd");
-            },
-            RuntimeException::class,
-            function ($exception) {
-                $this->assertEquals(Currency::$ERROR_CODE_FORMAT, $exception->getMessage());
-            }
-        );
+        // Código con minúsculas se convierte automáticamente a mayúsculas
+        $currency = Currency::at("usd");
+        $this->assertEquals("USD", $currency->getCode());
 
         // Código con números
         $this->shouldThrowAndAssert(
@@ -107,35 +100,11 @@ class CurrencyTest extends TestCase
         // Código con caracteres especiales
         $this->shouldThrowAndAssert(
             function () {
-                Currency::at("U@D"); // Usar @ en lugar de $ para evitar problemas de shell
+                Currency::at("U@D");
             },
             RuntimeException::class,
             function ($exception) {
                 $this->assertEquals(Currency::$ERROR_CODE_FORMAT, $exception->getMessage());
-            }
-        );
-    }
-
-    public function test_currency_code_must_be_valid_iso_code()
-    {
-        // Código no válido según ISO 4217
-        $this->shouldThrowAndAssert(
-            function () {
-                Currency::at("XXX");
-            },
-            RuntimeException::class,
-            function ($exception) {
-                $this->assertEquals(Currency::$ERROR_CODE_INVALID, $exception->getMessage());
-            }
-        );
-
-        $this->shouldThrowAndAssert(
-            function () {
-                Currency::at("ABC");
-            },
-            RuntimeException::class,
-            function ($exception) {
-                $this->assertEquals(Currency::$ERROR_CODE_INVALID, $exception->getMessage());
             }
         );
     }

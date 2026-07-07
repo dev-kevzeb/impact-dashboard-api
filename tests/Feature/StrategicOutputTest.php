@@ -7,6 +7,7 @@ use App\Modules\CountryKpa\Domain\CountryKpa;
 use App\Modules\Kpa\Domain\Kpa;
 use App\Modules\Measure\Domain\Measure;
 use App\Modules\StrategicOutput\Domain\StrategicOutput;
+use App\Modules\User\Domain\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -16,12 +17,23 @@ class StrategicOutputTest extends TestCase
 
     private const BASE_URL = '/api/v1/strategic-outputs';
 
+    private array $headers;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->headers = $this->authHeaders('admin');
+        $user = User::where('email', 'test@pacific.com')->first();
+        $user->givePermissionTo(['strategic_outputs:read', 'strategic_outputs:write']);
+        $this->headers['Authorization'] = 'Bearer ' . auth('api')->login($user);
+    }
+
     /** LISTAR TODOS */
     public function test_can_list_strategic_outputs(): void
     {
         StrategicOutput::factory()->count(3)->create();
 
-        $response = $this->getJson(self::BASE_URL);
+        $response = $this->getJson(self::BASE_URL, $this->headers);
 
         $response->assertOk()
                  ->assertJsonPath('data.total', 3)
@@ -31,8 +43,8 @@ class StrategicOutputTest extends TestCase
     /** LISTAR VACÍO */
     public function test_list_returns_empty_when_none(): void
     {
-        $response = $this->getJson(self::BASE_URL);
-
+        $response = $this->getJson(self::BASE_URL, $this->headers);
+ 
         $response->assertOk()
                  ->assertJsonPath('data.total', 0)
                  ->assertJsonCount(0, 'data.strategic_outputs');
@@ -53,10 +65,10 @@ class StrategicOutputTest extends TestCase
             'id_ck' => $ck->id
         ];
 
-        $response = $this->postJson(self::BASE_URL, $data);
+        $response = $this->postJson(self::BASE_URL, $data, $this->headers);
 
         $response->assertCreated()
-                 ->assertJsonPath('message', 'Resultado estratégico creado exitosamente');
+                 ->assertJsonPath('message', 'Successfully created strategic result');
 
         $this->assertDatabaseHas('strategic_output', [
             'name' => 'Nuevo Resultado',
@@ -69,7 +81,7 @@ class StrategicOutputTest extends TestCase
     {
         $response = $this->postJson(self::BASE_URL, [
             'id_ck' => 1
-        ]);
+        ], $this->headers);
 
         $response->assertStatus(422)
                  ->assertJsonValidationErrors(['name']);
@@ -88,7 +100,7 @@ class StrategicOutputTest extends TestCase
         $response = $this->postJson(self::BASE_URL, [
             'name' => 'A',
             'id_ck' => $ck->id
-        ]);
+        ], $this->headers);
 
         $response->assertStatus(422)
                  ->assertJsonValidationErrors(['name']);
@@ -99,7 +111,7 @@ class StrategicOutputTest extends TestCase
     {
         $so = StrategicOutput::factory()->create();
 
-        $response = $this->getJson(self::BASE_URL . "/{$so->id}");
+        $response = $this->getJson(self::BASE_URL . "/{$so->id}", $this->headers);
 
         $response->assertOk()
                  ->assertJsonPath('data.id', $so->id)
@@ -109,7 +121,7 @@ class StrategicOutputTest extends TestCase
     /** SHOW 404 */
     public function test_show_returns_404_when_not_found(): void
     {
-        $response = $this->getJson(self::BASE_URL . '/99999');
+        $response = $this->getJson(self::BASE_URL . '/99999', $this->headers);
 
         $response->assertNotFound();
     }
@@ -122,10 +134,10 @@ class StrategicOutputTest extends TestCase
         $response = $this->putJson(self::BASE_URL . "/{$so->id}", [
             'name' => 'Actualizado',
             'id_ck' => $so->id_ck
-        ]);
+        ], $this->headers);
 
         $response->assertOk()
-                 ->assertJsonPath('message', 'Resultado estratégico actualizado exitosamente');
+                 ->assertJsonPath('message', 'Strategic Output uploaded successfully');
 
         $this->assertDatabaseHas('strategic_output', [
             'id' => $so->id,
@@ -141,7 +153,7 @@ class StrategicOutputTest extends TestCase
         $response = $this->putJson(self::BASE_URL . "/{$so->id}", [
             'name' => 'A',
             'id_ck' => $so->id_ck
-        ]);
+        ], $this->headers);
 
         $response->assertStatus(422)
                  ->assertJsonValidationErrors(['name']);
@@ -154,7 +166,7 @@ class StrategicOutputTest extends TestCase
 
         $response = $this->putJson(self::BASE_URL . "/{$so->id}", [
             'name' => 'Solo Nombre'
-        ]);
+        ], $this->headers);
 
         $response->assertStatus(422)
                 ->assertJsonValidationErrors(['id_ck']);
@@ -169,10 +181,10 @@ class StrategicOutputTest extends TestCase
         $response = $this->postJson(self::BASE_URL . '-measures', [
             'strategic_output_id' => $so->id,
             'name' => 'Nueva Medida'
-        ]);
+        ], $this->headers);
 
         $response->assertOk()
-                 ->assertJsonPath('message', 'Medida agregada exitosamente al resultado estratégico');
+                 ->assertJsonPath('message', 'Measure successfully added to strategic output');
 
         $this->assertDatabaseHas('measure', [
             'name' => 'Nueva Medida',
@@ -190,7 +202,7 @@ class StrategicOutputTest extends TestCase
         $response = $this->postJson(self::BASE_URL . '-measures', [
             'strategic_output_id' => $so->id,
             'name' => 'Duplicada'
-        ]);
+        ], $this->headers);
 
         $response->assertStatus(400);
     }
@@ -205,7 +217,7 @@ class StrategicOutputTest extends TestCase
         $response = $this->postJson(self::BASE_URL . '/remove-measure', [
             'strategic_output_id' => $so->id,
             'measure_id' => $measure->id
-        ]);
+        ], $this->headers);
 
         $response->assertOk();
 
@@ -225,7 +237,7 @@ class StrategicOutputTest extends TestCase
         $response = $this->postJson(self::BASE_URL . '/remove-measure', [
             'strategic_output_id' => $so1->id,
             'measure_id' => $measure->id
-        ]);
+        ], $this->headers);
 
         $response->assertStatus(400);
     }
@@ -235,7 +247,7 @@ class StrategicOutputTest extends TestCase
     {
         $so = StrategicOutput::factory()->create(['name' => 'Objetivo Mayor']);
 
-        $response = $this->getJson(self::BASE_URL . '/search?name=Objetivo');
+        $response = $this->getJson(self::BASE_URL . '/search?name=Objetivo', $this->headers);
 
         $response->assertOk()
                  ->assertJsonPath('data.id', $so->id);

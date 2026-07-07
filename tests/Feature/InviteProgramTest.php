@@ -211,7 +211,7 @@ class InviteProgramTest extends TestCase
     {
         $invitedUserRole = $this->createInvitedProjectManagerUserRole();
 
-        $nonOwnerAdminRole = $this->createUserRoleByRoleName('admin');
+        $nonOwnerAdminRole = $this->createUserRoleByRoleName('country-manager');
         $nonOwnerHeaders = $this->headersForUser($nonOwnerAdminRole->user);
 
         $response = $this->postJson(self::BASE_URL, [
@@ -337,7 +337,7 @@ class InviteProgramTest extends TestCase
 
     public function test_non_owner_cannot_list_invite_candidates(): void
     {
-        $nonOwnerAdminRole = $this->createUserRoleByRoleName('admin');
+        $nonOwnerAdminRole = $this->createUserRoleByRoleName('country-manager');
         $nonOwnerHeaders = $this->headersForUser($nonOwnerAdminRole->user);
 
         $response = $this->getJson(
@@ -411,7 +411,7 @@ class InviteProgramTest extends TestCase
             'invited_user_role_id' => $invitedUserRole->id,
         ]);
 
-        $thirdPartyRole = $this->createUserRoleByRoleName('admin');
+        $thirdPartyRole = $this->createUserRoleByRoleName('country-manager');
         $thirdPartyHeaders = $this->headersForUser($thirdPartyRole->user);
 
         $response = $this->deleteJson(self::BASE_URL . '/' . $invite->id, [], $thirdPartyHeaders);

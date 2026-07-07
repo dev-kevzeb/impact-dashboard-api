@@ -13,6 +13,16 @@ class UserRoleTest extends TestCase
     use RefreshDatabase;
 
     private const BASE_URL = '/api/v1/user_roles';
+    private array $headers;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->headers = $this->authHeaders('admin');
+        $user = User::where('email', 'test@pacific.com')->first();
+        $user->givePermissionTo(['user_roles:read', 'user_roles:write']);
+        $this->headers['Authorization'] = 'Bearer ' . auth('api')->login($user);
+    }
 
     /**
      * Test retrieving all assignments
@@ -27,7 +37,7 @@ class UserRoleTest extends TestCase
             'role_id' => $role->id,
         ]);
 
-        $response = $this->getJson(self::BASE_URL);
+        $response = $this->getJson(self::BASE_URL, $this->headers);
 
         $response->assertOk()
                  ->assertJson(['success' => true])
@@ -70,7 +80,7 @@ class UserRoleTest extends TestCase
             'role_id' => $role->id,
         ]);
 
-        $response = $this->getJson(self::BASE_URL . '?user_id=' . $user1->id);
+        $response = $this->getJson(self::BASE_URL . '?user_id=' . $user1->id, $this->headers);
 
         $response->assertOk()
                  ->assertJson(['success' => true])
@@ -96,7 +106,7 @@ class UserRoleTest extends TestCase
             'role_id' => $role2->id,
         ]);
 
-        $response = $this->getJson(self::BASE_URL . '?role_id=' . $role1->id);
+        $response = $this->getJson(self::BASE_URL . '?role_id=' . $role1->id, $this->headers);
 
         $response->assertOk()
                  ->assertJson(['success' => true])
@@ -114,7 +124,7 @@ class UserRoleTest extends TestCase
         $response = $this->postJson(self::BASE_URL, [
             'user_id' => $user->id,
             'role_id' => $role->id,
-        ]);
+        ], $this->headers);
 
         $response->assertCreated()
                  ->assertJson(['success' => true])
@@ -144,13 +154,13 @@ class UserRoleTest extends TestCase
         $this->postJson(self::BASE_URL, [
             'user_id' => $user->id,
             'role_id' => $role->id,
-        ])->assertCreated();
+        ], $this->headers)->assertCreated();
 
         // Try to create duplicate
         $response = $this->postJson(self::BASE_URL, [
             'user_id' => $user->id,
             'role_id' => $role->id,
-        ]);
+        ], $this->headers);
 
         $response->assertStatus(400)
                  ->assertJson(['success' => false])
@@ -166,7 +176,7 @@ class UserRoleTest extends TestCase
 
         $response = $this->postJson(self::BASE_URL, [
             'role_id' => $role->id,
-        ]);
+        ], $this->headers);
 
         $response->assertStatus(422)
                  ->assertJson(['success' => false])
@@ -182,7 +192,7 @@ class UserRoleTest extends TestCase
 
         $response = $this->postJson(self::BASE_URL, [
             'user_id' => $user->id,
-        ]);
+        ], $this->headers);
 
         $response->assertStatus(422)
                  ->assertJson(['success' => false])
@@ -199,7 +209,7 @@ class UserRoleTest extends TestCase
         $response = $this->postJson(self::BASE_URL, [
             'user_id' => 99999, // Non-existent ID
             'role_id' => $role->id,
-        ]);
+        ], $this->headers);
 
         $response->assertStatus(422)
                  ->assertJson(['success' => false])
@@ -216,7 +226,7 @@ class UserRoleTest extends TestCase
         $response = $this->postJson(self::BASE_URL, [
             'user_id' => $user->id,
             'role_id' => 99999, // Non-existent ID
-        ]);
+        ], $this->headers);
 
         $response->assertStatus(422)
                  ->assertJson(['success' => false])
@@ -236,7 +246,7 @@ class UserRoleTest extends TestCase
             'role_id' => $role->id,
         ]);
 
-        $response = $this->getJson(self::BASE_URL . '/' . $assignment->id);
+        $response = $this->getJson(self::BASE_URL . '/' . $assignment->id, $this->headers);
 
         $response->assertOk()
                  ->assertJson(['success' => true])
@@ -255,7 +265,7 @@ class UserRoleTest extends TestCase
      */
     public function test_get_nonexistent_assignment_returns_404(): void
     {
-        $response = $this->getJson(self::BASE_URL . '/99999');
+        $response = $this->getJson(self::BASE_URL . '/99999', $this->headers);
 
         $response->assertNotFound()
                  ->assertJson(['success' => false]);
@@ -279,7 +289,7 @@ class UserRoleTest extends TestCase
         $response = $this->putJson(self::BASE_URL . '/' . $assignment->id, [
             'user_id' => $user2->id,
             'role_id' => $role2->id,
-        ]);
+        ], $this->headers);
 
         $response->assertOk()
                  ->assertJson(['success' => true])
@@ -303,7 +313,7 @@ class UserRoleTest extends TestCase
         $response = $this->putJson(self::BASE_URL . '/99999', [
             'user_id' => $user->id,
             'role_id' => $role->id,
-        ]);
+        ], $this->headers);
 
         $response->assertNotFound()
                  ->assertJson(['success' => false]);
@@ -334,7 +344,7 @@ class UserRoleTest extends TestCase
         $response = $this->putJson(self::BASE_URL . '/' . $assignment2->id, [
             'user_id' => $user1->id,
             'role_id' => $role->id,
-        ]);
+        ], $this->headers);
 
         $response->assertStatus(400)
                  ->assertJson(['success' => false]);
@@ -353,7 +363,7 @@ class UserRoleTest extends TestCase
             'role_id' => $role->id,
         ]);
 
-        $response = $this->deleteJson(self::BASE_URL . '/' . $assignment->id);
+        $response = $this->deleteJson(self::BASE_URL . '/' . $assignment->id, [], $this->headers);
 
         $response->assertOk()
                  ->assertJson(['success' => true]);
@@ -368,7 +378,7 @@ class UserRoleTest extends TestCase
      */
     public function test_delete_nonexistent_assignment_returns_404(): void
     {
-        $response = $this->deleteJson(self::BASE_URL . '/99999');
+        $response = $this->deleteJson(self::BASE_URL . '/99999', [], $this->headers);
 
         $response->assertNotFound()
                  ->assertJson(['success' => false]);
@@ -386,14 +396,14 @@ class UserRoleTest extends TestCase
         $this->postJson(self::BASE_URL, [
             'user_id' => $user->id,
             'role_id' => $role1->id,
-        ])->assertCreated();
+        ], $this->headers)->assertCreated();
 
         $this->postJson(self::BASE_URL, [
             'user_id' => $user->id,
             'role_id' => $role2->id,
-        ])->assertCreated();
+        ], $this->headers)->assertCreated();
 
-        $response = $this->getJson(self::BASE_URL . '?user_id=' . $user->id);
+        $response = $this->getJson(self::BASE_URL . '?user_id=' . $user->id, $this->headers);
 
         $response->assertOk()
                  ->assertJsonPath('data.total', 2);

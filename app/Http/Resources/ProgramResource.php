@@ -45,6 +45,7 @@ class ProgramResource extends JsonResource
                             'id'     => $cur->country->id,
                             'name'   => $cur->country->name,
                             'active' => (bool) $cur->country->active,
+                            'currency_code' => $cur->country->currency?->code,
                         ] : null,
                     ];
                 });
