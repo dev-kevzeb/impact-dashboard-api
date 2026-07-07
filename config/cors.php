@@ -7,11 +7,11 @@ return [
 
     'allowed_origins' => [
         env('FRONTEND_URL', 'http://localhost:5173'),
-        'https://www.epulse.pro',
+        env('APP_URL', 'http://localhost:8000'),
         'https://epulse.pro',
+        'https://www.epulse.pro',
         'http://localhost:5173',
         'http://localhost:3000',
-        env('APP_URL', 'http://localhost:8000'),
         'http://localhost:8000',
     ],
 

@@ -15,7 +15,7 @@
             "description": "Servidor de Producción (Legacy)"
         },
         {
-            "url": "https://www.epulse.pro/api/v1",
+            "url": "https://epulse.pro/api/v1",
             "description": "Servidor de Producción (Nuevo)"
         },
         {
