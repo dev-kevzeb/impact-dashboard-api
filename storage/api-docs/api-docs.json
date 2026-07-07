@@ -12,11 +12,11 @@
     "servers": [
         {
             "url": "https://pacificecommerce.shop/api/v1",
-            "description": "Servidor de Producción (Legacy)"
+            "description": "Servidor de Testing"
         },
         {
             "url": "https://epulse.pro/api/v1",
-            "description": "Servidor de Producción (Nuevo)"
+            "description": "Servidor de Producción"
         },
         {
             "url": "http://localhost/api/v1",
