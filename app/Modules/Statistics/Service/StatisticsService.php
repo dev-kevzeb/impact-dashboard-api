@@ -13,6 +13,8 @@ use App\Modules\Project\Repository\ProjectRepository;
 use App\Modules\ProjectIndicator\Repository\ProjectIndicatorRepository;
 use App\Modules\StrategicOutput\Repository\StrategicOutputRepository;
 use App\Modules\Statistics\Domain\BottomUp;
+use App\Modules\Statistics\Domain\ContributionShare;
+use App\Modules\Statistics\Domain\ImplementationAggregate;
 use App\Modules\Statistics\Domain\TopDown;
 
 class StatisticsService
@@ -51,13 +53,13 @@ class StatisticsService
         if ($indicators->isEmpty()) return [
             "name" => $measure->name,
             "implementation" => 0,
+            "total" => 1,
             "resource" => 0,
             "beneficiaries" => [],
             "agencies" => [],
             "donors" => []
         ];
-        // Measures now aggregate the implementation of their indicators.
-        // TD indicators currently contribute 0 because only BU is implemented.
+
         $resource = 0;
         $beneficiaries = collect();
         $agenciesRaw = collect();
@@ -68,7 +70,6 @@ class StatisticsService
             $implementationData = $this->getIndicatorImplementation($indicator->id);
             $indicatorImplementations[] = $implementationData['implementation'];
 
-            // collect resource and contributors
             $resource += $implementationData['resource'];
             $beneficiaries = $beneficiaries->merge($implementationData['beneficiaries']);
             $agenciesRaw = $agenciesRaw->merge($implementationData['agencies']);
@@ -76,38 +77,18 @@ class StatisticsService
         }
 
         $implementation = 0;
-        if (!empty($indicatorImplementations)) {
+        if (!empty($indicatorImplementations)) 
             $implementation = min(round(array_sum($indicatorImplementations), 2), 100);
-        }
 
-        // Ensure beneficiaries unique
         $beneficiaries = $beneficiaries->unique('id')->values();
 
-        $totalCombinedContribution = $agenciesRaw->sum('contribution') + $donorsRaw->sum('contribution');
-
-        $agenciesContribution = $agenciesRaw->groupBy('id')->map(function ($group) use ($totalCombinedContribution) {
-            $sum = $group->sum('contribution');
-
-            return [
-                'id' => $group->first()['id'],
-                'name' => $group->first()['name'],
-                'contribution' => $totalCombinedContribution > 0 ? round(($sum / $totalCombinedContribution) * 100, 2) : 0
-            ];
-        })->values()->toArray();
-
-        $donorsContribution = $donorsRaw->groupBy('id')->map(function ($group) use ($totalCombinedContribution) {
-            $sum = $group->sum('contribution');
-
-            return [
-                'id' => $group->first()['id'],
-                'name' => $group->first()['name'],
-                'contribution' => $totalCombinedContribution > 0 ? round(($sum / $totalCombinedContribution) * 100, 2) : 0
-            ];
-        })->values()->toArray();
+        $agenciesContribution = (new ContributionShare($agenciesRaw->all(), $implementation))->value();
+        $donorsContribution = (new ContributionShare($donorsRaw->all(), $implementation))->value();
 
         return [
             "name" => $measure->name,
             "implementation" => $implementation,
+            "total" => 1,
             "resource" => $resource,
             "beneficiaries" => $beneficiaries,
             "agencies" => $agenciesContribution,
@@ -128,10 +109,8 @@ class StatisticsService
             'project_ids' => []
         ];
 
-        // ensure type relation is loaded
-        if (!isset($indicator->type)) {
-            $indicator->load('type');
-        }
+        if (!isset($indicator->type)) $indicator->load('type');
+        
 
         $isBottomUp = (bool) ($indicator->type?->is_bottom_up ?? true);
 
@@ -200,24 +179,6 @@ class StatisticsService
         ];
     }
 
-    private function calculateNormalizedWeightedProjectImplementation($projects): float
-    {
-        // BottomUp semantics: sum(rate * weight) * 100 (weights expected between 0 and 1)
-        $sum = 0.0;
-
-        foreach ($projects as $project) {
-            $weight = (float) ($project->weight ?? 0);
-            if ($weight <= 0) {
-                continue;
-            }
-
-            $progressRate = max(0.0, min(100.0, (float) ($project->progress ?? 0))) / 100;
-            $sum += $progressRate * $weight;
-        }
-
-        return round($sum * 100, 2);
-    }
-
     public function getStrategicOutputImplementation(int $strategicOutputId): array
     {
         $measures = $this->measureRepository->getAllByStrategicOutputId($strategicOutputId);
@@ -231,61 +192,13 @@ class StatisticsService
                 "agencies" => [],
                 "donors" => []
             ];
-            
-        $total = 0;
-        $resource = 0;
 
-        $beneficiaries = collect();
-        $agenciesRaw = collect();
-        $donorsRaw = collect();
-        
-        foreach ($measures as $measure) {
-            $implementation = $this->getMeasureImplementation($measure->id);
-            $total += $implementation['implementation'];
-            $resource += $implementation['resource'];
+        $nodes = $measures->map(fn($measure) => $this->getMeasureImplementation($measure->id));
+        $aggregate = (new ImplementationAggregate($nodes))->value();
 
-            $beneficiaries = $beneficiaries->merge($implementation['beneficiaries']);
-
-            $agenciesRaw = $agenciesRaw->merge($implementation['agencies']);
-            $donorsRaw = $donorsRaw->merge($implementation['donors']);
-        }
-
-        $total = $total / $measures->count();
-
-        $beneficiaries = $beneficiaries->unique('id')->values();
-
-        $totalCombinedContribution = $agenciesRaw->sum('contribution') + $donorsRaw->sum('contribution');
-
-        $agenciesContribution = $agenciesRaw->groupBy('id')->map(function ($group) use ($totalCombinedContribution) {
-
-            $sum = $group->sum('contribution');
-
-            return [
-                'id' => $group->first()['id'],
-                'name' => $group->first()['name'],
-                'contribution' => $totalCombinedContribution > 0 ? round(($sum / $totalCombinedContribution) * 100, 2) : 0
-            ];
-        })->values()->toArray();
-
-        $donorsContribution = $donorsRaw->groupBy('id')->map(function ($group) use ($totalCombinedContribution) {
-
-            $sum = $group->sum('contribution');
-
-            return [
-                'id' => $group->first()['id'],
-                'name' => $group->first()['name'],
-                'contribution' => $totalCombinedContribution > 0 ? round(($sum / $totalCombinedContribution) * 100, 2) : 0
-            ];
-        })->values()->toArray();
-        
         return [
-            "name" => "{$measures->count()} measures",
-            "total" => $measures->count(),
-            "implementation" => $total,
-            "resource" => $resource,
-            "beneficiaries" => $beneficiaries,
-            "agencies" => $agenciesContribution,
-            "donors" => $donorsContribution
+            "name" => "{$aggregate['total']} measures",
+            ...$aggregate,
         ];
     }
 
@@ -304,55 +217,12 @@ class StatisticsService
             "donors" => []
         ];
 
-        $weightedTotal = 0;
-        $measures = 0;
-        $resource = 0;
-        $beneficiaries = collect();
-        $agenciesRaw = collect();
-        $donorsRaw = collect();
+        $nodes = $strategicOutputs->map(fn($so) => $this->getStrategicOutputImplementation($so->id));
+        $aggregate = (new ImplementationAggregate($nodes))->value();
 
-        foreach ($strategicOutputs as $so) {
-            $implementation = $this->getStrategicOutputImplementation($so->id);
-            $soMeasureCount = $implementation['total'];
-            $weightedTotal += $implementation['implementation'] * $soMeasureCount;
-            $measures += $soMeasureCount;
-            $resource += $implementation['resource'];
-            $beneficiaries = $beneficiaries->merge($implementation['beneficiaries']);
-            $agenciesRaw = $agenciesRaw->merge($implementation['agencies']);
-            $donorsRaw = $donorsRaw->merge($implementation['donors']);
-        }
-
-        $beneficiaries = $beneficiaries->unique('id')->values();
-        $totalCombinedContribution = $agenciesRaw->sum('contribution') + $donorsRaw->sum('contribution');
-
-        $agenciesContribution = $agenciesRaw->groupBy('id')->map(function ($group) use ($totalCombinedContribution) {
-            $sum = $group->sum('contribution');
-
-            return [
-                'id' => $group->first()['id'],
-                'name' => $group->first()['name'],
-                'contribution' => $totalCombinedContribution > 0 ? round(($sum / $totalCombinedContribution) * 100, 2) : 0
-            ];
-        })->values()->toArray();
-
-        $donorsContribution = $donorsRaw->groupBy('id')->map(function ($group) use ($totalCombinedContribution) {
-            $sum = $group->sum('contribution');
-
-            return [
-                'id' => $group->first()['id'],
-                'name' => $group->first()['name'],
-                'contribution' => $totalCombinedContribution > 0 ? round(($sum / $totalCombinedContribution) * 100, 2) : 0
-            ];
-        })->values()->toArray();
-        
         return [
-            "name" => "{$measures} measures",
-            "implementation" => $measures > 0 ? round($weightedTotal / $measures, 2) : 0,
-            "total" => $measures,
-            "resource" => $resource,
-            "beneficiaries" => $beneficiaries,
-            "agencies" => $agenciesContribution,
-            "donors" => $donorsContribution
+            "name" => "{$aggregate['total']} measures",
+            ...$aggregate,
         ];
     }
 
@@ -369,61 +239,28 @@ class StatisticsService
             "donors" => []
         ];
 
-        $weightedTotal = 0;
-        $measures = 0;
-        $resource = 0;
-
+        $nodes = collect();
         $kpaBeneficiaries = [];
-        $agenciesRaw = collect();
-        $donorsRaw = collect();
 
         foreach ($kpas as $kpa) {
             $implementation = $this->getKpaImplementation($kpa->id);
-            $kpaMeasureCount = $implementation['total'];
-            $weightedTotal += $implementation['implementation'] * $kpaMeasureCount;
-            $measures += $kpaMeasureCount;
-            $resource += $implementation['resource'];
-            
+            $nodes->push($implementation);
+
             $kpaBeneficiaries[] = [
                 "name" => $kpa->name,
                 "beneficiaries" => $implementation['beneficiaries']
             ];
-            $agenciesRaw = $agenciesRaw->merge($implementation['agencies']);
-            $donorsRaw = $donorsRaw->merge($implementation['donors']);
         }
 
-        $totalCombinedContribution = $agenciesRaw->sum('contribution') + $donorsRaw->sum('contribution');
-
-        $agenciesContribution = $agenciesRaw->groupBy('id')->map(function ($group) use ($totalCombinedContribution) {
-            $sum = $group->sum('contribution');
-
-            return [
-                'id' => $group->first()['id'],
-                'name' => $group->first()['name'],
-                'contribution' => $totalCombinedContribution > 0 ? round(($sum / $totalCombinedContribution) * 100, 2) : 0
-            ];
-        })->values()->toArray();
-
-        $donorsContribution = $donorsRaw->groupBy('id')->map(function ($group) use ($totalCombinedContribution) {
-            $sum = $group->sum('contribution');
-
-            return [
-                'id' => $group->first()['id'],
-                'name' => $group->first()['name'],
-                'contribution' => $totalCombinedContribution > 0 ? round(($sum / $totalCombinedContribution) * 100, 2) : 0
-            ];
-        })->values()->toArray();
-
-        $agenciesContribution = $this->appendMissingContributors($agenciesContribution, $this->agencyRepository->getAll());
-        $donorsContribution = $this->appendMissingContributors($donorsContribution, $this->donorRepository->getAll());
+        $aggregate = (new ImplementationAggregate($nodes))->value();
 
         return [
-            "name" => "{$measures} measures ",
-            "implementation" => $measures > 0 ? round($weightedTotal / $measures, 2) : 0,
-            "resource" => $resource,
+            "name" => "{$aggregate['total']} measures ",
+            "implementation" => $aggregate['implementation'],
+            "resource" => $aggregate['resource'],
             "beneficiaries" => $kpaBeneficiaries,
-            "agencies" => $agenciesContribution,
-            "donors" => $donorsContribution
+            "agencies" => $this->appendMissingContributors($aggregate['agencies'], $this->agencyRepository->getAll()),
+            "donors" => $this->appendMissingContributors($aggregate['donors'], $this->donorRepository->getAll())
         ];
     }
 
@@ -571,18 +408,14 @@ class StatisticsService
 
     private function calculateIndicatorImplementation(object $indicator): float
     {
-        if (!isset($indicator->type)) {
-            $indicator->load('type');
-        }
+        if (!isset($indicator->type)) $indicator->load('type');        
 
         $isBottomUp = (bool) ($indicator->type?->is_bottom_up ?? true);
 
         if ($isBottomUp) {
             $projectIds = $this->projectIndicatorRepository->getProjectIdsByIndicatorIds([$indicator->id]);
 
-            if (empty($projectIds)) {
-                return 0.0;
-            }
+            if (empty($projectIds)) return 0.0;
 
             $projects = $this->projectRepository->getByIds($projectIds);
             $bottomUpProjects = $projects->map(function ($project) {
@@ -592,9 +425,8 @@ class StatisticsService
                 ];
             })->toArray();
 
-            if (empty($bottomUpProjects)) {
-                return 0.0;
-            }
+            if (empty($bottomUpProjects)) return 0.0;
+            
 
             try {
                 return min((new BottomUp($bottomUpProjects))->value(), 100);
@@ -606,9 +438,8 @@ class StatisticsService
         $target = (float) ($indicator->target ?? 0);
         $actualValue = (float) ($indicator->actual_value ?? 0);
 
-        if ($target <= 0 || $actualValue < 0) {
-            return 0.0;
-        }
+        if ($target <= 0 || $actualValue < 0) return 0.0;
+        
 
         try {
             return min((new TopDown($actualValue, $target))->value(), 100);
@@ -666,55 +497,12 @@ class StatisticsService
             "donors" => []
         ];
 
-        $weightedTotal = 0;
-        $measures = 0;
-        $resource = 0;
-        $beneficiaries = collect();
-        $agenciesRaw = collect();
-        $donorsRaw = collect();
+        $nodes = $strategicOutputs->map(fn($so) => $this->getStrategicOutputImplementation($so->id));
+        $aggregate = (new ImplementationAggregate($nodes))->value();
 
-        foreach ($strategicOutputs as $so) {
-            $implementation = $this->getStrategicOutputImplementation($so->id);
-            $soMeasureCount = $implementation['total'];
-            $weightedTotal += $implementation['implementation'] * $soMeasureCount;
-            $measures += $soMeasureCount;
-            $resource += $implementation['resource'];
-            $beneficiaries = $beneficiaries->merge($implementation['beneficiaries']);
-            $agenciesRaw = $agenciesRaw->merge($implementation['agencies']);
-            $donorsRaw = $donorsRaw->merge($implementation['donors']);
-        }
-
-        $beneficiaries = $beneficiaries->unique('id')->values();
-        $totalCombinedContribution = $agenciesRaw->sum('contribution') + $donorsRaw->sum('contribution');
-
-        $agenciesContribution = $agenciesRaw->groupBy('id')->map(function ($group) use ($totalCombinedContribution) {
-            $sum = $group->sum('contribution');
-
-            return [
-                'id' => $group->first()['id'],
-                'name' => $group->first()['name'],
-                'contribution' => $totalCombinedContribution > 0 ? round(($sum / $totalCombinedContribution) * 100, 2) : 0
-            ];
-        })->values()->toArray();
-
-        $donorsContribution = $donorsRaw->groupBy('id')->map(function ($group) use ($totalCombinedContribution) {
-            $sum = $group->sum('contribution');
-
-            return [
-                'id' => $group->first()['id'],
-                'name' => $group->first()['name'],
-                'contribution' => $totalCombinedContribution > 0 ? round(($sum / $totalCombinedContribution) * 100, 2) : 0
-            ];
-        })->values()->toArray();
-        
         return [
-            "name" => "{$measures} measures",
-            "implementation" => $measures > 0 ? round($weightedTotal / $measures, 2) : 0,
-            "total" => $measures,
-            "resource" => $resource,
-            "beneficiaries" => $beneficiaries,
-            "agencies" => $agenciesContribution,
-            "donors" => $donorsContribution
+            "name" => "{$aggregate['total']} measures",
+            ...$aggregate,
         ];
     }
 
@@ -731,61 +519,28 @@ class StatisticsService
             "donors" => []
         ];
 
-        $weightedTotal = 0;
-        $measures = 0;
-        $resource = 0;
-
+        $nodes = collect();
         $kpaBeneficiaries = [];
-        $agenciesRaw = collect();
-        $donorsRaw = collect();
 
         foreach ($countryKpas as $countryKpa) {
             $implementation = $this->getCountryKpaImplementation($countryId, $countryKpa->id_kpa);
-            $kpaMeasureCount = $implementation['total'];
-            $weightedTotal += $implementation['implementation'] * $kpaMeasureCount;
-            $measures += $kpaMeasureCount;
-            $resource += $implementation['resource'];
-            
+            $nodes->push($implementation);
+
             $kpaBeneficiaries[] = [
                 "name" => $countryKpa->kpa->name,
                 "beneficiaries" => $implementation['beneficiaries']
             ];
-            $agenciesRaw = $agenciesRaw->merge($implementation['agencies']);
-            $donorsRaw = $donorsRaw->merge($implementation['donors']);
         }
 
-        $totalCombinedContribution = $agenciesRaw->sum('contribution') + $donorsRaw->sum('contribution');
-
-        $agenciesContribution = $agenciesRaw->groupBy('id')->map(function ($group) use ($totalCombinedContribution) {
-            $sum = $group->sum('contribution');
-
-            return [
-                'id' => $group->first()['id'],
-                'name' => $group->first()['name'],
-                'contribution' => $totalCombinedContribution > 0 ? round(($sum / $totalCombinedContribution) * 100, 2) : 0
-            ];
-        })->values()->toArray();
-
-        $donorsContribution = $donorsRaw->groupBy('id')->map(function ($group) use ($totalCombinedContribution) {
-            $sum = $group->sum('contribution');
-
-            return [
-                'id' => $group->first()['id'],
-                'name' => $group->first()['name'],
-                'contribution' => $totalCombinedContribution > 0 ? round(($sum / $totalCombinedContribution) * 100, 2) : 0
-            ];
-        })->values()->toArray();
-
-        $agenciesContribution = $this->appendMissingContributors($agenciesContribution, $this->agencyRepository->getAll());
-        $donorsContribution = $this->appendMissingContributors($donorsContribution, $this->donorRepository->getAll());
+        $aggregate = (new ImplementationAggregate($nodes))->value();
 
         return [
-            "name" => "{$measures} measures ",
-            "implementation" => $measures > 0 ? round($weightedTotal / $measures, 2) : 0,
-            "resource" => $resource,
+            "name" => "{$aggregate['total']} measures ",
+            "implementation" => $aggregate['implementation'],
+            "resource" => $aggregate['resource'],
             "beneficiaries" => $kpaBeneficiaries,
-            "agencies" => $agenciesContribution,
-            "donors" => $donorsContribution
+            "agencies" => $this->appendMissingContributors($aggregate['agencies'], $this->agencyRepository->getAll()),
+            "donors" => $this->appendMissingContributors($aggregate['donors'], $this->donorRepository->getAll())
         ];
     }
 
@@ -813,7 +568,7 @@ class StatisticsService
         }
 
         return [
-            "kpas"=> $kpasData->values()->toArray(),
+            "kpas" => $kpasData->values()->toArray(),
             "resource" => $resource
         ];
     }
@@ -823,9 +578,7 @@ class StatisticsService
         $existingById = collect($contributions)->keyBy('id');
 
         foreach ($registeredEntities as $entity) {
-            if ($existingById->has($entity->id)) {
-                continue;
-            }
+            if ($existingById->has($entity->id)) continue;
 
             $existingById->put($entity->id, [
                 'id' => $entity->id,
