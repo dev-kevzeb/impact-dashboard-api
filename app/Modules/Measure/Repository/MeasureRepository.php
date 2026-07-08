@@ -26,32 +26,32 @@ class MeasureRepository extends AbstractRepository implements RepositoryInterfac
         $query = $this->model->where('strategic_output_id', $strategicOutputId);
         if(!empty($search)) $query->whereRaw('lower(name) LIKE lower(?)', ['%'.trim($search).'%']);
 
-        return $query->orderBy('name')->paginate($perPage);
+        return $query->orderBy('id')->paginate($perPage);
     }
 
     public function getAllByStrategicOutput(int $strategicOutputId, int $perPage = 10)
     {
-        return $this->model->where('strategic_output_id', $strategicOutputId)->paginate($perPage);
+        return $this->model->where('strategic_output_id', $strategicOutputId)->orderBy('id')->paginate($perPage);
     }
 
     public function getAllPaginatedByStrategicOutput(int $strategicOutputId, ?string $search, int $per_page)
     {
         $query = $this->model::query();
-        
+
         $query->where('strategic_output_id', $strategicOutputId)->get();
         if( $search ) $query->whereRaw('lower(name) LIKE lower(?)',['%' . $search . '%']);
 
-        return $query->paginate($per_page);
+        return $query->orderBy('id')->paginate($per_page);
     }
 
     public function getByStrategicOutputIds(array $strategicOutputIds){
         $query = $this->model->whereIn('strategic_output_id', $strategicOutputIds);
 
-        return $query->orderBy('name')->get();
+        return $query->orderBy('id')->get();
     }
 
     public function getAllByStrategicOutputId(int $strategicOutputId)
     {
-        return $this->model->where('strategic_output_id', $strategicOutputId)->get();
+        return $this->model->where('strategic_output_id', $strategicOutputId)->orderBy('id')->get();
     }
 }
