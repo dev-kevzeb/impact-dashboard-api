@@ -54,4 +54,19 @@ class MeasureRepository extends AbstractRepository implements RepositoryInterfac
     {
         return $this->model->where('strategic_output_id', $strategicOutputId)->orderBy('id')->get();
     }
+
+    public function paginateByCountryKpaIds(array $countryKpaIds, ?string $search, int $perPage = 10)
+    {
+        $query = $this->model
+            ->join('strategic_output', 'measure.strategic_output_id', '=', 'strategic_output.id')
+            ->whereIn('strategic_output.id_ck', $countryKpaIds)
+            ->select('measure.*')
+            ->orderBy('measure.id');
+
+        if (!empty($search)) {
+            $query->whereRaw('LOWER(measure.name) LIKE LOWER(?)', ['%' . trim($search) . '%']);
+        }
+
+        return $query->paginate($perPage);
+    }
 }

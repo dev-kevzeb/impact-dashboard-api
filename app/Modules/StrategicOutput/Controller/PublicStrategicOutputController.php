@@ -44,4 +44,31 @@ class PublicStrategicOutputController extends Controller
         }
 
     }
+
+    public function index(Request $request)
+    {
+        try {
+            $search  = $request->get("search");
+            $perPage = (int) $request->get("per_page", 10);
+            $countryId = $request->has('country') ? (int) $request->get('country') : null;
+
+            $strategic_outputs = $this->strategicOutputService->getStrategicOutputsForPublic($countryId, $perPage, $search);
+
+            return ApiResponse::success(
+                'Strategic Outputs paginated list successfully uploaded',
+                200,
+                [
+                    'strategic_outputs' => StrategicOutputResource::collection($strategic_outputs),
+                    'total' => $strategic_outputs->count(),
+                    'per_page' => $strategic_outputs->perPage(),
+                    'current_page' => $strategic_outputs->currentPage(),
+                    'last_page' => $strategic_outputs->lastPage(),
+                ]
+            );
+        } catch (RuntimeException $e) {
+            return ApiResponse::error($e->getMessage(), 500);
+        } catch (Exception $e) {
+            return ApiResponse::error('Internal server error', 500);
+        }
+    }
 }

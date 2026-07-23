@@ -103,6 +103,17 @@ class MeasureService
         return $this->measureRepository->getAllPaginatedByStrategicOutput($id, $search, $per_page);
     }
 
+    public function getMeasuresForPublic(int $countryId, int $perPage, ?string $search)
+    {
+        $countryKpaIds = $this->countryKpaRepository->getIdsByCountryId($countryId)->toArray();
+
+        if (empty($countryKpaIds)) {
+            return $this->measureRepository->paginateByCountryKpaIds([], $search, $perPage);
+        }
+
+        return $this->measureRepository->paginateByCountryKpaIds($countryKpaIds, $search, $perPage);
+    }
+
     public function getIndicatorOfMeasureByName(int $measureId, string $indicatorName)
     {
         $measure = $this->measureRepository->findById($measureId);

@@ -110,6 +110,19 @@ class StrategicOutputService{
 
     }
 
+    public function getStrategicOutputsForPublic(?int $countryId, int $perPage, ?string $search)
+    {
+        $countryKpaIds = $countryId
+            ? $this->countryKpaRepository->getIdsByCountryId($countryId)->toArray()
+            : $this->countryKpaRepository->getAllActiveIds()->toArray();
+
+        if (empty($countryKpaIds)) {
+            return $this->strategicOutputRepository->paginateByCountryKpaIds([], $search, $perPage);
+        }
+
+        return $this->strategicOutputRepository->paginateByCountryKpaIds($countryKpaIds, $search, $perPage);
+    }
+
     public function getStrategicOutputsByCountryKpaIds(array $countryKpaIds, ?string $search, int $perPage)
     {
         return $this->strategicOutputRepository->paginateByCountryKpaIds($countryKpaIds, $search, $perPage);

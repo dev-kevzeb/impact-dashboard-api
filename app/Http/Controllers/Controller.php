@@ -29,6 +29,11 @@ use Illuminate\Routing\Controller as BaseController;
  *     url="http://localhost/api/v1",
  *     description="Servidor de Desarrollo Local"
  * )
+ *
+ * @OA\Server(
+ *     url="http://pacificEcommerce.test/api/v1",
+ *     description="Servidor Herd (Desarrollo Local)"
+ * )
  * 
  * @OA\SecurityScheme(
  *     securityScheme="bearerAuth",

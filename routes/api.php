@@ -350,9 +350,11 @@ Route::prefix('v1/public')->group(function () {
     Route::get('kpas', [PublicKpaController::class, 'index']);
 
     //Strategic Outputs
+    Route::get('strategic-outputs', [PublicStrategicOutputController::class, 'index']);
     Route::get('strategic-outputs/{id}', [PublicStrategicOutputController::class, 'getStrategicOutputsByKpaId']);
 
     // Measures
+    Route::get('measures', [PublicMeasureController::class, 'index']);
     Route::get('measures/{id}', [PublicMeasureController::class, 'getMMeasuresByStrategicOutputId']);
 
     // Project-states

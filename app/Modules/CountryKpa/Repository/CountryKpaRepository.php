@@ -140,6 +140,17 @@ class CountryKpaRepository extends Model
 			->pluck('id');
 	}
 
+	public function getAllActiveIds(){
+		return $this->model->whereHas('country', fn($q) => $q->where('active', true))
+			->pluck('id');
+	}
+
+	public function getIdsByCountryId(int $countryId){
+		return $this->model->where('id_country', $countryId)
+			->whereHas('country', fn($q) => $q->where('active', true))
+			->pluck('id');
+	}
+
 	public function paginateKpasByCountry(int $countryId, ?string $search, int $perPage) {
 		return $this->model->where('id_country', $countryId)
 			->whereHas('kpa', function ($q) use ($search) {

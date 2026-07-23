@@ -45,4 +45,35 @@ class PublicMeasureController extends Controller
             return ApiResponse::error('Internal Server Error', 500);
         }
     }
+
+    public function index(Request $request)
+    {
+        try {
+            $countryId = (int) $request->get("country");
+            $search    = $request->get("search");
+            $perPage   = (int) $request->get("per_page", 10);
+
+            if (!$countryId) {
+                return ApiResponse::error('Country parameter is required', 400);
+            }
+
+            $measures = $this->measureService->getMeasuresForPublic($countryId, $perPage, $search);
+
+            return ApiResponse::success(
+                'Measures paginated list successfully uploaded',
+                200,
+                [
+                    'measures' => MeasureResource::collection($measures),
+                    'total' => $measures->count(),
+                    'per_page' => $measures->perPage(),
+                    'current_page' => $measures->currentPage(),
+                    'last_page' => $measures->lastPage(),
+                ]
+            );
+        } catch (RuntimeException $e) {
+            return ApiResponse::error($e->getMessage(), 400);
+        } catch (Exception $e) {
+            return ApiResponse::error('Internal Server Error', 500);
+        }
+    }
 }
