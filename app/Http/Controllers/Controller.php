@@ -6,35 +6,20 @@ use Illuminate\Routing\Controller as BaseController;
 
 /**
  * @OA\Info(
- *     title="Pacific Ecommerce API",
+ *     title="Impact Dashboard API",
  *     version="1.0.0",
- *     description="Gestión de programas y proyectos",
+ *     description="Program and project management API — countries, KPIs, SDGs, donors and implementing agencies",
  *     @OA\Contact(
- *         email="info@pacificecommerce.org",
- *         name="Pacific Ecommerce Support"
+ *         name="Impact Dashboard",
+ *         url="https://github.com/DevKevZeb/impact-dashboard"
  *     )
- * )
- * 
- * @OA\Server(
- *     url="https://pacificecommerce.shop/api/v1",
- *     description="Servidor de Producción (Legacy)"
- * )
- * 
- * @OA\Server(
- *     url="https://epulse.pro/api/v1",
- *     description="Servidor de Producción (Nuevo)"
- * )
- * 
- * @OA\Server(
- *     url="http://localhost/api/v1",
- *     description="Servidor de Desarrollo Local"
  * )
  *
  * @OA\Server(
- *     url="http://pacificEcommerce.test/api/v1",
- *     description="Servidor Herd (Desarrollo Local)"
+ *     url="http://localhost:8000/api/v1",
+ *     description="Local development server"
  * )
- * 
+ *
  * @OA\SecurityScheme(
  *     securityScheme="bearerAuth",
  *     type="http",

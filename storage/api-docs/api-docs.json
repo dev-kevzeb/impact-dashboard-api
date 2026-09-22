@@ -1,30 +1,18 @@
 {
     "openapi": "3.0.0",
     "info": {
-        "title": "Pacific Ecommerce API",
-        "description": "Gestión de programas y proyectos",
+        "title": "Impact Dashboard API",
+        "description": "Program and project management API — countries, KPIs, SDGs, donors and implementing agencies",
         "contact": {
-            "name": "Pacific Ecommerce Support",
-            "email": "info@pacificecommerce.org"
+            "name": "Impact Dashboard",
+            "url": "https://github.com/DevKevZeb/impact-dashboard"
         },
         "version": "1.0.0"
     },
     "servers": [
         {
-            "url": "https://pacificecommerce.shop/api/v1",
-            "description": "Servidor de Producción (Legacy)"
-        },
-        {
-            "url": "https://epulse.pro/api/v1",
-            "description": "Servidor de Producción (Nuevo)"
-        },
-        {
-            "url": "http://localhost/api/v1",
-            "description": "Servidor de Desarrollo Local"
-        },
-        {
-            "url": "http://pacificEcommerce.test/api/v1",
-            "description": "Servidor Herd (Desarrollo Local)"
+            "url": "http://localhost:8000/api/v1",
+            "description": "Local development server"
         }
     ],
     "paths": {

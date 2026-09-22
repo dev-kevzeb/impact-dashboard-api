@@ -1,280 +1,185 @@
-# PacificEcommerce Backend
+# Impact Dashboard — Backend API
 
-Backend REST API de PacificEcommerce para gestion de programas, proyectos, usuarios y permisos, construido con Laravel 12 y arquitectura modular.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
+[![PHP](https://img.shields.io/badge/PHP-8.2-777BB4?logo=php&logoColor=white)](https://www.php.net/)
+[![Laravel](https://img.shields.io/badge/Laravel-12-FF2D20?logo=laravel&logoColor=white)](https://laravel.com/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-production-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+[![JWT](https://img.shields.io/badge/Auth-JWT-000000?logo=jsonwebtokens&logoColor=white)](https://jwt.io/)
 
-## Indice
+A versioned REST API for managing development-cooperation programs, projects, KPIs and SDGs across countries, donors and implementing agencies — built with Laravel 12 and a modular, domain-driven architecture.
 
-1. [Descripcion del Proyecto](#descripcion-del-proyecto)
-2. [Stack Tecnico Completo](#stack-tecnico-completo)
-3. [Arquitectura y Estructura](#arquitectura-y-estructura)
-4. [API y Autenticacion](#api-y-autenticacion)
-5. [Setup Local](#setup-local)
-6. [Variables de Entorno](#variables-de-entorno)
-7. [Comandos Utiles](#comandos-utiles)
-8. [Testing](#testing)
-9. [Swagger OpenAPI](#swagger-openapi)
-10. [Archivos Publicos y Uploads](#archivos-publicos-y-uploads)
-11. [Checklist de Produccion](#checklist-de-produccion)
-12. [Seguridad](#seguridad)
+This is the backend API behind **[Impact Dashboard](https://github.com/DevKevZeb/impact-dashboard)** — see that repository for the frontend source and live demo. Every request/response contract the frontend integrates against was designed and implemented here.
 
-## Descripcion del Proyecto
+| | |
+|---|---|
+| **34** domain modules | **229** API endpoints |
+| **71** test files (Unit + Feature) | Full OpenAPI/Swagger docs |
 
-Este backend expone una API versionada (`/api/v1`) con autenticacion JWT, control de acceso por scopes y documentacion OpenAPI.
+## Features
 
-Objetivos principales:
+- Versioned API (`/api/v1`) with JWT authentication and per-module permission scopes
+- Modular architecture organized by domain (`Controller -> Service -> Repository -> Domain`), not generic technical layers
+- Role-based access control via `spatie/laravel-permission`, with `scope:{module}` / `scope:{module}:write` middleware and a global `*:*` scope for admin profiles
+- Hierarchical KPI tracking (KPA → Strategic Output → Measure → Indicator) mapped against UN Sustainable Development Goals
+- Public, unauthenticated endpoints (`/api/v1/public/*`) for embeddable dashboards and regional statistics
+- Full OpenAPI/Swagger documentation, generated from code
+- Email verification and reCAPTCHA-protected registration
 
-- Centralizar la logica de negocio en modulos por dominio.
-- Mantener una estructura mantenible y escalable para nuevas entidades.
-- Proveer contratos API estables para frontend y consumidores externos.
+## API documentation (Swagger/OpenAPI)
 
-## Stack Tecnico Completo
+Every endpoint is documented from code via OpenAPI annotations — grouped by resource, with request/response schemas and JWT bearer auth wired in.
 
-### Core
-
-- PHP `^8.2`
-- Laravel Framework `^12.0`
-- PostgreSQL (produccion)
-- SQLite in-memory (testing)
-
-### Seguridad y acceso
-
-- JWT Auth: `php-open-source-saver/jwt-auth` (`^2.8`)
-- Roles y permisos: `spatie/laravel-permission` (`^6.24`)
-- Middleware de scopes por modulo (`scope:{modulo}` / `scope:{modulo}:write`)
-
-### Documentacion API
-
-- Swagger/OpenAPI: `darkaonline/l5-swagger` (`^9.0`)
-
-### Mail y comunicaciones
-
-- Verificacion de correo con Notifications de Laravel (`MustVerifyEmail`)
-- Transporte de correo configurable por `MAIL_MAILER`
-- Configuracion actual del proyecto: SMTP (Google)
-- Paquete disponible para integracion Mailgun: `symfony/mailgun-mailer` (`^7.4`)
-
-### Tooling de desarrollo
-
-- Tinker: `laravel/tinker`
-- Pint (code style): `laravel/pint`
-- PHPUnit: `phpunit/phpunit` (`^11.5`)
-- Mockery: `mockery/mockery`
-- Collision: `nunomaduro/collision`
-- Pail: `laravel/pail`
-- Sail: `laravel/sail`
-
-## Arquitectura y Estructura
-
-Patron por modulo:
-
-`Controller -> Service -> Repository -> Domain`
-
-Estructura estandar:
-
-`app/Modules/{Entidad}/Controller`
-`app/Modules/{Entidad}/Service`
-`app/Modules/{Entidad}/Repository`
-`app/Modules/{Entidad}/Domain`
-
-Convenciones clave:
-
-- Tablas en singular.
-- Rutas API versionadas en `/api/v1/*`.
-- Validacion tecnica en FormRequest.
-- Validacion de reglas de negocio en Domain/Service.
-- Respuesta JSON estandarizada con `success`, `message` y `data`.
-
-## API y Autenticacion
-
-Base path principal:
-
-- Privada autenticada: `/api/v1/*`
-- Publica: `/api/v1/public/*`
-
-Flujo de autenticacion JWT:
-
-1. `POST /api/v1/auth/login`
-2. Uso de token Bearer en requests autenticados
-3. `POST /api/v1/auth/refresh` para renovar token
-4. `GET /api/v1/auth/me` para obtener usuario autenticado
-
-Control de acceso:
-
-- Middleware `jwt` para proteger rutas.
-- Middleware `scope:*` para permisos por modulo.
-- Soporte de scope global `*:*` para perfiles admin.
-
-## Setup Local
-
-### Prerrequisitos
-
-- PHP 8.2+
-- Composer
-- Node.js 18+ y npm
-- PostgreSQL
-
-### Instalacion
-
-1. Instalar dependencias:
-
-```bash
-composer install
-```
-
-2. Configurar entorno:
-
-```bash
-cp .env-example .env
-php artisan key:generate
-php artisan jwt:secret
-```
-
-3. Base de datos (migraciones y seeders):
-
-```bash
-php artisan migrate --seed
-```
-
-4. Levantar entorno de desarrollo:
-
-```bash
-composer dev
-```
-
-Este comando levanta servidor Laravel, listener de queue y Vite en paralelo.
-
-## Variables de Entorno
-
-Revisar estas variables antes de ejecutar en cualquier ambiente.
-
-### Aplicacion y CORS
-
-- `APP_ENV`
-- `APP_DEBUG` (en produccion debe ser `false`)
-- `APP_URL`
-- `FRONTEND_URL`
-
-### Base de datos
-
-- `DB_CONNECTION`
-- `DB_HOST`
-- `DB_PORT`
-- `DB_DATABASE`
-- `DB_USERNAME`
-- `DB_PASSWORD`
-
-### JWT
-
-- `JWT_SECRET`
-- `JWT_TTL`
-- `JWT_REFRESH_TTL`
-- `JWT_ALGO`
-- `JWT_BLACKLIST_ENABLED`
-
-### Correo
-
-- `MAIL_MAILER`
-- `MAIL_HOST`
-- `MAIL_PORT`
-- `MAIL_USERNAME`
-- `MAIL_PASSWORD`
-- `MAIL_ENCRYPTION`
-- `MAIL_FROM_ADDRESS`
-- `MAIL_FROM_NAME`
-
-### reCAPTCHA v2 (registro)
-
-- `RECAPTCHA_SITE_KEY`
-- `RECAPTCHA_SECRET_KEY`
-- `RECAPTCHA_EXPECTED_HOSTNAME` (opcional, recomendado en `staging/production`)
-
-Notas reCAPTCHA:
-
-- `RECAPTCHA_SITE_KEY` es publica para frontend.
-- `RECAPTCHA_SECRET_KEY` es sensible y no debe exponerse.
-
-## Comandos Utiles
-
-```bash
-# Desarrollo
-composer dev
-
-# Servidor solamente
-php artisan serve
-
-# Migraciones
-php artisan migrate
-php artisan migrate --seed
-
-# Limpieza de cache
-php artisan optimize:clear
-
-# Ver rutas
-php artisan route:list
-
-# Formato de codigo
-./vendor/bin/pint
-```
-
-## Testing
-
-El proyecto usa PHPUnit y define suites `Unit` y `Feature`.
-
-Entorno de pruebas:
-
-- `APP_ENV=testing`
-- `DB_CONNECTION=sqlite`
-- `DB_DATABASE=:memory:`
-
-Comandos:
-
-```bash
-# Todos los tests
-composer test
-
-# Archivo especifico
-php artisan test tests/Feature/AuthRegisterWithCountryTest.php
-
-# Suite especifica
-php artisan test --testsuite=Feature
-php artisan test --testsuite=Unit
-```
-
-## Swagger OpenAPI
-
-Generacion de docs:
+| | |
+|---|---|
+| ![Swagger overview](docs/screenshots/swagger-overview.png) | ![Programs endpoints](docs/screenshots/swagger-programs.png) |
+| **Overview** — 28 tagged resource groups covering the full domain | **Programs** — one of 34 modules, each with full CRUD + search |
 
 ```bash
 php artisan l5-swagger:generate
 ```
 
-Rutas por defecto:
+Default routes:
 
 - UI: `/api/documentation`
-- JSON: `/docs` (archivo generado en `storage/api-docs`)
+- JSON: `/docs` (generated into `storage/api-docs`)
 
-## Archivos Publicos y Uploads
+## Tech stack
 
-Para exponer `storage/app/public` en `public/storage`:
+| Category | Stack |
+|---|---|
+| Core | PHP `^8.2`, Laravel Framework `^12.0`, PostgreSQL (production), SQLite in-memory (testing) |
+| Auth & access | JWT via `php-open-source-saver/jwt-auth` (`^2.8`), roles/permissions via `spatie/laravel-permission` (`^6.24`), per-module scope middleware |
+| API docs | Swagger/OpenAPI via `darkaonline/l5-swagger` (`^9.0`) |
+| Mail | Laravel Notifications (`MustVerifyEmail`), SMTP-configurable transport; `symfony/mailgun-mailer` available for Mailgun integration |
+| Dev tooling | Tinker, Pint (code style), PHPUnit (`^11.5`), Mockery, Collision, Pail, Sail |
+
+## Architecture
+
+Pattern per module: `Controller -> Service -> Repository -> Domain`
+
+```
+app/
+└─ Modules/
+   └─ {Entity}/            # one folder per domain entity, e.g. Program, Project, KPA
+      ├─ Controller/         #   HTTP layer — request in, ApiResponse out
+      ├─ Service/            #   business rules, orchestration
+      ├─ Repository/         #   query layer, Eloquent-facing
+      └─ Domain/             #   domain objects, value rules
+```
+
+Key conventions:
+
+- Tables named in singular.
+- API routes versioned under `/api/v1/*`.
+- Technical validation lives in `FormRequest` classes.
+- Business-rule validation lives in `Domain`/`Service`.
+- Standardized JSON response shape: `success`, `message`, `data`.
+
+## Design highlights
+
+- **Per-module permission scopes, not just roles** — access is granted as `scope:{module}` / `scope:{module}:write` pairs (e.g. `scope:programs:write`), composed per user rather than hard-coded into a fixed set of role names. A new access profile is just a new combination of existing scopes, no code change required.
+- **Hierarchical KPI model, not a flat metrics table** — indicators roll up through KPA → Strategic Output → Measure → Indicator, each level mapped against UN Sustainable Development Goals. One rollup model serves every dashboard level (KPA-wide down to a single indicator) instead of duplicating aggregation logic per screen.
+- **A separate public API surface, not permissive CORS on the private one** — `/api/v1/public/*` is its own unauthenticated route group with dedicated controllers, built for the embeddable public site and regional statistics. Public consumers never touch the same endpoints or serializers as the authenticated app.
+- **The same four-layer shape in every module** — `Controller -> Service -> Repository -> Domain` is enforced consistently across all 34 modules, so business rules live in `Service`/`Domain`, never in controllers or Eloquent models. That consistency is what keeps 71 test files tractable to maintain at this module count.
+
+## API & Authentication
+
+Base paths:
+
+- Authenticated: `/api/v1/*`
+- Public: `/api/v1/public/*`
+
+JWT flow:
+
+1. `POST /api/v1/auth/login`
+2. Send the token as a `Bearer` header on authenticated requests
+3. `POST /api/v1/auth/refresh` to renew the token
+4. `GET /api/v1/auth/me` to fetch the authenticated user
+
+Access control:
+
+- `jwt` middleware protects private routes.
+- `scope:*` middleware gates permissions per module.
+- A global `*:*` scope supports admin profiles.
+
+## Getting started
+
+### Requirements
+
+- PHP 8.2+
+- Composer
+- Node.js 18+ and npm
+- PostgreSQL
+
+### Setup
+
+```bash
+composer install                # install dependencies
+cp .env-example .env            # copy the environment template
+php artisan key:generate        # generate APP_KEY
+php artisan jwt:secret          # generate JWT_SECRET
+php artisan migrate --seed      # run migrations and seeders
+```
+
+### Scripts
+
+```bash
+composer dev              # Laravel server + queue listener + Vite, in parallel
+php artisan serve         # server only
+php artisan migrate       # run migrations
+php artisan migrate --seed
+php artisan optimize:clear
+php artisan route:list
+./vendor/bin/pint         # code style
+```
+
+## Environment variables
+
+Review these before running in any environment (see `.env-example` for the full template with placeholder values).
+
+| Group | Variables |
+|---|---|
+| App & CORS | `APP_ENV`, `APP_DEBUG` (must be `false` in production), `APP_URL`, `FRONTEND_URL` |
+| Database | `DB_CONNECTION`, `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD` |
+| JWT | `JWT_SECRET`, `JWT_TTL`, `JWT_REFRESH_TTL`, `JWT_ALGO`, `JWT_BLACKLIST_ENABLED` |
+| Mail | `MAIL_MAILER`, `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD`, `MAIL_ENCRYPTION`, `MAIL_FROM_ADDRESS`, `MAIL_FROM_NAME` |
+| reCAPTCHA v2 (registration) | `RECAPTCHA_SITE_KEY` (public, safe for the frontend), `RECAPTCHA_SECRET_KEY` (sensitive), `RECAPTCHA_EXPECTED_HOSTNAME` (optional, recommended in staging/production) |
+
+## Testing
+
+PHPUnit with `Unit` and `Feature` suites.
+
+Test environment: `APP_ENV=testing`, `DB_CONNECTION=sqlite`, `DB_DATABASE=:memory:`
+
+```bash
+composer test                                              # all tests
+php artisan test tests/Feature/AuthRegisterWithCountryTest.php  # a single file
+php artisan test --testsuite=Feature
+php artisan test --testsuite=Unit
+```
+
+## Public files & uploads
+
+To expose `storage/app/public` at `public/storage`:
 
 ```bash
 php artisan storage:link
 ```
 
-## Checklist de Produccion
+## Production checklist
 
-Antes de release:
+Before release:
 
 1. `APP_ENV=production`
 2. `APP_DEBUG=false`
-3. Secretos cargados desde entorno seguro
-4. Variables sensibles generadas de forma robusta
-5. Migraciones aplicadas
-6. `php artisan storage:link` ejecutado
-7. Swagger regenerado
-8. Verificacion de correo saliente
+3. Secrets loaded from a secure environment, not the repo
+4. Sensitive variables generated with strong randomness
+5. Migrations applied
+6. `php artisan storage:link` run
+7. Swagger regenerated
+8. Outbound mail verified
 
-Comandos recomendados en deploy:
+Recommended deploy commands:
 
 ```bash
 composer install --no-dev --optimize-autoloader
@@ -285,10 +190,14 @@ php artisan view:cache
 php artisan l5-swagger:generate
 ```
 
-## Seguridad
+## Security
 
-- No subir secretos al repositorio.
-- Rotar secretos comprometidos antes de produccion.
-- Usar credenciales distintas por ambiente (`local`, `staging`, `production`).
-- Mantener `RECAPTCHA_SECRET_KEY` unicamente en variables de entorno seguras.
-- Revisar periodicamente scopes JWT y permisos de roles.
+- Real secrets live only in a local, gitignored `.env` — `.env-example` documents every required key with placeholder values, never live credentials.
+- Rotate any secret that is ever exposed, before production use.
+- Use distinct credentials per environment (`local`, `staging`, `production`).
+- Keep `RECAPTCHA_SECRET_KEY` only in secure environment variables.
+- Review JWT scopes and role permissions periodically.
+
+## License
+
+MIT — see [LICENSE](./LICENSE).
