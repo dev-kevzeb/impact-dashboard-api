@@ -12,7 +12,6 @@ class ContactTest extends TestCase
 
     private const BASE_URL = '/api/v1/contacts';
 
-    /** @test */
     public function test_can_list_contacts()
     {
         Contact::factory()->count(3)->create();
@@ -33,7 +32,6 @@ class ContactTest extends TestCase
             ->assertJsonPath('data.total', 3);
     }
 
-    /** @test */
     public function test_can_show_contact()
     {
         $contact = Contact::factory()->create();
@@ -45,7 +43,6 @@ class ContactTest extends TestCase
             ->assertJsonPath('data.email', $contact->email);
     }
 
-    /** @test */
     public function test_show_returns_404_for_nonexistent_contact()
     {
         $response = $this->getJson(self::BASE_URL . "/9999", $this->authHeaders('project-manager'));
@@ -53,7 +50,6 @@ class ContactTest extends TestCase
         $response->assertStatus(404);
     }
 
-    /** @test */
     public function test_can_create_contact()
     {
         $payload = [
@@ -75,7 +71,6 @@ class ContactTest extends TestCase
         ]);
     }
 
-    /** @test */
     public function test_create_contact_validation_errors()
     {
         $payload = [
@@ -98,7 +93,6 @@ class ContactTest extends TestCase
             ]);
     }
 
-    /** @test */
     public function test_can_update_contact()
     {
         $contact = Contact::factory()->create();
@@ -143,7 +137,6 @@ class ContactTest extends TestCase
             ]);
     }
 
-    /** @test */
     public function test_update_returns_404_when_contact_not_found()
     {
         $payload = [
@@ -159,7 +152,6 @@ class ContactTest extends TestCase
         $response->assertStatus(404);
     }
 
-    /** @test */
     public function test_can_search_contact_by_email()
     {
         $contact = Contact::factory()->create([
@@ -172,7 +164,6 @@ class ContactTest extends TestCase
             ->assertJsonPath('data.email', 'searchme@example.com');
     }
 
-    /** @test */
     public function test_search_returns_404_if_not_found()
     {
         $response = $this->getJson(self::BASE_URL . "/search?email=unknown@example.com", $this->authHeaders('project-manager'));
@@ -180,7 +171,6 @@ class ContactTest extends TestCase
         $response->assertStatus(404);
     }
 
-    /** @test */
     public function test_search_validation_error()
     {
         $response = $this->getJson(self::BASE_URL . "/search?email=not-valid", $this->authHeaders('project-manager'));

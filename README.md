@@ -1,5 +1,6 @@
 # Impact Dashboard — Backend API
 
+[![Tests](https://github.com/DevKevZeb/impact-dashboard-api/actions/workflows/tests.yml/badge.svg)](https://github.com/DevKevZeb/impact-dashboard-api/actions/workflows/tests.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 [![PHP](https://img.shields.io/badge/PHP-8.2-777BB4?logo=php&logoColor=white)](https://www.php.net/)
 [![Laravel](https://img.shields.io/badge/Laravel-12-FF2D20?logo=laravel&logoColor=white)](https://laravel.com/)
@@ -81,6 +82,30 @@ Key conventions:
 - **Hierarchical KPI model, not a flat metrics table** — indicators roll up through KPA → Strategic Output → Measure → Indicator, each level mapped against UN Sustainable Development Goals. One rollup model serves every dashboard level (KPA-wide down to a single indicator) instead of duplicating aggregation logic per screen.
 - **A separate public API surface, not permissive CORS on the private one** — `/api/v1/public/*` is its own unauthenticated route group with dedicated controllers, built for the embeddable public site and regional statistics. Public consumers never touch the same endpoints or serializers as the authenticated app.
 - **The same four-layer shape in every module** — `Controller -> Service -> Repository -> Domain` is enforced consistently across all 34 modules, so business rules live in `Service`/`Domain`, never in controllers or Eloquent models. That consistency is what keeps 71 test files tractable to maintain at this module count.
+
+## Data model
+
+The schema has 35 tables. This is the core business domain — country/program-scoped role-assignment and invitation tables, plus status/catalog lookups, are omitted here for readability (see `database/migrations/` for the full schema).
+
+```mermaid
+erDiagram
+    CURRENCY ||--o{ COUNTRY : has
+    CONTACT ||--o{ PROGRAM : has
+    PROGRAM }o--o{ SDG : targets
+    PROGRAM ||--o{ PROJECT : has
+    CONTACT ||--o{ PROJECT : has
+    BENEFICIARY ||--o{ PROJECT : supports
+    PROJECT }o--o{ AGENCY : "implemented by"
+    PROJECT }o--o{ INDICATOR : tracks
+    PROJECT }o--o{ DONOR : "funded by"
+    COUNTRY ||--o{ COUNTRY_KPA : activates
+    KPA ||--o{ COUNTRY_KPA : "instantiated as"
+    COUNTRY_KPA ||--o{ STRATEGIC_OUTPUT : has
+    STRATEGIC_OUTPUT ||--o{ MEASURE : has
+    MEASURE ||--o{ INDICATOR : has
+    INDICATOR_TYPE ||--o{ INDICATOR : classifies
+    USER }o--o{ ROLE : "assigned via user_role"
+```
 
 ## API & Authentication
 

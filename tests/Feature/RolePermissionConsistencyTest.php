@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
@@ -116,9 +117,7 @@ class RolePermissionConsistencyTest extends TestCase
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
     }
 
-    /**
-     * @dataProvider roleProvider
-     */
+    #[DataProvider('roleProvider')]
     public function test_role_has_exactly_the_expected_permissions(string $roleName): void
     {
         $expected = $this->expectedPermissions[$roleName];
@@ -148,9 +147,7 @@ class RolePermissionConsistencyTest extends TestCase
         );
     }
 
-    /**
-     * @dataProvider roleProvider
-     */
+    #[DataProvider('roleProvider')]
     public function test_role_does_not_hold_wildcard_permission(string $roleName): void
     {
         $role = Role::where('name', $roleName)
