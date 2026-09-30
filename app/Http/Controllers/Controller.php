@@ -11,7 +11,7 @@ use Illuminate\Routing\Controller as BaseController;
  *     description="Program and project management API — countries, KPIs, SDGs, donors and implementing agencies",
  *     @OA\Contact(
  *         name="Impact Dashboard",
- *         url="https://github.com/DevKevZeb/impact-dashboard"
+ *         url="https://github.com/dev-kevzeb/impact-dashboard"
  *     )
  * )
  *

@@ -1,6 +1,6 @@
 # Impact Dashboard — Backend API
 
-[![Tests](https://github.com/DevKevZeb/impact-dashboard-api/actions/workflows/tests.yml/badge.svg)](https://github.com/DevKevZeb/impact-dashboard-api/actions/workflows/tests.yml)
+[![Tests](https://github.com/dev-kevzeb/impact-dashboard-api/actions/workflows/tests.yml/badge.svg)](https://github.com/dev-kevzeb/impact-dashboard-api/actions/workflows/tests.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 [![PHP](https://img.shields.io/badge/PHP-8.2-777BB4?logo=php&logoColor=white)](https://www.php.net/)
 [![Laravel](https://img.shields.io/badge/Laravel-12-FF2D20?logo=laravel&logoColor=white)](https://laravel.com/)
@@ -9,7 +9,7 @@
 
 A versioned REST API for managing development-cooperation programs, projects, KPIs and SDGs across countries, donors and implementing agencies — built with Laravel 12 and a modular, domain-driven architecture.
 
-This is the backend API behind **[Impact Dashboard](https://github.com/DevKevZeb/impact-dashboard)** — see that repository for the frontend source and live demo. Every request/response contract the frontend integrates against was designed and implemented here.
+This is the backend API behind **[Impact Dashboard](https://github.com/dev-kevzeb/impact-dashboard)** — see that repository for the frontend source and live demo. Every request/response contract the frontend integrates against was designed and implemented here.
 
 | | |
 |---|---|
